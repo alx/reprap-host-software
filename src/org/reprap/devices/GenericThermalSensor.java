@@ -11,10 +11,11 @@ import org.reprap.comms.OutgoingMessage;
 public class GenericThermalSensor extends Device {
 
 	public class RequestTemperature extends OutgoingMessage {
+		public static final int MSG_GetTemp = 1;		
 
 		public byte[] getBinary() {
 			// Get temperature is message 1
-			return new byte [] { 1 };
+			return new byte [] { MSG_GetTemp };
 		}
 		
 	}
