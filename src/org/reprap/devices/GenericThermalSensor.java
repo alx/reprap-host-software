@@ -24,7 +24,7 @@ public class GenericThermalSensor extends Device {
 	
 	public class TemperatureResponse extends IncomingMessage {
 
-		public TemperatureResponse(IncomingContext incomingContext) {
+		public TemperatureResponse(IncomingContext incomingContext) throws IOException {
 			super(incomingContext);
 		}
 		

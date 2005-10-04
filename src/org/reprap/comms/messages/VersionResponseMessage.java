@@ -1,11 +1,13 @@
 package org.reprap.comms.messages;
 
+import java.io.IOException;
+
 import org.reprap.comms.IncomingContext;
 import org.reprap.comms.IncomingMessage;
 
 public class VersionResponseMessage extends IncomingMessage {
 
-	public VersionResponseMessage(IncomingContext incomingContext) {
+	public VersionResponseMessage(IncomingContext incomingContext) throws IOException {
 		super(incomingContext);
 	}
 	

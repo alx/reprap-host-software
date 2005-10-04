@@ -1,5 +1,7 @@
 package org.reprap.comms;
 
+import java.io.IOException;
+
 import org.reprap.ReprapException;
 
 public abstract class IncomingMessage {
@@ -15,11 +17,18 @@ public abstract class IncomingMessage {
 		}
 	}
 	
-	public IncomingMessage(IncomingContext incomingContext) {
-		// TODO receive a message according to context and populate the payload
+	/**
+	 * Receive a message matching context criteria
+	 * @param incomingContext the context in which to receive messages
+	 * @throws IOException 
+	 */
+	public IncomingMessage(IncomingContext incomingContext) throws IOException {
+		Communicator comm = incomingContext.getCommunicator();
+		comm.ReceiveMessage(this);
 	}
 
 	public byte[] getPayload() {
 		return payload;
 	}
+	
 }

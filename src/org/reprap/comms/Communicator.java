@@ -9,6 +9,8 @@ public interface Communicator {
 	
 	public IncomingContext sendMessage(Device device,
 			OutgoingMessage messageToSend) throws IOException;
-		
+
+	public void ReceiveMessage(IncomingMessage message) throws IOException;
+	
 	public void close();
 }
