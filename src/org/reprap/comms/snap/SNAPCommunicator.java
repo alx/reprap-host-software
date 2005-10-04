@@ -18,7 +18,7 @@ import org.reprap.comms.IncomingMessage;
 import org.reprap.comms.OutgoingMessage;
 
 public class SNAPCommunicator implements Communicator {
-
+	
 	private SerialPort port;
 	private OutputStream writeStream;
 	private InputStream readStream;
@@ -27,32 +27,32 @@ public class SNAPCommunicator implements Communicator {
 	throws NoSuchPortException, PortInUseException, IOException, UnsupportedCommOperationException {
 		CommPortIdentifier commId = CommPortIdentifier.getPortIdentifier(portName);
 		port = (SerialPort)commId.open(portName, 30000);
-
+		
 		port.setSerialPortParams(baudRate,
-				  SerialPort.DATABITS_8,
-				  SerialPort.STOPBITS_1,
-				  SerialPort.PARITY_NONE );
-	    port.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
-
-	    writeStream = port.getOutputStream();
-	    readStream = port.getInputStream();
+				SerialPort.DATABITS_8,
+				SerialPort.STOPBITS_1,
+				SerialPort.PARITY_NONE );
+		port.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
+		
+		writeStream = port.getOutputStream();
+		readStream = port.getInputStream();
 	}
 	
 	public void close()
 	{
-	  port.close();
+		port.close();
 	}
 	
 	public IncomingContext sendMessage(Device device,
 			OutgoingMessage messageToSend) throws IOException {
 		
 		writeStream.write(messageToSend.getBinary());
-
+		
 		IncomingContext replyContext = messageToSend.getReplyContext(this,
 				device);
 		return replyContext;
 	}
-
+	
 	public void ReceiveMessage(IncomingMessage message) throws IOException {
 		// Here we collect one packet and notify the message
 		// of its contents.  The message will respond
@@ -73,18 +73,24 @@ public class SNAPCommunicator implements Communicator {
 			// Packet is complete
 			if (packet.validate()) {
 				// Packet is complete and valid, so process it
-				if (message.receiveData(packet.getPayload())) {
-					// All received as expected
-					// TODO ACK the sender
-				} else {
-					// TODO Not interested, wait for more
-				}
+				processPacket(message, packet);
 			} else {
 				// TODO Send a NAK wait again
 			}
 		}
 	}
+
+	private boolean processPacket(IncomingMessage message, SNAPPacket packet) {
+		if (message.receiveData(packet.getPayload())) {
+			// All received as expected
+			// TODO ACK the sender
+			return true;
+		} else {
+			// TODO Not interested, wait for more
+			return false;
+		}
+	}
 	
 	// TODO Make an anonymous message receiver.  Use reflection? 
-
+	
 }
