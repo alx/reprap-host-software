@@ -18,5 +18,8 @@ public class VersionResponseMessage extends IncomingMessage {
 	    return reply[1] + reply[2] << 8;
 	}
 
+	protected boolean isExpectedPacketType(byte packetType) {
+		return packetType == VersionRequestMessage.MSG_GetVersion;
+	}
 
 }

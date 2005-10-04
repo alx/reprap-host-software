@@ -60,13 +60,29 @@ public class SNAPCommunicator implements Communicator {
 		// it will be discarded and we will wait for another
 		// message.
 		
-		// Since this is a SNAP loop, we have to pass on
+		// Since this is a SNAP ring, we have to pass on
 		// any packets that are not destined for us.
 		
 		// We will also only pass packed to the message if they are for
 		// the local address.
+		SNAPPacket packet = new SNAPPacket();
 		int c = readStream.read();
-		System.out.println("Got read " + c);
+		if (c == -1) throw new IOException();
+		// TODO loop over data and multiple packets
+		if (packet.receiveByte((byte)c)) {
+			// Packet is complete
+			if (packet.validate()) {
+				// Packet is complete and valid, so process it
+				if (message.receiveData(packet.getPayload())) {
+					// All received as expected
+					// TODO ACK the sender
+				} else {
+					// TODO Not interested, wait for more
+				}
+			} else {
+				// TODO Send a NAK wait again
+			}
+		}
 	}
 	
 	// TODO Make an anonymous message receiver.  Use reflection? 

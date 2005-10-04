@@ -29,9 +29,9 @@ public abstract class Device {
 	}
 
 	public int getVersion() throws IOException, InvalidPayloadException {
-		VersionRequestMessage vm = new VersionRequestMessage();
-		IncomingContext ctx = sendMessage(vm);
-		VersionResponseMessage reply = new VersionResponseMessage(ctx);
+		VersionRequestMessage request = new VersionRequestMessage();
+		IncomingContext replyContext = sendMessage(request);
+		VersionResponseMessage reply = new VersionResponseMessage(replyContext);
 		return reply.getVersion(); 
 	}
 	

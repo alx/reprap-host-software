@@ -5,7 +5,8 @@ import java.io.IOException;
 import org.reprap.ReprapException;
 
 public abstract class IncomingMessage {
-	private byte [] payload;
+	private byte [] payload; // The actual content portion of a packet, not the frilly bits
+	IncomingContext incomingContext;
 	
 	public class InvalidPayloadException extends ReprapException {
 		static final long serialVersionUID = 0;
@@ -23,12 +24,27 @@ public abstract class IncomingMessage {
 	 * @throws IOException 
 	 */
 	public IncomingMessage(IncomingContext incomingContext) throws IOException {
+		this.incomingContext = incomingContext;
 		Communicator comm = incomingContext.getCommunicator();
 		comm.ReceiveMessage(this);
 	}
 
+	protected abstract boolean isExpectedPacketType(byte packetType);
+	
 	public byte[] getPayload() {
 		return payload;
 	}
-	
+
+	public boolean receiveData(byte [] payload) {
+		// We assume the packet was for us, etc.  But we need to
+		// know it contains the correct contents
+		if (isExpectedPacketType(payload[0])) {
+			this.payload = payload;
+			return true;
+		} else {
+			// That's not what we were after, so discard and wait for more
+			return false;
+		}
+	}
+
 }

@@ -37,6 +37,10 @@ public class GenericThermalSensor extends Device {
 		    return reply[1] + reply[2] << 8;
 		}
 
+		protected boolean isExpectedPacketType(byte packetType) {
+			return packetType == RequestTemperature.MSG_GetTemp;
+		}
+
 	}
 	
 	public GenericThermalSensor(Communicator communicator, Address address) {

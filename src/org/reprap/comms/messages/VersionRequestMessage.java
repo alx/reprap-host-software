@@ -11,7 +11,7 @@ public class VersionRequestMessage extends OutgoingMessage {
 	public static final int MSG_GetVersion = 0;
 
 	public byte[] getBinary() {
-		byte message[] = new byte [] {0};		
+		byte message[] = new byte [] {MSG_GetVersion};		
 		return message;
 	}
 	
