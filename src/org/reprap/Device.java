@@ -1,10 +1,14 @@
 package org.reprap;
 
+import java.io.IOException;
+
 import org.reprap.comms.Address;
 import org.reprap.comms.Communicator;
 import org.reprap.comms.IncomingContext;
 import org.reprap.comms.OutgoingMessage;
+import org.reprap.comms.IncomingMessage.InvalidPayloadException;
 import org.reprap.comms.messages.VersionRequestMessage;
+import org.reprap.comms.messages.VersionResponseMessage;
 
 public abstract class Device {
 
@@ -24,13 +28,14 @@ public abstract class Device {
 		return communicator;
 	}
 
-	public int getVersion() {
+	public int getVersion() throws IOException, InvalidPayloadException {
 		VersionRequestMessage vm = new VersionRequestMessage();
-		sendMessage(vm);
-		return 1; 
+		IncomingContext ctx = sendMessage(vm);
+		VersionResponseMessage reply = new VersionResponseMessage(ctx);
+		return reply.getVersion(); 
 	}
 	
-	public IncomingContext sendMessage(OutgoingMessage message) {
+	public IncomingContext sendMessage(OutgoingMessage message) throws IOException {
 		return communicator.sendMessage(this, message);
 	}
 	

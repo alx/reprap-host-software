@@ -1,5 +1,7 @@
 package org.reprap.devices;
 
+import java.io.IOException;
+
 import org.reprap.Device;
 import org.reprap.ReprapException;
 import org.reprap.comms.Address;
@@ -41,7 +43,7 @@ public class GenericThermalSensor extends Device {
 		super(communicator, address);
 	}
 
-	double GetTemperature() throws ReprapException {
+	double GetTemperature() throws ReprapException, IOException {
 		OutgoingMessage request = new RequestTemperature();
 		IncomingContext replyContext = sendMessage(request);
 		TemperatureResponse response = new TemperatureResponse(replyContext);

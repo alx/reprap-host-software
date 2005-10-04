@@ -9,7 +9,7 @@ public class VersionResponseMessage extends IncomingMessage {
 		super(incomingContext);
 	}
 	
-	int GetVersion() throws InvalidPayloadException {
+	public int getVersion() throws InvalidPayloadException {
 	    byte [] reply = getPayload();
 	    if (reply.length != 2)
 	    	throw new InvalidPayloadException();

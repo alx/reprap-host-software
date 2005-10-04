@@ -4,6 +4,10 @@ import org.reprap.comms.Address;
 
 public class SNAPAddress implements Address {
 
+	public SNAPAddress(int address) {
+		this((short)address);
+	}
+	
 	public SNAPAddress(short address) {
 		this.address = address;
 	}
