@@ -91,6 +91,6 @@ public class SNAPCommunicator implements Communicator {
 		}
 	}
 	
-	// TODO Make an anonymous message receiver.  Use reflection? 
+	// TODO Make an generic message receiver.  Use reflection to get correct class. 
 	
 }

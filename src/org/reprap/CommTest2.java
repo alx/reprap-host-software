@@ -9,7 +9,7 @@ public class CommTest2 {
 	
 	private final int localNodeNumber = 0;
 	private final int baudRate = 2400;
-	private final String commPortName = "1";
+	private final String commPortName = "COM1";
 	
 	
 	private void test() {
@@ -27,7 +27,7 @@ public class CommTest2 {
 			comm.close();
 			
 		} catch(Exception ex) {
-			System.out.println("Exception: " + ex.getMessage());
+			System.out.println(ex.getClass().toString() + ": " + ex.getMessage());
 		}
 	}
 	

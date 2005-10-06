@@ -29,6 +29,13 @@ public abstract class IncomingMessage {
 		comm.ReceiveMessage(this);
 	}
 
+	/**
+	 * Implemented by subclasses to allow them to indicate if they
+	 * understand or expect a given packetType.  This is used to
+	 * decide if a received packet should be accepted or possibly discarded. 
+	 * @param packetType the type of packet to receive
+	 * @return
+	 */
 	protected abstract boolean isExpectedPacketType(byte packetType);
 	
 	public byte[] getPayload() {
