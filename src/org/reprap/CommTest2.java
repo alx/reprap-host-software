@@ -9,8 +9,7 @@ public class CommTest2 {
 	
 	private final int localNodeNumber = 0;
 	private final int baudRate = 2400;
-	private final String commPortName = "COM1";
-	
+	private final String commPortName = "COM1";  // Use "0" on linux, "COM1" on Windows, etc
 	
 	private void test() {
 		

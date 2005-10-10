@@ -21,7 +21,7 @@ public class PrinterUI extends Applet {
 	private static final long serialVersionUID = -5342204698208702886L;
 	VirtualPolarPrinter printer;
 	
-	public void Test() {
+	public void test() {
 		setLayout(new BorderLayout());
 		Canvas3D canvas3D = new Canvas3D(null);
 		add("Center", canvas3D);
@@ -78,10 +78,10 @@ public class PrinterUI extends Applet {
 	
 	public PrinterUI() {
 		printer = new VirtualPolarPrinter();
-		Test();
+		test();
 	}
 
-	public void Begin() {
+	public void begin() {
 		System.out.println("Print....");
 	}
 	

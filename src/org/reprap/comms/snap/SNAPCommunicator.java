@@ -19,12 +19,15 @@ import org.reprap.comms.OutgoingMessage;
 
 public class SNAPCommunicator implements Communicator {
 	
+	private Address localAddress;
+	
 	private SerialPort port;
 	private OutputStream writeStream;
 	private InputStream readStream;
 	
 	public SNAPCommunicator(String portName, int baudRate, Address localAddress)
 	throws NoSuchPortException, PortInUseException, IOException, UnsupportedCommOperationException {
+		this.localAddress = localAddress;
 		CommPortIdentifier commId = CommPortIdentifier.getPortIdentifier(portName);
 		port = (SerialPort)commId.open(portName, 30000);
 		
@@ -46,11 +49,19 @@ public class SNAPCommunicator implements Communicator {
 	public IncomingContext sendMessage(Device device,
 			OutgoingMessage messageToSend) throws IOException {
 		
-		writeStream.write(messageToSend.getBinary());
+		SNAPPacket packet = new SNAPPacket((SNAPAddress)localAddress,
+				(SNAPAddress)device.getAddress(),
+				messageToSend.getBinary());
+	
+		sendRawMessage(packet);
 		
 		IncomingContext replyContext = messageToSend.getReplyContext(this,
 				device);
 		return replyContext;
+	}
+
+	private void sendRawMessage(SNAPPacket packet) throws IOException {
+		writeStream.write(packet.getRawData());
 	}
 	
 	public void ReceiveMessage(IncomingMessage message) throws IOException {
@@ -65,32 +76,43 @@ public class SNAPCommunicator implements Communicator {
 		
 		// We will also only pass packed to the message if they are for
 		// the local address.
-		SNAPPacket packet = new SNAPPacket();
-		int c = readStream.read();
-		if (c == -1) throw new IOException();
-		// TODO loop over data and multiple packets
-		if (packet.receiveByte((byte)c)) {
-			// Packet is complete
-			if (packet.validate()) {
-				// Packet is complete and valid, so process it
-				processPacket(message, packet);
-			} else {
-				// TODO Send a NAK wait again
+		SNAPPacket packet = null;
+		for(;;) {
+			if (packet == null)
+				packet = new SNAPPacket();
+			int c = readStream.read();
+			if (c == -1) throw new IOException();
+			// TODO loop over data and multiple packets
+			if (packet.receiveByte((byte)c)) {
+				// Packet is complete
+				if (packet.validate()) {
+					// Packet is complete and valid, so process it
+					if (processPacket(message, packet))
+						return;
+				} else
+					sendRawMessage(packet.generateNAK());
+				packet = null;
 			}
 		}
 	}
 
-	private boolean processPacket(IncomingMessage message, SNAPPacket packet) {
-		if (message.receiveData(packet.getPayload())) {
+	private boolean processPacket(IncomingMessage message, SNAPPacket packet) throws IOException {
+		// First ACK the message
+		sendRawMessage(packet.generateACK());
+		
+		if (!packet.getDestinationAddress().equals(localAddress)) {
+			// Not for us, so forward it on
+			sendRawMessage(packet);
+			return false;
+		} else if (message.receiveData(packet.getPayload())) {
 			// All received as expected
-			// TODO ACK the sender
 			return true;
 		} else {
-			// TODO Not interested, wait for more
+			// Not interested, wait for more
 			return false;
 		}
 	}
 	
-	// TODO Make an generic message receiver.  Use reflection to get correct class. 
+	// TODO Make a generic message receiver.  Use reflection to get correct class. 
 	
 }

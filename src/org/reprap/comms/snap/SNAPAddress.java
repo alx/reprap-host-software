@@ -2,7 +2,8 @@ package org.reprap.comms.snap;
 
 import org.reprap.comms.Address;
 
-public class SNAPAddress implements Address {
+public class SNAPAddress implements Address {	
+	private short address;
 
 	public SNAPAddress(int address) {
 		this((short)address);
@@ -20,8 +21,13 @@ public class SNAPAddress implements Address {
 		this.address = address;
 	}
 	
-	//////////////////////////////////////////////////////////
-	
-	private short address;
-
+	public boolean equals(Object arg) {
+		if (arg == this)
+			return true;
+		if (arg == null)
+			return false;
+		if (!(arg instanceof SNAPAddress))
+			return false;
+		return address == ((SNAPAddress)arg).address;
+	}
 }

@@ -46,7 +46,7 @@ public abstract class IncomingMessage {
 		// We assume the packet was for us, etc.  But we need to
 		// know it contains the correct contents
 		if (isExpectedPacketType(payload[0])) {
-			this.payload = payload;
+			this.payload = (byte[])payload.clone();
 			return true;
 		} else {
 			// That's not what we were after, so discard and wait for more

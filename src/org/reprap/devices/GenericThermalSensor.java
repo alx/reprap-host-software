@@ -16,7 +16,6 @@ public class GenericThermalSensor extends Device {
 		public static final int MSG_GetTemp = 1;		
 
 		public byte[] getBinary() {
-			// Get temperature is message 1
 			return new byte [] { MSG_GetTemp };
 		}
 		
@@ -47,7 +46,7 @@ public class GenericThermalSensor extends Device {
 		super(communicator, address);
 	}
 
-	double GetTemperature() throws ReprapException, IOException {
+	double getTemperature() throws ReprapException, IOException {
 		OutgoingMessage request = new RequestTemperature();
 		IncomingContext replyContext = sendMessage(request);
 		TemperatureResponse response = new TemperatureResponse(replyContext);

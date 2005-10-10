@@ -13,7 +13,7 @@ public class VersionResponseMessage extends IncomingMessage {
 	
 	public int getVersion() throws InvalidPayloadException {
 	    byte [] reply = getPayload();
-	    if (reply == null || reply.length != 2)
+	    if (reply == null || reply.length != 3)
 	    	throw new InvalidPayloadException();
 	    return reply[1] + reply[2] << 8;
 	}

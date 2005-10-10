@@ -8,23 +8,23 @@ public class VirtualPolarPrinter implements PolarPrinter {
 		super();
 	}
 
-	public void PrintPolarSegment(double startTheta, double startX,
+	public void printPolarSegment(double startTheta, double startX,
 			double startZ, double endTheta, double endX, double endZ) {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void Calibrate() {
+	public void calibrate() {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void PrintPoint(double x, double y, double z) {
+	public void printPoint(double x, double y, double z) {
 		// TODO Auto-generated method stub
 
 	}
 
-	public void PrintSegment(double startX, double startY, double startZ,
+	public void printSegment(double startX, double startY, double startZ,
 			double endX, double endY, double endZ) {
 		// TODO Auto-generated method stub
 

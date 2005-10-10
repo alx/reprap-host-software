@@ -2,11 +2,11 @@ package org.reprap;
 
 public interface Printer {
 
-	public void Calibrate();
+	public void calibrate();
 	
-	public void PrintPoint(double x, double y, double z);
+	public void printPoint(double x, double y, double z);
 	
-	public void PrintSegment(double startX, double startY,
+	public void printSegment(double startX, double startY,
 			double startZ, double endX, double endY, double endZ);
 	
 	

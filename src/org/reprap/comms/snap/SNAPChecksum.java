@@ -21,9 +21,10 @@ public class SNAPChecksum {
 	byte addData(byte data) {
 		byte i = (byte)(data ^ crc);
 		
+		crc = 0;
+		
 		if((i & 1) != 0)
 			crc ^= 0x5e;
-		
 		if((i & 2) != 0)
 			crc ^= 0xbc;
 		if((i & 4) != 0)
@@ -38,7 +39,6 @@ public class SNAPChecksum {
 			crc ^= 0x46;
 		if((i & 0x80) != 0)
 			crc ^= 0x8c;
-		
 		return data;
 	}
 	
