@@ -26,7 +26,7 @@ public class SNAPCommunicator implements Communicator {
 	private InputStream readStream;
 	
 	public SNAPCommunicator(String portName, int baudRate, Address localAddress)
-	throws NoSuchPortException, PortInUseException, IOException, UnsupportedCommOperationException {
+			throws NoSuchPortException, PortInUseException, IOException, UnsupportedCommOperationException {
 		this.localAddress = localAddress;
 		CommPortIdentifier commId = CommPortIdentifier.getPortIdentifier(portName);
 		port = (SerialPort)commId.open(portName, 30000);
@@ -52,14 +52,14 @@ public class SNAPCommunicator implements Communicator {
 		SNAPPacket packet = new SNAPPacket((SNAPAddress)localAddress,
 				(SNAPAddress)device.getAddress(),
 				messageToSend.getBinary());
-	
+		
 		sendRawMessage(packet);
 		
 		IncomingContext replyContext = messageToSend.getReplyContext(this,
 				device);
 		return replyContext;
 	}
-
+	
 	private void sendRawMessage(SNAPPacket packet) throws IOException {
 		writeStream.write(packet.getRawData());
 	}
@@ -78,10 +78,13 @@ public class SNAPCommunicator implements Communicator {
 		// the local address.
 		SNAPPacket packet = null;
 		for(;;) {
-			if (packet == null)
-				packet = new SNAPPacket();
 			int c = readStream.read();
 			if (c == -1) throw new IOException();
+			if (packet == null) {
+				if (c != 0x54)  // Always wait for a sync byte before doing anything
+					continue;
+				packet = new SNAPPacket();
+			}
 			// TODO loop over data and multiple packets
 			if (packet.receiveByte((byte)c)) {
 				// Packet is complete
@@ -95,7 +98,7 @@ public class SNAPCommunicator implements Communicator {
 			}
 		}
 	}
-
+	
 	private boolean processPacket(IncomingMessage message, SNAPPacket packet) throws IOException {
 		// First ACK the message
 		sendRawMessage(packet.generateACK());

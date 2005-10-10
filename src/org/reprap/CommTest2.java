@@ -9,7 +9,7 @@ public class CommTest2 {
 	
 	private final int localNodeNumber = 0;
 	private final int baudRate = 2400;
-	private final String commPortName = "COM1";  // Use "0" on linux, "COM1" on Windows, etc
+	private final String commPortName = "1";  // Use "0" on linux, "COM1" on Windows, etc
 	
 	private void test() {
 		
@@ -19,6 +19,7 @@ public class CommTest2 {
 			
 			GenericThermalSensor sensor = new GenericThermalSensor(comm, new SNAPAddress(2));
 			
+			System.out.println("Requesting sensor version");
 			int version = sensor.getVersion();
 			
 			System.out.println("Sensor version is " + version);

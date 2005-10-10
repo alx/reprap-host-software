@@ -7,7 +7,7 @@ public class CommTest {
 	
 	private CommPortIdentifier mPortId = null;
 	private SerialPort mPort = null;
-	private final String commPortName = "COM1";  // Use "0" on linux, "COM1" on Windows, etc
+	private final String commPortName = "1";  // Use "0" on linux, "COM1" on Windows, etc
 	
 	private void test() {
 		try {
