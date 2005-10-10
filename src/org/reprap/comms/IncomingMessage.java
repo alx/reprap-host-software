@@ -9,12 +9,12 @@ public abstract class IncomingMessage {
 	IncomingContext incomingContext;
 	
 	public class InvalidPayloadException extends ReprapException {
-		static final long serialVersionUID = 0;
+		private static final long serialVersionUID = -5403970405132990115L;
 		public InvalidPayloadException() {
 			super();
 		}
-		public InvalidPayloadException(String arg0) {
-			super(arg0);
+		public InvalidPayloadException(String arg) {
+			super(arg);
 		}
 	}
 	
@@ -26,7 +26,7 @@ public abstract class IncomingMessage {
 	public IncomingMessage(IncomingContext incomingContext) throws IOException {
 		this.incomingContext = incomingContext;
 		Communicator comm = incomingContext.getCommunicator();
-		comm.ReceiveMessage(this);
+		comm.receiveMessage(this);
 	}
 
 	/**
@@ -42,6 +42,12 @@ public abstract class IncomingMessage {
 		return payload;
 	}
 
+	/**
+	 * Called by the framework to provide data to the IncomingMessage.
+	 * This should not normally be called by a user. 
+	 * @param payload The completed message to insert into the IncomingMessage
+	 * @return true is the data was accepted, otherwise false.
+	 */
 	public boolean receiveData(byte [] payload) {
 		// We assume the packet was for us, etc.  But we need to
 		// know it contains the correct contents

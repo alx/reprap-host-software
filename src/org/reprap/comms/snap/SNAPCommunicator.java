@@ -54,6 +54,8 @@ public class SNAPCommunicator implements Communicator {
 				messageToSend.getBinary());
 		
 		sendRawMessage(packet);
+	
+		// TODO Wait for ACK and re-send if there is a problem
 		
 		IncomingContext replyContext = messageToSend.getReplyContext(this,
 				device);
@@ -64,7 +66,7 @@ public class SNAPCommunicator implements Communicator {
 		writeStream.write(packet.getRawData());
 	}
 	
-	public void ReceiveMessage(IncomingMessage message) throws IOException {
+	public void receiveMessage(IncomingMessage message) throws IOException {
 		// Here we collect one packet and notify the message
 		// of its contents.  The message will respond
 		// to indicate if it wants the message.  If not,
