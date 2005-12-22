@@ -86,8 +86,11 @@ public class SNAPCommunicator implements Communicator {
 				// Packet is complete
 				if (packet.validate()) {
 					return packet;
-				} else
-					sendRawMessage(packet.generateNAK());
+				} else {
+					System.out.println("CRC error, NAKing");
+					/// TODO send NAK
+					//sendRawMessage(packet.generateNAK());
+				}
 				packet = null;
 			}
 		}	
@@ -114,8 +117,10 @@ public class SNAPCommunicator implements Communicator {
 	
 	private boolean processPacket(IncomingMessage message, SNAPPacket packet) throws IOException {
 		// First ACK the message
-		if (packet.isAck())
-	  	  throw new IOException("Unexpected ACK received as message");
+		if (packet.isAck()) {
+			System.out.println("Unexpected ACK received as message");
+	  	  	return false;
+		}
 		/// TODO send ACKs
 		//sendRawMessage(packet.generateACK());
 		
@@ -128,6 +133,7 @@ public class SNAPCommunicator implements Communicator {
 			return true;
 		} else {
 			// Not interested, wait for more
+			System.out.println("Ignored and dropped packet");
 			return false;
 		}
 	}

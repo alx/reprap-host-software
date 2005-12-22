@@ -19,9 +19,21 @@ public class StepperTest {
 			
 			GenericStepperMotor motor = new GenericStepperMotor(comm, new SNAPAddress(2));
 			
-			motor.setSpeed(200);
-			Thread.sleep(5000);
-			motor.setIdle();
+			//motor.setSpeed(200);
+			//Thread.sleep(5000);
+			//motor.setIdle();
+			motor.resetPosition();
+			
+			motor.seek(240, 2000);
+
+			for(;;) {
+			  int pos = motor.getPosition();
+			  System.out.println("Now at position: " + pos);
+			  if (pos == 2000)
+			  	break;
+			  Thread.sleep(250);
+			  
+			}
 			
 			comm.close();
 			

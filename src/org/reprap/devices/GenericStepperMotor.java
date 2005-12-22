@@ -6,10 +6,23 @@ import org.reprap.Device;
 import org.reprap.ReprapException;
 import org.reprap.comms.Address;
 import org.reprap.comms.Communicator;
+import org.reprap.comms.IncomingContext;
 import org.reprap.comms.OutgoingMessage;
+import org.reprap.comms.IncomingMessage;
+import org.reprap.comms.messages.IncomingIntMessage;
+import org.reprap.comms.messages.OutgoingBlankMessage;
+import org.reprap.comms.messages.OutgoingIntMessage;
 
 public class GenericStepperMotor extends Device {
 
+	public static final byte MSG_SetForward = 1;		
+	public static final byte MSG_SetReverse = 2;
+	public static final byte MSG_SetPosition = 3;
+	public static final byte MSG_GetPosition = 4;
+	public static final byte MSG_Seek = 5;	
+	public static final byte MSG_SetIdle = 6;		
+
+	
 	public GenericStepperMotor(Communicator communicator, Address address) {
 		super(communicator, address);
 	}
@@ -30,10 +43,49 @@ public class GenericStepperMotor extends Device {
 		sendMessage(request);
 	}
 	
-	public class RequestSetSpeed extends OutgoingMessage {
-		public static final int MSG_SetForward = 1;		
-		public static final int MSG_SetReverse = 2;		
-		public static final int MSG_SetIdle = 6;		
+	public void resetPosition() throws IOException {
+		setPosition(0);
+	}
+	
+	public void setPosition(int position) throws IOException {
+		sendMessage(new RequestSetPosition(position));
+	}
+	
+	public int getPosition() throws IOException {
+		IncomingContext replyContext = sendMessage(
+				new OutgoingBlankMessage(MSG_GetPosition));
+		
+		IncomingIntMessage reply = new RequestPositionResponse(replyContext);
+		try {
+			int value = reply.getValue();
+			return value;
+		}
+		catch (IncomingMessage.InvalidPayloadException ex) {
+			throw new IOException(ex.getMessage());
+		}
+	}
+	
+	public void seek(int speed, int position) throws IOException {
+		sendMessage(new RequestSeekPosition(speed, position));		
+	}
+	
+	protected class RequestPositionResponse extends IncomingIntMessage {
+		public RequestPositionResponse(IncomingContext incomingContext) throws IOException {
+			super(incomingContext);
+		}
+		
+		protected boolean isExpectedPacketType(byte packetType) {
+			return packetType == MSG_GetPosition; 
+		}
+	}
+	
+	protected class RequestSetPosition extends OutgoingIntMessage {
+		public RequestSetPosition(int position) {
+			super(MSG_SetPosition, position);
+		}
+	}
+	
+	protected class RequestSetSpeed extends OutgoingMessage {
 
 		byte [] message;
 		
@@ -69,5 +121,21 @@ public class GenericStepperMotor extends Device {
 		}
 		
 	}
+	
+	protected class RequestSeekPosition extends OutgoingMessage {
+		byte [] message;
+		RequestSeekPosition(int speed, int position) {
+			message = new byte[] { MSG_Seek,
+					(byte)speed,
+					(byte)(position & 0xff),
+					(byte)((position >> 8) & 0xff)};
+		}
+		
+		public byte[] getBinary() {
+			return message;
+		}
+		
+	}
+
 	
 }

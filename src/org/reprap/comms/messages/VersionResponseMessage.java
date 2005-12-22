@@ -13,9 +13,9 @@ public class VersionResponseMessage extends IncomingMessage {
 	
 	public int getVersion() throws InvalidPayloadException {
 	    byte [] reply = getPayload();
-	    if (reply == null || reply.length != 2)
+	    if (reply == null || reply.length != 3)
 	    	throw new InvalidPayloadException();
-	    return reply[0] + reply[1] << 8;
+	    return reply[1] + reply[2] << 8;
 	}
 
 	protected boolean isExpectedPacketType(byte packetType) {
