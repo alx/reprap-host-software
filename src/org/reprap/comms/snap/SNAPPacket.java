@@ -29,7 +29,7 @@ public class SNAPPacket {
 	SNAPPacket(SNAPAddress srcAddress, SNAPAddress destAddress, byte [] payload) {
 		buffer = new byte[payload.length + offset_payload + 1];
 		buffer[offset_sync] = syncMarker;
-		buffer[offset_hdb2] = 0x31;  // Always fixed for now
+		buffer[offset_hdb2] = 0x51;
 		buffer[offset_hdb1] = 0x30;
 		buffer[offset_dab] = (byte)destAddress.getAddress();
 		buffer[offset_sab] = (byte)srcAddress.getAddress();
@@ -133,5 +133,19 @@ public class SNAPPacket {
 		resp.buffer[offset_hdb2] = (byte)((resp.buffer[offset_hdb2] & 0xfc) | 2);
 		resp.generateChecksum();
 		return resp;
+	}
+	
+	/**
+	 * @return true if the packet represents an ACK
+	 */
+	public boolean isAck() {
+		return ((buffer[offset_hdb2] & 3) == 2);
+	}
+
+	/**
+	 * @return true if the packet represents a NAK
+	 */
+	public boolean isNak() {
+		return ((buffer[offset_hdb2] & 3) == 3);
 	}
 }

@@ -34,7 +34,7 @@ public class SNAPCommunicator implements Communicator {
 		port.setSerialPortParams(baudRate,
 				SerialPort.DATABITS_8,
 				SerialPort.STOPBITS_1,
-				SerialPort.PARITY_NONE );
+				SerialPort.PARITY_NONE);
 		port.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
 		
 		writeStream = port.getOutputStream();
@@ -52,10 +52,16 @@ public class SNAPCommunicator implements Communicator {
 		SNAPPacket packet = new SNAPPacket((SNAPAddress)localAddress,
 				(SNAPAddress)device.getAddress(),
 				messageToSend.getBinary());
-		
-		sendRawMessage(packet);
-	
-		// TODO Wait for ACK and re-send if there is a problem
+
+		for(;;) {
+			sendRawMessage(packet);
+
+			SNAPPacket ackPacket = receivePacket();
+			if (ackPacket.isAck())
+				break;
+			if (!ackPacket.isNak())
+				throw new IOException("Received data packet when expecting ACK");
+		}
 		
 		IncomingContext replyContext = messageToSend.getReplyContext(this,
 				device);
@@ -64,6 +70,27 @@ public class SNAPCommunicator implements Communicator {
 	
 	private void sendRawMessage(SNAPPacket packet) throws IOException {
 		writeStream.write(packet.getRawData());
+	}
+
+	protected SNAPPacket receivePacket() throws IOException {
+		SNAPPacket packet = null;
+		for(;;) {
+			int c = readStream.read();
+			if (c == -1) throw new IOException();
+			if (packet == null) {
+				if (c != 0x54)  // Always wait for a sync byte before doing anything
+					continue;
+				packet = new SNAPPacket();
+			}
+			if (packet.receiveByte((byte)c)) {
+				// Packet is complete
+				if (packet.validate()) {
+					return packet;
+				} else
+					sendRawMessage(packet.generateNAK());
+				packet = null;
+			}
+		}	
 	}
 	
 	public void receiveMessage(IncomingMessage message) throws IOException {
@@ -76,34 +103,21 @@ public class SNAPCommunicator implements Communicator {
 		// Since this is a SNAP ring, we have to pass on
 		// any packets that are not destined for us.
 		
-		// We will also only pass packed to the message if they are for
+		// We will also only pass packets to the message if they are for
 		// the local address.
-		SNAPPacket packet = null;
 		for(;;) {
-			int c = readStream.read();
-			if (c == -1) throw new IOException();
-			if (packet == null) {
-				if (c != 0x54)  // Always wait for a sync byte before doing anything
-					continue;
-				packet = new SNAPPacket();
-			}
-			// TODO loop over data and multiple packets
-			if (packet.receiveByte((byte)c)) {
-				// Packet is complete
-				if (packet.validate()) {
-					// Packet is complete and valid, so process it
-					if (processPacket(message, packet))
-						return;
-				} else
-					sendRawMessage(packet.generateNAK());
-				packet = null;
-			}
+			SNAPPacket packet = receivePacket();
+			if (processPacket(message, packet))
+				return;
 		}
 	}
 	
 	private boolean processPacket(IncomingMessage message, SNAPPacket packet) throws IOException {
 		// First ACK the message
-		sendRawMessage(packet.generateACK());
+		if (packet.isAck())
+	  	  throw new IOException("Unexpected ACK received as message");
+		/// TODO send ACKs
+		//sendRawMessage(packet.generateACK());
 		
 		if (!packet.getDestinationAddress().equals(localAddress)) {
 			// Not for us, so forward it on

@@ -12,7 +12,7 @@ public class CommTest {
 	private void test() {
 		try {
 			openPort(commPortName);
-			initPort(2400);
+			initPort(19200);
 			OutputStream os = getOutputStream();
 			String msg = "Testing\r\n";
 			os.write(msg.getBytes());

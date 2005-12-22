@@ -8,7 +8,7 @@ import org.reprap.devices.GenericStepperMotor;
 public class StepperTest {
 
 	private final int localNodeNumber = 0;
-	private final int baudRate = 2400;
+	private final int baudRate = 19200;
 	private final String commPortName = "1";  // Use "0" on linux, "COM1" on Windows, etc
 	
 	private void test() {
@@ -20,7 +20,7 @@ public class StepperTest {
 			GenericStepperMotor motor = new GenericStepperMotor(comm, new SNAPAddress(2));
 			
 			motor.setSpeed(200);
-			Thread.sleep(1000);
+			Thread.sleep(5000);
 			motor.setIdle();
 			
 			comm.close();
