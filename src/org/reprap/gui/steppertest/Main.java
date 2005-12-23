@@ -14,11 +14,11 @@ public class Main implements ChangeListener {
 
 	private final int intialSpeed = 200;
 	
-	JSlider speedX, speedY;
-	JCheckBox lockXYSpeed;
+	JSlider speedX, speedY, speedZ;
+	JCheckBox lockXYZSpeed;
 	
-	JSlider positionRequestX, positionRequestY;
-	JSlider positionActualX, positionActualY;
+	JSlider positionRequestX, positionRequestY, positionRequestZ;
+	JSlider positionActualX, positionActualY, positionActualZ;
 	
 	Controller controller;
 	
@@ -26,7 +26,7 @@ public class Main implements ChangeListener {
 	boolean waiting = false;
 	
 	private Main() throws Exception {
-		controller = new Controller(this, intialSpeed, intialSpeed);
+		controller = new Controller(this, intialSpeed, intialSpeed, intialSpeed);
 		updateTimer = new Timer();
 	}
 	
@@ -50,6 +50,8 @@ public class Main implements ChangeListener {
         panel.add(new JLabel("X"), c);
         c.gridx = 1;
         panel.add(new JLabel("Y"), c);
+        c.gridx = 2;
+        panel.add(new JLabel("Z"), c);
         
         speedX = new JSlider(JSlider.VERTICAL, 0, 255, intialSpeed);
         speedX.addChangeListener(this);
@@ -66,18 +68,29 @@ public class Main implements ChangeListener {
         speedY.setMajorTickSpacing(50);
         speedY.setMinorTickSpacing(10);
         speedY.setPaintTicks(true);
+        speedX.setPaintLabels(true);
         c.gridx = 1;
         panel.add(speedY, c);
 
-        lockXYSpeed = new JCheckBox("Lock X/Y speed", true);
-        lockXYSpeed.addChangeListener(this);
-        c.gridx = 0;
-        c.gridy = 3;
-        c.gridwidth = 2;
-        panel.add(lockXYSpeed, c);
+        speedZ = new JSlider(JSlider.VERTICAL, 1, 255, intialSpeed);
+        speedZ.addChangeListener(this);
+        speedZ.setMajorTickSpacing(50);
+        speedZ.setMinorTickSpacing(10);
+        speedZ.setPaintTicks(true);
+        c.gridx = 2;
+        panel.add(speedZ, c);
 
         
+        lockXYZSpeed = new JCheckBox("Lock X/Y/Z speed", true);
+        lockXYZSpeed.addChangeListener(this);
+        c.gridx = 0;
+        c.gridy = 3;
+        c.gridwidth = 3;
+        panel.add(lockXYZSpeed, c);
+
         JPanel positionPanel = new JPanel();
+        positionPanel.add(Box.createVerticalStrut(20));
+
         positionPanel.add(new JLabel("Set X axis position"));
         positionPanel.setLayout(new BoxLayout(positionPanel, BoxLayout.Y_AXIS));
         positionRequestX = new JSlider(JSlider.HORIZONTAL, 0, 1000, 0);
@@ -88,7 +101,7 @@ public class Main implements ChangeListener {
         positionActualX.setEnabled(false);
         positionPanel.add(positionActualX);
         
-        positionPanel.add(Box.createVerticalStrut(40));
+        positionPanel.add(Box.createVerticalStrut(20));
         
         positionPanel.add(new JLabel("Set Y axis position"));
         positionRequestY = new JSlider(JSlider.HORIZONTAL, 0, 1000, 0);
@@ -99,7 +112,20 @@ public class Main implements ChangeListener {
         positionActualY.setEnabled(false);
         positionPanel.add(positionActualY);
         
-        c.gridx = 2;
+        positionPanel.add(Box.createVerticalStrut(20));
+        
+        positionPanel.add(new JLabel("Set Z axis position"));
+        positionRequestZ = new JSlider(JSlider.HORIZONTAL, 0, 1000, 0);
+        positionRequestZ.addChangeListener(this);
+        positionPanel.add(positionRequestZ);
+        positionPanel.add(new JLabel("Actual Z axis position"));
+        positionActualZ = new JSlider(JSlider.HORIZONTAL, 0, 1000, 0);
+        positionActualZ.setEnabled(false);
+        positionPanel.add(positionActualZ);
+
+        positionPanel.add(Box.createVerticalStrut(20));
+       
+        c.gridx = 3;
         c.gridy = 0;
         c.gridwidth = 1;
         c.gridheight = 4;
@@ -120,6 +146,10 @@ public class Main implements ChangeListener {
 				positionActualY.setValue(controller.getPositionY());
 				startUpdates();
 			}
+			if (controller.isMovingZ()) {
+				positionActualZ.setValue(controller.getPositionZ());
+				startUpdates();
+			}
 		} catch (IOException ex) {
 			// Ignore these if they happen
 			System.out.println("Ignored IO exception in update");
@@ -128,7 +158,8 @@ public class Main implements ChangeListener {
 	
 	private void startUpdates()
 	{
-		if (!waiting && (controller.isMovingX() || controller.isMovingY())) {
+		if (!waiting && (controller.isMovingX() || controller.isMovingY() ||
+				controller.isMovingZ())) {
 			waiting = true;
 			TimerTask task = new TimerTask() {
 				public void run() {
@@ -146,22 +177,31 @@ public class Main implements ChangeListener {
 			
 			if (srcObj instanceof JSlider) {
 				JSlider src = (JSlider)srcObj;
-				if (src == speedX || src == speedY) {
+				if (src == speedX || src == speedY || src == speedZ) {
 					if (src.getValue() < 1)
 						src.setValue(1);
-					if (lockXYSpeed.isSelected()) {
+					if (lockXYZSpeed.isSelected()) {
 						if (src == speedX) {
 							speedY.setValue(speedX.getValue());
+							speedZ.setValue(speedX.getValue());
 						} else if (src == speedY) {
 							speedX.setValue(speedY.getValue());
+							speedZ.setValue(speedY.getValue());
+						} else if (src == speedZ) {
+							speedX.setValue(speedZ.getValue());
+							speedY.setValue(speedZ.getValue());
 						}
 					}
-					controller.updateSpeeds(speedX.getValue(), speedY.getValue());
+					controller.updateSpeeds(speedX.getValue(),
+							speedY.getValue(), speedZ.getValue());
 				} else if (src == positionRequestX) {
 					controller.setPositionX(src.getValue());
 					startUpdates();
 				} else if (src == positionRequestY) {
 					controller.setPositionY(src.getValue());
+					startUpdates();
+				} else if (src == positionRequestZ) {
+					controller.setPositionZ(src.getValue());
 					startUpdates();
 				}
 				
