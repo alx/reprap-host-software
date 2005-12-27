@@ -68,11 +68,11 @@ public class SNAPCommunicator implements Communicator {
 		return replyContext;
 	}
 	
-	private void sendRawMessage(SNAPPacket packet) throws IOException {
+	private synchronized void sendRawMessage(SNAPPacket packet) throws IOException {
 		writeStream.write(packet.getRawData());
 	}
 
-	protected SNAPPacket receivePacket() throws IOException {
+	protected synchronized SNAPPacket receivePacket() throws IOException {
 		SNAPPacket packet = null;
 		for(;;) {
 			int c = readStream.read();

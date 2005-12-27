@@ -33,25 +33,25 @@ public class GenericStepperMotor extends Device {
 	 * @throws ReprapException
 	 * @throws IOException
 	 */
-	public void setSpeed(int speed) throws ReprapException, IOException {
+	public synchronized void setSpeed(int speed) throws ReprapException, IOException {
 		OutgoingMessage request = new RequestSetSpeed(speed);
 		sendMessage(request);
 	}
 
-	public void setIdle() throws IOException {
+	public synchronized void setIdle() throws IOException {
 		OutgoingMessage request = new RequestSetSpeed();
 		sendMessage(request);
 	}
 	
-	public void resetPosition() throws IOException {
+	public synchronized void resetPosition() throws IOException {
 		setPosition(0);
 	}
 	
-	public void setPosition(int position) throws IOException {
+	public synchronized void setPosition(int position) throws IOException {
 		sendMessage(new RequestSetPosition(position));
 	}
 	
-	public int getPosition() throws IOException {
+	public synchronized int getPosition() throws IOException {
 		IncomingContext replyContext = sendMessage(
 				new OutgoingBlankMessage(MSG_GetPosition));
 		
@@ -65,7 +65,7 @@ public class GenericStepperMotor extends Device {
 		}
 	}
 	
-	public void seek(int speed, int position) throws IOException {
+	public synchronized void seek(int speed, int position) throws IOException {
 		sendMessage(new RequestSeekPosition(speed, position));		
 	}
 	

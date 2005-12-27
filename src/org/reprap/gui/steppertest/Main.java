@@ -2,32 +2,33 @@ package org.reprap.steppertestgui;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
-import java.io.IOException;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.reprap.comms.Communicator;
+import org.reprap.comms.snap.SNAPAddress;
+import org.reprap.comms.snap.SNAPCommunicator;
+
 public class Main implements ChangeListener {
+
+	private final int localNodeNumber = 0;
+	private final int baudRate = 19200;
+	private final String commPortName = "1";  // Use "0" on linux, "COM1" on Windows, etc
 
 	private final int intialSpeed = 200;
 	
 	JSlider speedX, speedY, speedZ;
 	JCheckBox lockXYZSpeed;
 	
-	JSlider positionRequestX, positionRequestY, positionRequestZ;
-	JSlider positionActualX, positionActualY, positionActualZ;
+	StepperPanel motorX, motorY, motorZ;
 	
-	Controller controller;
-	
-	Timer updateTimer;
-	boolean waiting = false;
+	Communicator communicator;
 	
 	private Main() throws Exception {
-		controller = new Controller(this, intialSpeed, intialSpeed, intialSpeed);
-		updateTimer = new Timer();
+		SNAPAddress myAddress = new SNAPAddress(localNodeNumber); 
+		communicator = new SNAPCommunicator(commPortName, baudRate, myAddress);
 	}
 	
 	private void createAndShowGUI() {
@@ -89,39 +90,22 @@ public class Main implements ChangeListener {
         panel.add(lockXYZSpeed, c);
 
         JPanel positionPanel = new JPanel();
-        positionPanel.add(Box.createVerticalStrut(20));
-
-        positionPanel.add(new JLabel("Set X axis position"));
         positionPanel.setLayout(new BoxLayout(positionPanel, BoxLayout.Y_AXIS));
-        positionRequestX = new JSlider(JSlider.HORIZONTAL, 0, 1000, 0);
-        positionRequestX.addChangeListener(this);
-        positionPanel.add(positionRequestX);
-        positionPanel.add(new JLabel("Actual X axis position"));
-        positionActualX = new JSlider(JSlider.HORIZONTAL, 0, 1000, 0);
-        positionActualX.setEnabled(false);
-        positionPanel.add(positionActualX);
+
+        positionPanel.add(Box.createVerticalStrut(20));
+        
+        motorX = new StepperPanel("X", 2, speedX, communicator);
+        positionPanel.add(motorX);
         
         positionPanel.add(Box.createVerticalStrut(20));
         
-        positionPanel.add(new JLabel("Set Y axis position"));
-        positionRequestY = new JSlider(JSlider.HORIZONTAL, 0, 1000, 0);
-        positionRequestY.addChangeListener(this);
-        positionPanel.add(positionRequestY);
-        positionPanel.add(new JLabel("Actual Y axis position"));
-        positionActualY = new JSlider(JSlider.HORIZONTAL, 0, 1000, 0);
-        positionActualY.setEnabled(false);
-        positionPanel.add(positionActualY);
+        motorY = new StepperPanel("Y", 3, speedY, communicator);
+        positionPanel.add(motorY);
         
         positionPanel.add(Box.createVerticalStrut(20));
         
-        positionPanel.add(new JLabel("Set Z axis position"));
-        positionRequestZ = new JSlider(JSlider.HORIZONTAL, 0, 1000, 0);
-        positionRequestZ.addChangeListener(this);
-        positionPanel.add(positionRequestZ);
-        positionPanel.add(new JLabel("Actual Z axis position"));
-        positionActualZ = new JSlider(JSlider.HORIZONTAL, 0, 1000, 0);
-        positionActualZ.setEnabled(false);
-        positionPanel.add(positionActualZ);
+        motorZ = new StepperPanel("Z", 4, speedZ, communicator);
+        positionPanel.add(motorZ);
 
         positionPanel.add(Box.createVerticalStrut(20));
        
@@ -134,42 +118,6 @@ public class Main implements ChangeListener {
         frame.pack();
         frame.setVisible(true);
     }
-	
-	protected void updatePositions()
-	{
-		try {
-			if (controller.isMovingX()) {
-				positionActualX.setValue(controller.getPositionX());
-				startUpdates();
-			}
-			if (controller.isMovingY()) {
-				positionActualY.setValue(controller.getPositionY());
-				startUpdates();
-			}
-			if (controller.isMovingZ()) {
-				positionActualZ.setValue(controller.getPositionZ());
-				startUpdates();
-			}
-		} catch (IOException ex) {
-			// Ignore these if they happen
-			System.out.println("Ignored IO exception in update");
-		}
-	}
-	
-	private void startUpdates()
-	{
-		if (!waiting && (controller.isMovingX() || controller.isMovingY() ||
-				controller.isMovingZ())) {
-			waiting = true;
-			TimerTask task = new TimerTask() {
-				public void run() {
-					waiting = false;
-					updatePositions();
-				}			
-			};
-			updateTimer.schedule(task, 200);
-		}
-	}
 	
 	public void stateChanged(ChangeEvent evt) {
 		try {
@@ -192,23 +140,17 @@ public class Main implements ChangeListener {
 							speedY.setValue(speedZ.getValue());
 						}
 					}
-					controller.updateSpeeds(speedX.getValue(),
-							speedY.getValue(), speedZ.getValue());
-				} else if (src == positionRequestX) {
-					controller.setPositionX(src.getValue());
-					startUpdates();
-				} else if (src == positionRequestY) {
-					controller.setPositionY(src.getValue());
-					startUpdates();
-				} else if (src == positionRequestZ) {
-					controller.setPositionZ(src.getValue());
-					startUpdates();
+					motorX.updateSpeed();
+					motorY.updateSpeed();
+					motorZ.updateSpeed();
 				}
 				
 			} else if (srcObj instanceof JCheckBox) {
 				JCheckBox src = (JCheckBox)srcObj;
-				if (src.isSelected())
+				if (src.isSelected()) {
 					speedY.setValue(speedX.getValue());
+					speedZ.setValue(speedZ.getValue());
+				}
 			}
 		} catch (Exception ex) {
     		JOptionPane.showMessageDialog(null, "Update exception: " + ex.getMessage());
@@ -224,7 +166,7 @@ public class Main implements ChangeListener {
 	                gui.createAndShowGUI();
             	}
             	catch (Exception ex) {
-            		JOptionPane.showMessageDialog(null, "General exception: " + ex.getMessage());
+            		JOptionPane.showMessageDialog(null, "General exception: " + ex);
             	}
             }
         });
