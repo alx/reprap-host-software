@@ -30,4 +30,14 @@ public class SNAPAddress implements Address {
 			return false;
 		return address == ((SNAPAddress)arg).address;
 	}
+
+	public byte[] getBinary() {
+		byte [] addr = new byte[1];
+		addr[0] = (byte)address;
+		return addr;
+	}
+
+	public Address getNullAddress() {
+		return new SNAPAddress(255);
+	}
 }

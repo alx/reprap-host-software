@@ -80,7 +80,6 @@ public class Main implements ChangeListener {
         speedZ.setPaintTicks(true);
         c.gridx = 2;
         panel.add(speedZ, c);
-
         
         lockXYZSpeed = new JCheckBox("Lock X/Y/Z speed", true);
         lockXYZSpeed.addChangeListener(this);
@@ -112,7 +111,7 @@ public class Main implements ChangeListener {
         c.gridx = 3;
         c.gridy = 0;
         c.gridwidth = 1;
-        c.gridheight = 4;
+        c.gridheight = 5;
         panel.add(positionPanel, c);
         
         frame.pack();
@@ -153,7 +152,7 @@ public class Main implements ChangeListener {
 				}
 			}
 		} catch (Exception ex) {
-    		JOptionPane.showMessageDialog(null, "Update exception: " + ex.getMessage());
+    		JOptionPane.showMessageDialog(null, "Update exception: " + ex);
 		}
 	}
 

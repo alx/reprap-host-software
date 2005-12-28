@@ -12,15 +12,19 @@ public abstract class IncomingIntMessage extends IncomingMessage {
 		super(incomingContext);
 	}
 
+	public static int ConvertBytesToInt(byte b1, byte b2) {
+		int low = b1;
+		int high = b2;
+	    if (low < 0) low += 256;
+	    if (high < 0) high += 256;
+	    return low + (high << 8);
+	}
+	
 	public int getValue() throws InvalidPayloadException {
 	    byte [] reply = getPayload();
 	    if (reply == null || reply.length != 3)
 	    	throw new InvalidPayloadException();
-	    int low = reply[1];
-	    int high = reply[2];
-	    if (low < 0) low += 256;
-	    if (high < 0) high += 256;
-	    return low + (high << 8);
+	    return ConvertBytesToInt(reply[1], reply[2]);
 	}
 	
 	abstract protected boolean isExpectedPacketType(byte packetType);

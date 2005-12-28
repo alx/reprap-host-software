@@ -9,8 +9,11 @@ import org.reprap.comms.Communicator;
 import org.reprap.comms.IncomingContext;
 import org.reprap.comms.OutgoingMessage;
 import org.reprap.comms.IncomingMessage;
+import org.reprap.comms.IncomingMessage.InvalidPayloadException;
 import org.reprap.comms.messages.IncomingIntMessage;
+import org.reprap.comms.messages.OutgoingAddressMessage;
 import org.reprap.comms.messages.OutgoingBlankMessage;
+import org.reprap.comms.messages.OutgoingByteMessage;
 import org.reprap.comms.messages.OutgoingIntMessage;
 
 public class GenericStepperMotor extends Device {
@@ -21,7 +24,13 @@ public class GenericStepperMotor extends Device {
 	public static final byte MSG_GetPosition = 4;
 	public static final byte MSG_Seek = 5;	
 	public static final byte MSG_SetIdle = 6;		
+	public static final byte MSG_SetNotification = 7;		
+	public static final byte MSG_SetSyncMode = 8;		
+	public static final byte MSG_Calibrate = 9;		
+	public static final byte MSG_GetRange = 10;		
 
+	private boolean haveSetNotification = false;
+	private boolean haveCalibrated = false;
 	
 	public GenericStepperMotor(Communicator communicator, Address address) {
 		super(communicator, address);
@@ -66,8 +75,41 @@ public class GenericStepperMotor extends Device {
 	}
 	
 	public synchronized void seek(int speed, int position) throws IOException {
+		//setNotification();
 		sendMessage(new RequestSeekPosition(speed, position));		
 	}
+
+	public Range getRange() throws IOException, InvalidPayloadException {
+		if (haveCalibrated) {
+			IncomingContext replyContext = sendMessage(
+					new OutgoingBlankMessage(MSG_GetRange));
+			RequestRangeResponse response = new RequestRangeResponse(replyContext);
+			return response.getRange();
+		} else {
+			setNotification();
+			IncomingContext replyContext = sendMessage(
+					new OutgoingByteMessage(MSG_Calibrate, (byte)200));
+			RequestRangeResponse response = new RequestRangeResponse(replyContext);
+			setNotificationOff();
+			return response.getRange();
+		}
+	}
+	
+	private void setNotification() throws IOException {
+		if (!haveSetNotification) {
+			sendMessage(new OutgoingAddressMessage(MSG_SetNotification,
+					getCommunicator().getAddress()));
+			haveSetNotification = true;
+		}
+	}
+
+	private void setNotificationOff() throws IOException {
+		if (haveSetNotification) {
+			sendMessage(new OutgoingAddressMessage(MSG_SetNotification, getAddress().getNullAddress()));
+			haveSetNotification = false;
+		}
+	}
+
 	
 	protected class RequestPositionResponse extends IncomingIntMessage {
 		public RequestPositionResponse(IncomingContext incomingContext) throws IOException {
@@ -137,5 +179,31 @@ public class GenericStepperMotor extends Device {
 		
 	}
 
+	protected class RequestRangeResponse extends IncomingIntMessage {
+		public RequestRangeResponse(IncomingContext incomingContext) throws IOException {
+			super(incomingContext);
+		}
+		protected boolean isExpectedPacketType(byte packetType) {
+			// We could get this either as an asynchronous notification
+			// from calibration or by explicit request
+			return packetType == MSG_GetRange || packetType == MSG_Calibrate; 
+		}
+		public Range getRange() throws InvalidPayloadException {
+		    byte [] reply = getPayload();
+		    if (reply == null || reply.length != 3)
+		    	throw new InvalidPayloadException("Unexpected payload getting range");
+		    Range r = new Range();
+		    r.minimum = 0;
+		    r.maximum = IncomingIntMessage.ConvertBytesToInt(reply[1], reply[2]);
+		    return r;
+		}
+
+	}
+
+	
+	public class Range {
+		public int minimum;
+		public int maximum;
+	}
 	
 }

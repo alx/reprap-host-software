@@ -59,5 +59,5 @@ public abstract class IncomingMessage {
 			return false;
 		}
 	}
-
+	
 }

@@ -13,4 +13,6 @@ public interface Communicator {
 	public void receiveMessage(IncomingMessage message) throws IOException;
 	
 	public void close();
+	
+	public Address getAddress();
 }

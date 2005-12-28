@@ -76,6 +76,7 @@ public class SNAPCommunicator implements Communicator {
 		SNAPPacket packet = null;
 		for(;;) {
 			int c = readStream.read();
+			//System.out.print(Integer.toHexString(c) + " ");
 			if (c == -1) throw new IOException();
 			if (packet == null) {
 				if (c != 0x54)  // Always wait for a sync byte before doing anything
@@ -85,6 +86,7 @@ public class SNAPCommunicator implements Communicator {
 			if (packet.receiveByte((byte)c)) {
 				// Packet is complete
 				if (packet.validate()) {
+					//System.out.println("");
 					return packet;
 				} else {
 					System.out.println("CRC error, NAKing");
@@ -118,7 +120,7 @@ public class SNAPCommunicator implements Communicator {
 	private boolean processPacket(IncomingMessage message, SNAPPacket packet) throws IOException {
 		// First ACK the message
 		if (packet.isAck()) {
-			System.out.println("Unexpected ACK received as message");
+			System.out.println("Unexpected ACK received instead of message, not supported yet");
 	  	  	return false;
 		}
 		/// TODO send ACKs
@@ -137,6 +139,13 @@ public class SNAPCommunicator implements Communicator {
 			return false;
 		}
 	}
+
+	public Address getAddress() {
+		return localAddress;
+	}
+	
+	// TODO make a background receiver thread.  It can keep a pool of async receive contexts and
+	// fire them off if anything matching arrives.
 	
 	// TODO Make a generic message receiver.  Use reflection to get correct class. 
 	
