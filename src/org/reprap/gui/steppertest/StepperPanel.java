@@ -21,6 +21,18 @@ import org.reprap.comms.Communicator;
 import org.reprap.comms.snap.SNAPAddress;
 import org.reprap.devices.GenericStepperMotor;
 
+/// TODO There is a bug in this app that can cause the stepper to skips some steps
+/// and lose its place.  This can occur if you slowly drag the position slider.  Multiple
+/// updates will be rapidly sent to the stepper telling it to change position. This
+/// will actually cause it to perform a step immediately on each request so it
+/// can cause steps to occur faster than they normally would.  If this happens
+/// too quickly, it will be beyond the safe torque speed and it will skip.  This
+/// should be resolved with a timer or something in the gui.  If an update just
+/// occurred the new one should not be sent immedidately.  Instead the event
+/// should be queued up and only send after a safe amount of time has elapsed.
+/// It still has to be sent eventually or else the motor will not go to the
+/// correct location represented in the gui.
+
 public class StepperPanel extends JPanel implements ChangeListener {
 
 	private static final long serialVersionUID = 6262697694879478425L;
