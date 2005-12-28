@@ -21,7 +21,7 @@ import org.reprap.comms.Communicator;
 import org.reprap.comms.snap.SNAPAddress;
 import org.reprap.devices.GenericStepperMotor;
 
-/// TODO There is a bug in this app that can cause the stepper to skips some steps
+/// TODO There is a bug in this app that can cause the stepper to skip some steps
 /// and lose its place.  This can occur if you slowly drag the position slider.  Multiple
 /// updates will be rapidly sent to the stepper telling it to change position. This
 /// will actually cause it to perform a step immediately on each request so it
@@ -30,8 +30,11 @@ import org.reprap.devices.GenericStepperMotor;
 /// should be resolved with a timer or something in the gui.  If an update just
 /// occurred the new one should not be sent immedidately.  Instead the event
 /// should be queued up and only send after a safe amount of time has elapsed.
-/// It still has to be sent eventually or else the motor will not go to the
-/// correct location represented in the gui.
+/// This would also allow multiple movement events to be coallesced into a single
+/// request if they occur very quickly.  It still has to be sent eventually
+/// or else the motor will not go to the correct location represented in the gui.
+/// One way to avoid this is for the short term to use keys instead of the mouse
+/// (eg pgup, pgdown) and don't press too quickly.
 
 public class StepperPanel extends JPanel implements ChangeListener {
 
@@ -109,7 +112,11 @@ public class StepperPanel extends JPanel implements ChangeListener {
         });
         add(torque, c);
 	}
-	
+
+	/**
+	 * Utility function to update the range display and 
+	 * slider end points
+	 */
 	private void updateRange() {
 		rangeLabel.setText(minValue + " to " + maxValue);
 		
@@ -118,12 +125,15 @@ public class StepperPanel extends JPanel implements ChangeListener {
 		positionActual.setMinimum(minValue);
 		positionActual.setMaximum(maxValue);
 		
-        int range = maxValue - minValue;
-        positionRequest.setMajorTickSpacing(range / 4);
-        positionRequest.setMinorTickSpacing(range / 20);
+        //int range = maxValue - minValue;
+        positionRequest.setMajorTickSpacing(400);  // A full circle
+        positionRequest.setMinorTickSpacing(50);   // 8ths of a circle
         positionRequest.setPaintTicks(true);
 	}
 
+	/**
+	 * Calibrate button handler
+	 */
 	protected void onCalibrate() {
 		try {
 			GenericStepperMotor.Range range = motor.getRange();
@@ -137,7 +147,10 @@ public class StepperPanel extends JPanel implements ChangeListener {
 			JOptionPane.showMessageDialog(null, "Problem during calibration: " + ex);
 		}
 	}
-	
+
+	/**
+	 * Callback when the torque checkbox is clicked
+	 */
 	protected void onTorqueUpdate()
 	{
 		try {
@@ -154,6 +167,9 @@ public class StepperPanel extends JPanel implements ChangeListener {
 			
 	}
 
+	/**
+	 * Callback when a slider is changed
+	 */
 	public void stateChanged(ChangeEvent evt) {
 		try {
 			Object srcObj = evt.getSource();
@@ -168,8 +184,11 @@ public class StepperPanel extends JPanel implements ChangeListener {
 		} 
 	}
 
+	/**
+	 * Queue a timer event for the near future
+	 */
 	private void startUpdates() {
-		if (!waiting && moving) {
+		if (!waiting && moving) {    // If there is already one, don't create another
 			waiting = true;
 			TimerTask task = new TimerTask() {
 				public void run() {
@@ -180,7 +199,10 @@ public class StepperPanel extends JPanel implements ChangeListener {
 			updateTimer.schedule(task, 200);
 		}
 	}
-	
+
+	/**
+	 * Request the current position and display it
+	 */
 	private void setDisplayPosition() throws IOException {
 		int position = motor.getPosition();
 		positionActual.setValue(position);
@@ -188,6 +210,10 @@ public class StepperPanel extends JPanel implements ChangeListener {
 			moving = false;
 	}	
 
+	/**
+	 * Called when the slider is moved to seek the motor
+	 * @throws IOException
+	 */
 	private void seekToSelectedPosition() throws IOException {
 		motor.seek(externalSpeedSlider.getValue(), positionRequest.getValue());
 		torque.setSelected(true);
@@ -195,16 +221,27 @@ public class StepperPanel extends JPanel implements ChangeListener {
 		startUpdates();
 	}
 
+	/**
+	 * Called when the speed slider is changed
+	 * @throws IOException
+	 */
 	public void updateSpeed() throws IOException {
+		// If we're not moving, changing the speed does nothing.
+		// Otherwise, we just re-seek to the current position
+		// with the new speed for it to take effect.
 		if (moving)
 			seekToSelectedPosition();
 	}
 
+	/**
+	 * This method is called on the timer event to get the current
+	 * position and display it.
+	 */
 	protected void updatePosition()
 	{
 		try {
 			setDisplayPosition();
-			if (moving)
+			if (moving)  // If we're moving, start another timer
 				startUpdates();
 		} catch (IOException ex) {
 			// Ignore these if they happen
