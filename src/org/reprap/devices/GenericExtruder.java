@@ -1,5 +1,7 @@
 package org.reprap.devices;
 
+import java.io.IOException;
+
 import org.reprap.Device;
 import org.reprap.comms.Address;
 import org.reprap.comms.Communicator;
@@ -14,9 +16,10 @@ public class GenericExtruder extends Device {
 		super(communicator, address);
 	}
 
-	public void setExtrusion(boolean active) {
+	public void setExtrusion(boolean active) throws IOException {
 		OutgoingMessage request =
 			new OutgoingByteMessage(MSG_SetActive, (byte)(active?1:0));
+		sendMessage(request);
 	}
 	
 }
