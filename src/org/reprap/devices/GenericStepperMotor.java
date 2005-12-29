@@ -27,8 +27,14 @@ public class GenericStepperMotor extends Device {
 	public static final byte MSG_SetNotification = 7;		
 	public static final byte MSG_SetSyncMode = 8;		
 	public static final byte MSG_Calibrate = 9;		
-	public static final byte MSG_GetRange = 10;		
+	public static final byte MSG_GetRange = 10;
+	public static final byte MSG_DDAMaster = 11;
 
+	public static final byte SYNC_NONE = 0;
+	public static final byte SYNC_SEEK = 1;
+	public static final byte SYNC_INC = 2;
+	public static final byte SYNC_DEC = 3;
+	
 	private boolean haveSetNotification = false;
 	private boolean haveCalibrated = false;
 	
@@ -95,6 +101,23 @@ public class GenericStepperMotor extends Device {
 		}
 	}
 	
+	public void setSync(byte syncType) throws IOException {
+		sendMessage(
+				new OutgoingByteMessage(MSG_SetSyncMode, syncType));
+		
+	}
+	
+	public void dda(int speed, int x1, int deltaY) throws IOException {
+		setNotification();
+		
+		IncomingContext replyContext = sendMessage(
+				new RequestDDAMaster(speed, x1, deltaY));
+		
+		RequestDDAMasterResponse response = new RequestDDAMasterResponse(replyContext);
+		
+		setNotificationOff();
+	}
+	
 	private void setNotification() throws IOException {
 		if (!haveSetNotification) {
 			sendMessage(new OutgoingAddressMessage(MSG_SetNotification,
@@ -120,13 +143,13 @@ public class GenericStepperMotor extends Device {
 			return packetType == MSG_GetPosition; 
 		}
 	}
-	
+
 	protected class RequestSetPosition extends OutgoingIntMessage {
 		public RequestSetPosition(int position) {
 			super(MSG_SetPosition, position);
 		}
 	}
-	
+
 	protected class RequestSetSpeed extends OutgoingMessage {
 
 		byte [] message;
@@ -179,6 +202,34 @@ public class GenericStepperMotor extends Device {
 		
 	}
 
+	protected class RequestDDAMaster extends OutgoingMessage {
+		byte [] message;
+		RequestDDAMaster(int speed, int x1, int deltaY) {
+			message = new byte[] { MSG_DDAMaster,
+					(byte)speed,
+					(byte)(x1 & 0xff),
+					(byte)((x1 >> 8) & 0xff),
+					(byte)(deltaY & 0xff),
+					(byte)((deltaY >> 8) & 0xff)
+				};
+		}
+		
+		public byte[] getBinary() {
+			return message;
+		}
+		
+	}
+
+	protected class RequestDDAMasterResponse extends IncomingIntMessage {
+		public RequestDDAMasterResponse(IncomingContext incomingContext) throws IOException {
+			super(incomingContext);
+		}
+		
+		protected boolean isExpectedPacketType(byte packetType) {
+			return packetType == MSG_DDAMaster;
+		}
+	}
+	
 	protected class RequestRangeResponse extends IncomingIntMessage {
 		public RequestRangeResponse(IncomingContext incomingContext) throws IOException {
 			super(incomingContext);
@@ -199,7 +250,6 @@ public class GenericStepperMotor extends Device {
 		}
 
 	}
-
 	
 	public class Range {
 		public int minimum;
