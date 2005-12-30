@@ -190,12 +190,10 @@ public class StepperPanel extends JPanel implements ChangeListener {
 	 * Queue a timer event for the near future
 	 */
 	private void startUpdates() {
-		System.out.println("startUpdated called");
 		if (!waiting && (moving || monitoring)) {    // If there is already one, don't create another
 			waiting = true;
 			TimerTask task = new TimerTask() {
 				public void run() {
-					System.out.println("timer completed");
 					waiting = false;
 					updatePosition();
 				}			
@@ -246,8 +244,6 @@ public class StepperPanel extends JPanel implements ChangeListener {
 	protected void updatePosition()
 	{
 		try {
-			System.out.println("updatePosition called");
-
 			setDisplayPosition();
 			if (moving || monitoring)  // If we're moving, start another timer
 				startUpdates();

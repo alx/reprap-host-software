@@ -78,7 +78,6 @@ public class ShapePanel extends JPanel {
 		Thread t = new Thread() {
 			public void run() {
 				try {
-					System.out.println("Thread started");
 					GenericStepperMotor smx = motorX.getMotor();
 					GenericStepperMotor smy = motorY.getMotor();
 					
@@ -94,7 +93,6 @@ public class ShapePanel extends JPanel {
 					//motorX.monitor(true);
 					//motorY.monitor(true);
 					lp.PrintLine(x0val, y0val, x1val, y1val, speed.getValue(), speed.getValue());
-					System.out.println("Thread finished");
 				}
 				catch (Exception ex) {
 					ex.printStackTrace();
