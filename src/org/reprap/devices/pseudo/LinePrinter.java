@@ -56,10 +56,10 @@ public class LinePrinter {
 		int deltaY = Math.abs(y1 - y0); 
 		int deltaX = Math.abs(x1 - x0); 
 		
-		master.seek(movementSpeed, x0);
-		slave.seek(movementSpeed, y0);
+		master.seekBlocking(movementSpeed, x0);
+		slave.seekBlocking(movementSpeed, y0);
 		
-		/// TODO Wait for both motors to arrive
+		/// TODO Both should seek independently and just wait for both to complete
 		
 		/// TODO Start extruding
 		master.dda(movementSpeed, x1, deltaY);

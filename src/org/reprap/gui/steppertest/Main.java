@@ -19,6 +19,8 @@ public class Main implements ChangeListener {
 
 	private final int intialSpeed = 200;
 	
+	private ShapePanel shapePanel;
+	
 	JSlider speedX, speedY, speedZ;
 	JCheckBox lockXYZSpeed;
 	
@@ -114,6 +116,12 @@ public class Main implements ChangeListener {
         c.gridheight = 5;
         panel.add(positionPanel, c);
         
+        c.gridx = 0;
+        c.gridy = 5;
+        c.gridwidth = 4;
+        shapePanel = new ShapePanel(speedX, motorX, motorZ);
+        panel.add(shapePanel, c);
+        
         frame.pack();
         frame.setVisible(true);
     }
@@ -153,6 +161,7 @@ public class Main implements ChangeListener {
 			}
 		} catch (Exception ex) {
     		JOptionPane.showMessageDialog(null, "Update exception: " + ex);
+			ex.printStackTrace();
 		}
 	}
 
@@ -166,6 +175,7 @@ public class Main implements ChangeListener {
             	}
             	catch (Exception ex) {
             		JOptionPane.showMessageDialog(null, "General exception: " + ex);
+        			ex.printStackTrace();
             	}
             }
         });

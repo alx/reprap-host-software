@@ -81,8 +81,14 @@ public class GenericStepperMotor extends Device {
 	}
 	
 	public synchronized void seek(int speed, int position) throws IOException {
-		//setNotification();
 		sendMessage(new RequestSeekPosition(speed, position));		
+	}
+
+	public synchronized void seekBlocking(int speed, int position) throws IOException {
+		setNotification();
+		IncomingContext replyContext = sendMessage(new RequestSeekPosition(speed, position));
+		RequestSeekResponse reply = new RequestSeekResponse(replyContext);
+		setNotificationOff();
 	}
 
 	public Range getRange() throws IOException, InvalidPayloadException {
@@ -144,6 +150,16 @@ public class GenericStepperMotor extends Device {
 		}
 	}
 
+	protected class RequestSeekResponse extends IncomingIntMessage {
+		public RequestSeekResponse(IncomingContext incomingContext) throws IOException {
+			super(incomingContext);
+		}
+		
+		protected boolean isExpectedPacketType(byte packetType) {
+			return packetType == MSG_Seek; 
+		}
+	}
+	
 	protected class RequestSetPosition extends OutgoingIntMessage {
 		public RequestSetPosition(int position) {
 			super(MSG_SetPosition, position);

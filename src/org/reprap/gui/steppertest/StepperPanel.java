@@ -57,6 +57,8 @@ public class StepperPanel extends JPanel implements ChangeListener {
 	private int minValue = 0;
 	private int maxValue = 1000;
 	
+	private boolean monitoring = false;
+	
 	public StepperPanel(String name, int address, JSlider externalSpeedSlider, Communicator communicator) {
 		super();
 		
@@ -188,10 +190,12 @@ public class StepperPanel extends JPanel implements ChangeListener {
 	 * Queue a timer event for the near future
 	 */
 	private void startUpdates() {
-		if (!waiting && moving) {    // If there is already one, don't create another
+		System.out.println("startUpdated called");
+		if (!waiting && (moving || monitoring)) {    // If there is already one, don't create another
 			waiting = true;
 			TimerTask task = new TimerTask() {
 				public void run() {
+					System.out.println("timer completed");
 					waiting = false;
 					updatePosition();
 				}			
@@ -205,6 +209,8 @@ public class StepperPanel extends JPanel implements ChangeListener {
 	 */
 	private void setDisplayPosition() throws IOException {
 		int position = motor.getPosition();
+		if (monitoring)
+			positionRequest.setValue(position);
 		positionActual.setValue(position);
 		if (position == positionRequest.getValue())
 			moving = false;
@@ -240,8 +246,10 @@ public class StepperPanel extends JPanel implements ChangeListener {
 	protected void updatePosition()
 	{
 		try {
+			System.out.println("updatePosition called");
+
 			setDisplayPosition();
-			if (moving)  // If we're moving, start another timer
+			if (moving || monitoring)  // If we're moving, start another timer
 				startUpdates();
 		} catch (IOException ex) {
 			// Ignore these if they happen
@@ -249,4 +257,21 @@ public class StepperPanel extends JPanel implements ChangeListener {
 		}
 	}
 
+	/**
+	 * @return Returns the motor.
+	 */
+	public GenericStepperMotor getMotor() {
+		return motor;
+	}
+
+	public void monitor(boolean enable) {
+		monitoring = enable;
+		if (monitoring)
+			startUpdates();
+			
+	}
+	
+	public void setMoved() {
+		torque.setSelected(true);
+	}
 }
