@@ -138,13 +138,14 @@ public class StepperPanel extends JPanel implements ChangeListener {
 	 */
 	protected void onCalibrate() {
 		try {
-			GenericStepperMotor.Range range = motor.getRange();
+			GenericStepperMotor.Range range = motor.getRange(externalSpeedSlider.getValue());
 			minValue = range.minimum;
 			maxValue = range.maximum;
 			// We could re-request current position, but for now we know
 			// that we're at the max position, so update to reflect this
-			positionRequest.setValue(maxValue);
+			moving = false;
 			updateRange();
+			positionRequest.setValue(maxValue);
 		} catch (Exception ex) {
 			JOptionPane.showMessageDialog(null, "Problem during calibration: " + ex);
 		}
