@@ -91,7 +91,7 @@ public class GenericStepperMotor extends Device {
 		setNotificationOff();
 	}
 
-	public Range getRange() throws IOException, InvalidPayloadException {
+	public Range getRange(int speed) throws IOException, InvalidPayloadException {
 		if (haveCalibrated) {
 			IncomingContext replyContext = sendMessage(
 					new OutgoingBlankMessage(MSG_GetRange));
@@ -100,7 +100,7 @@ public class GenericStepperMotor extends Device {
 		} else {
 			setNotification();
 			IncomingContext replyContext = sendMessage(
-					new OutgoingByteMessage(MSG_Calibrate, (byte)200));
+					new OutgoingByteMessage(MSG_Calibrate, (byte)speed));
 			RequestRangeResponse response = new RequestRangeResponse(replyContext);
 			setNotificationOff();
 			return response.getRange();
