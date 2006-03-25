@@ -2,6 +2,8 @@ package org.reprap.steppertestgui;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.net.URL;
+import java.util.Properties;
 
 import javax.swing.*;
 import javax.swing.event.ChangeEvent;
@@ -15,7 +17,7 @@ public class Main implements ChangeListener {
 
 	private final int localNodeNumber = 0;
 	private final int baudRate = 19200;
-	private final String commPortName = "1";  // Use "0" on linux, "COM1" on Windows, etc
+	private final String commPortName;
 
 	private final int intialSpeed = 200;
 	
@@ -29,6 +31,11 @@ public class Main implements ChangeListener {
 	Communicator communicator;
 	
 	private Main() throws Exception {
+		Properties props = new Properties();
+		URL url = ClassLoader.getSystemResource("reprap.properties");
+		props.load(url.openStream());
+		commPortName = props.getProperty("Port");
+		
 		SNAPAddress myAddress = new SNAPAddress(localNodeNumber); 
 		communicator = new SNAPCommunicator(commPortName, baudRate, myAddress);
 	}
