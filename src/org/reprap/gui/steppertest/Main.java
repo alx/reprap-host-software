@@ -30,7 +30,7 @@ public class Main implements ChangeListener {
 	
 	Communicator communicator;
 	
-	private Main() throws Exception {
+	public Main() throws Exception {
 		Properties props = new Properties();
 		URL url = ClassLoader.getSystemResource("reprap.properties");
 		props.load(url.openStream());
@@ -40,10 +40,14 @@ public class Main implements ChangeListener {
 		communicator = new SNAPCommunicator(commPortName, baudRate, myAddress);
 	}
 	
-	private void createAndShowGUI() {
-        JFrame.setDefaultLookAndFeelDecorated(true);
-        JFrame frame = new JFrame("Stepper Exerciser");
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	public void createAndShowGUI(boolean terminateOnClose) {
+        JFrame.setDefaultLookAndFeelDecorated(false);
+        JFrame frame = new JFrame("Stepper Exerciser") {
+        	  public void dispose() {
+        	  	communicator.close();
+        	  }
+        };
+        frame.setDefaultCloseOperation(terminateOnClose?JFrame.EXIT_ON_CLOSE:JFrame.DISPOSE_ON_CLOSE);
 
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
@@ -178,7 +182,7 @@ public class Main implements ChangeListener {
             public void run() {
             	try {
 	        		Main gui = new Main();
-	                gui.createAndShowGUI();
+	                gui.createAndShowGUI(true);
             	}
             	catch (Exception ex) {
             		JOptionPane.showMessageDialog(null, "General exception: " + ex);
