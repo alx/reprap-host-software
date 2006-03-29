@@ -11,6 +11,7 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
@@ -28,9 +29,6 @@ public class Main {
         JFrame frame = new JFrame("RepRap");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-        JPanel panel = new JPanel(new GridBagLayout());
-        GridBagConstraints c = new GridBagConstraints();
-       
         JMenuBar menubar = new JMenuBar();
         JMenu fileMenu = new JMenu("File");
         fileMenu.setMnemonic(KeyEvent.VK_F);
@@ -59,7 +57,6 @@ public class Main {
         menubar.add(toolsMenu);
         
         JMenuItem toolsExerciser = new JMenuItem("Stepper exerciser", KeyEvent.VK_S);
-        toolsExerciser.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.ALT_MASK));
         toolsExerciser.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				try {
@@ -72,10 +69,21 @@ public class Main {
              	}
 			}});
         toolsMenu.add(toolsExerciser);
+
+        JPanel panel = new JPanel(new GridBagLayout());
+        GridBagConstraints c = new GridBagConstraints();
+
+        c.ipadx = 50;
+        c.ipady = 50;
+        panel.add(new JLabel("3D progress window will go here"), c);
         
         frame.getContentPane().add(panel);
-       
+
+
+        
         frame.setJMenuBar(menubar);
+        
+
         
         frame.pack();
         frame.setVisible(true);
