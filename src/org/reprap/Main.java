@@ -34,7 +34,7 @@ public class Main {
         fileMenu.setMnemonic(KeyEvent.VK_F);
         menubar.add(fileMenu);
         
-        JMenuItem fileOpen = new JMenuItem("Open", KeyEvent.VK_O);
+        JMenuItem fileOpen = new JMenuItem("Open...", KeyEvent.VK_O);
         fileOpen.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_O, ActionEvent.CTRL_MASK));
         fileOpen.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -69,6 +69,11 @@ public class Main {
              	}
 			}});
         toolsMenu.add(toolsExerciser);
+        
+        JMenu diagnosticsMenu = new JMenu("Diagnostics");
+        toolsMenu.add(diagnosticsMenu);
+        JMenuItem diagnosticsCommsTest = new JMenuItem("Basic comms test");
+        diagnosticsMenu.add(diagnosticsCommsTest);
 
         JPanel panel = new JPanel(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
