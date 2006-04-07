@@ -19,6 +19,8 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.KeyStroke;
 
+import org.reprap.gui.Preferences;
+
 public class Main {
 
 	public Main() {
@@ -26,7 +28,7 @@ public class Main {
 
 	private void createAndShowGUI() {
         JFrame.setDefaultLookAndFeelDecorated(false);
-        JFrame frame = new JFrame("RepRap");
+        final JFrame frame = new JFrame("RepRap");
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
         JMenuBar menubar = new JMenuBar();
@@ -41,6 +43,25 @@ public class Main {
 				JOptionPane.showMessageDialog(null, "Open not implemented yet");
 			}});
         fileMenu.add(fileOpen);
+        
+        JMenuItem fileProduce = new JMenuItem("Produce...", KeyEvent.VK_P);
+        fileProduce.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.CTRL_MASK));
+        fileProduce.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				JOptionPane.showMessageDialog(null, "Produce not implemented yet");
+			}});
+        fileMenu.add(fileProduce);
+
+        fileMenu.addSeparator();
+
+        JMenuItem filePrefs = new JMenuItem("Preferences...", KeyEvent.VK_R);
+        filePrefs.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				Preferences prefs = new Preferences(frame);
+				prefs.show();
+			}});
+        fileMenu.add(filePrefs);
+
         
         fileMenu.addSeparator();
 
@@ -83,16 +104,12 @@ public class Main {
         panel.add(new JLabel("3D progress window will go here"), c);
         
         frame.getContentPane().add(panel);
-
-
         
         frame.setJMenuBar(menubar);
         
-
-        
         frame.pack();
         frame.setVisible(true);
-
+        
 	}
 	
 	public static void main(String[] args) {
