@@ -2,6 +2,7 @@ package org.reprap.steppertestgui;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.io.IOException;
 import java.net.URL;
 import java.util.Properties;
 
@@ -40,7 +41,7 @@ public class Main implements ChangeListener {
 		communicator = new SNAPCommunicator(commPortName, baudRate, myAddress);
 	}
 	
-	public void createAndShowGUI(boolean terminateOnClose) {
+	public void createAndShowGUI(boolean terminateOnClose) throws IOException {
         JFrame.setDefaultLookAndFeelDecorated(false);
         JFrame frame = new JFrame("Stepper Exerciser") {
         	  public void dispose() {
@@ -106,17 +107,17 @@ public class Main implements ChangeListener {
 
         positionPanel.add(Box.createVerticalStrut(20));
         
-        motorX = new StepperPanel("X", 2, speedX, communicator);
+        motorX = new StepperPanel("X", 1, speedX, communicator);
         positionPanel.add(motorX);
         
         positionPanel.add(Box.createVerticalStrut(20));
         
-        motorY = new StepperPanel("Y", 3, speedY, communicator);
+        motorY = new StepperPanel("Y", 2, speedY, communicator);
         positionPanel.add(motorY);
         
         positionPanel.add(Box.createVerticalStrut(20));
         
-        motorZ = new StepperPanel("Z", 4, speedZ, communicator);
+        motorZ = new StepperPanel("Z", 3, speedZ, communicator);
         positionPanel.add(motorZ);
 
         positionPanel.add(Box.createVerticalStrut(20));

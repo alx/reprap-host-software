@@ -29,19 +29,31 @@ public class GenericStepperMotor extends Device {
 	public static final byte MSG_Calibrate = 9;		
 	public static final byte MSG_GetRange = 10;
 	public static final byte MSG_DDAMaster = 11;
+	public static final byte MSG_SetPower = 14;
 
 	public static final byte SYNC_NONE = 0;
 	public static final byte SYNC_SEEK = 1;
 	public static final byte SYNC_INC = 2;
 	public static final byte SYNC_DEC = 3;
 	
+	private boolean haveInitialised = false;
 	private boolean haveSetNotification = false;
 	private boolean haveCalibrated = false;
 	
-	public GenericStepperMotor(Communicator communicator, Address address) {
+	private int maxTorque; ///< Power output limiting (0-100 percent)
+	
+	public GenericStepperMotor(Communicator communicator, Address address, int maxTorque) {
 		super(communicator, address);
+		this.maxTorque = maxTorque;
 	}
 
+	private void initialiseIfNeeded() throws IOException {
+		if (!haveInitialised) {
+			haveInitialised = true;
+			setMaxTorque(maxTorque);
+		}
+	}
+	
 	/**
 	 * Set the motor speed (or turn it off) 
 	 * @param speed A value between -255 and 255.
@@ -49,11 +61,13 @@ public class GenericStepperMotor extends Device {
 	 * @throws IOException
 	 */
 	public synchronized void setSpeed(int speed) throws ReprapException, IOException {
+		initialiseIfNeeded();
 		OutgoingMessage request = new RequestSetSpeed(speed);
 		sendMessage(request);
 	}
 
 	public synchronized void setIdle() throws IOException {
+		initialiseIfNeeded();
 		OutgoingMessage request = new RequestSetSpeed();
 		sendMessage(request);
 	}
@@ -63,10 +77,12 @@ public class GenericStepperMotor extends Device {
 	}
 	
 	public synchronized void setPosition(int position) throws IOException {
+		initialiseIfNeeded();
 		sendMessage(new RequestSetPosition(position));
 	}
 	
 	public synchronized int getPosition() throws IOException {
+		initialiseIfNeeded();
 		IncomingContext replyContext = sendMessage(
 				new OutgoingBlankMessage(MSG_GetPosition));
 		
@@ -81,10 +97,12 @@ public class GenericStepperMotor extends Device {
 	}
 	
 	public synchronized void seek(int speed, int position) throws IOException {
+		initialiseIfNeeded()	;
 		sendMessage(new RequestSeekPosition(speed, position));		
 	}
 
 	public synchronized void seekBlocking(int speed, int position) throws IOException {
+		initialiseIfNeeded();
 		setNotification();
 		IncomingContext replyContext = sendMessage(new RequestSeekPosition(speed, position));
 		RequestSeekResponse reply = new RequestSeekResponse(replyContext);
@@ -92,6 +110,7 @@ public class GenericStepperMotor extends Device {
 	}
 
 	public Range getRange(int speed) throws IOException, InvalidPayloadException {
+		initialiseIfNeeded()	;
 		if (haveCalibrated) {
 			IncomingContext replyContext = sendMessage(
 					new OutgoingBlankMessage(MSG_GetRange));
@@ -108,12 +127,14 @@ public class GenericStepperMotor extends Device {
 	}
 	
 	public void setSync(byte syncType) throws IOException {
+		initialiseIfNeeded()	;
 		sendMessage(
 				new OutgoingByteMessage(MSG_SetSyncMode, syncType));
 		
 	}
 	
 	public void dda(int speed, int x1, int deltaY) throws IOException {
+		initialiseIfNeeded()	;
 		setNotification();
 		
 		IncomingContext replyContext = sendMessage(
@@ -125,6 +146,7 @@ public class GenericStepperMotor extends Device {
 	}
 	
 	private void setNotification() throws IOException {
+		initialiseIfNeeded()	;
 		if (!haveSetNotification) {
 			sendMessage(new OutgoingAddressMessage(MSG_SetNotification,
 					getCommunicator().getAddress()));
@@ -133,12 +155,28 @@ public class GenericStepperMotor extends Device {
 	}
 
 	private void setNotificationOff() throws IOException {
+		initialiseIfNeeded()	;
 		if (haveSetNotification) {
 			sendMessage(new OutgoingAddressMessage(MSG_SetNotification, getAddress().getNullAddress()));
 			haveSetNotification = false;
 		}
 	}
 
+	/**
+	 * 
+	 * @param maxTorque An integer value 0 to 100 representing the maximum torque percentage
+	 * @throws IOException
+	 */
+	public void setMaxTorque(int maxTorque) throws IOException {
+		initialiseIfNeeded()	;
+		if (maxTorque > 100) maxTorque = 100;
+		double power = (double)maxTorque * 68.0 / 100.0;
+		byte scaledPower = (byte)power;
+		sendMessage(
+				new OutgoingByteMessage(MSG_SetPower, scaledPower));
+		
+	}
+	
 	
 	protected class RequestPositionResponse extends IncomingIntMessage {
 		public RequestPositionResponse(IncomingContext incomingContext) throws IOException {
