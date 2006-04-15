@@ -7,4 +7,6 @@ public interface Address {
 	public byte [] getBinary();
 
 	public Address getNullAddress();
+	
+	public String toString();
 }

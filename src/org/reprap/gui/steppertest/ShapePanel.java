@@ -39,8 +39,8 @@ public class ShapePanel extends JPanel {
 
         x0.setText("50");
         y0.setText("50");
-        x1.setText("100");
-        y1.setText("75");
+        x1.setText("3000");
+        y1.setText("1000");
         
         
         c.gridx = 0;

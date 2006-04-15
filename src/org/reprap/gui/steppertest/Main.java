@@ -20,7 +20,7 @@ public class Main implements ChangeListener {
 	private final int baudRate = 19200;
 	private final String commPortName;
 
-	private final int intialSpeed = 200;
+	private final int intialSpeed = 230;
 	
 	private ShapePanel shapePanel;
 	
@@ -131,7 +131,7 @@ public class Main implements ChangeListener {
         c.gridx = 0;
         c.gridy = 5;
         c.gridwidth = 4;
-        shapePanel = new ShapePanel(speedX, motorX, motorZ);
+        shapePanel = new ShapePanel(speedX, motorX, motorY);
         panel.add(shapePanel, c);
         
         frame.pack();

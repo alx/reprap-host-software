@@ -3,6 +3,8 @@ package org.reprap.comms.snap;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.net.URL;
+import java.util.Properties;
 
 import javax.comm.CommPortIdentifier;
 import javax.comm.NoSuchPortException;
@@ -25,6 +27,8 @@ public class SNAPCommunicator implements Communicator {
 	private OutputStream writeStream;
 	private InputStream readStream;
 	
+	private boolean debugMode;
+	
 	public SNAPCommunicator(String portName, int baudRate, Address localAddress)
 			throws NoSuchPortException, PortInUseException, IOException, UnsupportedCommOperationException {
 		this.localAddress = localAddress;
@@ -39,6 +43,17 @@ public class SNAPCommunicator implements Communicator {
 		
 		writeStream = port.getOutputStream();
 		readStream = port.getInputStream();
+		
+		try {
+			// Try to load debug setting from properties file
+			Properties props = new Properties();
+			URL url = ClassLoader.getSystemResource("reprap.properties");
+			props.load(url.openStream());
+			debugMode = Boolean.valueOf(props.getProperty("CommsDebug")).booleanValue();
+		} catch (Exception ex) {
+			// Fall back to non-debug mode if no setting is available
+			debugMode = false;
+		}
 	}
 	
 	public void close()
@@ -49,11 +64,22 @@ public class SNAPCommunicator implements Communicator {
 	public IncomingContext sendMessage(Device device,
 			OutgoingMessage messageToSend) throws IOException {
 		
+		byte [] binaryMessage = messageToSend.getBinary(); 
 		SNAPPacket packet = new SNAPPacket((SNAPAddress)localAddress,
 				(SNAPAddress)device.getAddress(),
-				messageToSend.getBinary());
+				binaryMessage);
 
 		for(;;) {
+			if (debugMode) {
+				System.out.print("TX ");
+				System.out.print(localAddress.toString());
+				System.out.print("->");
+				System.out.print(device.getAddress().toString());
+				System.out.print(": ");
+				for(int i = 0; i < binaryMessage.length; i++)
+					System.out.print(Integer.toHexString((int)binaryMessage[i]) + " ");
+				System.out.println("");
+			}
 			sendRawMessage(packet);
 
 			SNAPPacket ackPacket = receivePacket();
@@ -74,9 +100,10 @@ public class SNAPCommunicator implements Communicator {
 
 	protected synchronized SNAPPacket receivePacket() throws IOException {
 		SNAPPacket packet = null;
+		if (debugMode) System.out.print("RX ");
 		for(;;) {
 			int c = readStream.read();
-			//System.out.print(Integer.toHexString(c) + " ");
+			if (debugMode) System.out.print(Integer.toHexString(c) + " ");
 			if (c == -1) throw new IOException();
 			if (packet == null) {
 				if (c != 0x54)  // Always wait for a sync byte before doing anything
@@ -86,7 +113,7 @@ public class SNAPCommunicator implements Communicator {
 			if (packet.receiveByte((byte)c)) {
 				// Packet is complete
 				if (packet.validate()) {
-					//System.out.println("");
+					if (debugMode) System.out.println("");
 					return packet;
 				} else {
 					System.out.println("CRC error, NAKing");

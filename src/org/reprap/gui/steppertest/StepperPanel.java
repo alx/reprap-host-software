@@ -57,7 +57,7 @@ public class StepperPanel extends JPanel implements ChangeListener {
 	private Timer updateTimer;
 	
 	private int minValue = 0;
-	private int maxValue = 1000;
+	private int maxValue = 30000;
 	
 	private boolean monitoring = false;
 	
@@ -136,8 +136,8 @@ public class StepperPanel extends JPanel implements ChangeListener {
 		positionActual.setMaximum(maxValue);
 		
         //int range = maxValue - minValue;
-        positionRequest.setMajorTickSpacing(400);  // A full circle
-        positionRequest.setMinorTickSpacing(50);   // 8ths of a circle
+        positionRequest.setMajorTickSpacing(4000);  // Ten circles
+        positionRequest.setMinorTickSpacing(400);   // A full circle
         positionRequest.setPaintTicks(true);
 	}
 

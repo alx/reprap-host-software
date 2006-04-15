@@ -40,4 +40,8 @@ public class SNAPAddress implements Address {
 	public Address getNullAddress() {
 		return new SNAPAddress(255);
 	}
+	
+	public String toString() {
+		return Integer.toString(address);
+	}
 }
