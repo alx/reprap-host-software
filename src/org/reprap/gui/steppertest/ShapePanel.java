@@ -11,6 +11,7 @@ import javax.swing.JPanel;
 import javax.swing.JSlider;
 import javax.swing.JTextField;
 
+import org.reprap.devices.GenericExtruder;
 import org.reprap.devices.GenericStepperMotor;
 import org.reprap.devices.pseudo.LinePrinter;
 
@@ -18,15 +19,17 @@ public class ShapePanel extends JPanel {
 
 	private JTextField x0, x1, y0, y1;
 	
-	StepperPanel motorX, motorY;
-	JSlider speed;
+	private StepperPanel motorX, motorY;
+	private JSlider speed;
+	private GenericExtruder extruder;
 	
-	public ShapePanel(JSlider speed, StepperPanel motorX, StepperPanel motorY) {
+	public ShapePanel(JSlider speed, StepperPanel motorX, StepperPanel motorY, GenericExtruder extruder) {
 		super();
 
 		this.speed = speed;
 		this.motorX = motorX;
 		this.motorY = motorY;
+		this.extruder = extruder;
 		
         setLayout(new GridBagLayout());
         GridBagConstraints c = new GridBagConstraints();
@@ -81,7 +84,7 @@ public class ShapePanel extends JPanel {
 					GenericStepperMotor smx = motorX.getMotor();
 					GenericStepperMotor smy = motorY.getMotor();
 					
-					LinePrinter lp = new LinePrinter(smx, smy);
+					LinePrinter lp = new LinePrinter(smx, smy, extruder);
 					
 					int x0val = Integer.parseInt(x0.getText());
 					int y0val = Integer.parseInt(y0.getText());

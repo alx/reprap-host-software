@@ -13,6 +13,7 @@ import javax.swing.event.ChangeListener;
 import org.reprap.comms.Communicator;
 import org.reprap.comms.snap.SNAPAddress;
 import org.reprap.comms.snap.SNAPCommunicator;
+import org.reprap.devices.GenericExtruder;
 
 public class Main implements ChangeListener {
 
@@ -22,12 +23,14 @@ public class Main implements ChangeListener {
 
 	private final int intialSpeed = 230;
 	
-	private ShapePanel shapePanel;
+	//private ShapePanel shapePanel;
+	private ExtruderPanel extruderPanel;
 	
 	JSlider speedX, speedY, speedZ;
 	JCheckBox lockXYZSpeed;
 	
 	StepperPanel motorX, motorY, motorZ;
+	GenericExtruder extruder;
 	
 	Communicator communicator;
 	
@@ -39,6 +42,8 @@ public class Main implements ChangeListener {
 		
 		SNAPAddress myAddress = new SNAPAddress(localNodeNumber); 
 		communicator = new SNAPCommunicator(commPortName, baudRate, myAddress);
+		
+		extruder = new GenericExtruder(communicator, new SNAPAddress(props.getProperty("Extruder1Address")));
 	}
 	
 	public void createAndShowGUI(boolean terminateOnClose) throws IOException {
@@ -131,8 +136,8 @@ public class Main implements ChangeListener {
         c.gridx = 0;
         c.gridy = 5;
         c.gridwidth = 4;
-        shapePanel = new ShapePanel(speedX, motorX, motorY);
-        panel.add(shapePanel, c);
+        extruderPanel = new ExtruderPanel(extruder);
+        panel.add(extruderPanel, c);
         
         frame.pack();
         frame.setVisible(true);

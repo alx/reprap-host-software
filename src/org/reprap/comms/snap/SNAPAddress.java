@@ -13,6 +13,10 @@ public class SNAPAddress implements Address {
 		this.address = address;
 	}
 	
+	public SNAPAddress(String address) {
+		this(Short.parseShort(address));
+	}
+	
 	public short getAddress() {
 		return address;
 	}

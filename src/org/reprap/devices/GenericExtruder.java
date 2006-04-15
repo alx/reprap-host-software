@@ -16,9 +16,9 @@ public class GenericExtruder extends Device {
 		super(communicator, address);
 	}
 
-	public void setExtrusion(boolean active) throws IOException {
+	public void setExtrusion(int speed) throws IOException {
 		OutgoingMessage request =
-			new OutgoingByteMessage(MSG_SetActive, (byte)(active?1:0));
+			new OutgoingByteMessage(MSG_SetActive, (byte)speed);
 		sendMessage(request);
 	}
 	

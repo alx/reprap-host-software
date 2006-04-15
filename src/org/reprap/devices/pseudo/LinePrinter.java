@@ -2,6 +2,7 @@ package org.reprap.devices.pseudo;
 
 import java.io.IOException;
 
+import org.reprap.devices.GenericExtruder;
 import org.reprap.devices.GenericStepperMotor;
 
 /**
@@ -12,10 +13,12 @@ public class LinePrinter {
 
 	private GenericStepperMotor motorX;
 	private GenericStepperMotor motorY;
+	private GenericExtruder extruder;
 
-	public LinePrinter(GenericStepperMotor motorX, GenericStepperMotor motorY) {
+	public LinePrinter(GenericStepperMotor motorX, GenericStepperMotor motorY, GenericExtruder extruder) {
 		this.motorX = motorX;
 		this.motorY = motorY;
+		this.extruder = extruder;
 	}
 
 	/*
