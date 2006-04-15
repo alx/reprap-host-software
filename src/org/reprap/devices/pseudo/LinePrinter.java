@@ -32,7 +32,10 @@ public class LinePrinter {
 		}
 	}
 
-	
+	/**
+	 * Move to a 2-space point in a direct line.  At the moment this is just the pure 2D Bresenham algorithm.
+	 * It would be good to generalise this to a 3D DDA.
+	 */
 	public void moveTo(int endX, int endY, int movementSpeed) throws IOException {
 		initialiseXY();
 
@@ -76,16 +79,16 @@ public class LinePrinter {
 		currentX = endX;
 		currentY = endY;
 	}
-	
-	/*
-	 * Print a line.  At the moment this is just the pure 2D Bresenham algorithm.
-	 * It would be good to generalise this to a 3D DDA.
-	 */
-	public void printLine(int startX, int startY, int endX, int endY, int movementSpeed, int extruderSpeed) throws IOException {
-		moveTo(startX, startY, movementSpeed);
+
+	public void printTo(int endX, int endY, int movementSpeed, int extruderSpeed) throws IOException {
 		extruder.setExtrusion(extruderSpeed);
 		moveTo(endX, endX, movementSpeed);
-		extruder.setExtrusion(0);
+		extruder.setExtrusion(0);		
+	}
+	
+	public void printLine(int startX, int startY, int endX, int endY, int movementSpeed, int extruderSpeed) throws IOException {
+		moveTo(startX, startY, movementSpeed);
+		printTo(endX, endY, movementSpeed, extruderSpeed);
 	}
 
 }

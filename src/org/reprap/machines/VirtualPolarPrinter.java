@@ -19,11 +19,6 @@ public class VirtualPolarPrinter implements PolarPrinter {
 
 	}
 
-	public void printPoint(double x, double y, double z) {
-		// TODO Auto-generated method stub
-
-	}
-
 	public void printSegment(double startX, double startY, double startZ,
 			double endX, double endY, double endZ) {
 		// TODO Auto-generated method stub
