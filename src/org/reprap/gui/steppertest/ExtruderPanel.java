@@ -50,12 +50,10 @@ public class ExtruderPanel extends JPanel {
 			}
 		});
 		
-		c.gridx = 4;
+		c.gridx = 2;
 		c.gridy = 0;
 		c.insets.left = 5;
 		add(extrudeButton, c);
-		
-		
 		
 	}
 	
@@ -83,6 +81,10 @@ public class ExtruderPanel extends JPanel {
 			extrudeButton.setText("Stop");
 		}
 		setExtruderSpeed();
+	}
+
+	public int getSpeed() {
+		return speed.getValue();
 	}
 	
 }

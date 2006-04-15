@@ -279,4 +279,11 @@ public class StepperPanel extends JPanel implements ChangeListener {
 	public void setMoved() {
 		torque.setSelected(true);
 	}
+
+	public void loadPosition() throws IOException {
+		monitor(false);
+		positionActual.setValue(motor.getPosition());
+		positionRequest.setValue(motor.getPosition());
+		torque.setSelected(true);
+	}
 }

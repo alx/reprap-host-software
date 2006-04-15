@@ -15,38 +15,48 @@ public class LinePrinter {
 	private GenericStepperMotor motorY;
 	private GenericExtruder extruder;
 
+	private boolean initialisedXY = false;
+	private int currentX, currentY;
+	
 	public LinePrinter(GenericStepperMotor motorX, GenericStepperMotor motorY, GenericExtruder extruder) {
 		this.motorX = motorX;
 		this.motorY = motorY;
 		this.extruder = extruder;
 	}
+	
+	public void initialiseXY() throws IOException {
+		if (!initialisedXY) {
+			currentX = motorX.getPosition();
+			currentY = motorY.getPosition();
+			initialisedXY = true;
+		}
+	}
 
-	/*
-	 * Print a line.  At the moment this is just the pure 2D Bresenham algorithm.
-	 * It would be good to generalise this to a 3D DDA.
-	 */
-	public void PrintLine(int startX, int startY, int endX, int endY, int movementSpeed, int extruderSpeed) throws IOException {
+	
+	public void moveTo(int endX, int endY, int movementSpeed) throws IOException {
+		initialiseXY();
+
 		GenericStepperMotor master, slave;
-		
+
 		int x0, x1, y0, y1;
 		
 		// Whichever is the greater distance will be the master
 		// From an algorithmic point of view, we'll just consider
 		// the master to be X and the slave to be Y, which eliminates
 		// the need for mapping quadrants.
-		if (Math.abs(endX - startX) > Math.abs(endY - startY)) {
+		if (Math.abs(endX - currentX) > Math.abs(endY - currentY)) {
 			master = motorX;
 			slave = motorY;
-			x0 = startX;
+			x0 = currentX;
 			x1 = endX;
-			y0 = startY;
+			y0 = currentY;
 			y1 = endY;
 		} else {
 			master = motorY;
 			slave = motorX;
-			x0 = startY;
+			x0 = currentY;
 			x1 = endY;
-			y0 = startX;
+			y0 = currentX;
 			y1 = endX;
 		}
 				
@@ -58,19 +68,24 @@ public class LinePrinter {
 
 		int deltaY = Math.abs(y1 - y0); 
 		int deltaX = Math.abs(x1 - x0); 
-		
-		master.seekBlocking(movementSpeed, x0);
-		slave.seekBlocking(movementSpeed, y0);
-		
-		/// TODO Both should seek independently and just wait for both to complete
-		
-		/// TODO Start extruding
+				
 		master.dda(movementSpeed, x1, deltaY);
 		
-		/// TODO Stop extruding
-		
 		slave.setSync(GenericStepperMotor.SYNC_NONE);
-		
+
+		currentX = endX;
+		currentY = endY;
+	}
+	
+	/*
+	 * Print a line.  At the moment this is just the pure 2D Bresenham algorithm.
+	 * It would be good to generalise this to a 3D DDA.
+	 */
+	public void printLine(int startX, int startY, int endX, int endY, int movementSpeed, int extruderSpeed) throws IOException {
+		moveTo(startX, startY, movementSpeed);
+		extruder.setExtrusion(extruderSpeed);
+		moveTo(endX, endX, movementSpeed);
+		extruder.setExtrusion(0);
 	}
 
 }
