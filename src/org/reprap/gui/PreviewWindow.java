@@ -1,10 +1,12 @@
 package org.reprap.gui;
 import java.awt.BorderLayout;
 
+import javax.media.j3d.AmbientLight;
 import javax.media.j3d.Appearance;
 import javax.media.j3d.BoundingSphere;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
+import javax.media.j3d.DirectionalLight;
 import javax.media.j3d.Group;
 import javax.media.j3d.Material;
 import javax.media.j3d.Transform3D;
@@ -16,6 +18,7 @@ import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
+import javax.vecmath.Vector3f;
 
 import com.sun.j3d.utils.behaviors.mouse.MouseRotate;
 import com.sun.j3d.utils.behaviors.mouse.MouseTranslate;
@@ -48,6 +51,7 @@ public class PreviewWindow extends javax.swing.JFrame implements Previewer {
 			plasticAppearance = flatAppearance(new Color3f(0.8f, 0.8f, 0.6f));
 			
 			BranchGroup scene = createSceneGraph();
+
 			scene.compile();
 			
 			// SimpleUniverse is a Convenience Utility class
@@ -124,8 +128,8 @@ public class PreviewWindow extends javax.swing.JFrame implements Previewer {
 		Material material = new Material();
 		material.setAmbientColor(colour);
 		material.setDiffuseColor(colour);
-		material.setEmissiveColor(colour);
 		material.setShininess(101.0f);
+		material.setEmissiveColor(colour);
 		appearance.setMaterial(material);
 		return appearance;
 	}
@@ -156,7 +160,6 @@ public class PreviewWindow extends javax.swing.JFrame implements Previewer {
 		Material baseMaterial = new Material();
 		baseMaterial.setAmbientColor(baseColour);
 		baseMaterial.setDiffuseColor(baseColour);
-		baseMaterial.setEmissiveColor(baseColour);
 		baseAppearance.setMaterial(baseMaterial);
 		TransparencyAttributes ta = new TransparencyAttributes();
 		ta.setTransparencyMode(TransparencyAttributes.BLENDED);
@@ -183,6 +186,16 @@ public class PreviewWindow extends javax.swing.JFrame implements Previewer {
 		
 		objRoot.addChild(world);
 		
+		AmbientLight lightA = new AmbientLight(new Color3f(1f, 1f, 1f));
+		lightA.setInfluencingBounds(new BoundingSphere());
+		objRoot.addChild(lightA);
+		
+		DirectionalLight lightD = new DirectionalLight(
+				new Color3f(0.6f, 0.6f, 0.6f),
+				new Vector3f(0f, 0f, -1.0f));
+		lightD.setInfluencingBounds(new BoundingSphere());
+		objRoot.addChild(lightD);
+		
 		return objRoot;
 	}
 	
@@ -200,7 +213,6 @@ public class PreviewWindow extends javax.swing.JFrame implements Previewer {
 				x2 * scale, y2 * scale, z2 * scale,
 				(float)(extrusionSize * 0.5 * scale));
 		world.addChild(group);
-		
 	}
 	
 }

@@ -97,14 +97,16 @@ public class Reprap implements CartesianPrinter {
 	}
 
 	public void printTo(double x, double y, double z) throws ReprapException, IOException {
+		
+		if ((x != convertToPositionX(layer.getCurrentX()) || y != convertToPositionY(layer.getCurrentY())) && z != currentZ)
+			throw new ReprapException("Reprap cannot print a line across 3 axes simultaneously");
+
 		if (previewer != null)
-			previewer.addSegment(layer.getCurrentX(), layer.getCurrentY(), currentZ,
+			previewer.addSegment(convertToPositionX(layer.getCurrentX()),
+					convertToPositionY(layer.getCurrentY()), currentZ,
 					x, y, z);
 		
-		if ((x != layer.getCurrentX() || y != layer.getCurrentY()) && z != currentZ)
-			throw new ReprapException("Reprap cannot print a line across 3 axes simultaneously");
-		
-		if (x == layer.getCurrentX() && y == layer.getCurrentY() && z != currentZ) {
+		if (x == convertToPositionX(layer.getCurrentX()) && y == convertToPositionY(layer.getCurrentY()) && z != currentZ) {
 			// Print a simple vertical extrusion
 			// TODO extrusion speed should be based on actual head speed
 			// which depends on the angle of the line
@@ -136,16 +138,16 @@ public class Reprap implements CartesianPrinter {
 		return (int)(n * scaleZ);
 	}
 
-	protected int convertToPositionX(double n) {
-		return (int)(n / scaleX);
+	protected double convertToPositionX(int n) {
+		return n / scaleX;
 	}
 
-	protected int convertToPositionY(double n) {
-		return (int)(n / scaleY);
+	protected double convertToPositionY(int n) {
+		return n / scaleY;
 	}
 
-	protected int convertToPositionZ(double n) {
-		return (int)(n / scaleZ);
+	protected double convertToPositionZ(int n) {
+		return n / scaleZ;
 	}
 
 	/* (non-Javadoc)

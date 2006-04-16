@@ -86,7 +86,7 @@ public class LinePrinter {
 	public void printTo(int endX, int endY, int movementSpeed, int extruderSpeed) throws IOException {
 		extruder.setExtrusion(extruderSpeed);
 		moveTo(endX, endY, movementSpeed);
-		extruder.setExtrusion(0);		
+		extruder.setExtrusion(0);
 	}
 	
 	public void printLine(int startX, int startY, int endX, int endY, int movementSpeed, int extruderSpeed) throws IOException {
