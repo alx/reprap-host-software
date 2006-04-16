@@ -21,7 +21,6 @@ public class Main implements ChangeListener {
 	
 	private final int localNodeNumber = 0;
 	private final int baudRate = 19200;
-	private final String commPortName;
 	
 	private final int intialSpeed = 236;
 	
@@ -40,7 +39,7 @@ public class Main implements ChangeListener {
 		Properties props = new Properties();
 		URL url = ClassLoader.getSystemResource("reprap.properties");
 		props.load(url.openStream());
-		commPortName = props.getProperty("Port");
+		String commPortName = props.getProperty("Port");
 		
 		SNAPAddress myAddress = new SNAPAddress(localNodeNumber); 
 		communicator = new SNAPCommunicator(commPortName, baudRate, myAddress);

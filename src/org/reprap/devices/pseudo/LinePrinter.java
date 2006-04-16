@@ -39,6 +39,9 @@ public class LinePrinter {
 	public void moveTo(int endX, int endY, int movementSpeed) throws IOException {
 		initialiseXY();
 
+		if (currentX == endX && currentY == endY)
+			return;
+		
 		GenericStepperMotor master, slave;
 
 		int x0, x1, y0, y1;
@@ -91,4 +94,16 @@ public class LinePrinter {
 		printTo(endX, endY, movementSpeed, extruderSpeed);
 	}
 
+	/**
+	 * @return Returns the currentX.
+	 */
+	public int getCurrentX() {
+		return currentX;
+	}
+	/**
+	 * @return Returns the currentY.
+	 */
+	public int getCurrentY() {
+		return currentY;
+	}
 }
