@@ -94,6 +94,34 @@ public class Main {
 				System.exit(0);
 			}});
         fileMenu.add(fileExit);
+
+        JMenu manipMenu = new JMenu("Manipulate");
+        manipMenu.setMnemonic(KeyEvent.VK_M);
+        menubar.add(manipMenu);
+
+        JMenuItem manipX = new JMenuItem("Rotate X", KeyEvent.VK_X);
+        manipX.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.CTRL_MASK));
+        manipX.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				onRotateX();
+			}});
+        manipMenu.add(manipX);
+
+        JMenuItem manipY = new JMenuItem("Rotate Y", KeyEvent.VK_Y);
+        manipY.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, ActionEvent.CTRL_MASK));
+        manipY.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				onRotateY();
+			}});
+        manipMenu.add(manipY);
+
+        JMenuItem manipZ = new JMenuItem("Rotate Z", KeyEvent.VK_Z);
+        manipZ.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, ActionEvent.CTRL_MASK));
+        manipZ.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				onRotateZ();
+			}});
+        manipMenu.add(manipZ);
         
         JMenu toolsMenu = new JMenu("Tools");
         toolsMenu.setMnemonic(KeyEvent.VK_T);
@@ -145,6 +173,18 @@ public class Main {
         }
         
         builder.anotherSTLFile(result);
+    }
+    
+    private void onRotateX() {
+    	  builder.xRotate();
+    }
+
+    private void onRotateY() {
+  	  builder.yRotate();
+    }
+
+    private void onRotateZ() {
+  	  builder.zRotate();
     }
 	
 	public static void main(String[] args) {
