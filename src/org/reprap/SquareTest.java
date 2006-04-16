@@ -9,6 +9,8 @@ public class SquareTest {
 	
 		Printer reprap = MachineFactory.create();
 
+		// Comment out the following three
+		// lines if you don't have java3d or don't want to preview
 		PreviewWindow preview = new PreviewWindow();
 		preview.setVisible(true);
 		reprap.setPreviewer(preview);
