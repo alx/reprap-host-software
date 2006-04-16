@@ -9,14 +9,14 @@ public class SquareTest {
 			Printer reprap = MachineFactory.create();
 			reprap.calibrate();
 			reprap.selectMaterial(0);
-			reprap.setSpeed(240);
-			reprap.setExtruderSpeed(200);
+			reprap.setSpeed(248);
+			reprap.setExtruderSpeed(180);
 
 			// Print a square, rotated 45 degrees
 			reprap.moveTo(20, 5, 0);
-			reprap.printTo(10, 15, 0);
-			reprap.printTo(20, 25, 0);
-			reprap.printTo(30, 15, 0);
+			reprap.printTo(15, 10, 0);
+			reprap.printTo(20, 15, 0);
+			reprap.printTo(25, 10, 0);
 			reprap.printTo(20, 5, 0);
 			
 			reprap.terminate();
