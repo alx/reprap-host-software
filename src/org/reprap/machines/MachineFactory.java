@@ -4,6 +4,7 @@ import java.net.URL;
 import java.util.Properties;
 
 import org.reprap.Printer;
+import org.reprap.ReprapException;
 
 /**
  * 
@@ -24,7 +25,15 @@ public class MachineFactory {
 		URL url = ClassLoader.getSystemResource("reprap.properties");
 		props.load(url.openStream());
 
-		return new Reprap(props);
+		String geometry = props.getProperty("Geometry");
+		
+		if (geometry.compareToIgnoreCase("cartesian") == 0)
+		  	return new Reprap(props);
+		else if (geometry.compareToIgnoreCase("nullcartesian") == 0)
+		    return new NullCartesianMachine(props);		
+		else
+			throw new ReprapException("Invalid geometry in properties file");
+		
 	}
 	
 }

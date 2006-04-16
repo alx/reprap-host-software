@@ -11,6 +11,7 @@ import org.reprap.comms.snap.SNAPCommunicator;
 import org.reprap.devices.GenericExtruder;
 import org.reprap.devices.GenericStepperMotor;
 import org.reprap.devices.pseudo.LinePrinter;
+import org.reprap.gui.Previewer;
 
 /**
  * 
@@ -23,6 +24,7 @@ public class Reprap implements CartesianPrinter {
 	private final int baudRate = 19200;
 
 	private Communicator communicator;
+	private Previewer previewer = null;
 
 	private GenericStepperMotor motorX;
 	private GenericStepperMotor motorY;
@@ -95,11 +97,17 @@ public class Reprap implements CartesianPrinter {
 	}
 
 	public void printTo(double x, double y, double z) throws ReprapException, IOException {
+		if (previewer != null)
+			previewer.addSegment(layer.getCurrentX(), layer.getCurrentY(), currentZ,
+					x, y, z);
+		
 		if ((x != layer.getCurrentX() || y != layer.getCurrentY()) && z != currentZ)
 			throw new ReprapException("Reprap cannot print a line across 3 axes simultaneously");
 		
 		if (x == layer.getCurrentX() && y == layer.getCurrentY() && z != currentZ) {
 			// Print a simple vertical extrusion
+			// TODO extrusion speed should be based on actual head speed
+			// which depends on the angle of the line
 			extruder.setExtrusion(speedExtruder);
 			if (!dummyZ) motorZ.seekBlocking(speed, convertToStepZ(z));
 			extruder.setExtrusion(0);
@@ -112,7 +120,8 @@ public class Reprap implements CartesianPrinter {
 	}
 
 	public void selectMaterial(int materialIndex) {
-		
+		if (previewer != null)
+			previewer.setMaterial(materialIndex);
 	}
 
 	protected int convertToStepX(double n) {
@@ -173,4 +182,10 @@ public class Reprap implements CartesianPrinter {
 	public void setExtruderSpeed(int speedExtruder) {
 		this.speedExtruder = speedExtruder;
 	}
+	
+	public void setPreviewer(Previewer previewer) {
+		this.previewer = previewer;
+	}
 }
+
+

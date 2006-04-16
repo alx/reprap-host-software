@@ -1,11 +1,18 @@
 package org.reprap;
 
+import org.reprap.gui.PreviewWindow;
 import org.reprap.machines.MachineFactory;
 
 public class SquareTest {
 	
 	public static void main(String[] args) throws Exception {
+	
 		Printer reprap = MachineFactory.create();
+
+		PreviewWindow preview = new PreviewWindow();
+		preview.setVisible(true);
+		reprap.setPreviewer(preview);
+
 		reprap.calibrate();
 		reprap.selectMaterial(0);
 		reprap.setSpeed(248);

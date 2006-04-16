@@ -2,6 +2,8 @@ package org.reprap;
 
 import java.io.IOException;
 
+import org.reprap.gui.Previewer;
+
 public interface Printer {
 
 	public void calibrate();
@@ -25,6 +27,8 @@ public interface Printer {
 	public void setSpeed(int speed);
 	public int getExtruderSpeed();
 	public void setExtruderSpeed(int speed);
+	
+	public void setPreviewer(Previewer previewer);
 
 	
 }
