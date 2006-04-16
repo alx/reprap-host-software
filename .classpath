@@ -6,5 +6,23 @@
 	<classpathentry kind="lib" path="lib/j3dcore.jar"/>
 	<classpathentry kind="lib" path="lib/j3dutils.jar"/>
 	<classpathentry kind="lib" path="lib/vecmath.jar"/>
+	<classpathentry kind="lib" path="lib"/>
+	<classpathentry kind="lib" path="lib/j3d-org-loader-stl.jar"/>
+	<classpathentry kind="lib" path="lib/j3d-org-elumens.jar"/>
+	<classpathentry kind="lib" path="lib/j3d-org-geom-core.jar"/>
+	<classpathentry kind="lib" path="lib/j3d-org-geom-hanim.jar"/>
+	<classpathentry kind="lib" path="lib/j3d-org-geom-particle.jar"/>
+	<classpathentry kind="lib" path="lib/j3d-org-geom-spline.jar"/>
+	<classpathentry kind="lib" path="lib/j3d-org-geom-terrain.jar"/>
+	<classpathentry kind="lib" path="lib/j3d-org-inputdevice.jar"/>
+	<classpathentry kind="lib" path="lib/j3d-org-java3d-all.jar"/>
+	<classpathentry kind="lib" path="lib/j3d-org-loader-3ds.jar"/>
+	<classpathentry kind="lib" path="lib/j3d-org-loader-core.jar"/>
+	<classpathentry kind="lib" path="lib/j3d-org-loader-dem.jar"/>
+	<classpathentry kind="lib" path="lib/j3d-org-loader-vterrain.jar"/>
+	<classpathentry kind="lib" path="lib/j3d-org-navigation.jar"/>
+	<classpathentry kind="lib" path="lib/j3d-org-terrain.jar"/>
+	<classpathentry kind="lib" path="lib/j3d-org-texture.jar"/>
+	<classpathentry kind="lib" path="lib/j3d-org-util.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

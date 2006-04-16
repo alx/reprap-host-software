@@ -92,15 +92,15 @@ This version: 16 April 2006
 
 package org.reprap.gui;
 
-import java.applet.Applet;
 import java.awt.*;
 import java.awt.event.*;
 import java.net.*;
 import java.io.*;
 import java.util.*;
 import javax.media.j3d.*;
+import javax.swing.JPanel;
 import javax.vecmath.*;
-import com.sun.j3d.utils.applet.MainFrame;
+
 import com.sun.j3d.utils.picking.*;
 import com.sun.j3d.audioengines.javasound.JavaSoundMixer;
 
@@ -110,7 +110,7 @@ import com.sun.j3d.audioengines.javasound.JavaSoundMixer;
 // working volume, allows you to put STL-file objects in it, move them about
 // to arrange them, (and builds them in the machine - one day soon).
 
-public class RepRapBuild extends Applet implements MouseListener 
+public class RepRapBuild extends JPanel implements MouseListener 
 {
     // ------------------------
     // Most of the stuff that follows will be read from
@@ -172,7 +172,6 @@ public class RepRapBuild extends Applet implements MouseListener
 
     // The world in the Applet
     
-    protected String[] m_szCommandLineArray = null;  // Store for command string
     protected VirtualUniverse m_Universe = null;
     protected BranchGroup m_SceneBranchGroup = null;
     protected Bounds m_ApplicationBounds = null;
@@ -181,13 +180,9 @@ public class RepRapBuild extends Applet implements MouseListener
     // Constructors
     
     public RepRapBuild( ) 
-    {   
-    }
-    
-    public RepRapBuild( String[] args ) 
     {
-        saveCommandLineArguments( args );
-        initialise();
+    	    initialise();
+    	
     }
     
     // (About) how big is the world?
@@ -456,17 +451,7 @@ public class RepRapBuild extends Applet implements MouseListener
     {
         return new VirtualUniverse( );
     }
-    
-    protected void saveCommandLineArguments( String[] szArgs ) 
-    {
-        m_szCommandLineArray = szArgs;
-    }
-    
-    protected String[] getCommandLineArguments( ) 
-    {
-        return m_szCommandLineArray;
-    }
-    
+        
     // Set stuff up for the constructors - called by all of them that actually
     // do anything.
     
@@ -483,9 +468,6 @@ public class RepRapBuild extends Applet implements MouseListener
                 
         initJava3d( );
         
-        // Add the control panel
-        
-        RepRapBuildPanel.makePanel(this);
     }
     
     // Are we live?  If not, vivfy.
@@ -712,13 +694,4 @@ public class RepRapBuild extends Applet implements MouseListener
                 "Now build the STL object(s); a bit more needed than this message...");
     }
     
-    // Create the world and all that's in it...
-    
-    public static void main( String[] args ) 
-    {
-        RepRapBuild rr_build = new RepRapBuild( args );
-        
-        new MainFrame( rr_build, RepRapBuild.m_kWidth, RepRapBuild.m_kHeight );
-
-    }
 }
