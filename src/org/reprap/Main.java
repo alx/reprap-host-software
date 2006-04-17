@@ -225,22 +225,30 @@ public class Main {
 	}
 	
 	private void onProduce() {
-	    	try {
-	    		// TODO Some kind of progress indicator would be good
-	    		// TODO Clear preview before starting
-	    		
-	    		if (!viewPreview.isSelected()) {
-	    			viewPreview.setSelected(true);
-	    			updateView();
-	    		}
-	    		
-	    		Producer producer = new Producer(preview, builder);
-	    		producer.Produce();
-	    	}
-	    	catch (Exception ex) {
-	    		JOptionPane.showMessageDialog(null, "Production exception: " + ex);
-				ex.printStackTrace();
-	    	}
+		
+		Thread t = new Thread() {
+			public void run() {
+				try {
+					// TODO Some kind of progress indicator would be good
+					// TODO Clear preview before starting
+					
+					if (!viewPreview.isSelected()) {
+						viewPreview.setSelected(true);
+						updateView();
+					}
+					
+					Producer producer = new Producer(preview, builder);
+					producer.Produce();
+					
+					JOptionPane.showMessageDialog(mainFrame, "Production complete");
+				}
+				catch (Exception ex) {
+					JOptionPane.showMessageDialog(mainFrame, "Production exception: " + ex);
+					ex.printStackTrace();
+				}
+			}
+		};
+		t.start();
 	}
 	
     private void onOpen() 
