@@ -58,6 +58,12 @@ public class Preferences extends javax.swing.JDialog {
 	private JPanel jPanelGeneral;
 	private JTabbedPane jTabbedPane1;
 	
+	private String [][] geometries =
+	{
+			{ "cartesian", "Cartensian" },
+			{ "nullcartesian", "Null cartensian" }
+	};
+	
 	/**
 	 * Auto-generated main method to display this JDialog
 	 */
@@ -80,6 +86,11 @@ public class Preferences extends javax.swing.JDialog {
 			motorTorque1.setText(props.getProperty("Axis1Torque"));
 			motorTorque2.setText(props.getProperty("Axis2Torque"));
 			motorTorque3.setText(props.getProperty("Axis3Torque"));
+			
+			String geometryName = props.getProperty("Geometry");
+			for(int i = 0; i < geometries.length; i++)
+				if (geometries[i][0].compareToIgnoreCase(geometryName) == 0)
+					geometry.setSelectedIndex(i);
 			
 			// Fall back to some defaults
 			if (motorTorque1.getText().length() == 0) motorTorque1.setText("33");
@@ -105,6 +116,7 @@ public class Preferences extends javax.swing.JDialog {
 			props.setProperty("Axis1Torque", motorTorque1.getText());
 			props.setProperty("Axis2Torque", motorTorque2.getText());
 			props.setProperty("Axis3Torque", motorTorque3.getText());
+			props.setProperty("Geometry", geometries[geometry.getSelectedIndex()][0]);
 			
 			OutputStream output = new java.io.FileOutputStream(url.getPath());
 			props.store(output, "Reprap properties http://reprap.org/");
@@ -179,8 +191,11 @@ public class Preferences extends javax.swing.JDialog {
 					jTabbedPane1.addTab("Axes", null, jPanelMotors, null);
 					jPanelMotors.setLayout(null);
 					{
+						String [] geometryList = new String[geometries.length];
+						for(int i = 0; i < geometries.length; i++)
+							geometryList[i] = geometries[i][1];
 						ComboBoxModel geometryModel = new DefaultComboBoxModel(
-							new String[] { "Cartesian" });
+								geometryList);
 						geometry = new JComboBox();
 						jPanelMotors.add(geometry);
 						geometry.setModel(geometryModel);
