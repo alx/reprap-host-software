@@ -60,8 +60,8 @@ public class Preferences extends javax.swing.JDialog {
 	
 	private String [][] geometries =
 	{
-			{ "cartesian", "Cartensian" },
-			{ "nullcartesian", "Null cartensian" }
+			{ "cartesian", "Cartesian" },
+			{ "nullcartesian", "Null cartesian" }
 	};
 	
 	/**
