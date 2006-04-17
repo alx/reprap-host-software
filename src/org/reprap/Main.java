@@ -226,6 +226,14 @@ public class Main {
 	
 	private void onProduce() {
 	    	try {
+	    		// TODO Some kind of progress indicator would be good
+	    		// TODO Clear preview before starting
+	    		
+	    		if (!viewPreview.isSelected()) {
+	    			viewPreview.setSelected(true);
+	    			updateView();
+	    		}
+	    		
 	    		Producer producer = new Producer(preview, builder);
 	    		producer.Produce();
 	    	}
