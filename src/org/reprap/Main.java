@@ -10,16 +10,23 @@ import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 import java.io.File;
 
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
 import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
+import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 
+import org.reprap.geometry.Producer;
 import org.reprap.gui.Preferences;
+import org.reprap.gui.PreviewPanel;
 import org.reprap.gui.RepRapBuild;
 
 public class Main {
@@ -29,6 +36,12 @@ public class Main {
     private JFileChooser chooser;
     private JFrame mainFrame;
     private RepRapBuild builder;
+    private PreviewPanel preview;
+    private JCheckBoxMenuItem viewBuilder;
+    private JCheckBoxMenuItem viewPreview;
+    
+    private Box builderFrame, previewFrame;
+    private JSplitPane panel;
 	
 	public Main() {
         chooser = new JFileChooser();
@@ -49,8 +62,10 @@ public class Main {
         mainFrame = new JFrame("RepRap");
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
+        // Required so menus float over Java3D
         JPopupMenu.setDefaultLightWeightPopupEnabled(false);
         
+        // Create menus
         JMenuBar menubar = new JMenuBar();
         
         JMenu fileMenu = new JMenu("File");
@@ -94,6 +109,34 @@ public class Main {
 			}});
         fileMenu.add(fileExit);
 
+        JMenu viewMenu = new JMenu("View");
+        viewMenu.setMnemonic(KeyEvent.VK_V);
+        menubar.add(viewMenu);
+
+        JMenuItem viewToggle = new JMenuItem("Toggle view", KeyEvent.VK_V);
+        viewToggle.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, ActionEvent.CTRL_MASK));
+        viewToggle.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				onViewToggle();
+			}});
+        viewMenu.add(viewToggle);
+        
+        viewBuilder = new JCheckBoxMenuItem("Builder");
+        viewBuilder.setSelected(true);
+        viewBuilder.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				onViewBuilder();
+			}});
+        viewMenu.add(viewBuilder);
+        
+        viewPreview = new JCheckBoxMenuItem("Preview");
+        viewPreview.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				onViewPreview();
+			}});
+        viewMenu.add(viewPreview);
+
+        
         JMenu manipMenu = new JMenu("Manipulate");
         manipMenu.setMnemonic(KeyEvent.VK_M);
         menubar.add(manipMenu);
@@ -144,12 +187,36 @@ public class Main {
         toolsMenu.add(diagnosticsMenu);
         JMenuItem diagnosticsCommsTest = new JMenuItem("Basic comms test");
         diagnosticsMenu.add(diagnosticsCommsTest);
-        
+
+        // Create the main window area
+        // This is a horizontal box layout that includes
+        // both the builder and preview screens, one of
+        // which may be invisible.
+
+        builderFrame = new Box(BoxLayout.Y_AXIS);
+        builderFrame.add(new JLabel("Builder"));
         builder = new RepRapBuild();
-        builder.setPreferredSize(new Dimension(600, 400));
+        builderFrame.setMinimumSize(new Dimension(0,0));
+        builderFrame.add(builder);
         
-        mainFrame.getContentPane().add(builder);
+        previewFrame = new Box(BoxLayout.Y_AXIS);
+        previewFrame.add(new JLabel("Progress Preview"));
+		preview = new PreviewPanel();
+        previewFrame.setMinimumSize(new Dimension(0,0));
+        previewFrame.add(preview);
+
+        panel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT); 
+        panel.setPreferredSize(new Dimension(600, 400));
+        panel.setMinimumSize(new Dimension(0, 0));
+        panel.setResizeWeight(0.5);
+        panel.setOneTouchExpandable(true);
+        panel.setContinuousLayout(true);
+        panel.setLeftComponent(builderFrame);
+        panel.setRightComponent(previewFrame);
+        panel.setDividerLocation(panel.getPreferredSize().width);
         
+        mainFrame.getContentPane().add(panel);
+                
         mainFrame.setJMenuBar(menubar);
         
         mainFrame.pack();
@@ -158,7 +225,14 @@ public class Main {
 	}
 	
 	private void onProduce() {
-		JOptionPane.showMessageDialog(null, "Produce not implemented yet");
+	    	try {
+	    		Producer producer = new Producer(preview, builder);
+	    		producer.Produce();
+	    	}
+	    	catch (Exception ex) {
+	    		JOptionPane.showMessageDialog(null, "Production exception: " + ex);
+				ex.printStackTrace();
+	    	}
 	}
 	
     private void onOpen() 
@@ -185,7 +259,39 @@ public class Main {
     private void onRotateZ() {
   	  builder.zRotate();
     }
-	
+
+    private void onViewBuilder() {
+    		if (!viewBuilder.isSelected() && !viewPreview.isSelected())
+    			viewPreview.setSelected(true);
+        	updateView();
+    }
+
+    private void onViewPreview() {
+		if (!viewPreview.isSelected() && !viewBuilder.isSelected())
+			viewBuilder.setSelected(true);
+		updateView();
+    }
+    
+    private void onViewToggle() {
+    		if (viewBuilder.isSelected()) {
+    			viewPreview.setSelected(true);
+    			viewBuilder.setSelected(false);
+    		} else {
+    			viewPreview.setSelected(false);
+    			viewBuilder.setSelected(true);
+    		}
+        	updateView();
+    }
+    
+    private void updateView() {
+    	    if (viewBuilder.isSelected() && viewPreview.isSelected())
+    	    	  panel.setDividerLocation(0.5);
+    	    else if (viewBuilder.isSelected())
+  	    	  panel.setDividerLocation(1.0);
+    	    else
+    	    	  panel.setDividerLocation(0.0);
+    }
+    
 	public static void main(String[] args) {
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {

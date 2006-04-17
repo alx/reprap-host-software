@@ -1,0 +1,337 @@
+package org.reprap.gui;
+
+import java.awt.BorderLayout;
+import java.awt.Cursor;
+import java.awt.GraphicsConfigTemplate;
+import java.awt.GraphicsDevice;
+import java.awt.GraphicsEnvironment;
+import java.io.File;
+import java.net.URL;
+
+import javax.media.j3d.Appearance;
+import javax.media.j3d.AudioDevice;
+import javax.media.j3d.Background;
+import javax.media.j3d.BoundingSphere;
+import javax.media.j3d.Bounds;
+import javax.media.j3d.BranchGroup;
+import javax.media.j3d.Canvas3D;
+import javax.media.j3d.GraphicsConfigTemplate3D;
+import javax.media.j3d.PhysicalBody;
+import javax.media.j3d.PhysicalEnvironment;
+import javax.media.j3d.Transform3D;
+import javax.media.j3d.TransformGroup;
+import javax.media.j3d.View;
+import javax.media.j3d.ViewPlatform;
+import javax.media.j3d.VirtualUniverse;
+import javax.swing.JPanel;
+import javax.vecmath.AxisAngle4d;
+import javax.vecmath.Point3d;
+import javax.vecmath.Vector3d;
+
+import com.sun.j3d.audioengines.javasound.JavaSoundMixer;
+import com.sun.j3d.utils.geometry.Cylinder;
+
+abstract public class Panel3D extends JPanel {
+
+	// Translate and zoom scaling factors
+	protected static final double mouse_tf = 50;
+	protected static final double mouse_zf = 50;
+
+	protected static final double xwv = 300; // The RepRap machine...
+	protected static final double ywv = 300; // ...working volume in mm.
+	protected static final double zwv = 300;
+
+	// Factors for front and back clipping planes and so on
+	protected static final double RADFAC = 0.7;
+	protected static final double BACKFAC = 2.0;
+	protected static final double FRONTFAC = 0.025;
+	protected static final double BOUNDFAC = 3.0;
+
+	// The world in the Applet
+	protected VirtualUniverse universe = null;
+	protected BranchGroup sceneBranchGroup = null;
+	protected Bounds applicationBounds = null;
+
+	// Set up the RepRap working volume
+	abstract protected BranchGroup createSceneBranchGroup();
+
+	// Set bg light grey
+	abstract protected Background createBackground();
+
+	abstract protected BranchGroup createViewBranchGroup(
+			TransformGroup[] tgArray, ViewPlatform vp);
+
+	// How far away is the back?
+	protected double getBackClipDistance() {
+		return BACKFAC * getViewPlatformActivationRadius();
+	}
+
+	// How close is the front?
+	protected double getFrontClipDistance() {
+		return FRONTFAC * getViewPlatformActivationRadius();
+	}
+	
+	// Set up the size of the world
+	protected Bounds createApplicationBounds() {
+		applicationBounds = new BoundingSphere(new Point3d(xwv * 0.5,
+				ywv * 0.5, zwv * 0.5), BOUNDFAC
+				* getViewPlatformActivationRadius());
+		return applicationBounds;
+	}
+
+	// (About) how big is the world?
+	protected float getViewPlatformActivationRadius() {
+		return (float) (RADFAC * Math.sqrt(xwv * xwv + ywv * ywv + zwv * zwv));
+	}
+
+	// Where are we in the file system?
+
+	public static URL getWorkingDirectory()
+			throws java.net.MalformedURLException {
+		URL url = null;
+
+		try {
+			File file = new File(System.getProperty("user.dir"));
+			return file.toURL();
+		} catch (Exception e) {
+			System.err.println("getWorkingDirectory( ): can't get user dir.");
+		}
+
+		//return getCodeBase( );
+		return null;
+	}
+
+	// Return handles on big things above where we are interested
+
+	public VirtualUniverse getVirtualUniverse() {
+		return universe;
+	}
+
+	protected View createView(ViewPlatform vp) {
+		View view = new View();
+
+		PhysicalBody pb = createPhysicalBody();
+		PhysicalEnvironment pe = createPhysicalEnvironment();
+
+		AudioDevice audioDevice = createAudioDevice(pe);
+
+		if (audioDevice != null) {
+			pe.setAudioDevice(audioDevice);
+			audioDevice.initialize();
+		}
+
+		view.setPhysicalEnvironment(pe);
+		view.setPhysicalBody(pb);
+
+		if (vp != null)
+			view.attachViewPlatform(vp);
+
+		view.setBackClipDistance(getBackClipDistance());
+		view.setFrontClipDistance(getFrontClipDistance());
+
+		Canvas3D c3d = createCanvas3D();
+		view.addCanvas3D(c3d);
+		addCanvas3D(c3d);
+
+		return view;
+	}
+
+	protected Canvas3D createCanvas3D() {
+		GraphicsConfigTemplate3D gc3D = new GraphicsConfigTemplate3D();
+		gc3D.setSceneAntialiasing(GraphicsConfigTemplate.PREFERRED);
+		GraphicsDevice gd[] = GraphicsEnvironment.getLocalGraphicsEnvironment()
+				.getScreenDevices();
+
+		Canvas3D c3d = new Canvas3D(gd[0].getBestConfiguration(gc3D));
+		//c3d.setSize(getCanvas3dWidth(c3d), getCanvas3dHeight(c3d));
+
+		return c3d;
+	}
+
+	public javax.media.j3d.Locale getFirstLocale() {
+		java.util.Enumeration en = universe.getAllLocales();
+
+		if (en.hasMoreElements() != false)
+			return (javax.media.j3d.Locale) en.nextElement();
+
+		return null;
+	}
+
+	// The size of the world
+
+	protected Bounds getApplicationBounds() {
+		if (applicationBounds == null)
+			applicationBounds = createApplicationBounds();
+
+		return applicationBounds;
+	}
+
+	// Fire up Java3D
+
+	public void initJava3d() {
+		universe = createVirtualUniverse();
+
+		javax.media.j3d.Locale locale = createLocale(universe);
+
+		BranchGroup sceneBranchGroup = createSceneBranchGroup();
+
+		ViewPlatform vp = createViewPlatform();
+		BranchGroup viewBranchGroup = createViewBranchGroup(
+				getViewTransformGroupArray(), vp);
+
+		createView(vp);
+
+		Background background = createBackground();
+
+		if (background != null)
+			sceneBranchGroup.addChild(background);
+
+		locale.addBranchGraph(sceneBranchGroup);
+		addViewBranchGroup(locale, viewBranchGroup);
+
+		//onDoneInit( );
+	}
+
+	//    protected void onDoneInit( )
+	//    {
+	//    }
+
+	protected PhysicalBody createPhysicalBody() {
+		return new PhysicalBody();
+	}
+
+	protected AudioDevice createAudioDevice(PhysicalEnvironment pe) {
+		JavaSoundMixer javaSoundMixer = new JavaSoundMixer(pe);
+
+		if (javaSoundMixer == null)
+			System.out.println("create of audiodevice failed");
+
+		return javaSoundMixer;
+	}
+
+	protected PhysicalEnvironment createPhysicalEnvironment() {
+		return new PhysicalEnvironment();
+	}
+
+	protected ViewPlatform createViewPlatform() {
+		ViewPlatform vp = new ViewPlatform();
+		vp.setViewAttachPolicy(View.RELATIVE_TO_FIELD_OF_VIEW);
+		vp.setActivationRadius(getViewPlatformActivationRadius());
+
+		return vp;
+	}
+
+	// These two are probably wrong.
+
+	protected int getCanvas3dWidth(Canvas3D c3d) {
+		return getWidth();
+	}
+
+	protected int getCanvas3dHeight(Canvas3D c3d) {
+		return getHeight();
+	}
+
+	protected VirtualUniverse createVirtualUniverse() {
+		return new VirtualUniverse();
+	}
+
+	protected void addViewBranchGroup(javax.media.j3d.Locale locale,
+			BranchGroup bg) {
+		locale.addBranchGraph(bg);
+	}
+
+	protected javax.media.j3d.Locale createLocale(VirtualUniverse u) {
+		return new javax.media.j3d.Locale(u);
+	}
+
+	public TransformGroup[] getViewTransformGroupArray() {
+		TransformGroup[] tgArray = new TransformGroup[1];
+		tgArray[0] = new TransformGroup();
+
+		Transform3D viewTrans = new Transform3D();
+		Transform3D eyeTrans = new Transform3D();
+
+		BoundingSphere sceneBounds = (BoundingSphere) sceneBranchGroup
+				.getBounds();
+
+		// point the view at the center of the object
+
+		Point3d center = new Point3d();
+		sceneBounds.getCenter(center);
+		double radius = sceneBounds.getRadius();
+		Vector3d temp = new Vector3d(center);
+		viewTrans.set(temp);
+
+		// pull the eye back far enough to see the whole object
+
+		double eyeDist = radius / Math.tan(Math.toRadians(40) / 2.0);
+		temp.x = 0.0;
+		temp.y = 0.0;
+		temp.z = eyeDist;
+		eyeTrans.set(temp);
+		viewTrans.mul(eyeTrans);
+
+		// set the view transform
+
+		tgArray[0].setTransform(viewTrans);
+
+		return tgArray;
+	}
+
+	protected void addCanvas3D(Canvas3D c3d) {
+		setLayout(new BorderLayout());
+		add(c3d, BorderLayout.CENTER);
+		doLayout();
+		c3d.setCursor(new Cursor(Cursor.DEFAULT_CURSOR));
+	}
+	
+	protected void addBlock(BranchGroup root, Appearance appearance,
+			double x1, double y1, double z1,
+			double x2, double y2, double z2,
+			float thickness) {
+		root.addChild(addBlock(appearance, x1, y1, z1, x2, y2, z2, thickness));
+	}
+
+	protected void addBlock(TransformGroup root, Appearance appearance,
+			double x1, double y1, double z1,
+			double x2, double y2, double z2,
+			float thickness) {
+		root.addChild(addBlock(appearance, x1, y1, z1, x2, y2, z2, thickness));
+	}
+	
+	protected TransformGroup addBlock(Appearance appearance,
+			double x1, double y1, double z1,
+			double x2, double y2, double z2,
+			float thickness) {
+		
+		Point3d p1 = new Point3d(x1, y1, z1);
+		Point3d p2 = new Point3d(x2, y2, z2);
+
+		Vector3d unity = new Vector3d(0, 1, 0);
+		Vector3d v = new Vector3d(x2 - x1, y2 - y1, z2 - z1);
+		
+		Cylinder cyl = new Cylinder(thickness, (float)v.length(), appearance);
+		
+		Transform3D transform = new Transform3D();
+		
+		Vector3d translate = new Vector3d(p1);
+		v.scale(0.5);
+		translate.add(v);
+		transform.setTranslation(translate);
+				
+		double angle = v.angle(unity);
+		Vector3d axis = new Vector3d();
+		axis.cross(unity, v);
+		AxisAngle4d rotationAngle = new AxisAngle4d(axis.x, axis.y, axis.z, angle);
+		transform.setRotation(rotationAngle);
+		
+		TransformGroup tg = new TransformGroup(transform);
+		tg.addChild(cyl);
+		return tg;
+	}
+
+	protected double getScale() {
+		return 1.0;
+	}
+
+}

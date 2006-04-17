@@ -21,11 +21,11 @@ public class SquareTest {
 		reprap.setExtruderSpeed(180);
 
 		// Print a square, rotated 45 degrees
-		reprap.moveTo(20, 5, 0);
-		reprap.printTo(15, 10, 0);
-		reprap.printTo(20, 15, 0);
-		reprap.printTo(25, 10, 0);
-		reprap.printTo(20, 5, 0);
+		reprap.moveTo(20, 5, 2);
+		reprap.printTo(15, 10, 2);
+		reprap.printTo(20, 15, 2);
+		reprap.printTo(25, 10, 2);
+		reprap.printTo(20, 5, 2);
 		
 		reprap.terminate();
 	}
