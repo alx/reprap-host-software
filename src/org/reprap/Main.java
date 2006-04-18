@@ -39,8 +39,9 @@ public class Main {
     private PreviewPanel preview;
     private JCheckBoxMenuItem viewBuilder;
     private JCheckBoxMenuItem viewPreview;
+    private JCheckBoxMenuItem segmentPause;
+    private JCheckBoxMenuItem layerPause;
     
-    private Box builderFrame, previewFrame;
     private JSplitPane panel;
 	
 	public Main() {
@@ -80,14 +81,6 @@ public class Main {
 			}});
         fileMenu.add(fileOpen);
         
-        JMenuItem fileProduce = new JMenuItem("Produce...", KeyEvent.VK_P);
-        fileProduce.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.CTRL_MASK));
-        fileProduce.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				onProduce();
-			}});
-        fileMenu.add(fileProduce);
-
         fileMenu.addSeparator();
 
         JMenuItem filePrefs = new JMenuItem("Preferences...", KeyEvent.VK_R);
@@ -98,7 +91,6 @@ public class Main {
 			}});
         fileMenu.add(filePrefs);
 
-        
         fileMenu.addSeparator();
 
         JMenuItem fileExit = new JMenuItem("Exit", KeyEvent.VK_X);
@@ -164,7 +156,27 @@ public class Main {
 				onRotateZ();
 			}});
         manipMenu.add(manipZ);
-        
+
+        JMenu produceMenu = new JMenu("Produce");
+        produceMenu.setMnemonic(KeyEvent.VK_P);
+        menubar.add(produceMenu);
+
+        JMenuItem produceProduce = new JMenuItem("Produce...", KeyEvent.VK_P);
+        produceProduce.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.CTRL_MASK));
+        produceProduce.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				onProduce();
+			}});
+        produceMenu.add(produceProduce);
+
+        produceMenu.addSeparator();
+
+        segmentPause = new JCheckBoxMenuItem("Pause before segment");
+        produceMenu.add(segmentPause);
+
+        layerPause = new JCheckBoxMenuItem("Pause before layer");
+        produceMenu.add(layerPause);
+                
         JMenu toolsMenu = new JMenu("Tools");
         toolsMenu.setMnemonic(KeyEvent.VK_T);
         menubar.add(toolsMenu);
@@ -193,18 +205,12 @@ public class Main {
         // both the builder and preview screens, one of
         // which may be invisible.
 
-        builderFrame = new Box(BoxLayout.Y_AXIS);
+        Box builderFrame = new Box(BoxLayout.Y_AXIS);
         builderFrame.add(new JLabel("Builder"));
         builder = new RepRapBuild();
         builderFrame.setMinimumSize(new Dimension(0,0));
         builderFrame.add(builder);
         
-        previewFrame = new Box(BoxLayout.Y_AXIS);
-        previewFrame.add(new JLabel("Progress Preview"));
-		preview = new PreviewPanel();
-        previewFrame.setMinimumSize(new Dimension(0,0));
-        previewFrame.add(preview);
-
         panel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT); 
         panel.setPreferredSize(new Dimension(600, 400));
         panel.setMinimumSize(new Dimension(0, 0));
@@ -212,7 +218,7 @@ public class Main {
         panel.setOneTouchExpandable(true);
         panel.setContinuousLayout(true);
         panel.setLeftComponent(builderFrame);
-        panel.setRightComponent(previewFrame);
+        panel.setRightComponent(createPreviewPanel());
         panel.setDividerLocation(panel.getPreferredSize().width);
         
         mainFrame.getContentPane().add(panel);
@@ -222,6 +228,44 @@ public class Main {
         mainFrame.pack();
         mainFrame.setVisible(true);
         
+	}
+
+	private Box createPreviewPanel() {
+		/*JSplitPane splitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+		splitter.setMinimumSize(new Dimension(0, 0));
+		splitter.setResizeWeight(1.0);
+		splitter.setOneTouchExpandable(true);
+		splitter.setContinuousLayout(true);
+		splitter.setDividerLocation(1.0);*/
+		
+        Box pane = new Box(BoxLayout.Y_AXIS);
+        pane.add(new JLabel("Progress Preview"));
+		preview = new PreviewPanel();
+		pane.setMinimumSize(new Dimension(0,0));
+		pane.add(preview);
+		
+		/*JPanel controls = new JPanel(new FlowLayout());
+		controls.setMinimumSize(new Dimension(0, 0));
+
+		JCheckBox pauseSegment = new JCheckBox("Segment pause");
+		pauseSegment.setMinimumSize(new Dimension(0, 0));
+		controls.add(pauseSegment);
+
+		JCheckBox pauseLayer = new JCheckBox("Layer pause");
+		pauseLayer.setMinimumSize(new Dimension(0, 0));
+		controls.add(pauseLayer);
+
+		JButton continueButton = new JButton("Next");
+		continueButton.setMinimumSize(new Dimension(0, 0));
+		continueButton.setEnabled(false);
+		controls.add(continueButton);
+
+		pane.add(controls);*/
+		
+		//splitter.setTopComponent(pane);
+		//splitter.setBottomComponent(controls);
+		
+		return pane;
 	}
 	
 	private void onProduce() {
@@ -236,6 +280,9 @@ public class Main {
 						viewPreview.setSelected(true);
 						updateView();
 					}
+					
+					preview.setSegmentPause(segmentPause);
+					preview.setLayerPause(layerPause);
 					
 					Producer producer = new Producer(preview, builder);
 					producer.Produce();

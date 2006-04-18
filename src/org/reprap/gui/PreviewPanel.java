@@ -13,11 +13,16 @@ import javax.media.j3d.Group;
 import javax.media.j3d.Material;
 import javax.media.j3d.TransformGroup;
 import javax.media.j3d.ViewPlatform;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFrame;
 import javax.vecmath.Color3f;
 import javax.vecmath.Vector3d;
 
 public class PreviewPanel extends Panel3D implements Previewer {
 	private int material = 0;
+	private double previousZ = Double.NaN;
+	
+	private JCheckBoxMenuItem layerPauseCheckbox = null, segmentPauseCheckbox = null;
 
 	// ------------------------
 	// Most of the stuff that follows will be read from
@@ -52,12 +57,16 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	private java.util.List stls = new ArrayList(); // All the STLs to be built
 	private int objectIndex = 0; // Counter for STLs as they are loaded
 
-	// Constructors
+	/**
+	 * Constructor
+	 */
 	public PreviewPanel() {
 		initialise();
 	}
 
-	// Set bg light grey
+	/**
+	 * Set bg light grey
+	 */
 	protected Background createBackground() {
 		Background back = new Background(bgColour);
 		back.setApplicationBounds(createApplicationBounds());
@@ -85,9 +94,10 @@ public class PreviewPanel extends Panel3D implements Previewer {
 		return vpBranchGroup;
 	}
 
-	// Set stuff up for the constructors - called by all of them that actually
-	// do anything.
-
+	/**
+	 * Set stuff up for the constructors - called by all of them that actually
+	 * do anything.
+	 */
 	private void initialise() {
 		wv_app = new Appearance();
 		wv_app.setMaterial(new Material(rrGreen, black, rrGreen, black, 0f));
@@ -99,8 +109,9 @@ public class PreviewPanel extends Panel3D implements Previewer {
 
 	}
 
-	// Set up the RepRap working volume
-
+	/**
+	 * Set up the RepRap working volume
+	 */
 	protected BranchGroup createSceneBranchGroup() {
 		sceneBranchGroup = new BranchGroup();
 
@@ -149,11 +160,24 @@ public class PreviewPanel extends Panel3D implements Previewer {
 		return objRoot;
 	}
 
+	/**
+	 * Set the current extrusion material (or equivalently, the extruder head)
+	 */
 	public void setMaterial(int index) {
 		material = index;
 	}
 
+	/**
+	 * Called to add a new segment of extruded material to the preview
+	 */
 	public void addSegment(double x1, double y1, double z1, double x2, double y2, double z2) {
+		if (layerPauseCheckbox != null && layerPauseCheckbox.isSelected() &&
+				z2 != previousZ)
+			layerPause();
+		
+		if (segmentPauseCheckbox != null && segmentPauseCheckbox.isSelected())
+			segmentPause();
+		
 		final double extrusionSize = 0.3;
 		BranchGroup group = new BranchGroup();
 		addBlock(group, extrusion_app,
@@ -161,6 +185,55 @@ public class PreviewPanel extends Panel3D implements Previewer {
 				x2, y2, z2,
 				(float)(extrusionSize * 0.5));
 		wv_and_stls.addChild(group);
+		previousZ = z2;
+	}
+
+	/**
+	 * Display a message indicating a segment is about to be
+	 * printed and wait for the user to acknowledge
+	 */
+	private void segmentPause() {
+		JFrame frame = new JFrame();
+		ContinuationMesage msg =
+			new ContinuationMesage(null, "A new segment is about to be produced",
+					segmentPauseCheckbox, layerPauseCheckbox);
+		msg.setVisible(true);
+	}
+
+	/**
+	 * Display a message indicating a layer is about to be
+	 * printed and wait for the user to acknowledge
+	 */
+	private void layerPause() {
+		JFrame frame = new JFrame();
+		ContinuationMesage msg =
+			new ContinuationMesage(null, "A new layer is about to be produced",
+					segmentPauseCheckbox, layerPauseCheckbox);
+		msg.setVisible(true);
+	}
+
+	/**
+	 * Set the source checkbox used to determine if there should
+	 * be a pause between segments.
+	 * 
+	 * @param segmentPause The source checkbox used to determine
+	 * if there should be a pause.  This is a checkbox rather than
+	 * a boolean so it can be changed on the fly. 
+	 */
+	public void setSegmentPause(JCheckBoxMenuItem segmentPause) {
+		segmentPauseCheckbox = segmentPause;
+	}
+
+	/**
+	 * Set the source checkbox used to determine if there should
+	 * be a pause between layers.
+	 * 
+	 * @param layerPause The source checkbox used to determine
+	 * if there should be a pause.  This is a checkbox rather than
+	 * a boolean so it can be changed on the fly.
+	 */
+	public void setLayerPause(JCheckBoxMenuItem layerPause) {
+		layerPauseCheckbox = layerPause;
 	}
 
 }
