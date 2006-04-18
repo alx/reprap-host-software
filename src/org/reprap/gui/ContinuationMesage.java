@@ -96,7 +96,6 @@ public class ContinuationMesage extends javax.swing.JDialog {
 			}
 			{
 				getContentPane().setLayout(null);
-				this.setModal(true);
 				this.setTitle("Progress pause");
 			}
 			this.setSize(316, 158);
@@ -107,6 +106,9 @@ public class ContinuationMesage extends javax.swing.JDialog {
 	
 	private void okButtonActionPerformed(ActionEvent evt) {
 		lastScreenPosition = getLocation();
+		synchronized(this) {
+			notify();
+		}
 		dispose();
 	}
 	

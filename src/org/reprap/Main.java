@@ -280,6 +280,8 @@ public class Main {
 						viewPreview.setSelected(true);
 						updateView();
 					}
+
+					preview.reset();
 					
 					preview.setSegmentPause(segmentPause);
 					preview.setLayerPause(layerPause);

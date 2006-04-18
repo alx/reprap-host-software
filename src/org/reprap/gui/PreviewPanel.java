@@ -189,6 +189,14 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	}
 
 	/**
+	 * Clear and prepare for a new preview
+	 *
+	 */
+	public void reset() {
+		previousZ = Double.NaN;
+	}
+	
+	/**
 	 * Display a message indicating a segment is about to be
 	 * printed and wait for the user to acknowledge
 	 */
@@ -198,6 +206,12 @@ public class PreviewPanel extends Panel3D implements Previewer {
 			new ContinuationMesage(null, "A new segment is about to be produced",
 					segmentPauseCheckbox, layerPauseCheckbox);
 		msg.setVisible(true);
+		try {
+			synchronized(msg) {
+				msg.wait();
+			}
+		} catch (Exception ex) {
+		}
 	}
 
 	/**
@@ -210,6 +224,12 @@ public class PreviewPanel extends Panel3D implements Previewer {
 			new ContinuationMesage(null, "A new layer is about to be produced",
 					segmentPauseCheckbox, layerPauseCheckbox);
 		msg.setVisible(true);
+		try {
+			synchronized(msg) {
+				msg.wait();
+			}
+		} catch (Exception ex) {
+		}
 	}
 
 	/**
