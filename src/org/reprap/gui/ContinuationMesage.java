@@ -55,7 +55,8 @@ public class ContinuationMesage extends javax.swing.JDialog {
 				okButton = new JButton();
 				getContentPane().add(okButton);
 				okButton.setText("Continue...");
-				okButton.setBounds(98, 91, 105, 28);
+				okButton.setBounds(98, 98, 105, 28);
+				okButton.setMnemonic(java.awt.event.KeyEvent.VK_ENTER);
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent evt) {
 						okButtonActionPerformed(evt);
@@ -87,7 +88,7 @@ public class ContinuationMesage extends javax.swing.JDialog {
 				layerPauseCheckbox = new JCheckBox();
 				getContentPane().add(layerPauseCheckbox);
 				layerPauseCheckbox.setText("Pause before layer");
-				layerPauseCheckbox.setBounds(77, 56, 189, 28);
+				layerPauseCheckbox.setBounds(77, 63, 189, 28);
 				layerPauseCheckbox.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent evt) {
 						layerPauseCheckboxActionPerformed(evt);
@@ -99,6 +100,7 @@ public class ContinuationMesage extends javax.swing.JDialog {
 				this.setTitle("Progress pause");
 			}
 			this.setSize(316, 158);
+			this.getRootPane().setDefaultButton(okButton);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

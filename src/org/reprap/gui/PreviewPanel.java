@@ -45,6 +45,7 @@ public class PreviewPanel extends Panel3D implements Previewer {
 
 	private Appearance extrusion_app = null; // Colour for extrused material
 	private Appearance wv_app = null; // Colour for the working volume
+	private BranchGroup extrusions;
 	private BranchGroup wv_and_stls = new BranchGroup(); // Where in the scene
 
 	// the
@@ -129,7 +130,11 @@ public class PreviewPanel extends Panel3D implements Previewer {
 		objRoot.addChild(headLight);
 
 		wv_and_stls.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
-
+		extrusions = new BranchGroup();
+		extrusions.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
+		extrusions.setCapability(TransformGroup.ALLOW_CHILDREN_WRITE);
+		wv_and_stls.addChild(extrusions);
+		
 		// Load the STL file for the working volume
 
 		world = new STLObject(wv_and_stls, worldName);
@@ -180,11 +185,12 @@ public class PreviewPanel extends Panel3D implements Previewer {
 		
 		final double extrusionSize = 0.3;
 		BranchGroup group = new BranchGroup();
+		group.setCapability(BranchGroup.ALLOW_DETACH);
 		addBlock(group, extrusion_app,
 				x1, y1, z1,
 				x2, y2, z2,
 				(float)(extrusionSize * 0.5));
-		wv_and_stls.addChild(group);
+		extrusions.addChild(group);
 		previousZ = z2;
 	}
 
@@ -193,6 +199,7 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	 *
 	 */
 	public void reset() {
+		extrusions.removeAllChildren();
 		previousZ = Double.NaN;
 	}
 	
