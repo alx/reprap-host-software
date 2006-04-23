@@ -185,7 +185,7 @@ public class Main {
         toolsExerciser.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				try {
-          		  org.reprap.steppertestgui.Main gui = new org.reprap.steppertestgui.Main();
+          		  org.reprap.gui.steppertest.Main gui = new org.reprap.gui.steppertest.Main();
                   gui.createAndShowGUI(false);
 				}
               	catch (Exception ex) {
