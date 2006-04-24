@@ -44,7 +44,10 @@ public class Main implements ChangeListener {
 		SNAPAddress myAddress = new SNAPAddress(localNodeNumber); 
 		communicator = new SNAPCommunicator(commPortName, baudRate, myAddress);
 		
-		extruder = new GenericExtruder(communicator, new SNAPAddress(props.getProperty("Extruder1Address")));
+		extruder = new GenericExtruder(communicator,
+				new SNAPAddress(props.getProperty("Extruder1Address")),
+				Integer.parseInt(props.getProperty("Extruder1Beta")),
+				Integer.parseInt(props.getProperty("Extruder1Rz")));
 	}
 	
 	public void createAndShowGUI(boolean terminateOnClose) throws IOException {

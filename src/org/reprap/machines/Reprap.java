@@ -67,7 +67,9 @@ public class Reprap implements CartesianPrinter {
 				Integer.parseInt(config.getProperty("Axis3Torque")));
 		
 		extruder = new GenericExtruder(communicator,
-				new SNAPAddress(config.getProperty("Extruder1Address")));
+				new SNAPAddress(config.getProperty("Extruder1Address")),
+				Integer.parseInt(config.getProperty("Extruder1Beta")),
+				Integer.parseInt(config.getProperty("Extruder1Rz")));
 
 		layer = new LinePrinter(motorX, motorY, extruder);
 

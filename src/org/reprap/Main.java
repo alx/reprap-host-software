@@ -189,11 +189,25 @@ public class Main {
                   gui.createAndShowGUI(false);
 				}
               	catch (Exception ex) {
-             		JOptionPane.showMessageDialog(null, "General exception: " + ex);
+             		JOptionPane.showMessageDialog(null, "Stepper exerciser exception: " + ex);
          			ex.printStackTrace();
              	}
 			}});
         toolsMenu.add(toolsExerciser);
+
+        JMenuItem toolsExtruderExerciser = new JMenuItem("Extruder exerciser", KeyEvent.VK_E);
+        toolsExtruderExerciser.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				try {
+					org.reprap.gui.extrudertest.Main.main(null);
+				}
+              	catch (Exception ex) {
+             		JOptionPane.showMessageDialog(null, "Extruder exerciser exception: " + ex);
+         			ex.printStackTrace();
+             	}
+			}});
+        toolsMenu.add(toolsExtruderExerciser);
+
         
         JMenu diagnosticsMenu = new JMenu("Diagnostics");
         toolsMenu.add(diagnosticsMenu);

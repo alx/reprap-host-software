@@ -170,6 +170,9 @@ public class SNAPCommunicator implements Communicator {
 	public Address getAddress() {
 		return localAddress;
 	}
+
+	public void dispose() {
+	}
 	
 	// TODO make a background receiver thread.  It can keep a pool of async receive contexts and
 	// fire them off if anything matching arrives.
