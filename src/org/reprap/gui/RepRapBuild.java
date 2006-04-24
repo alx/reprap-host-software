@@ -91,6 +91,7 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Properties;
 
 import javax.media.j3d.AmbientLight;
 import javax.media.j3d.Appearance;
@@ -125,16 +126,16 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 	// The relative location of the STL model of the working volume
 	// And the offset of the origin in it.
 
-	private static final String wv_location = "../lib/reprap-wv.stl";
-	private static final String worldName = "RepRap World";
-	private static final Vector3d wv_offset = new Vector3d(-17.3, -24.85, -2);
+	private String wv_location = "../lib/reprap-wv.stl";
+	private String worldName = "RepRap World";
+	private Vector3d wv_offset = new Vector3d(-17.3, -24.85, -2);
 
 	// Black, the background, and other colours
 	private static final Color3f black = new Color3f(0, 0, 0);
-	private static final Color3f bgColour = new Color3f(0.9f, 0.9f, 0.9f);
-	private static final Color3f rrRed = new Color3f(0.6f, 0.2f, 0.2f);
-	private static final Color3f rrGreen = new Color3f(0.3f, 0.4f, 0.3f);
-	private static final Color3f rrGrey = new Color3f(0.3f, 0.3f, 0.3f);
+	private Color3f bgColour = new Color3f(0.9f, 0.9f, 0.9f);
+	private Color3f selectedColour = new Color3f(0.6f, 0.2f, 0.2f);
+	private Color3f machineColour = new Color3f(0.3f, 0.4f, 0.3f);
+	private Color3f unselectedColour = new Color3f(0.3f, 0.3f, 0.3f);
 
 	//---- End of stuff to be loaded from config file
 
@@ -192,14 +193,20 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 	// do anything.
 
 	private void initialise() {
+		// Set everything up from the properties file here
+		// Also need to do the same in PreviewPanel
+		//Properties props = new Properties();
+		//URL url = ClassLoader.getSystemResource("reprap.properties");
+		//props.load(url.openStream());
+				
 		default_app = new Appearance();
-		default_app.setMaterial(new Material(rrGrey, black, rrGrey, black, 0f));
+		default_app.setMaterial(new Material(unselectedColour, black, unselectedColour, black, 0f));
 
 		picked_app = new Appearance();
-		picked_app.setMaterial(new Material(rrRed, black, rrRed, black, 0f));
+		picked_app.setMaterial(new Material(selectedColour, black, selectedColour, black, 0f));
 
 		wv_app = new Appearance();
-		wv_app.setMaterial(new Material(rrGreen, black, rrGreen, black, 0f));
+		wv_app.setMaterial(new Material(machineColour, black, machineColour, black, 0f));
 
 		initJava3d();
 
@@ -262,7 +269,6 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 		pickCanvas.setShapeLocation(e);
 
 		PickResult pickResult = pickCanvas.pickClosest();
-		boolean valid_object = false;
 		STLObject picked = null;
 
 		if (pickResult != null) // Got anything?

@@ -31,7 +31,7 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	// The relative location of the STL model of the working volume
 	// And the offset of the origin in it.
 
-	private static final String wv_location = "reprap-wv.stl";
+	private static final String wv_location = "../lib/reprap-wv.stl";
 	private static final String worldName = "RepRap World";
 	private static final Vector3d wv_offset = new Vector3d(-17.3, -24.85, -2);
 

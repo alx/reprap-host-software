@@ -34,18 +34,18 @@ import com.sun.j3d.utils.geometry.Cylinder;
 abstract public class Panel3D extends JPanel {
 
 	// Translate and zoom scaling factors
-	protected static final double mouse_tf = 50;
-	protected static final double mouse_zf = 50;
+	protected double mouse_tf = 50;
+	protected double mouse_zf = 50;
 
-	protected static final double xwv = 300; // The RepRap machine...
-	protected static final double ywv = 300; // ...working volume in mm.
-	protected static final double zwv = 300;
+	protected double xwv = 300; // The RepRap machine...
+	protected double ywv = 300; // ...working volume in mm.
+	protected double zwv = 300;
 
 	// Factors for front and back clipping planes and so on
-	protected static final double RADFAC = 0.7;
-	protected static final double BACKFAC = 2.0;
-	protected static final double FRONTFAC = 0.025;
-	protected static final double BOUNDFAC = 3.0;
+	protected double RADFAC = 0.7;
+	protected double BACKFAC = 2.0;
+	protected double FRONTFAC = 0.025;
+	protected double BOUNDFAC = 3.0;
 
 	// The world in the Applet
 	protected VirtualUniverse universe = null;
@@ -189,12 +189,8 @@ abstract public class Panel3D extends JPanel {
 		locale.addBranchGraph(sceneBranchGroup);
 		addViewBranchGroup(locale, viewBranchGroup);
 
-		//onDoneInit( );
 	}
 
-	//    protected void onDoneInit( )
-	//    {
-	//    }
 
 	protected PhysicalBody createPhysicalBody() {
 		return new PhysicalBody();
