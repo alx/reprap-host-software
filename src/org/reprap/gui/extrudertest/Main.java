@@ -3,14 +3,19 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.URL;
 import java.util.Properties;
+import javax.swing.JButton;
 
 import javax.swing.JCheckBox;
 
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JSlider;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
+import javax.swing.event.ChangeEvent;
+import javax.swing.event.ChangeListener;
 
 import org.reprap.comms.Communicator;
 import org.reprap.comms.snap.SNAPAddress;
@@ -33,6 +38,9 @@ public class Main extends javax.swing.JDialog {
 	private JLabel jLabel1;
 	private JLabel jLabel2;
 	private JLabel jLabel4;
+	private JButton extrudeButton;
+	private JLabel jLabel5;
+	private JSlider extruderSpeed;
 	private JCheckBox heaterActive;
 	private JTextField currentTemperature;
 	private JLabel jLabel3;
@@ -47,6 +55,8 @@ public class Main extends javax.swing.JDialog {
 	private Thread pollThread;
 	private boolean pollThreadExiting = false;
 
+	private boolean extruding = false;
+	
 	/**
 	* Auto-generated main method to display this JDialog
 	*/
@@ -76,6 +86,12 @@ public class Main extends javax.swing.JDialog {
 
 		initGUI();
 
+		extruderSpeed.setMinimum(0);
+		extruderSpeed.setMaximum(255);
+		extruderSpeed.setValue(200);
+		extruderSpeed.setMajorTickSpacing(64);
+		extruderSpeed.setMinorTickSpacing(16);
+		
 		pollThread = new Thread() {
 			public void run() {
 				while(!pollThreadExiting) {
@@ -101,9 +117,9 @@ public class Main extends javax.swing.JDialog {
 	public void dispose() {
 		pollThreadExiting = true;
 		pollThread.interrupt();
-		super.dispose();
 		extruder.dispose();
 		communicator.dispose();
+		super.dispose();
 	}
 	
 	private void initGUI() {
@@ -167,11 +183,40 @@ public class Main extends javax.swing.JDialog {
 				});
 			}
 			{
+				extruderSpeed = new JSlider();
+				getContentPane().add(extruderSpeed);
+				extruderSpeed.setBounds(147, 154, 238, 28);
+				extruderSpeed.setPaintTicks(true);
+				extruderSpeed.addChangeListener(new ChangeListener() {
+					public void stateChanged(ChangeEvent evt) {
+						extruderSpeedStateChanged(evt);
+					}
+				});
+			}
+			{
+				jLabel5 = new JLabel();
+				getContentPane().add(jLabel5);
+				jLabel5.setText("Extruder speed");
+				jLabel5.setBounds(7, 154, 140, 28);
+				jLabel5.setHorizontalAlignment(SwingConstants.RIGHT);
+			}
+			{
+				extrudeButton = new JButton();
+				getContentPane().add(extrudeButton);
+				extrudeButton.setText("Extrude");
+				extrudeButton.setBounds(154, 189, 105, 28);
+				extrudeButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent evt) {
+						extrudeButtonActionPerformed(evt);
+					}
+				});
+			}
+			{
 				getContentPane().setLayout(null);
 				this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 				this.setTitle("Extruder Exerciser");
 			}
-			setSize(400, 300);
+			this.setSize(400, 263);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -187,10 +232,41 @@ public class Main extends javax.swing.JDialog {
 	}
 
 	private void setTemperature() {
-		if (heaterActive.isSelected())
-			extruder.setTemperature(Integer.parseInt(desiredTemperature.getText()));
-		else
-			extruder.setTemperature(0);
+		try {
+			if (heaterActive.isSelected())
+				extruder.setTemperature(Integer.parseInt(desiredTemperature.getText()));
+			else
+				extruder.setTemperature(0);
+		}
+		catch (Exception ex) {
+			JOptionPane.showMessageDialog(null, "Exception setting temperatuer: " + ex);
+			ex.printStackTrace();
+		}
 	}
 	
+	private void extruderSpeedStateChanged(ChangeEvent evt) {
+		if (extruding)
+			setExtruderSpeed();
+	}
+	
+	private void extrudeButtonActionPerformed(ActionEvent evt) {
+		if (extruding) {
+			extruding = false;
+			extrudeButton.setText("Extrude");
+		} else {
+			extruding = true;
+			extrudeButton.setText("Stop");
+		}
+		setExtruderSpeed();
+	}
+
+	private void setExtruderSpeed() {
+		try {
+			extruder.setExtrusion(extruding?extruderSpeed.getValue():0);
+		} catch (Exception ex) {
+			JOptionPane.showMessageDialog(null, "Extruder exception: " + ex);
+			ex.printStackTrace();
+		}
+	}
+
 }

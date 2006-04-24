@@ -70,17 +70,37 @@ public class GenericExtruder extends Device {
 		sendMessage(request);
 	}
 
-	public void setTemperature(int temperature) {
+	public void setTemperature(int temperature) throws Exception {
+		// Currently just implemented as a chop-chop heater by
+		// setting safety cutoff temperature to desired
+		// temperature.  This can be improved by modelling
+		// the thermal characteristics and directly setting
+		// the appropriate heat output, rather than full-on/full off
+		
 		requestedTemperature = temperature;
+		
+		// safety margin
+		double safetyTemperature = (double)temperature;
+		
+		// Now convert safety level to equivalent raw PIC temperature value
+		double safetyResistance = calculateResistanceForTemperature(safetyTemperature);
+		// Determine equivalent raw value
+		int safetyPICTemp = calculatePicTempForResistance(safetyResistance);
+		if (safetyPICTemp < 0) safetyPICTemp = 0;
+		if (safetyPICTemp > 255) safetyPICTemp = 255;
+		
+		double a = calculateTemperature(calculateResistance(safetyPICTemp, safetyPICTemp));
+		
 		if (temperature == 0)
 			setHeater(0, 0);
 		else
-			setHeater(20, 30);
+			setHeater(255, safetyPICTemp);
 			
 	}
 	
-	private synchronized void setHeater(int heat, int safetyCutoff) {
-		
+	private synchronized void setHeater(int heat, int safetyCutoff) throws IOException {
+		//System.out.println("Set heater to " + heat + " limit " + safetyCutoff);
+		sendMessage(new RequestSetHeat((byte)heat, (byte)safetyCutoff));
 	}
 
 	public double getTemperature() {
@@ -96,29 +116,30 @@ public class GenericExtruder extends Device {
 		OutgoingMessage request = new OutgoingBlankMessage(MSG_GetTemp);
 		IncomingContext replyContext = sendMessage(request);
 		RequestTemperatureResponse reply = new RequestTemperatureResponse(replyContext);
-		
 		double resistance = calculateResistance(reply.getHeat(), reply.getCalibration());
 		
 		currentTemperature = calculateTemperature(resistance);
 	}
 
 	/**
-	 * @param heat
-	 * @param calibration
+	 * Calculates the actual resistance of the thermistor
+	 * from the raw timer values received from the PIC. 
+	 * @param picTemp
+	 * @param calibrationPicTemp
 	 * @return
 	 */
-	private double calculateResistance(int heat, int calibration) {
+	private double calculateResistance(int picTemp, int calibrationPicTemp) {
 		// TODO remove hard coded constants
 		// TODO should use calibration value instead of first principles
 		
-		double resistor = 10000;                   // ohms
+		//double resistor = 10000;                   // ohms
 		double c = 1e-6;                           // farads
 		double clock = 4000000.0 / (4.0 * 256.0);  // hertz		
 		double vdd = 5.0;                          // volts
 		
 		double vRef = 0.25 * vdd + vdd * vRefFactor / 32.0;  // volts
 		
-		double T = heat / clock; // seconds
+		double T = picTemp / clock; // seconds
 		
 		double resistance =	-T / (Math.log(1 - vRef / vdd) * c);  // ohms
 		
@@ -132,6 +153,30 @@ public class GenericExtruder extends Device {
 	 */
 	private double calculateTemperature(double resistance) {
 		return (1.0 / (1.0 / absZero + Math.log(resistance/rz) / beta)) - absZero;
+	}
+	
+	private double calculateResistanceForTemperature(double temperature) {
+		return rz * Math.exp(beta * (1/(temperature + absZero) - 1/absZero));
+	}
+	
+	/**
+	 * Calculates an expected PIC Temperature expected for a
+	 * given resistance 
+	 * @param resistance
+	 * @return
+	 */
+	private int calculatePicTempForResistance(double resistance) {
+		double c = 1e-6;                           // farads
+		double clock = 4000000.0 / (4.0 * 256.0);  // hertz		
+		double vdd = 5.0;                          // volts
+		
+		double vRef = 0.25 * vdd + vdd * vRefFactor / 32.0;  // volts
+		
+		double T = -resistance * (Math.log(1 - vRef / vdd) * c);
+
+		double picTemp = T * clock;
+		return (int)Math.round(picTemp);
+		
 	}
 	
 	protected class RequestTemperatureResponse extends IncomingMessage {
@@ -159,6 +204,18 @@ public class GenericExtruder extends Device {
 		
 	}
 
+	protected class RequestSetHeat extends OutgoingMessage {
+		byte [] message;
+		
+		RequestSetHeat(byte heat, byte cutoff) {
+			message = new byte [] { MSG_SetHeat, heat, cutoff }; 
+		}
+		
+		public byte[] getBinary() {
+			return message;
+		}
+		
+	}
 
 	
 }
