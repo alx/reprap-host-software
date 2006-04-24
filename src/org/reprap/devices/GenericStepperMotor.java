@@ -54,6 +54,9 @@ public class GenericStepperMotor extends Device {
 		}
 	}
 	
+	public void dispose() {
+	}
+	
 	/**
 	 * Set the motor speed (or turn it off) 
 	 * @param speed A value between -255 and 255.
@@ -309,5 +312,5 @@ public class GenericStepperMotor extends Device {
 		public int minimum;
 		public int maximum;
 	}
-	
+
 }

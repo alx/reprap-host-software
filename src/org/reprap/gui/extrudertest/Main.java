@@ -12,6 +12,7 @@ import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 
+import org.reprap.comms.Communicator;
 import org.reprap.comms.snap.SNAPAddress;
 import org.reprap.comms.snap.SNAPCommunicator;
 import org.reprap.devices.GenericExtruder;
@@ -37,7 +38,7 @@ public class Main extends javax.swing.JDialog {
 	private JLabel jLabel3;
 	private JTextField desiredTemperature;
 
-	private SNAPCommunicator communicator;
+	private Communicator communicator;
 	private GenericExtruder extruder;
 	
 	private final int localNodeNumber = 0;
@@ -79,8 +80,8 @@ public class Main extends javax.swing.JDialog {
 			public void run() {
 				while(!pollThreadExiting) {
 					try {
-						RefreshTemperature();
 						Thread.sleep(500);
+						RefreshTemperature();
 					}
 					catch (InterruptedException ex) {
 						// This is normal when shutting down, so ignore
@@ -144,7 +145,7 @@ public class Main extends javax.swing.JDialog {
 				currentTemperature = new JTextField();
 				getContentPane().add(currentTemperature);
 				currentTemperature.setHorizontalAlignment(SwingConstants.RIGHT);
-				currentTemperature.setText("0");
+				currentTemperature.setText("");
 				currentTemperature.setEditable(false);
 				currentTemperature.setBounds(182, 63, 63, 28);
 			}

@@ -185,8 +185,7 @@ public class Main {
         toolsExerciser.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				try {
-          		  org.reprap.gui.steppertest.Main gui = new org.reprap.gui.steppertest.Main();
-                  gui.createAndShowGUI(false);
+					org.reprap.gui.steppertest.Main.main(null);
 				}
               	catch (Exception ex) {
              		JOptionPane.showMessageDialog(null, "Stepper exerciser exception: " + ex);

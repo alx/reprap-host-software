@@ -36,7 +36,8 @@ import org.reprap.devices.GenericStepperMotor;
 /// request if they occur very quickly.  It still has to be sent eventually
 /// or else the motor will not go to the correct location represented in the gui.
 /// One way to avoid this is for the short term to use keys instead of the mouse
-/// (eg pgup, pgdown) and don't press too quickly.
+/// (eg pgup, pgdown) and don't press too quickly.  This problem has no
+/// consequences for normal software driven operation, just interactive use.
 
 public class StepperPanel extends JPanel implements ChangeListener {
 
@@ -285,5 +286,10 @@ public class StepperPanel extends JPanel implements ChangeListener {
 		positionActual.setValue(motor.getPosition());
 		positionRequest.setValue(motor.getPosition());
 		torque.setSelected(true);
+	}
+	
+	public void dispose() {
+		motor.dispose();
+		updateTimer.cancel();
 	}
 }

@@ -14,5 +14,7 @@ public interface Communicator {
 	
 	public void close();
 	
+	public void dispose();
+	
 	public Address getAddress();
 }

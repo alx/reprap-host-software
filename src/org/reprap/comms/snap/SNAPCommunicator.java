@@ -58,7 +58,9 @@ public class SNAPCommunicator implements Communicator {
 	
 	public void close()
 	{
-		port.close();
+		if (port != null)
+			port.close();
+		port = null;
 	}
 	
 	public IncomingContext sendMessage(Device device,
@@ -172,6 +174,7 @@ public class SNAPCommunicator implements Communicator {
 	}
 
 	public void dispose() {
+		close();
 	}
 	
 	// TODO make a background receiver thread.  It can keep a pool of async receive contexts and

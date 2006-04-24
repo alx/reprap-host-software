@@ -8,7 +8,16 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Properties;
 
-import javax.swing.*;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -17,8 +26,8 @@ import org.reprap.comms.snap.SNAPAddress;
 import org.reprap.comms.snap.SNAPCommunicator;
 import org.reprap.devices.GenericExtruder;
 
-public class Main implements ChangeListener {
-	
+public class Main extends javax.swing.JDialog implements ChangeListener {
+
 	private final int localNodeNumber = 0;
 	private final int baudRate = 19200;
 	
@@ -35,7 +44,15 @@ public class Main implements ChangeListener {
 	
 	Communicator communicator;
 	
-	public Main() throws Exception {
+	public static void main(String[] args) throws Exception {
+		JFrame frame = new JFrame();
+		Main inst = new Main(frame);
+		inst.setVisible(true);
+	}
+	
+	public Main(JFrame frame) throws Exception {
+		super(frame);
+		
 		Properties props = new Properties();
 		URL url = ClassLoader.getSystemResource("reprap.properties");
 		props.load(url.openStream());
@@ -48,22 +65,28 @@ public class Main implements ChangeListener {
 				new SNAPAddress(props.getProperty("Extruder1Address")),
 				Integer.parseInt(props.getProperty("Extruder1Beta")),
 				Integer.parseInt(props.getProperty("Extruder1Rz")));
+		
+		initGUI();
 	}
 	
-	public void createAndShowGUI(boolean terminateOnClose) throws IOException {
-		JFrame.setDefaultLookAndFeelDecorated(false);
-		JFrame frame = new JFrame("Stepper Exerciser") {
-			public void dispose() {
-				communicator.close();
-			}
-		};
-		frame.setDefaultCloseOperation(terminateOnClose?JFrame.EXIT_ON_CLOSE:JFrame.DISPOSE_ON_CLOSE);
-		
+	public void dispose() {
+		super.dispose();
+		extruder.dispose();
+		motorX.dispose();
+		motorY.dispose();
+		motorZ.dispose();
+		communicator.dispose();
+	}
+	
+	private void initGUI() throws Exception {
+		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		setTitle("Stepper Exerciser");
+
 		JPanel panel = new JPanel(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 		
-		frame.getContentPane().add(panel);
-		
+		getContentPane().add(panel);
+
 		c.gridx = 0;
 		c.gridy = 0;
 		c.gridwidth = 2;
@@ -160,27 +183,24 @@ public class Main implements ChangeListener {
 		});
 		buttons.add(lineButton);
 		
-		JButton squareButton = new JButton("Square Test");
-		squareButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				onSquareButton();
-			}
-		});
+		//JButton squareButton = new JButton("Square Test");
+		//squareButton.addActionListener(new ActionListener() {
+		//	public void actionPerformed(ActionEvent evt) {
+		//		onSquareButton();
+		//	}
+		//});
 		//buttons.add(squareButton);
 		
-		JButton circleButton = new JButton("Circle Test");
-		circleButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				onCircleButton();
-			}
-		});
+		//JButton circleButton = new JButton("Circle Test");
+		//circleButton.addActionListener(new ActionListener() {
+		//	public void actionPerformed(ActionEvent evt) {
+		//		onCircleButton();
+		//	}
+		//});
 		//buttons.add(circleButton);
-		
-		
-		frame.pack();
-		frame.setVisible(true);
+pack();
 	}
-	
+
 	public void stateChanged(ChangeEvent evt) {
 		try {
 			Object srcObj = evt.getSource();
@@ -246,20 +266,5 @@ public class Main implements ChangeListener {
 		motorX.loadPosition();
 		motorY.loadPosition();
 	}
-	
-	public static void main(String[] args) {
-		
-		javax.swing.SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					Main gui = new Main();
-					gui.createAndShowGUI(true);
-				}
-				catch (Exception ex) {
-					JOptionPane.showMessageDialog(null, "General exception: " + ex);
-					ex.printStackTrace();
-				}
-			}
-		});
-	}
+
 }

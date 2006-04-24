@@ -37,10 +37,12 @@ public class GenericExtruder extends Device {
 		
 		pollThread = new Thread() {
 			public void run() {
+				boolean first = true;
 				while(!pollThreadExiting) {
 					try {
+						if (!first) Thread.sleep(2000);
 						RefreshTemperature();
-						Thread.sleep(2000);
+						first = false;
 					}
 					catch (InterruptedException ex) {
 						// This is normal when shutting down, so ignore
