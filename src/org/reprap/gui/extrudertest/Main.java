@@ -38,6 +38,7 @@ public class Main extends javax.swing.JDialog {
 	private JLabel jLabel1;
 	private JLabel jLabel2;
 	private JLabel jLabel4;
+	private JCheckBox materialEmpty;
 	private JButton extrudeButton;
 	private JLabel jLabel5;
 	private JSlider extruderSpeed;
@@ -98,6 +99,7 @@ public class Main extends javax.swing.JDialog {
 					try {
 						Thread.sleep(500);
 						RefreshTemperature();
+						RefreshMaterialSensor();
 					}
 					catch (InterruptedException ex) {
 						// This is normal when shutting down, so ignore
@@ -112,6 +114,11 @@ public class Main extends javax.swing.JDialog {
 	protected void RefreshTemperature() {
 		int temperature = (int)Math.round(extruder.getTemperature());
 		currentTemperature.setText(Integer.toString(temperature));
+	}
+	
+	protected void RefreshMaterialSensor() {
+		boolean empty = extruder.isEmpty();
+		materialEmpty.setSelected(empty);
 	}
 
 	public void dispose() {
@@ -175,7 +182,7 @@ public class Main extends javax.swing.JDialog {
 				heaterActive = new JCheckBox();
 				getContentPane().add(heaterActive);
 				heaterActive.setText("Heater Active");
-				heaterActive.setBounds(182, 21, 126, 28);
+				heaterActive.setBounds(182, 35, 126, 21);
 				heaterActive.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent evt) {
 						heaterActiveActionPerformed(evt);
@@ -210,6 +217,12 @@ public class Main extends javax.swing.JDialog {
 						extrudeButtonActionPerformed(evt);
 					}
 				});
+			}
+			{
+				materialEmpty = new JCheckBox();
+				getContentPane().add(materialEmpty);
+				materialEmpty.setText("Feedstock empty");
+				materialEmpty.setBounds(182, 14, 175, 21);
 			}
 			{
 				getContentPane().setLayout(null);

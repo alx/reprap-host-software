@@ -8,12 +8,14 @@ import org.reprap.comms.Communicator;
 import org.reprap.comms.IncomingContext;
 import org.reprap.comms.IncomingMessage;
 import org.reprap.comms.OutgoingMessage;
+import org.reprap.comms.IncomingMessage.InvalidPayloadException;
 import org.reprap.comms.messages.OutgoingBlankMessage;
 import org.reprap.comms.messages.OutgoingByteMessage;
 
 public class GenericExtruder extends Device {
 
 	public static final byte MSG_SetActive = 1;
+	public static final byte MSG_IsEmpty = 8;
 	public static final byte MSG_SetHeat = 9;
 	public static final byte MSG_GetTemp = 10;
 	public static final byte MSG_SetVRef = 52;
@@ -23,6 +25,8 @@ public class GenericExtruder extends Device {
 	
 	private double requestedTemperature = 0;
 	private double currentTemperature = 0;
+	
+	private boolean currentMaterialOutSensor = false;
 	
 	private Thread pollThread;
 	private boolean pollThreadExiting = false;
@@ -49,6 +53,7 @@ public class GenericExtruder extends Device {
 						// Sleep is beforehand to prevent runaway on exception
 						if (!first) Thread.sleep(2000);
 						RefreshTemperature();
+						RefreshEmptySensor();
 						first = false;
 					}
 					catch (InterruptedException ex) {
@@ -110,16 +115,33 @@ public class GenericExtruder extends Device {
 		sendMessage(new RequestSetHeat((byte)heat, (byte)safetyCutoff));
 	}
 
+	public boolean isEmpty() {
+		return currentMaterialOutSensor;
+	}
+	
+	private synchronized void RefreshEmptySensor() throws IOException {
+		// TODO in future, this should use the notification mechanism rather than polling (when fully working)
+		//System.out.println("Refreshing sensor");
+		try {
+			IncomingContext replyContext = sendMessage(new OutgoingBlankMessage(MSG_IsEmpty));
+			RequestIsEmptyResponse reply = new RequestIsEmptyResponse(replyContext);
+		
+			currentMaterialOutSensor = reply.getValue() == 0 ? false : true; 
+		} catch (InvalidPayloadException e) {
+			throw new IOException();
+		}
+	}
+	
 	public double getTemperature() {
 		return currentTemperature;
 	}
 	
-	private synchronized void RefreshTemperature() throws Exception {
+	private void RefreshTemperature() throws Exception {
 		//System.out.println("Refreshing temperature");
 		getDeviceTemperature();
 	}
 	
-	private void getDeviceTemperature() throws Exception {
+	private synchronized void getDeviceTemperature() throws Exception {
 		OutgoingMessage request = new OutgoingBlankMessage(MSG_GetTemp);
 		IncomingContext replyContext = sendMessage(request);
 		RequestTemperatureResponse reply = new RequestTemperatureResponse(replyContext);
@@ -191,12 +213,12 @@ public class GenericExtruder extends Device {
 		
 	}
 	
-	private void setVref(int ref) throws IOException {
+	private synchronized void setVref(int ref) throws IOException {
 		sendMessage(new OutgoingByteMessage(MSG_SetVRef, (byte)ref));		
 		vRefFactor = ref;
 	}
 
-	private void setTempScaler(int scale) throws IOException {
+	private synchronized void setTempScaler(int scale) throws IOException {
 		sendMessage(new OutgoingByteMessage(MSG_SetTempScaler, (byte)scale));		
 		tempScaler = scale;
 	}
@@ -239,5 +261,26 @@ public class GenericExtruder extends Device {
 		}
 		
 	}
+	
+	protected class RequestIsEmptyResponse extends IncomingMessage {
+
+		public RequestIsEmptyResponse(IncomingContext incomingContext)
+		throws IOException {
+			super(incomingContext);
+		}
+		
+		public byte getValue() throws InvalidPayloadException {
+			byte [] reply = getPayload();
+			if (reply == null || reply.length != 2)
+				throw new InvalidPayloadException();
+			return reply[1];
+		}
+		
+		protected boolean isExpectedPacketType(byte packetType) {
+			return packetType == MSG_IsEmpty;
+		}
+		
+	}
+
 
 }
