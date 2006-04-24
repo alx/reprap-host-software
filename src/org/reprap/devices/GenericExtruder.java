@@ -16,6 +16,8 @@ public class GenericExtruder extends Device {
 	public static final byte MSG_SetActive = 1;
 	public static final byte MSG_SetHeat = 9;
 	public static final byte MSG_GetTemp = 10;
+	public static final byte MSG_SetVRef = 52;
+	public static final byte MSG_SetTempScaler = 53;
 	
 	private static final double absZero = 273.15;
 	
@@ -25,21 +27,26 @@ public class GenericExtruder extends Device {
 	private Thread pollThread;
 	private boolean pollThreadExiting = false;
 
-	private int vRefFactor = 3;
+	private int vRefFactor = 3;  // Default firmware value
+	private int tempScaler = 7;  // Default firmware value
 	
 	private double beta, rz;
 	
-	public GenericExtruder(Communicator communicator, Address address, double beta, double rz) {
+	public GenericExtruder(Communicator communicator, Address address, double beta, double rz) throws IOException {
 		super(communicator, address);
 
 		this.beta = beta;
 		this.rz = rz;
+
+		//setVref(3);
+		//setTempScaler(7);
 		
 		pollThread = new Thread() {
 			public void run() {
 				boolean first = true;
 				while(!pollThreadExiting) {
 					try {
+						// Sleep is beforehand to prevent runaway on exception
 						if (!first) Thread.sleep(2000);
 						RefreshTemperature();
 						first = false;
@@ -116,6 +123,9 @@ public class GenericExtruder extends Device {
 		OutgoingMessage request = new OutgoingBlankMessage(MSG_GetTemp);
 		IncomingContext replyContext = sendMessage(request);
 		RequestTemperatureResponse reply = new RequestTemperatureResponse(replyContext);
+
+		//System.out.println("Raw temp " + reply.getHeat());
+
 		double resistance = calculateResistance(reply.getHeat(), reply.getCalibration());
 		
 		currentTemperature = calculateTemperature(resistance);
@@ -134,7 +144,8 @@ public class GenericExtruder extends Device {
 		
 		//double resistor = 10000;                   // ohms
 		double c = 1e-6;                           // farads
-		double clock = 4000000.0 / (4.0 * 256.0);  // hertz		
+		double scale = 1 << (tempScaler+1);
+		double clock = 4000000.0 / (4.0 * scale);  // hertz		
 		double vdd = 5.0;                          // volts
 		
 		double vRef = 0.25 * vdd + vdd * vRefFactor / 32.0;  // volts
@@ -167,7 +178,8 @@ public class GenericExtruder extends Device {
 	 */
 	private int calculatePicTempForResistance(double resistance) {
 		double c = 1e-6;                           // farads
-		double clock = 4000000.0 / (4.0 * 256.0);  // hertz		
+		double scale = 1 << (tempScaler+1);
+		double clock = 4000000.0 / (4.0 * scale);  // hertz		
 		double vdd = 5.0;                          // volts
 		
 		double vRef = 0.25 * vdd + vdd * vRefFactor / 32.0;  // volts
@@ -178,6 +190,17 @@ public class GenericExtruder extends Device {
 		return (int)Math.round(picTemp);
 		
 	}
+	
+	private void setVref(int ref) throws IOException {
+		sendMessage(new OutgoingByteMessage(MSG_SetVRef, (byte)ref));		
+		vRefFactor = ref;
+	}
+
+	private void setTempScaler(int scale) throws IOException {
+		sendMessage(new OutgoingByteMessage(MSG_SetTempScaler, (byte)scale));		
+		tempScaler = scale;
+	}
+
 	
 	protected class RequestTemperatureResponse extends IncomingMessage {
 		public RequestTemperatureResponse(IncomingContext incomingContext) throws IOException {
@@ -217,5 +240,4 @@ public class GenericExtruder extends Device {
 		
 	}
 
-	
 }
