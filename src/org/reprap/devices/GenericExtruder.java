@@ -26,7 +26,10 @@ public class GenericExtruder extends Device {
 	private double requestedTemperature = 0;
 	private double currentTemperature = 0;
 	
-	private boolean currentMaterialOutSensor = true;
+	private boolean currentMaterialOutSensor = false;
+	
+	// Indicates when polled values are first ready
+	private boolean sensorsInitialised = false;
 	
 	private Thread pollThread;
 	private boolean pollThreadExiting = false;
@@ -54,6 +57,7 @@ public class GenericExtruder extends Device {
 						if (!first) Thread.sleep(2000);
 						RefreshTemperature();
 						RefreshEmptySensor();
+						sensorsInitialised = true;
 						first = false;
 					}
 					catch (InterruptedException ex) {
@@ -116,7 +120,18 @@ public class GenericExtruder extends Device {
 	}
 
 	public boolean isEmpty() {
+		awaitSensorsInitialised();
 		return currentMaterialOutSensor;
+	}
+	
+	private void awaitSensorsInitialised() {
+		// Simple minded wait to let sensors become valid
+		while(!sensorsInitialised) {
+			try {
+				Thread.sleep(100);
+			} catch (InterruptedException e) {
+			}
+		}
 	}
 	
 	private synchronized void RefreshEmptySensor() throws IOException {
@@ -137,6 +152,7 @@ public class GenericExtruder extends Device {
 	}
 
 	public double getTemperature() {
+		awaitSensorsInitialised();
 		return currentTemperature;
 	}
 	
