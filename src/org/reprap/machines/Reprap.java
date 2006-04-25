@@ -100,6 +100,8 @@ public class Reprap implements CartesianPrinter {
 
 	public void printTo(double x, double y, double z) throws ReprapException, IOException {
 		
+		EnsureHot();
+
 		if ((x != convertToPositionX(layer.getCurrentX()) || y != convertToPositionY(layer.getCurrentY())) && z != currentZ)
 			throw new ReprapException("Reprap cannot print a line across 3 axes simultaneously");
 
@@ -155,11 +157,12 @@ public class Reprap implements CartesianPrinter {
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#terminate()
 	 */
-	public void terminate() throws IOException {
+	public void terminate() throws Exception {
 		motorX.setIdle();
 		motorY.setIdle();
 		motorX.setIdle();
 		extruder.setExtrusion(0);
+		extruder.setTemperature(0);
 	}
 
 	/**
@@ -189,6 +192,27 @@ public class Reprap implements CartesianPrinter {
 	
 	public void setPreviewer(Previewer previewer) {
 		this.previewer = previewer;
+	}
+
+	public void setTemperature(int temperature) throws Exception {
+		extruder.setTemperature(temperature);
+	}
+	
+	private void EnsureHot() {
+		double threshold = extruder.getTemperatureTarget() * 0.95;
+		
+		if (extruder.getTemperature() >= threshold)
+			return;
+
+		while(extruder.getTemperature() < threshold) {
+			previewer.setMessage("Waiting for extruder to reach working temperature (" + Math.round(extruder.getTemperature()) + ")");
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+			}
+		}
+		previewer.setMessage(null);
+		
 	}
 }
 

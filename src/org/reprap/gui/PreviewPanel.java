@@ -58,11 +58,14 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	private java.util.List stls = new ArrayList(); // All the STLs to be built
 	private int objectIndex = 0; // Counter for STLs as they are loaded
 
+	private StatusMessage statusWindow;
+	
 	/**
 	 * Constructor
 	 */
 	public PreviewPanel() {
 		initialise();
+		statusWindow = new StatusMessage(new JFrame());
 	}
 
 	/**
@@ -261,6 +264,15 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	 */
 	public void setLayerPause(JCheckBoxMenuItem layerPause) {
 		layerPauseCheckbox = layerPause;
+	}
+
+	public void setMessage(String message) {
+		if (message == null)
+			statusWindow.setVisible(false);
+		else {
+			statusWindow.setMessage(message);
+			statusWindow.setVisible(true);
+		}
 	}
 
 }

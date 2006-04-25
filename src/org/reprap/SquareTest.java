@@ -19,6 +19,7 @@ public class SquareTest {
 		reprap.selectMaterial(0);
 		reprap.setSpeed(248);
 		reprap.setExtruderSpeed(180);
+		reprap.setTemperature(60);
 
 		// Print a square, rotated 45 degrees
 		reprap.moveTo(20, 5, 2);

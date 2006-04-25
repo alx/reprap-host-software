@@ -131,7 +131,11 @@ public class GenericExtruder extends Device {
 			throw new IOException();
 		}
 	}
-	
+
+	public double getTemperatureTarget() {
+		return requestedTemperature;
+	}
+
 	public double getTemperature() {
 		return currentTemperature;
 	}

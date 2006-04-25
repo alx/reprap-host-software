@@ -67,4 +67,7 @@ public class NullCartesianMachine implements CartesianPrinter {
 		this.previewer = previewer;
 	}
 
+	public void setTemperature(int temperature) {
+	}
+
 }
