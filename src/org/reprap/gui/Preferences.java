@@ -151,6 +151,7 @@ public class Preferences extends javax.swing.JDialog {
 		super(frame);
 		initGUI();
 		loadPreferences();
+        Utility.centerWindowOnParent(this, frame);
 	}
 	
 	private void initGUI() {
