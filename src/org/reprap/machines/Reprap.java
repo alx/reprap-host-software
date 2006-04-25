@@ -91,6 +91,8 @@ public class Reprap implements CartesianPrinter {
 	}
 
 	public void moveTo(double x, double y, double z) throws ReprapException, IOException {
+		if (isCancelled()) return;
+
 		layer.moveTo(convertToStepX(x), convertToStepY(y), speed);
 		if (z != currentZ) {
 			if (!dummyZ) motorZ.seekBlocking(speed, convertToStepZ(z));
@@ -99,6 +101,7 @@ public class Reprap implements CartesianPrinter {
 	}
 
 	public void printTo(double x, double y, double z) throws ReprapException, IOException {
+		if (isCancelled()) return;
 		
 		EnsureNotEmpty();
 		EnsureHot();
@@ -110,6 +113,9 @@ public class Reprap implements CartesianPrinter {
 			previewer.addSegment(convertToPositionX(layer.getCurrentX()),
 					convertToPositionY(layer.getCurrentY()), currentZ,
 					x, y, z);
+
+		if (isCancelled()) return;
+		
 		
 		if (x == convertToPositionX(layer.getCurrentX()) && y == convertToPositionY(layer.getCurrentY()) && z != currentZ) {
 			// Print a simple vertical extrusion
@@ -127,8 +133,13 @@ public class Reprap implements CartesianPrinter {
 	}
 
 	public void selectMaterial(int materialIndex) {
+		if (isCancelled()) return;
+
 		if (previewer != null)
 			previewer.setMaterial(materialIndex);
+
+		if (isCancelled()) return;
+		// TODO Select new material
 	}
 
 	protected int convertToStepX(double n) {
@@ -211,14 +222,15 @@ public class Reprap implements CartesianPrinter {
 	private void EnsureNotEmpty() {
 		if (!extruder.isEmpty()) return;
 		
-		while (extruder.isEmpty()) {
-			previewer.setMessage("Extruder is out of feedstock.  Waiting for refill.");
+		while (extruder.isEmpty() && !isCancelled()) {
+			if (previewer != null)
+				previewer.setMessage("Extruder is out of feedstock.  Waiting for refill.");
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 			}
 		}
-		previewer.setMessage(null);
+		if (previewer != null) previewer.setMessage(null);
 	}
 	
 	private void EnsureHot() {
@@ -227,15 +239,26 @@ public class Reprap implements CartesianPrinter {
 		if (extruder.getTemperature() >= threshold)
 			return;
 
-		while(extruder.getTemperature() < threshold) {
-			previewer.setMessage("Waiting for extruder to reach working temperature (" + Math.round(extruder.getTemperature()) + ")");
+		while(extruder.getTemperature() < threshold && !isCancelled()) {
+			if (previewer != null) previewer.setMessage("Waiting for extruder to reach working temperature (" + Math.round(extruder.getTemperature()) + ")");
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 			}
 		}
-		previewer.setMessage(null);
+		if (previewer != null) previewer.setMessage(null);
 		
+	}
+
+	public boolean isCancelled() {
+		if (previewer == null)
+			return false;
+		return previewer.isCancelled();
+	}
+	
+	public void initialise() {
+		if (previewer != null)
+			previewer.reset();
 	}
 }
 

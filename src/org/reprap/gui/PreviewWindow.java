@@ -37,5 +37,17 @@ public class PreviewWindow extends javax.swing.JFrame implements Previewer {
 	public void setMessage(String message) {
 		panel.setMessage(message);
 	}
+
+	public boolean isCancelled() {
+		return panel.isCancelled();
+	}
+	
+	public void reset() {
+		panel.reset();
+	}
+
+	public void setCancelled(boolean isCancelled) {
+		panel.setCancelled(isCancelled);
+	}
 	
 }

@@ -42,6 +42,8 @@ public class Main {
     private JCheckBoxMenuItem segmentPause;
     private JCheckBoxMenuItem layerPause;
     
+    private JMenuItem cancelMenuItem;
+    
     private JSplitPane panel;
 	
 	public Main() {
@@ -169,6 +171,14 @@ public class Main {
 			}});
         produceMenu.add(produceProduce);
 
+        cancelMenuItem = new JMenuItem("Cancel", KeyEvent.VK_P);
+        cancelMenuItem.setEnabled(false);
+        cancelMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				preview.setCancelled(true);
+			}});
+        produceMenu.add(cancelMenuItem);
+        
         produceMenu.addSeparator();
 
         segmentPause = new JCheckBoxMenuItem("Pause before segment");
@@ -282,27 +292,24 @@ public class Main {
 	}
 	
 	private void onProduce() {
-		
+        cancelMenuItem.setEnabled(true);
 		Thread t = new Thread() {
 			public void run() {
 				try {
 					// TODO Some kind of progress indicator would be good
-					// TODO Clear preview before starting
 					
 					if (!viewPreview.isSelected()) {
 						viewPreview.setSelected(true);
 						updateView();
 					}
 
-					preview.reset();
-					
 					preview.setSegmentPause(segmentPause);
 					preview.setLayerPause(layerPause);
 					
 					Producer producer = new Producer(preview, builder);
 					producer.produce();
 					producer.dispose();
-					
+			        cancelMenuItem.setEnabled(false);
 					JOptionPane.showMessageDialog(mainFrame, "Production complete");
 				}
 				catch (Exception ex) {

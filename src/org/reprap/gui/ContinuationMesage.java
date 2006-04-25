@@ -25,7 +25,8 @@ import javax.swing.SwingConstants;
 */
 public class ContinuationMesage extends javax.swing.JDialog {
 	private static Point lastScreenPosition = null;
-	
+	private JButton cancelButton;
+
 	private JTextField message;
 	private JButton okButton;
 
@@ -33,6 +34,8 @@ public class ContinuationMesage extends javax.swing.JDialog {
 
 	private JCheckBox segmentPauseCheckbox;
 	private JCheckBox layerPauseCheckbox;
+	
+	private boolean result; ///< True if continue was selected, otherwise false
 
 	public ContinuationMesage(JFrame frame, String message,
 			JCheckBoxMenuItem segmentPause, JCheckBoxMenuItem layerPause) {
@@ -55,7 +58,7 @@ public class ContinuationMesage extends javax.swing.JDialog {
 				okButton = new JButton();
 				getContentPane().add(okButton);
 				okButton.setText("Continue...");
-				okButton.setBounds(98, 98, 105, 28);
+				okButton.setBounds(175, 98, 105, 28);
 				okButton.setMnemonic(java.awt.event.KeyEvent.VK_ENTER);
 				okButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent evt) {
@@ -96,6 +99,17 @@ public class ContinuationMesage extends javax.swing.JDialog {
 				});
 			}
 			{
+				cancelButton = new JButton();
+				getContentPane().add(cancelButton);
+				cancelButton.setText("Cancel");
+				cancelButton.setBounds(35, 98, 105, 28);
+				cancelButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent evt) {
+						cancelButtonActionPerformed(evt);
+					}
+				});
+			}
+			{
 				getContentPane().setLayout(null);
 				this.setTitle("Progress pause");
 			}
@@ -108,10 +122,10 @@ public class ContinuationMesage extends javax.swing.JDialog {
 	
 	private void okButtonActionPerformed(ActionEvent evt) {
 		lastScreenPosition = getLocation();
+		result = true;
 		synchronized(this) {
 			notify();
 		}
-		dispose();
 	}
 	
 	private void segmentPauseCheckboxActionPerformed(ActionEvent evt) {
@@ -120,6 +134,18 @@ public class ContinuationMesage extends javax.swing.JDialog {
 	
 	private void layerPauseCheckboxActionPerformed(ActionEvent evt) {
 		layerPauseMenuCheckbox.setSelected(layerPauseCheckbox.isSelected());
+	}
+	
+	private void cancelButtonActionPerformed(ActionEvent evt) {
+		lastScreenPosition = getLocation();
+		result = false;
+		synchronized(this) {
+			notify();
+		}
+	}
+	
+	public boolean getResult() {
+		return result;
 	}
 
 }

@@ -31,5 +31,8 @@ public interface Printer {
 	public void setPreviewer(Previewer previewer);
 	public void setTemperature(int temperature) throws Exception;
 
+	public boolean isCancelled();
+
+	public void initialise();
 	
 }

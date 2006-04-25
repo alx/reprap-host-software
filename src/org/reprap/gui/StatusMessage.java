@@ -1,5 +1,7 @@
 package org.reprap.gui;
-import java.awt.BorderLayout;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
+import javax.swing.JButton;
 
 import javax.swing.JFrame;
 import javax.swing.JTextPane;
@@ -20,6 +22,8 @@ import javax.swing.text.StyledDocument;
 * LEGALLY FOR ANY CORPORATE OR COMMERCIAL PURPOSE.
 */
 public class StatusMessage extends javax.swing.JDialog {
+	private boolean cancelRequested = false;
+	private JButton cancelButton;
 	private JTextPane message;
 
 	/**
@@ -40,19 +44,34 @@ public class StatusMessage extends javax.swing.JDialog {
 		try {
 			{
 				message = new JTextPane();
-				getContentPane().add(message, BorderLayout.CENTER);
+				getContentPane().add(message);
+				message.setBounds(0, 0, 280, 77);
 				message.setEditable(false);
-				message.setBackground(new java.awt.Color(225,225,225));
+				message.setBackground(getBackground());
 				message.setEnabled(false);
 				SimpleAttributeSet set = new SimpleAttributeSet();
 				StyledDocument doc = message.getStyledDocument();
 				StyleConstants.setAlignment(set, StyleConstants.ALIGN_CENTER);
-				message.setParagraphAttributes(set, true);
+				message.setParagraphAttributes(set, true);			}
+			{
+				cancelButton = new JButton();
+				getContentPane().add(cancelButton);
+				cancelButton.setText("Cancel");
+				cancelButton.setBounds(105, 84, 91, 28);
+				cancelButton.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent evt) {
+						cancelButtonActionPerformed(evt);
+					}
+				});
+			}
+			
+			{
+					getContentPane().setLayout(null);
 			}
 			{
 				this.setTitle("Progress");
 			}
-			this.setSize(287, 115);
+			this.setSize(288, 137);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -60,6 +79,19 @@ public class StatusMessage extends javax.swing.JDialog {
 
 	public void setMessage(String text) {
 		message.setText(text);
+	}
+
+	public boolean isCancelled() {
+		return cancelRequested;
+	}
+
+	public void setCancelled(boolean b) {
+		cancelRequested = b;
+	}
+	
+	private void cancelButtonActionPerformed(ActionEvent evt) {
+		cancelRequested = true;
+		setVisible(false);
 	}
 
 }

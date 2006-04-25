@@ -16,17 +16,19 @@ public class Producer {
 	
 	public void produce() throws Exception {
 	
+		reprap.initialise();
 		reprap.selectMaterial(0);
 		reprap.setSpeed(248);
 		reprap.setExtruderSpeed(180);
-		reprap.setTemperature(60);
+		reprap.setTemperature(40);
 
-		// Print a square, rotated 45 degrees
-		reprap.moveTo(20, 5, 0);
-		reprap.printTo(15, 10, 0);
-		reprap.printTo(20, 15, 0);
-		reprap.printTo(25, 10, 0);
-		reprap.printTo(20, 5, 0);
+		// TODO This should be a loop over all segments as long as reprap.isCancelled() is false.
+		// For now, print a square, rotated 45 degrees
+		if (!reprap.isCancelled()) reprap.moveTo(20, 5, 0);
+		if (!reprap.isCancelled()) reprap.printTo(15, 10, 0);
+		if (!reprap.isCancelled()) reprap.printTo(20, 15, 0);
+		if (!reprap.isCancelled()) reprap.printTo(25, 10, 0);
+		if (!reprap.isCancelled()) reprap.printTo(20, 5, 0);
 		
 		reprap.terminate();
 

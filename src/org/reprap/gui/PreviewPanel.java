@@ -59,7 +59,7 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	private int objectIndex = 0; // Counter for STLs as they are loaded
 
 	private StatusMessage statusWindow;
-	
+		
 	/**
 	 * Constructor
 	 */
@@ -186,6 +186,8 @@ public class PreviewPanel extends Panel3D implements Previewer {
 		if (segmentPauseCheckbox != null && segmentPauseCheckbox.isSelected())
 			segmentPause();
 		
+		if (isCancelled()) return;
+		
 		final double extrusionSize = 0.3;
 		BranchGroup group = new BranchGroup();
 		group.setCapability(BranchGroup.ALLOW_DETACH);
@@ -204,6 +206,7 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	public void reset() {
 		extrusions.removeAllChildren();
 		previousZ = Double.NaN;
+		setCancelled(false);
 	}
 	
 	/**
@@ -222,6 +225,9 @@ public class PreviewPanel extends Panel3D implements Previewer {
 			}
 		} catch (Exception ex) {
 		}
+		if (msg.getResult() == false)
+			setCancelled(true);
+		msg.dispose();
 	}
 
 	/**
@@ -240,6 +246,9 @@ public class PreviewPanel extends Panel3D implements Previewer {
 			}
 		} catch (Exception ex) {
 		}
+		if (msg.getResult() == false)
+			setCancelled(true);
+		msg.dispose();
 	}
 
 	/**
@@ -273,6 +282,14 @@ public class PreviewPanel extends Panel3D implements Previewer {
 			statusWindow.setMessage(message);
 			statusWindow.setVisible(true);
 		}
+	}
+	
+	public boolean isCancelled() {
+		return statusWindow.isCancelled();
+	}
+
+	public void setCancelled(boolean isCancelled) {
+		statusWindow.setCancelled(isCancelled);
 	}
 
 }
