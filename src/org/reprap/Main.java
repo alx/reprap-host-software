@@ -28,6 +28,7 @@ import org.reprap.geometry.Producer;
 import org.reprap.gui.Preferences;
 import org.reprap.gui.PreviewPanel;
 import org.reprap.gui.RepRapBuild;
+import org.reprap.gui.Utility;
 
 public class Main {
 
@@ -236,7 +237,7 @@ public class Main {
         builderFrame.add(builder);
         
         panel = new JSplitPane(JSplitPane.HORIZONTAL_SPLIT); 
-        panel.setPreferredSize(new Dimension(600, 400));
+        panel.setPreferredSize(Utility.getDefaultAppSize());
         panel.setMinimumSize(new Dimension(0, 0));
         panel.setResizeWeight(0.5);
         panel.setOneTouchExpandable(true);
@@ -250,8 +251,8 @@ public class Main {
         mainFrame.setJMenuBar(menubar);
         
         mainFrame.pack();
+        Utility.centerWindowOnScreen(mainFrame);
         mainFrame.setVisible(true);
-        
 	}
 
 	private Box createPreviewPanel() {

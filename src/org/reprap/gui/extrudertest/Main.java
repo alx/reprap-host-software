@@ -21,6 +21,7 @@ import org.reprap.comms.Communicator;
 import org.reprap.comms.snap.SNAPAddress;
 import org.reprap.comms.snap.SNAPCommunicator;
 import org.reprap.devices.GenericExtruder;
+import org.reprap.gui.Utility;
 
 /**
 * This code was edited or generated using CloudGarden's Jigloo
@@ -233,6 +234,8 @@ public class Main extends javax.swing.JDialog {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+        Utility.centerWindowOnScreen(this);
+
 	}
 	
 	private void desiredTemperatureActionPerformed(ActionEvent evt) {

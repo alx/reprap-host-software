@@ -25,6 +25,7 @@ import org.reprap.comms.Communicator;
 import org.reprap.comms.snap.SNAPAddress;
 import org.reprap.comms.snap.SNAPCommunicator;
 import org.reprap.devices.GenericExtruder;
+import org.reprap.gui.Utility;
 
 public class Main extends javax.swing.JDialog implements ChangeListener {
 
@@ -67,6 +68,7 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 				Integer.parseInt(props.getProperty("Extruder1Rz")));
 		
 		initGUI();
+        Utility.centerWindowOnScreen(this);
 	}
 	
 	public void dispose() {
