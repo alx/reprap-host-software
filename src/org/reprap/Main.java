@@ -43,7 +43,8 @@ public class Main {
     private JCheckBoxMenuItem layerPause;
     
     private JMenuItem cancelMenuItem;
-    
+    private JMenuItem produceProduce;
+	
     private JSplitPane panel;
 	
 	public Main() {
@@ -163,7 +164,7 @@ public class Main {
         produceMenu.setMnemonic(KeyEvent.VK_P);
         menubar.add(produceMenu);
 
-        JMenuItem produceProduce = new JMenuItem("Produce...", KeyEvent.VK_P);
+        produceProduce = new JMenuItem("Produce...", KeyEvent.VK_P);
         produceProduce.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.CTRL_MASK));
         produceProduce.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -293,6 +294,7 @@ public class Main {
 	
 	private void onProduce() {
         cancelMenuItem.setEnabled(true);
+        produceProduce.setEnabled(false);
 		Thread t = new Thread() {
 			public void run() {
 				try {
@@ -310,6 +312,7 @@ public class Main {
 					producer.produce();
 					producer.dispose();
 			        cancelMenuItem.setEnabled(false);
+			        produceProduce.setEnabled(true);
 					JOptionPane.showMessageDialog(mainFrame, "Production complete");
 				}
 				catch (Exception ex) {
