@@ -102,9 +102,10 @@ public class Reprap implements CartesianPrinter {
 
 	public void printTo(double x, double y, double z) throws ReprapException, IOException {
 		if (isCancelled()) return;
-		
 		EnsureNotEmpty();
+		if (isCancelled()) return;
 		EnsureHot();
+		if (isCancelled()) return;
 
 		if ((x != convertToPositionX(layer.getCurrentX()) || y != convertToPositionY(layer.getCurrentY())) && z != currentZ)
 			throw new ReprapException("Reprap cannot print a line across 3 axes simultaneously");
