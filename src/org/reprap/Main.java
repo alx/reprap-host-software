@@ -300,7 +300,8 @@ public class Main {
 					preview.setLayerPause(layerPause);
 					
 					Producer producer = new Producer(preview, builder);
-					producer.Produce();
+					producer.produce();
+					producer.dispose();
 					
 					JOptionPane.showMessageDialog(mainFrame, "Production complete");
 				}

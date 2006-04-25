@@ -26,7 +26,7 @@ public class GenericExtruder extends Device {
 	private double requestedTemperature = 0;
 	private double currentTemperature = 0;
 	
-	private boolean currentMaterialOutSensor = false;
+	private boolean currentMaterialOutSensor = true;
 	
 	private Thread pollThread;
 	private boolean pollThreadExiting = false;

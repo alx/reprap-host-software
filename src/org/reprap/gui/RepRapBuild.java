@@ -91,7 +91,6 @@ import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Properties;
 
 import javax.media.j3d.AmbientLight;
 import javax.media.j3d.Appearance;

@@ -21,6 +21,7 @@ public interface Printer {
 	 *
 	 */
 	public void terminate() throws Exception;
+	public void dispose();
 	
 	
 	public int getSpeed();

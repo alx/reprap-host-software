@@ -100,6 +100,7 @@ public class Reprap implements CartesianPrinter {
 
 	public void printTo(double x, double y, double z) throws ReprapException, IOException {
 		
+		EnsureNotEmpty();
 		EnsureHot();
 
 		if ((x != convertToPositionX(layer.getCurrentX()) || y != convertToPositionY(layer.getCurrentY())) && z != currentZ)
@@ -164,6 +165,15 @@ public class Reprap implements CartesianPrinter {
 		extruder.setExtrusion(0);
 		extruder.setTemperature(0);
 	}
+	
+	public void dispose() {
+		motorX.dispose();
+		motorY.dispose();
+		motorZ.dispose();
+		extruder.dispose();
+		communicator.close();
+		communicator.dispose();
+	}
 
 	/**
 	 * @return Returns the speed.
@@ -196,6 +206,19 @@ public class Reprap implements CartesianPrinter {
 
 	public void setTemperature(int temperature) throws Exception {
 		extruder.setTemperature(temperature);
+	}
+
+	private void EnsureNotEmpty() {
+		if (!extruder.isEmpty()) return;
+		
+		while (extruder.isEmpty()) {
+			previewer.setMessage("Extruder is out of feedstock.  Waiting for refill.");
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+			}
+		}
+		previewer.setMessage(null);
 	}
 	
 	private void EnsureHot() {

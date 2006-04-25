@@ -14,7 +14,7 @@ public class Producer {
 		reprap.setPreviewer(preview);
 	}
 	
-	public void Produce() throws Exception {
+	public void produce() throws Exception {
 	
 		reprap.selectMaterial(0);
 		reprap.setSpeed(248);
@@ -30,6 +30,10 @@ public class Producer {
 		
 		reprap.terminate();
 
+	}
+	
+	public void dispose() {
+		reprap.dispose();
 	}
 	
 }

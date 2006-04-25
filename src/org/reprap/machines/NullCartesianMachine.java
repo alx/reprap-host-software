@@ -70,4 +70,7 @@ public class NullCartesianMachine implements CartesianPrinter {
 	public void setTemperature(int temperature) {
 	}
 
+	public void dispose() {
+	}
+
 }
