@@ -137,13 +137,15 @@ public class GenericExtruder extends Device {
 	private synchronized void RefreshEmptySensor() throws IOException {
 		// TODO in future, this should use the notification mechanism rather than polling (when fully working)
 		//System.out.println("Refreshing sensor");
+		lock();
 		try {
 			IncomingContext replyContext = sendMessage(new OutgoingBlankMessage(MSG_IsEmpty));
 			RequestIsEmptyResponse reply = new RequestIsEmptyResponse(replyContext);
-		
 			currentMaterialOutSensor = reply.getValue() == 0 ? false : true; 
 		} catch (InvalidPayloadException e) {
 			throw new IOException();
+		} finally {
+			unlock();
 		}
 	}
 
@@ -162,15 +164,21 @@ public class GenericExtruder extends Device {
 	}
 	
 	private synchronized void getDeviceTemperature() throws Exception {
-		OutgoingMessage request = new OutgoingBlankMessage(MSG_GetTemp);
-		IncomingContext replyContext = sendMessage(request);
-		RequestTemperatureResponse reply = new RequestTemperatureResponse(replyContext);
-
-		//System.out.println("Raw temp " + reply.getHeat());
-
-		double resistance = calculateResistance(reply.getHeat(), reply.getCalibration());
-		
-		currentTemperature = calculateTemperature(resistance);
+		lock();
+		try {
+			OutgoingMessage request = new OutgoingBlankMessage(MSG_GetTemp);
+			IncomingContext replyContext = sendMessage(request);
+			RequestTemperatureResponse reply = new RequestTemperatureResponse(replyContext);
+			
+			//System.out.println("Raw temp " + reply.getHeat());
+	
+			double resistance = calculateResistance(reply.getHeat(), reply.getCalibration());
+			
+			currentTemperature = calculateTemperature(resistance);
+		}
+		finally {
+			unlock();
+		}
 	}
 
 	/**

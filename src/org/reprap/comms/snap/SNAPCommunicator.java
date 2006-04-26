@@ -29,6 +29,8 @@ public class SNAPCommunicator implements Communicator {
 	
 	private boolean debugMode;
 	
+	private CommsLock lock = new CommsLock();
+		
 	public SNAPCommunicator(String portName, int baudRate, Address localAddress)
 			throws NoSuchPortException, PortInUseException, IOException, UnsupportedCommOperationException {
 		this.localAddress = localAddress;
@@ -175,6 +177,14 @@ public class SNAPCommunicator implements Communicator {
 
 	public void dispose() {
 		close();
+	}
+
+	public void lock() {
+		lock.lock();
+	}
+
+	public void unlock() {
+		lock.unlock();
 	}
 	
 	// TODO make a background receiver thread.  It can keep a pool of async receive contexts and
