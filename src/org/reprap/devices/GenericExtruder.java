@@ -50,6 +50,7 @@ public class GenericExtruder extends Device {
 		
 		pollThread = new Thread() {
 			public void run() {
+				Thread.currentThread().setName("Extruder poll");
 				boolean first = true;
 				while(!pollThreadExiting) {
 					try {

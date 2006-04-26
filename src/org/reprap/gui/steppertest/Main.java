@@ -46,6 +46,7 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 	Communicator communicator;
 	
 	public static void main(String[] args) throws Exception {
+		Thread.currentThread().setName("Stepper Exerciser");
 		JFrame frame = new JFrame();
 		Main inst = new Main(frame);
 		inst.setVisible(true);

@@ -63,6 +63,7 @@ public class Main extends javax.swing.JDialog {
 	* Auto-generated main method to display this JDialog
 	*/
 	public static void main(String[] args) throws Exception {
+		Thread.currentThread().setName("Extruder Exerciser");
 		JFrame frame = new JFrame();
 		Main inst = new Main(frame);
 		inst.setVisible(true);
@@ -96,6 +97,7 @@ public class Main extends javax.swing.JDialog {
 		
 		pollThread = new Thread() {
 			public void run() {
+				Thread.currentThread().setName("GUI Poll");
 				while(!pollThreadExiting) {
 					try {
 						Thread.sleep(500);

@@ -8,20 +8,22 @@ public class CommsLock {
 	
 	synchronized public void lock() {
 		while(locked) {
-			//System.out.println("Lock: waiting");
+			//System.out.println("Lock: " + Thread.currentThread().getName() + " waiting");
 			try {
 				wait();
 			} catch (InterruptedException e) {
 			}
 		}
 		locked = true;
+		//System.out.println("Lock: " + Thread.currentThread().getName() + " acquired");
 	}
 	
 	synchronized public void unlock() {
 		if (!locked)
 			System.out.println("Warning: Calling unlock from an already unlocked state!");
 		locked = false;
-		notifyAll();
+		notify();
+		//System.out.println("Unlock: " + Thread.currentThread().getName() + " released");
 	}
 	
 }

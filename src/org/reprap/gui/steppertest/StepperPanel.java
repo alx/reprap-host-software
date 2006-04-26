@@ -204,6 +204,7 @@ public class StepperPanel extends JPanel implements ChangeListener {
 			waiting = true;
 			TimerTask task = new TimerTask() {
 				public void run() {
+					Thread.currentThread().setName("Stepper position poll");
 					waiting = false;
 					updatePosition();
 				}			

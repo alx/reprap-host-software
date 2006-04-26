@@ -103,6 +103,7 @@ public class GenericStepperMotor extends Device {
 	}
 	
 	public int getPosition() throws IOException {
+		int value;
 		initialiseIfNeeded();
 		lock();
 		try {
@@ -111,8 +112,7 @@ public class GenericStepperMotor extends Device {
 			
 			IncomingIntMessage reply = new RequestPositionResponse(replyContext);
 			try {
-				int value = reply.getValue();
-				return value;
+				value = reply.getValue();
 			}
 			catch (IncomingMessage.InvalidPayloadException ex) {
 				throw new IOException(ex.getMessage());
@@ -121,6 +121,7 @@ public class GenericStepperMotor extends Device {
 		finally {
 			unlock();
 		}
+		return value;
 	}
 	
 	public void seek(int speed, int position) throws IOException {

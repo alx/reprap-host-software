@@ -298,6 +298,7 @@ public class Main {
         produceProduce.setEnabled(false);
 		Thread t = new Thread() {
 			public void run() {
+				Thread.currentThread().setName("Producer");
 				try {
 					// TODO Some kind of progress indicator would be good
 					
@@ -383,9 +384,11 @@ public class Main {
     }
     
 	public static void main(String[] args) {
+		Thread.currentThread().setName("Main");
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
             public void run() {
 	            	try {
+	            		Thread.currentThread().setName("RepRap");
 		        		Main gui = new Main();
 		            gui.createAndShowGUI();
 	            	}
