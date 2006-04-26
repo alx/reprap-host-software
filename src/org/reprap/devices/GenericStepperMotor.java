@@ -63,31 +63,49 @@ public class GenericStepperMotor extends Device {
 	 * @throws ReprapException
 	 * @throws IOException
 	 */
-	public synchronized void setSpeed(int speed) throws ReprapException, IOException {
+	public void setSpeed(int speed) throws ReprapException, IOException {
 		initialiseIfNeeded();
-		OutgoingMessage request = new RequestSetSpeed(speed);
-		sendMessage(request);
+		lock();
+		try {
+			OutgoingMessage request = new RequestSetSpeed(speed);
+			sendMessage(request);
+		}
+		finally {
+			unlock();
+		}
 	}
 
-	public synchronized void setIdle() throws IOException {
+	public void setIdle() throws IOException {
 		initialiseIfNeeded();
-		OutgoingMessage request = new RequestSetSpeed();
-		sendMessage(request);
+		lock();
+		try {
+			OutgoingMessage request = new RequestSetSpeed();
+			sendMessage(request);
+		}
+		finally {
+			unlock();
+		}
 	}
 	
-	public synchronized void resetPosition() throws IOException {
+	public void resetPosition() throws IOException {
 		setPosition(0);
 	}
 	
-	public synchronized void setPosition(int position) throws IOException {
+	public void setPosition(int position) throws IOException {
 		initialiseIfNeeded();
-		sendMessage(new RequestSetPosition(position));
-	}
-	
-	public synchronized int getPosition() throws IOException {
 		lock();
 		try {
-			initialiseIfNeeded();
+			sendMessage(new RequestSetPosition(position));
+		}
+		finally {
+			unlock();
+		}
+	}
+	
+	public int getPosition() throws IOException {
+		initialiseIfNeeded();
+		lock();
+		try {
 			IncomingContext replyContext = sendMessage(
 					new OutgoingBlankMessage(MSG_GetPosition));
 			
@@ -105,15 +123,21 @@ public class GenericStepperMotor extends Device {
 		}
 	}
 	
-	public synchronized void seek(int speed, int position) throws IOException {
+	public void seek(int speed, int position) throws IOException {
 		initialiseIfNeeded()	;
-		sendMessage(new RequestSeekPosition(speed, position));		
-	}
-
-	public synchronized void seekBlocking(int speed, int position) throws IOException {
 		lock();
 		try {
-			initialiseIfNeeded();
+			sendMessage(new RequestSeekPosition(speed, position));
+		}
+		finally {
+			unlock();
+		}
+	}
+
+	public void seekBlocking(int speed, int position) throws IOException {
+		initialiseIfNeeded();
+		lock();
+		try {
 			setNotification();
 			IncomingContext replyContext = sendMessage(new RequestSeekPosition(speed, position));
 			RequestSeekResponse reply = new RequestSeekResponse(replyContext);
@@ -125,9 +149,9 @@ public class GenericStepperMotor extends Device {
 	}
 
 	public Range getRange(int speed) throws IOException, InvalidPayloadException {
+		initialiseIfNeeded()	;
 		lock();
 		try {
-			initialiseIfNeeded()	;
 			if (haveCalibrated) {
 				IncomingContext replyContext = sendMessage(
 						new OutgoingBlankMessage(MSG_GetRange));
@@ -149,15 +173,21 @@ public class GenericStepperMotor extends Device {
 	
 	public void setSync(byte syncType) throws IOException {
 		initialiseIfNeeded()	;
-		sendMessage(
-				new OutgoingByteMessage(MSG_SetSyncMode, syncType));
+		lock();
+		try {
+			sendMessage(
+					new OutgoingByteMessage(MSG_SetSyncMode, syncType));
+		}
+		finally {
+			unlock();
+		}
 		
 	}
 	
 	public void dda(int speed, int x1, int deltaY) throws IOException {
+		initialiseIfNeeded()	;
 		lock();
 		try {
-			initialiseIfNeeded()	;
 			setNotification();
 			
 			IncomingContext replyContext = sendMessage(
@@ -175,17 +205,29 @@ public class GenericStepperMotor extends Device {
 	private void setNotification() throws IOException {
 		initialiseIfNeeded()	;
 		if (!haveSetNotification) {
-			sendMessage(new OutgoingAddressMessage(MSG_SetNotification,
-					getCommunicator().getAddress()));
-			haveSetNotification = true;
+			lock();
+			try {
+				sendMessage(new OutgoingAddressMessage(MSG_SetNotification,
+						getCommunicator().getAddress()));
+				haveSetNotification = true;
+			}
+			finally {
+				unlock();
+			}
 		}
 	}
 
 	private void setNotificationOff() throws IOException {
 		initialiseIfNeeded()	;
 		if (haveSetNotification) {
-			sendMessage(new OutgoingAddressMessage(MSG_SetNotification, getAddress().getNullAddress()));
-			haveSetNotification = false;
+			lock();
+			try {
+				sendMessage(new OutgoingAddressMessage(MSG_SetNotification, getAddress().getNullAddress()));
+				haveSetNotification = false;
+			}
+			finally {
+				unlock();
+			}
 		}
 	}
 
@@ -199,8 +241,14 @@ public class GenericStepperMotor extends Device {
 		if (maxTorque > 100) maxTorque = 100;
 		double power = (double)maxTorque * 68.0 / 100.0;
 		byte scaledPower = (byte)power;
-		sendMessage(
-				new OutgoingByteMessage(MSG_SetPower, scaledPower));
+		lock();
+		try {
+			sendMessage(
+					new OutgoingByteMessage(MSG_SetPower, scaledPower));
+		}
+		finally {
+			unlock();
+		}
 		
 	}
 	

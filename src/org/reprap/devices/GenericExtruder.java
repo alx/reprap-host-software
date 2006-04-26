@@ -80,10 +80,16 @@ public class GenericExtruder extends Device {
 		pollThread.interrupt();
 	}
 	
-	public synchronized void setExtrusion(int speed) throws IOException {
-		OutgoingMessage request =
-			new OutgoingByteMessage(MSG_SetActive, (byte)speed);
-		sendMessage(request);
+	public void setExtrusion(int speed) throws IOException {
+		lock();
+		try {
+			OutgoingMessage request =
+				new OutgoingByteMessage(MSG_SetActive, (byte)speed);
+			sendMessage(request);
+		}
+		finally {
+			unlock();
+		}
 	}
 
 	public void setTemperature(int temperature) throws Exception {
@@ -114,9 +120,15 @@ public class GenericExtruder extends Device {
 			
 	}
 	
-	private synchronized void setHeater(int heat, int safetyCutoff) throws IOException {
+	private void setHeater(int heat, int safetyCutoff) throws IOException {
 		//System.out.println("Set heater to " + heat + " limit " + safetyCutoff);
-		sendMessage(new RequestSetHeat((byte)heat, (byte)safetyCutoff));
+		lock();
+		try {
+			sendMessage(new RequestSetHeat((byte)heat, (byte)safetyCutoff));
+		}
+		finally {
+			unlock();
+		}
 	}
 
 	public boolean isEmpty() {
@@ -134,7 +146,7 @@ public class GenericExtruder extends Device {
 		}
 	}
 	
-	private synchronized void RefreshEmptySensor() throws IOException {
+	private void RefreshEmptySensor() throws IOException {
 		// TODO in future, this should use the notification mechanism rather than polling (when fully working)
 		//System.out.println("Refreshing sensor");
 		lock();
@@ -163,7 +175,7 @@ public class GenericExtruder extends Device {
 		getDeviceTemperature();
 	}
 	
-	private synchronized void getDeviceTemperature() throws Exception {
+	private void getDeviceTemperature() throws Exception {
 		lock();
 		try {
 			OutgoingMessage request = new OutgoingBlankMessage(MSG_GetTemp);
@@ -241,14 +253,26 @@ public class GenericExtruder extends Device {
 		
 	}
 	
-	private synchronized void setVref(int ref) throws IOException {
-		sendMessage(new OutgoingByteMessage(MSG_SetVRef, (byte)ref));		
-		vRefFactor = ref;
+	private void setVref(int ref) throws IOException {
+		lock();
+		try {
+			sendMessage(new OutgoingByteMessage(MSG_SetVRef, (byte)ref));		
+			vRefFactor = ref;
+		}
+		finally {
+			unlock();
+		}
 	}
 
-	private synchronized void setTempScaler(int scale) throws IOException {
-		sendMessage(new OutgoingByteMessage(MSG_SetTempScaler, (byte)scale));		
-		tempScaler = scale;
+	private void setTempScaler(int scale) throws IOException {
+		lock();
+		try {
+			sendMessage(new OutgoingByteMessage(MSG_SetTempScaler, (byte)scale));		
+			tempScaler = scale;
+		}
+		finally {
+			unlock();
+		}
 	}
 
 	
