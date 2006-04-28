@@ -103,6 +103,7 @@ public class GenericStepperMotor extends Device {
 	}
 	
 	public int getPosition() throws IOException {
+		//System.out.println("get enter");
 		int value;
 		initialiseIfNeeded();
 		lock();
@@ -121,10 +122,12 @@ public class GenericStepperMotor extends Device {
 		finally {
 			unlock();
 		}
+		//System.out.println("get leave");
 		return value;
 	}
 	
 	public void seek(int speed, int position) throws IOException {
+		//System.out.println("seek enter");
 		initialiseIfNeeded()	;
 		lock();
 		try {
@@ -132,6 +135,7 @@ public class GenericStepperMotor extends Device {
 		}
 		finally {
 			unlock();
+			//System.out.println("seek leave");
 		}
 	}
 
@@ -206,29 +210,17 @@ public class GenericStepperMotor extends Device {
 	private void setNotification() throws IOException {
 		initialiseIfNeeded()	;
 		if (!haveSetNotification) {
-			lock();
-			try {
-				sendMessage(new OutgoingAddressMessage(MSG_SetNotification,
-						getCommunicator().getAddress()));
-				haveSetNotification = true;
-			}
-			finally {
-				unlock();
-			}
+			sendMessage(new OutgoingAddressMessage(MSG_SetNotification,
+					getCommunicator().getAddress()));
+			haveSetNotification = true;
 		}
 	}
 
 	private void setNotificationOff() throws IOException {
 		initialiseIfNeeded()	;
 		if (haveSetNotification) {
-			lock();
-			try {
-				sendMessage(new OutgoingAddressMessage(MSG_SetNotification, getAddress().getNullAddress()));
-				haveSetNotification = false;
-			}
-			finally {
-				unlock();
-			}
+			sendMessage(new OutgoingAddressMessage(MSG_SetNotification, getAddress().getNullAddress()));
+			haveSetNotification = false;
 		}
 	}
 
