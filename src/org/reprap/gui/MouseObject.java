@@ -57,6 +57,7 @@ This version: 14 April 2006
 package org.reprap.gui;
 
 import javax.media.j3d.*;
+
 import com.sun.j3d.utils.behaviors.mouse.MouseRotate;
 import com.sun.j3d.utils.behaviors.mouse.MouseZoom;
 import com.sun.j3d.utils.behaviors.mouse.MouseTranslate;
@@ -118,16 +119,16 @@ public class MouseObject
         // ALLOW_EVERYTHING would be useful...
         
         top.setCapability(BranchGroup.ALLOW_DETACH);
-        top.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
-        top.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE); 
+        top.setCapability(Group.ALLOW_CHILDREN_EXTEND);
+        top.setCapability(Group.ALLOW_CHILDREN_WRITE); 
         
-        free.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
-        free.setCapability(TransformGroup.ALLOW_CHILDREN_WRITE);        
+        free.setCapability(Group.ALLOW_CHILDREN_EXTEND);
+        free.setCapability(Group.ALLOW_CHILDREN_WRITE);        
         free.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         free.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
         
-        slide.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
-        slide.setCapability(TransformGroup.ALLOW_CHILDREN_WRITE);        
+        slide.setCapability(Group.ALLOW_CHILDREN_EXTEND);
+        slide.setCapability(Group.ALLOW_CHILDREN_WRITE);        
         slide.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         slide.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
         

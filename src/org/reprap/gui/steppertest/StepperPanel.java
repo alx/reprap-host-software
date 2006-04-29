@@ -16,6 +16,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -86,7 +87,7 @@ public class StepperPanel extends JPanel implements ChangeListener {
         c.gridy = 0;
                 
         add(new JLabel("Set " + name + " axis position"), c);
-        positionRequest = new JSlider(JSlider.HORIZONTAL, minValue, maxValue, 0);
+        positionRequest = new JSlider(SwingConstants.HORIZONTAL, minValue, maxValue, 0);
         
         positionRequest.addChangeListener(this);
         c.gridy = 1;
@@ -94,7 +95,7 @@ public class StepperPanel extends JPanel implements ChangeListener {
 
         c.gridy = 2;
         add(new JLabel("Actual " + name + " axis position"), c);
-        positionActual = new JSlider(JSlider.HORIZONTAL, minValue, maxValue, 0);
+        positionActual = new JSlider(SwingConstants.HORIZONTAL, minValue, maxValue, 0);
         positionActual.setEnabled(false);
         c.gridy = 3;
         add(positionActual, c);

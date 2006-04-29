@@ -10,14 +10,13 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.reprap.devices.GenericExtruder;
 
 public class ExtruderPanel extends JPanel {
-	
-	private boolean enabled = false;
 	
 	private GenericExtruder extruder;
 	private boolean extruding = false;
@@ -35,7 +34,7 @@ public class ExtruderPanel extends JPanel {
 		c.gridy = 0;
 		add(new JLabel("Extrusion speed: "), c);
 		
-		speed = new JSlider(JSlider.HORIZONTAL, 0, 255, 255);
+		speed = new JSlider(SwingConstants.HORIZONTAL, 0, 255, 255);
 		speed.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent evt) {
 				onExtrudeSpeed();

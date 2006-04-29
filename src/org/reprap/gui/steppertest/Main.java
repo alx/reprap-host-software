@@ -17,6 +17,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.SwingConstants;
 import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -103,7 +104,7 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 		c.gridx = 2;
 		panel.add(new JLabel("Z"), c);
 		
-		speedX = new JSlider(JSlider.VERTICAL, 0, 255, intialSpeed);
+		speedX = new JSlider(SwingConstants.VERTICAL, 0, 255, intialSpeed);
 		speedX.addChangeListener(this);
 		speedX.setMajorTickSpacing(50);
 		speedX.setMinorTickSpacing(10);
@@ -113,7 +114,7 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 		c.gridy = 2;
 		panel.add(speedX, c);
 		
-		speedY = new JSlider(JSlider.VERTICAL, 1, 255, intialSpeed);
+		speedY = new JSlider(SwingConstants.VERTICAL, 1, 255, intialSpeed);
 		speedY.addChangeListener(this);
 		speedY.setMajorTickSpacing(50);
 		speedY.setMinorTickSpacing(10);
@@ -122,7 +123,7 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 		c.gridx = 1;
 		panel.add(speedY, c);
 		
-		speedZ = new JSlider(JSlider.VERTICAL, 1, 255, intialSpeed);
+		speedZ = new JSlider(SwingConstants.VERTICAL, 1, 255, intialSpeed);
 		speedZ.addChangeListener(this);
 		speedZ.setMajorTickSpacing(50);
 		speedZ.setMinorTickSpacing(10);

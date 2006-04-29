@@ -12,6 +12,7 @@ public class CommsLock {
 			try {
 				wait();
 			} catch (InterruptedException e) {
+				// Ignore interrupts and continue
 			}
 		}
 		locked = true;

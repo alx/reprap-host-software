@@ -63,7 +63,7 @@ public class GenericStepperMotor extends Device {
 	 * @throws ReprapException
 	 * @throws IOException
 	 */
-	public void setSpeed(int speed) throws ReprapException, IOException {
+	public void setSpeed(int speed) throws IOException {
 		initialiseIfNeeded();
 		lock();
 		try {
@@ -145,7 +145,7 @@ public class GenericStepperMotor extends Device {
 		try {
 			setNotification();
 			IncomingContext replyContext = sendMessage(new RequestSeekPosition(speed, position));
-			RequestSeekResponse reply = new RequestSeekResponse(replyContext);
+			new RequestSeekResponse(replyContext);
 			setNotificationOff();
 		}
 		finally {
@@ -198,7 +198,7 @@ public class GenericStepperMotor extends Device {
 			IncomingContext replyContext = sendMessage(
 					new RequestDDAMaster(speed, x1, deltaY));
 			
-			RequestDDAMasterResponse response = new RequestDDAMasterResponse(replyContext);
+			new RequestDDAMasterResponse(replyContext);
 			
 			setNotificationOff();
 		}
@@ -232,7 +232,7 @@ public class GenericStepperMotor extends Device {
 	public void setMaxTorque(int maxTorque) throws IOException {
 		initialiseIfNeeded()	;
 		if (maxTorque > 100) maxTorque = 100;
-		double power = (double)maxTorque * 68.0 / 100.0;
+		double power = maxTorque * 68.0 / 100.0;
 		byte scaledPower = (byte)power;
 		lock();
 		try {

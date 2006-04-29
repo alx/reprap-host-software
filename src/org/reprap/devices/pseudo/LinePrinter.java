@@ -73,7 +73,7 @@ public class LinePrinter {
 			slave.setSync(GenericStepperMotor.SYNC_DEC);
 
 		int deltaY = Math.abs(y1 - y0); 
-		int deltaX = Math.abs(x1 - x0); 
+		//int deltaX = Math.abs(x1 - x0); 
 				
 		master.dda(movementSpeed, x1, deltaY);
 		

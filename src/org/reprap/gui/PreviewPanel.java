@@ -1,7 +1,5 @@
 package org.reprap.gui;
 
-import java.util.ArrayList;
-
 import javax.media.j3d.AmbientLight;
 import javax.media.j3d.Appearance;
 import javax.media.j3d.Background;
@@ -52,8 +50,6 @@ public class PreviewPanel extends Panel3D implements Previewer {
 
 	private STLObject world = null; // Everything
 	private STLObject workingVolume = null; // The RepRap machine itself.
-	private STLObject lastPicked = null; // The last thing picked
-	private java.util.List stls = new ArrayList(); // All the STLs to be built
 	private int objectIndex = 0; // Counter for STLs as they are loaded
 
 	private StatusMessage statusWindow;
@@ -130,10 +126,10 @@ public class PreviewPanel extends Panel3D implements Previewer {
 		headLight.setInfluencingBounds(lightBounds);
 		objRoot.addChild(headLight);
 
-		wv_and_stls.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
+		wv_and_stls.setCapability(Group.ALLOW_CHILDREN_EXTEND);
 		extrusions = new BranchGroup();
-		extrusions.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
-		extrusions.setCapability(TransformGroup.ALLOW_CHILDREN_WRITE);
+		extrusions.setCapability(Group.ALLOW_CHILDREN_EXTEND);
+		extrusions.setCapability(Group.ALLOW_CHILDREN_WRITE);
 		wv_and_stls.addChild(extrusions);
 		
 		// Load the STL file for the working volume
@@ -200,7 +196,6 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	 * printed and wait for the user to acknowledge
 	 */
 	private void segmentPause() {
-		JFrame frame = new JFrame();
 		ContinuationMesage msg =
 			new ContinuationMesage(null, "A new segment is about to be produced",
 					segmentPauseCheckbox, layerPauseCheckbox);
@@ -221,7 +216,6 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	 * printed and wait for the user to acknowledge
 	 */
 	private void layerPause() {
-		JFrame frame = new JFrame();
 		ContinuationMesage msg =
 			new ContinuationMesage(null, "A new layer is about to be produced",
 					segmentPauseCheckbox, layerPauseCheckbox);

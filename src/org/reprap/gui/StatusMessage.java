@@ -7,7 +7,6 @@ import javax.swing.JFrame;
 import javax.swing.JTextPane;
 import javax.swing.text.SimpleAttributeSet;
 import javax.swing.text.StyleConstants;
-import javax.swing.text.StyledDocument;
 
 /**
 * This code was edited or generated using CloudGarden's Jigloo
@@ -50,7 +49,6 @@ public class StatusMessage extends javax.swing.JDialog {
 				message.setBackground(getBackground());
 				message.setEnabled(false);
 				SimpleAttributeSet set = new SimpleAttributeSet();
-				StyledDocument doc = message.getStyledDocument();
 				StyleConstants.setAlignment(set, StyleConstants.ALIGN_CENTER);
 				message.setParagraphAttributes(set, true);			}
 			{

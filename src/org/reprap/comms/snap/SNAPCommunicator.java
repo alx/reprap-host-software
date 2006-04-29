@@ -81,7 +81,7 @@ public class SNAPCommunicator implements Communicator {
 				System.out.print(device.getAddress().toString());
 				System.out.print(": ");
 				for(int i = 0; i < binaryMessage.length; i++)
-					System.out.print(Integer.toHexString((int)binaryMessage[i]) + " ");
+					System.out.print(Integer.toHexString(binaryMessage[i]) + " ");
 				System.out.println("");
 			}
 			sendRawMessage(packet);

@@ -102,11 +102,11 @@ public class SNAPPacket {
 	}
 	
 	public SNAPAddress getSourceAddress() {
-		return new SNAPAddress((short)buffer[offset_sab]);
+		return new SNAPAddress(buffer[offset_sab]);
 	}
 	
 	public SNAPAddress getDestinationAddress() {
-		return new SNAPAddress((short)buffer[offset_dab]);
+		return new SNAPAddress(buffer[offset_dab]);
 	}
 
 	private void setLength(int length) {

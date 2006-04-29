@@ -88,10 +88,7 @@ abstract public class Panel3D extends JPanel {
 
 	// Where are we in the file system?
 
-	public static URL getWorkingDirectory()
-			throws java.net.MalformedURLException {
-		URL url = null;
-
+	public static URL getWorkingDirectory() {
 		try {
 			File file = new File(System.getProperty("user.dir"));
 			return file.toURL();
@@ -303,7 +300,7 @@ abstract public class Panel3D extends JPanel {
 			float thickness) {
 		
 		Point3d p1 = new Point3d(x1, y1, z1);
-		Point3d p2 = new Point3d(x2, y2, z2);
+		//Point3d p2 = new Point3d(x2, y2, z2);
 
 		Vector3d unity = new Vector3d(0, 1, 0);
 		Vector3d v = new Vector3d(x2 - x1, y2 - y1, z2 - z1);
@@ -352,7 +349,7 @@ abstract public class Panel3D extends JPanel {
 		String stlPath = null;
 
 		try {
-			codebase = RepRapBuild.getWorkingDirectory();
+			codebase = Panel3D.getWorkingDirectory();
 			stlPath = codebase.getPath() + subdir + wv_location;
 			stlURL = codebase.toExternalForm() + subdir + wv_location;
 		} catch (Exception e) {

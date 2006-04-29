@@ -229,7 +229,7 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 
 		mouse = new MouseObject(getApplicationBounds(), mouse_tf, mouse_zf);
 
-		wv_and_stls.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
+		wv_and_stls.setCapability(Group.ALLOW_CHILDREN_EXTEND);
 
 		// Load the STL file for the working volume
 

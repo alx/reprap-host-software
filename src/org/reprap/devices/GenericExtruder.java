@@ -41,7 +41,7 @@ public class GenericExtruder extends Device {
 	
 	private boolean isCommsAvailable = false;
 	
-	public GenericExtruder(Communicator communicator, Address address, double beta, double rz) throws IOException {
+	public GenericExtruder(Communicator communicator, Address address, double beta, double rz) {
 		super(communicator, address);
 
 		this.beta = beta;
@@ -117,7 +117,7 @@ public class GenericExtruder extends Device {
 		requestedTemperature = temperature;
 		
 		// safety margin
-		double safetyTemperature = (double)temperature;
+		double safetyTemperature = temperature;
 		
 		// Now convert safety level to equivalent raw PIC temperature value
 		double safetyResistance = calculateResistanceForTemperature(safetyTemperature);
@@ -125,8 +125,6 @@ public class GenericExtruder extends Device {
 		int safetyPICTemp = calculatePicTempForResistance(safetyResistance);
 		if (safetyPICTemp < 0) safetyPICTemp = 0;
 		if (safetyPICTemp > 255) safetyPICTemp = 255;
-		
-		double a = calculateTemperature(calculateResistance(safetyPICTemp, safetyPICTemp));
 		
 		if (temperature == 0)
 			setHeater(0, 0);
@@ -308,14 +306,14 @@ public class GenericExtruder extends Device {
 		    byte [] reply = getPayload();
 		    if (reply == null || reply.length != 3)
 		    		throw new InvalidPayloadException();
-		    return ((int)reply[1]) < 0 ? (int)reply[1] + 256 : reply[1];
+		    return reply[1] < 0 ? reply[1] + 256 : reply[1];
 		}
 
 		public int getCalibration() throws InvalidPayloadException {
 		    byte [] reply = getPayload();
 		    if (reply == null || reply.length != 3)
 		    		throw new InvalidPayloadException();
-		    return ((int)reply[2]) < 0 ? (int)reply[2] + 256 : reply[2];
+		    return reply[2] < 0 ? reply[2] + 256 : reply[2];
 		}
 		
 	}

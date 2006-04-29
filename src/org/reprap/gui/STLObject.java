@@ -81,7 +81,6 @@ public class STLObject
     public STLObject( String location, Vector3d offset,
             int objectIndex, Appearance app) 
     {
-        BranchGroup sceneGroup = null;
         Scene scene = null;
         BoundingBox bbox = null;
         
@@ -111,8 +110,8 @@ public class STLObject
             // get the scene group - that is the stl
             
             stl = scene.getSceneGroup( );
-            stl.setCapability( BranchGroup.ALLOW_BOUNDS_READ );
-            stl.setCapability( BranchGroup.ALLOW_CHILDREN_READ );
+            stl.setCapability( Node.ALLOW_BOUNDS_READ );
+            stl.setCapability( Group.ALLOW_CHILDREN_READ );
             
             // Set the appearance of the object and recursively add its name
             
@@ -195,17 +194,17 @@ public class STLObject
             handle = new BranchGroup();
             
             top.setCapability(BranchGroup.ALLOW_DETACH);
-            top.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
-            top.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
-            top.setCapability(BranchGroup.ALLOW_AUTO_COMPUTE_BOUNDS_READ);
-            top.setCapability(BranchGroup.ALLOW_BOUNDS_READ);
+            top.setCapability(Group.ALLOW_CHILDREN_EXTEND);
+            top.setCapability(Group.ALLOW_CHILDREN_WRITE);
+            top.setCapability(Node.ALLOW_AUTO_COMPUTE_BOUNDS_READ);
+            top.setCapability(Node.ALLOW_BOUNDS_READ);
             
             handle.setCapability(BranchGroup.ALLOW_DETACH);
-            handle.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
-            handle.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
+            handle.setCapability(Group.ALLOW_CHILDREN_EXTEND);
+            handle.setCapability(Group.ALLOW_CHILDREN_WRITE);
             
-            trans.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
-            trans.setCapability(TransformGroup.ALLOW_CHILDREN_WRITE);
+            trans.setCapability(Group.ALLOW_CHILDREN_EXTEND);
+            trans.setCapability(Group.ALLOW_CHILDREN_WRITE);
             trans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
             trans.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
             
@@ -248,7 +247,7 @@ public class STLObject
             } else if ( sg instanceof Shape3D || sg instanceof Morph ) 
             {
                 if ( sg instanceof Shape3D)
-                    ((Shape3D)sg).setUserData((Object) name );
+                    ((Shape3D)sg).setUserData(name);
                 PickTool.setCapabilities( (Node) sg, PickTool.INTERSECT_FULL );
             }
         }
@@ -318,17 +317,17 @@ public class STLObject
         handle = new BranchGroup();
         
         top.setCapability(BranchGroup.ALLOW_DETACH);
-        top.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
-        top.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
-        top.setCapability(BranchGroup.ALLOW_AUTO_COMPUTE_BOUNDS_READ);
-        top.setCapability(BranchGroup.ALLOW_BOUNDS_READ);
+        top.setCapability(Group.ALLOW_CHILDREN_EXTEND);
+        top.setCapability(Group.ALLOW_CHILDREN_WRITE);
+        top.setCapability(Node.ALLOW_AUTO_COMPUTE_BOUNDS_READ);
+        top.setCapability(Node.ALLOW_BOUNDS_READ);
         
         handle.setCapability(BranchGroup.ALLOW_DETACH);
-        handle.setCapability(BranchGroup.ALLOW_CHILDREN_EXTEND);
-        handle.setCapability(BranchGroup.ALLOW_CHILDREN_WRITE);
+        handle.setCapability(Group.ALLOW_CHILDREN_EXTEND);
+        handle.setCapability(Group.ALLOW_CHILDREN_WRITE);
         
-        trans.setCapability(TransformGroup.ALLOW_CHILDREN_EXTEND);
-        trans.setCapability(TransformGroup.ALLOW_CHILDREN_WRITE);
+        trans.setCapability(Group.ALLOW_CHILDREN_EXTEND);
+        trans.setCapability(Group.ALLOW_CHILDREN_WRITE);
         trans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         trans.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
         
@@ -386,7 +385,7 @@ public class STLObject
     
     public void setAppearance(Appearance a)
     {
-        setAppearance_r((Group) stl, a);     
+        setAppearance_r(stl, a);     
     }
     
     // Why the !*$! aren't these in Vector3d???
