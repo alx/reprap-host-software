@@ -31,13 +31,15 @@ public class GenericExtruder extends Device {
 	// Indicates when polled values are first ready
 	private boolean sensorsInitialised = false;
 	
-	private Thread pollThread;
+	private Thread pollThread = null;
 	private boolean pollThreadExiting = false;
 
 	private int vRefFactor = 3;  // Default firmware value
 	private int tempScaler = 7;  // Default firmware value
 	
 	private double beta, rz;
+	
+	private boolean isCommsAvailable = false;
 	
 	public GenericExtruder(Communicator communicator, Address address, double beta, double rz) throws IOException {
 		super(communicator, address);
@@ -47,6 +49,16 @@ public class GenericExtruder extends Device {
 
 		//setVref(3);
 		//setTempScaler(7);
+		
+		// Check Extruder is available
+		try {
+			getVersion();
+		} catch (Exception ex) {
+			isCommsAvailable = false;
+			return;
+		}
+		
+		isCommsAvailable = true;
 		
 		pollThread = new Thread() {
 			public void run() {
@@ -77,8 +89,10 @@ public class GenericExtruder extends Device {
 	}
 
 	public void dispose() {
-		pollThreadExiting = true;
-		pollThread.interrupt();
+		if (pollThread != null) {
+			pollThreadExiting = true;
+			pollThread.interrupt();
+		}
 	}
 	
 	public void setExtrusion(int speed) throws IOException {
@@ -274,6 +288,10 @@ public class GenericExtruder extends Device {
 		finally {
 			unlock();
 		}
+	}
+	
+	public boolean isAvailable() {
+		return isCommsAvailable;
 	}
 
 	

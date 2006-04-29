@@ -62,6 +62,9 @@ public class LineTest extends javax.swing.JDialog {
 		
 		startX.setText(Integer.toString(motorX.getPosition()));
 		startY.setText(Integer.toString(motorY.getPosition()));
+		
+		if (!extruder.isAvailable())
+			plotButton.setEnabled(false);
 	}
 	
 	private void initGUI() {

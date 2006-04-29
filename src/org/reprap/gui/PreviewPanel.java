@@ -1,6 +1,5 @@
 package org.reprap.gui;
 
-import java.net.URL;
 import java.util.ArrayList;
 
 import javax.media.j3d.AmbientLight;
@@ -31,7 +30,6 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	// The relative location of the STL model of the working volume
 	// And the offset of the origin in it.
 
-	private static final String wv_location = "../lib/reprap-wv.stl";
 	private static final String worldName = "RepRap World";
 	private static final Vector3d wv_offset = new Vector3d(-17.3, -24.85, -2);
 
@@ -63,7 +61,7 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	/**
 	 * Constructor
 	 */
-	public PreviewPanel() {
+	public PreviewPanel() throws Exception {
 		initialise();
 		statusWindow = new StatusMessage(new JFrame());
 	}
@@ -102,7 +100,7 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	 * Set stuff up for the constructors - called by all of them that actually
 	 * do anything.
 	 */
-	private void initialise() {
+	private void initialise() throws Exception {
 		wv_app = new Appearance();
 		wv_app.setMaterial(new Material(rrGreen, black, rrGreen, black, 0f));
 		
@@ -116,7 +114,7 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	/**
 	 * Set up the RepRap working volume
 	 */
-	protected BranchGroup createSceneBranchGroup() {
+	protected BranchGroup createSceneBranchGroup() throws Exception {
 		sceneBranchGroup = new BranchGroup();
 
 		BranchGroup objRoot = sceneBranchGroup;
@@ -142,19 +140,7 @@ public class PreviewPanel extends Panel3D implements Previewer {
 
 		world = new STLObject(wv_and_stls, worldName);
 
-		URL codebase = null;
-
-		String stlFile = null;
-
-		try {
-			codebase = RepRapBuild.getWorkingDirectory();
-			stlFile = codebase.toExternalForm() + wv_location;
-		} catch (Exception e) {
-			System.err
-					.println("createSceneBranchGroup(): Exception finding working directory: "
-							+ codebase.toExternalForm());
-			e.printStackTrace();
-		}
+		String stlFile = getStlBackground();
 
 		workingVolume = new STLObject(stlFile, wv_offset, objectIndex, wv_app);
 		wv_and_stls.addChild(workingVolume.top);

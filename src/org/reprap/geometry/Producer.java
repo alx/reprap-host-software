@@ -18,7 +18,7 @@ public class Producer {
 	
 		reprap.initialise();
 		reprap.selectMaterial(0);
-		reprap.setSpeed(248);
+		reprap.setSpeed(230);
 		reprap.setExtruderSpeed(180);
 		reprap.setTemperature(40);
 

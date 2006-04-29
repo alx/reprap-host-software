@@ -33,6 +33,8 @@ import com.sun.j3d.utils.geometry.Cylinder;
 
 abstract public class Panel3D extends JPanel {
 
+	private static final String wv_location = "reprap-wv.stl";
+
 	// Translate and zoom scaling factors
 	protected double mouse_tf = 50;
 	protected double mouse_zf = 50;
@@ -53,7 +55,7 @@ abstract public class Panel3D extends JPanel {
 	protected Bounds applicationBounds = null;
 
 	// Set up the RepRap working volume
-	abstract protected BranchGroup createSceneBranchGroup();
+	abstract protected BranchGroup createSceneBranchGroup() throws Exception;
 
 	// Set bg light grey
 	abstract protected Background createBackground();
@@ -168,7 +170,7 @@ abstract public class Panel3D extends JPanel {
 
 	// Fire up Java3D
 
-	public void initJava3d() {
+	public void initJava3d() throws Exception {
 		universe = createVirtualUniverse();
 
 		javax.media.j3d.Locale locale = createLocale(universe);
@@ -330,4 +332,41 @@ abstract public class Panel3D extends JPanel {
 		return 1.0;
 	}
 
+	protected String getStlBackground() throws Exception {
+		String path = getStlBackground("");
+		if (path != null)
+			return path;
+		path = getStlBackground("lib/");
+		if (path != null)
+			return path;
+		path = getStlBackground("../lib/");
+		if (path != null)
+			return path;
+		
+		throw new Exception("Cannot locate background STL file");
+	}
+	
+	protected String getStlBackground(String subdir) {
+		URL codebase = null;
+		String stlURL = null;
+		String stlPath = null;
+
+		try {
+			codebase = RepRapBuild.getWorkingDirectory();
+			stlPath = codebase.getPath() + subdir + wv_location;
+			stlURL = codebase.toExternalForm() + subdir + wv_location;
+		} catch (Exception e) {
+			System.err
+					.println("createSceneBranchGroup(): Exception finding working directory: "
+							+ codebase.toExternalForm());
+			e.printStackTrace();
+		}
+		
+		File f = new File(stlPath);
+		if (f.exists())
+			return stlURL;
+		
+		return null;
+
+	}
 }

@@ -17,6 +17,8 @@ import org.reprap.devices.GenericExtruder;
 
 public class ExtruderPanel extends JPanel {
 	
+	private boolean enabled = false;
+	
 	private GenericExtruder extruder;
 	private boolean extruding = false;
 	private JButton extrudeButton;
@@ -54,6 +56,11 @@ public class ExtruderPanel extends JPanel {
 		c.gridy = 0;
 		c.insets.left = 5;
 		add(extrudeButton, c);
+		
+        if (!extruder.isAvailable()) {
+      	  extrudeButton.setEnabled(false);
+      	  speed.setEnabled(false);
+        }
 		
 	}
 	

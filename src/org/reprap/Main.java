@@ -62,7 +62,7 @@ public class Main {
 
 	}
 
-	private void createAndShowGUI() {
+	private void createAndShowGUI() throws Exception {
         JFrame.setDefaultLookAndFeelDecorated(false);
         mainFrame = new JFrame("RepRap");
         mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -255,7 +255,7 @@ public class Main {
         mainFrame.setVisible(true);
 	}
 
-	private Box createPreviewPanel() {
+	private Box createPreviewPanel() throws Exception {
 		/*JSplitPane splitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
 		splitter.setMinimumSize(new Dimension(0, 0));
 		splitter.setResizeWeight(1.0);

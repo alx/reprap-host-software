@@ -89,7 +89,6 @@ import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.event.MouseEvent;
 import java.awt.event.MouseListener;
-import java.net.URL;
 import java.util.ArrayList;
 
 import javax.media.j3d.AmbientLight;
@@ -125,7 +124,6 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 	// The relative location of the STL model of the working volume
 	// And the offset of the origin in it.
 
-	private String wv_location = "../lib/reprap-wv.stl";
 	private String worldName = "RepRap World";
 	private Vector3d wv_offset = new Vector3d(-17.3, -24.85, -2);
 
@@ -156,7 +154,7 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 	private int objectIndex = 0; // Counter for STLs as they are loaded
 
 	// Constructors
-	public RepRapBuild() {
+	public RepRapBuild() throws Exception {
 		initialise();
 	}
 
@@ -191,7 +189,7 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 	// Set stuff up for the constructors - called by all of them that actually
 	// do anything.
 
-	private void initialise() {
+	private void initialise() throws Exception {
 		// Set everything up from the properties file here
 		// Also need to do the same in PreviewPanel
 		//Properties props = new Properties();
@@ -213,7 +211,7 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 
 	// Set up the RepRap working volume
 
-	protected BranchGroup createSceneBranchGroup() {
+	protected BranchGroup createSceneBranchGroup() throws Exception {
 		sceneBranchGroup = new BranchGroup();
 
 		BranchGroup objRoot = sceneBranchGroup;
@@ -237,19 +235,7 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 
 		world = new STLObject(wv_and_stls, worldName);
 
-		URL codebase = null;
-
-		String stlFile = null;
-
-		try {
-			codebase = RepRapBuild.getWorkingDirectory();
-			stlFile = codebase.toExternalForm() + wv_location;
-		} catch (Exception e) {
-			System.err
-					.println("createSceneBranchGroup(): Exception finding working directory: "
-							+ codebase.toExternalForm());
-			e.printStackTrace();
-		}
+		String stlFile = getStlBackground();
 
 		workingVolume = new STLObject(stlFile, wv_offset, objectIndex, wv_app);
 		wv_and_stls.addChild(workingVolume.top);
@@ -336,7 +322,7 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 		}
 	}
 
-	public void start() {
+	public void start() throws Exception {
 		if (pickCanvas == null)
 			initialise();
 	}

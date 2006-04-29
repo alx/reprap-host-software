@@ -54,7 +54,7 @@ public class Main extends javax.swing.JDialog {
 	private final int localNodeNumber = 0;
 	private final int baudRate = 19200;
 	
-	private Thread pollThread;
+	private Thread pollThread = null;
 	private boolean pollThreadExiting = false;
 
 	private boolean extruding = false;
@@ -88,13 +88,23 @@ public class Main extends javax.swing.JDialog {
 		);
 
 		initGUI();
-
+		
 		extruderSpeed.setMinimum(0);
 		extruderSpeed.setMaximum(255);
 		extruderSpeed.setValue(200);
 		extruderSpeed.setMajorTickSpacing(64);
 		extruderSpeed.setMinorTickSpacing(16);
-		
+
+		if (!extruder.isAvailable()) {
+			extrudeButton.setEnabled(false);
+			extruderSpeed.setEnabled(false);
+			currentTemperature.setEnabled(false);
+			desiredTemperature.setEnabled(false);
+			heaterActive.setEnabled(false);
+			materialEmpty.setEnabled(false);
+			return;
+		}
+
 		pollThread = new Thread() {
 			public void run() {
 				Thread.currentThread().setName("GUI Poll");
@@ -125,8 +135,10 @@ public class Main extends javax.swing.JDialog {
 	}
 
 	public void dispose() {
-		pollThreadExiting = true;
-		pollThread.interrupt();
+		if (pollThread != null) {
+			pollThreadExiting = true;
+			pollThread.interrupt();
+		}
 		extruder.dispose();
 		communicator.dispose();
 		super.dispose();
