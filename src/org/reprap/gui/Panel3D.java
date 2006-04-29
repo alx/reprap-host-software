@@ -1,5 +1,7 @@
 package org.reprap.gui;
 
+import java.util.Properties;
+
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.GraphicsConfigTemplate;
@@ -16,6 +18,7 @@ import javax.media.j3d.Bounds;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.Canvas3D;
 import javax.media.j3d.GraphicsConfigTemplate3D;
+import javax.media.j3d.Material;
 import javax.media.j3d.PhysicalBody;
 import javax.media.j3d.PhysicalEnvironment;
 import javax.media.j3d.Transform3D;
@@ -25,17 +28,25 @@ import javax.media.j3d.ViewPlatform;
 import javax.media.j3d.VirtualUniverse;
 import javax.swing.JPanel;
 import javax.vecmath.AxisAngle4d;
+import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
 import com.sun.j3d.audioengines.javasound.JavaSoundMixer;
 import com.sun.j3d.utils.geometry.Cylinder;
+import com.sun.j3d.utils.picking.PickCanvas;
 
 abstract public class Panel3D extends JPanel {
 
-	private static final String wv_location = "reprap-wv.stl";
+	//-------------------------------------------------------------
+	
+	// What follows are defaults.  These values should be overwritten from
+	// the reprap.properties file.
+	
+	protected String wv_location = "reprap-wv.stl";
 
 	// Translate and zoom scaling factors
+	
 	protected double mouse_tf = 50;
 	protected double mouse_zf = 50;
 
@@ -44,11 +55,40 @@ abstract public class Panel3D extends JPanel {
 	protected double zwv = 300;
 
 	// Factors for front and back clipping planes and so on
+	
 	protected double RADFAC = 0.7;
 	protected double BACKFAC = 2.0;
 	protected double FRONTFAC = 0.025;
 	protected double BOUNDFAC = 3.0;
+	
+	protected String worldName = "RepRap World";
+	protected Vector3d wv_offset = new Vector3d(-17.3, -24.85, -2);
 
+	// The background, and other colours
+
+	protected Color3f bgColour = new Color3f(0.9f, 0.9f, 0.9f);
+	protected Color3f selectedColour = new Color3f(0.6f, 0.2f, 0.2f);
+	protected Color3f machineColour = new Color3f(0.3f, 0.4f, 0.3f);
+	protected Color3f unselectedColour = new Color3f(0.3f, 0.3f, 0.3f);
+	
+	// That's the end of the configuration file data
+	
+	//--------------------------------------------------------------
+	
+	protected static final Color3f black = new Color3f(0, 0, 0);	
+	protected Appearance default_app = null; // Colour for unselected parts
+	protected Appearance picked_app = null; // Colour for the selected part
+	protected Appearance wv_app = null; // Colour for the working volume
+	protected Appearance extrusion_app = null; // Colour for extruded material
+	protected BranchGroup wv_and_stls = new BranchGroup(); // Where in the scene
+
+	// the
+	// working volume and STLs
+	// are joined on.
+
+	protected STLObject world = null; // Everything
+	protected STLObject workingVolume = null; // The RepRap machine itself.
+	
 	// The world in the Applet
 	protected VirtualUniverse universe = null;
 	protected BranchGroup sceneBranchGroup = null;
@@ -62,6 +102,65 @@ abstract public class Panel3D extends JPanel {
 
 	abstract protected BranchGroup createViewBranchGroup(
 			TransformGroup[] tgArray, ViewPlatform vp);
+
+
+	protected void initialise() throws Exception {
+		
+		// -----------------------
+		
+		// Set everything up from the properties file
+		// All this needs to go into Preferences.java
+
+		Properties props = new Properties();
+		URL url = ClassLoader.getSystemResource("reprap.properties");
+		props.load(url.openStream());
+		
+		wv_location = props.getProperty("WorkingLocation");
+
+		// Translate and zoom scaling factors
+		
+		mouse_tf = 50;
+		mouse_zf = 50;
+
+		xwv = 300; // The RepRap machine...
+		ywv = 300; // ...working volume in mm.
+		zwv = 300;
+
+		// Factors for front and back clipping planes and so on
+		
+		RADFAC = 0.7;
+		BACKFAC = 2.0;
+		FRONTFAC = 0.025;
+		BOUNDFAC = 3.0;
+		
+		worldName = "RepRap World";
+		wv_offset = new Vector3d(-17.3, -24.85, -2);
+
+		// The background, and other colours
+
+		bgColour = new Color3f(0.9f, 0.9f, 0.9f);
+		selectedColour = new Color3f(0.6f, 0.2f, 0.2f);
+		machineColour = new Color3f(0.3f, 0.4f, 0.3f);
+		unselectedColour = new Color3f(0.3f, 0.3f, 0.3f);
+				
+		// End of stuff from the preferences file
+		
+		// ----------------------
+		
+		default_app = new Appearance();
+		default_app.setMaterial(new Material(unselectedColour, black, unselectedColour, black, 0f));
+
+		picked_app = new Appearance();
+		picked_app.setMaterial(new Material(selectedColour, black, selectedColour, black, 0f));
+		extrusion_app = new Appearance();
+		extrusion_app.setMaterial(new Material(unselectedColour, black, unselectedColour, black, 101f));
+		
+		wv_app = new Appearance();
+		wv_app.setMaterial(new Material(machineColour, black, machineColour, black, 0f));
+
+		initJava3d();
+
+	}
 
 	// How far away is the back?
 	protected double getBackClipDistance() {

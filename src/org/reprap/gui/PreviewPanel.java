@@ -13,44 +13,13 @@ import javax.media.j3d.ViewPlatform;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.vecmath.Color3f;
-import javax.vecmath.Vector3d;
+//import javax.vecmath.Vector3d;
 
 public class PreviewPanel extends Panel3D implements Previewer {
 	private int material = 0;
 	private double previousZ = Double.NaN;
-	
 	private JCheckBoxMenuItem layerPauseCheckbox = null, segmentPauseCheckbox = null;
-
-	// ------------------------
-	// Most of the stuff that follows will be read from
-	// a configuration file ultimately.
-
-	// The relative location of the STL model of the working volume
-	// And the offset of the origin in it.
-
-	private static final String worldName = "RepRap World";
-	private static final Vector3d wv_offset = new Vector3d(-17.3, -24.85, -2);
-
-	// Black, the background, and other colours
-	private static final Color3f black = new Color3f(0, 0, 0);
-	private static final Color3f bgColour = new Color3f(0.6f, 0.6f, 0.6f);
-	private static final Color3f rrGreen = new Color3f(0.3f, 0.4f, 0.3f);
-	private static final Color3f plastic = new Color3f(0.8f, 0.8f, 0.8f);
-
-	//---- End of stuff to be loaded from config file
-
-	private Appearance extrusion_app = null; // Colour for extrused material
-	private Appearance wv_app = null; // Colour for the working volume
 	private BranchGroup extrusions;
-	private BranchGroup wv_and_stls = new BranchGroup(); // Where in the scene
-
-	// the
-	// working volume and STLs
-	// are joined on.
-
-	private STLObject world = null; // Everything
-	private STLObject workingVolume = null; // The RepRap machine itself.
-	private int objectIndex = 0; // Counter for STLs as they are loaded
 
 	private StatusMessage statusWindow;
 		
@@ -96,16 +65,7 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	 * Set stuff up for the constructors - called by all of them that actually
 	 * do anything.
 	 */
-	private void initialise() throws Exception {
-		wv_app = new Appearance();
-		wv_app.setMaterial(new Material(rrGreen, black, rrGreen, black, 0f));
-		
-		extrusion_app = new Appearance();
-		extrusion_app.setMaterial(new Material(plastic, black, plastic, black, 101f));
-		
-		initJava3d();
 
-	}
 
 	/**
 	 * Set up the RepRap working volume
@@ -138,7 +98,7 @@ public class PreviewPanel extends Panel3D implements Previewer {
 
 		String stlFile = getStlBackground();
 
-		workingVolume = new STLObject(stlFile, wv_offset, objectIndex, wv_app);
+		workingVolume = new STLObject(stlFile, wv_offset, 0, wv_app);
 		wv_and_stls.addChild(workingVolume.top);
 
 		// Set the mouse to move everything

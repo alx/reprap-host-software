@@ -117,38 +117,8 @@ import com.sun.j3d.utils.picking.PickTool;
 // to arrange them, (and builds them in the machine - one day soon).
 
 public class RepRapBuild extends Panel3D implements MouseListener {
-	// ------------------------
-	// Most of the stuff that follows will be read from
-	// a configuration file ultimately.
-
-	// The relative location of the STL model of the working volume
-	// And the offset of the origin in it.
-
-	private String worldName = "RepRap World";
-	private Vector3d wv_offset = new Vector3d(-17.3, -24.85, -2);
-
-	// Black, the background, and other colours
-	private static final Color3f black = new Color3f(0, 0, 0);
-	private Color3f bgColour = new Color3f(0.9f, 0.9f, 0.9f);
-	private Color3f selectedColour = new Color3f(0.6f, 0.2f, 0.2f);
-	private Color3f machineColour = new Color3f(0.3f, 0.4f, 0.3f);
-	private Color3f unselectedColour = new Color3f(0.3f, 0.3f, 0.3f);
-
-	//---- End of stuff to be loaded from config file
-
-	private PickCanvas pickCanvas = null; // The thing picked by a mouse click
-	private Appearance default_app = null; // Colour for unselected parts
-	private Appearance picked_app = null; // Colour for the selected part
-	private Appearance wv_app = null; // Colour for the working volume
 	private MouseObject mouse = null;
-	private BranchGroup wv_and_stls = new BranchGroup(); // Where in the scene
-
-	// the
-	// working volume and STLs
-	// are joined on.
-
-	private STLObject world = null; // Everything
-	private STLObject workingVolume = null; // The RepRap machine itself.
+	private PickCanvas pickCanvas = null; // The thing picked by a mouse click
 	private STLObject lastPicked = null; // The last thing picked
 	private java.util.List stls = new ArrayList(); // All the STLs to be built
 	private int objectIndex = 0; // Counter for STLs as they are loaded
@@ -184,29 +154,6 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 			vpBranchGroup.addChild(vp);
 
 		return vpBranchGroup;
-	}
-
-	// Set stuff up for the constructors - called by all of them that actually
-	// do anything.
-
-	private void initialise() throws Exception {
-		// Set everything up from the properties file here
-		// Also need to do the same in PreviewPanel
-		//Properties props = new Properties();
-		//URL url = ClassLoader.getSystemResource("reprap.properties");
-		//props.load(url.openStream());
-				
-		default_app = new Appearance();
-		default_app.setMaterial(new Material(unselectedColour, black, unselectedColour, black, 0f));
-
-		picked_app = new Appearance();
-		picked_app.setMaterial(new Material(selectedColour, black, selectedColour, black, 0f));
-
-		wv_app = new Appearance();
-		wv_app.setMaterial(new Material(machineColour, black, machineColour, black, 0f));
-
-		initJava3d();
-
 	}
 
 	// Set up the RepRap working volume
