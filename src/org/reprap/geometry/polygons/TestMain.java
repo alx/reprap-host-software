@@ -1,7 +1,7 @@
 
 package org.reprap.geometry.polygons;
 
-class TestMain
+public class TestMain
 {
     public static void fred(String[] args)
     {
@@ -94,7 +94,7 @@ class TestMain
                 RrBox(new Rr2Point(0,0), new Rr2Point(1,1)));
         
         cp.divide(1.0e-6, 1.0);
-        //new RrGraphics(cp, false);
+        //new rr_graphics(cp, false);
         
         RrPolygon  h = cp.hatch_join(x, 0.005, 1, 3);
         RrPolygonList hp = new RrPolygonList();

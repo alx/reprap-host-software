@@ -52,6 +52,7 @@ First version 20 May 2005
 This version: 9 March 2006
 
 */
+
 package org.reprap.geometry.polygons;
 
 // Teeny class to hold bisectors of line pairs
@@ -71,7 +72,7 @@ class rr_bisector
 
 // Class to hold and manipulate parametric lines
 
-class RrLine
+public class RrLine
 {
     private Rr2Point direction;
     private Rr2Point origin;

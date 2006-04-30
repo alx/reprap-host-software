@@ -67,7 +67,7 @@ class rr_ParallelLineException extends Exception
 
 // Class to hold and manipulate linear half-planes
 
-class RrHalfPlane
+public class RrHalfPlane
 {
 
     // The half-plane is normal*(x, y) + offset <= 0

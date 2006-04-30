@@ -65,6 +65,7 @@ be plotted etc.
 java.awt.Polygon is no use for this because it has integer coordinates.
 
 */
+
 package org.reprap.geometry.polygons;
 
 import java.io.*;
@@ -89,7 +90,7 @@ class self_x
 
 // The main polygon class
 
-class RrPolygon
+public class RrPolygon
 {
     public List points;
     public List flags;

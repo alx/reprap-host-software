@@ -53,12 +53,13 @@ First version 20 May 2005
 This version: 9 October 2005 (translation to Java)
 
 */
+
 package org.reprap.geometry.polygons;
 
 import java.awt.*;
 import javax.swing.*;
     
-class RrGraphics 
+public class RrGraphics 
 {
     private final int frameWidth = 600; // Pixels
     private int frameHeight;

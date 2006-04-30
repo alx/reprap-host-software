@@ -57,7 +57,7 @@ package org.reprap.geometry.polygons;
         
 // A 2D box is an X and a Y interval
 
-class RrBox
+public class RrBox
 {
     // Compass directions
             

@@ -64,7 +64,7 @@ import java.io.*;
 import java.util.*;
 
 
-class RrPolygonList
+public class RrPolygonList
 {
     public List polygons;
     public RrBox box;

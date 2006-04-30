@@ -53,9 +53,10 @@ First version 14 November 2005
 
 */
 
+//import java.io.*;
+
 package org.reprap.geometry.polygons;
 
-//import java.io.*;
 import java.util.*;
 
 
@@ -70,7 +71,7 @@ class rr_h_search
     public double dsq;
 }
 
-class RrCSGPolygon
+public class RrCSGPolygon
 {
     private RrCSG csg;            // The polygon
     private RrBox box;            // Its enclosing box

@@ -52,11 +52,12 @@ First version 20 May 2005
 This version: 7 March 2006
 
 */
+
 package org.reprap.geometry.polygons;
 
 // Real intervals
 
-class RrInterval
+public class RrInterval
 {
     private double low;
     private double high;

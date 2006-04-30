@@ -54,7 +54,7 @@
 
 package org.reprap.geometry.polygons;
 
-class RrCSG
+public class RrCSG
 {
 	
 	// Universal and null set

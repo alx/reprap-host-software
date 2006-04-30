@@ -59,7 +59,7 @@ package org.reprap.geometry.polygons;
 
 // Class for (x, y) points and vectors
 
-class Rr2Point
+public class Rr2Point
 {
     private double x, y;
 
