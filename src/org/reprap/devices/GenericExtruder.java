@@ -21,24 +21,31 @@ public class GenericExtruder extends Device {
 	public static final byte MSG_SetVRef = 52;
 	public static final byte MSG_SetTempScaler = 53;
 	
+	/// Offset of 0 degrees centigrade from absolute zero
 	private static final double absZero = 273.15;
 	
+	/// The temperature to maintain
 	private double requestedTemperature = 0;
+	
+	/// The temperature most recently read from the device
 	private double currentTemperature = 0;
 	
 	private boolean currentMaterialOutSensor = false;
 	
-	// Indicates when polled values are first ready
+	/// Indicates when polled values are first ready
 	private boolean sensorsInitialised = false;
 	
 	private Thread pollThread = null;
 	private boolean pollThreadExiting = false;
 
-	private int vRefFactor = 3;  // Default firmware value
-	private int tempScaler = 7;  // Default firmware value
+	private int vRefFactor = 3;  ///< Default firmware value
+	private int tempScaler = 7;  ///< Default firmware value
 	
-	private double beta, rz;
+	private double beta;  ///< Thermistor beta
+	private double rz;    ///< Thermistor resistance at 0C
 	
+	/// Flag indicating if initialisation succeeded.  Usually this
+	/// indicates if the extruder is present in the network.
 	private boolean isCommsAvailable = false;
 	
 	public GenericExtruder(Communicator communicator, Address address, double beta, double rz) {
@@ -95,6 +102,11 @@ public class GenericExtruder extends Device {
 		}
 	}
 	
+	/**
+	 * Start the extruder motor at a given speed
+	 * @param speed The speed to drive the motor at (0-255)
+	 * @throws IOException
+	 */
 	public void setExtrusion(int speed) throws IOException {
 		lock();
 		try {
@@ -107,6 +119,11 @@ public class GenericExtruder extends Device {
 		}
 	}
 
+	/**
+	 * Set extruder temperature
+	 * @param temperature
+	 * @throws Exception
+	 */
 	public void setTemperature(int temperature) throws Exception {
 		// Currently just implemented as a chop-chop heater by
 		// setting safety cutoff temperature to desired
@@ -133,6 +150,16 @@ public class GenericExtruder extends Device {
 			
 	}
 	
+	/**
+	 * Set the raw heater output value and safety cutoff.  A specific
+	 * temperature can be reached by setting a suitable output power.
+	 * A limit temperature can also be specified.  If reached, the
+	 * heater will be automatically turned off until the temperature
+	 * drops below the limit.
+	 * @param heat A heater power output
+	 * @param safetyCutoff A temperature at which to cut off the heater
+	 * @throws IOException
+	 */
 	private void setHeater(int heat, int safetyCutoff) throws IOException {
 		//System.out.println("Set heater to " + heat + " limit " + safetyCutoff);
 		lock();
@@ -144,6 +171,10 @@ public class GenericExtruder extends Device {
 		}
 	}
 
+	/**
+	 * Check if the extruder is out of feedstock
+	 * @return true if there is no material remaining
+	 */
 	public boolean isEmpty() {
 		awaitSensorsInitialised();
 		return currentMaterialOutSensor;
@@ -159,6 +190,11 @@ public class GenericExtruder extends Device {
 		}
 	}
 	
+	/**
+	 * Called internally to refresh the empty sensor.  This is
+	 * called periodically in the background by another thread.
+	 * @throws IOException
+	 */
 	private void RefreshEmptySensor() throws IOException {
 		// TODO in future, this should use the notification mechanism rather than polling (when fully working)
 		//System.out.println("Refreshing sensor");
@@ -266,6 +302,11 @@ public class GenericExtruder extends Device {
 		
 	}
 	
+	/**
+	 * Set raw voltage reference used for analogue to digital converter
+	 * @param ref Set reference voltage (0-63)
+	 * @throws IOException
+	 */
 	private void setVref(int ref) throws IOException {
 		lock();
 		try {
@@ -277,6 +318,12 @@ public class GenericExtruder extends Device {
 		}
 	}
 
+	/**
+	 * Set the scale factor used on the temperature timer used
+	 * for analogue to digital conversion
+	 * @param scale
+	 * @throws IOException
+	 */
 	private void setTempScaler(int scale) throws IOException {
 		lock();
 		try {
