@@ -60,8 +60,9 @@ package org.reprap.geometry.polygons;
 import java.util.*;
 
 
-// Small class for containing results of hatch searches
-
+/**
+ * Small class for containing results of hatch searches
+ */
 class rr_h_search
 {
     public boolean join;
@@ -71,18 +72,24 @@ class rr_h_search
     public double dsq;
 }
 
+/**
+ * Polygons
+ */
 public class RrCSGPolygon
 {
-    private RrCSG csg;            // The polygon
-    private RrBox box;            // Its enclosing box
-    private RrCSGPolygon q1,     // Quad tree division - NW
-                    q2,            // NE 
-                    q3,            // SE
-                    q4;            // SW
-    private double resolution_2;   // Squared diagonal of the smallest box to go to
+    private RrCSG csg;            ///< The polygon
+    private RrBox box;            ///< Its enclosing box
+    private RrCSGPolygon q1,      ///< Quad tree division - NW
+                    q2,           ///< NE 
+                    q3,           ///< SE
+                    q4;           ///< SW
+    private double resolution_2;  ///< Squared diagonal of the smallest box to go to
     
-    // Set one up
-
+    /**
+     * Set one up
+     * @param p
+     * @param bx
+     */
     public RrCSGPolygon(RrCSG p, RrBox bx)
     {
 	csg = p;              // Efficient, but do we need a deep copy here?
@@ -94,8 +101,10 @@ public class RrCSGPolygon
         resolution_2 = -1;
     }
 
-    // Deep copy
-
+    /**
+     * Deep copy
+     * @param p
+     */
     public RrCSGPolygon(RrCSGPolygon p)
     {
 	csg = new RrCSG(p.csg);
@@ -153,8 +162,11 @@ public class RrCSGPolygon
 	return "RrCSGPolygon\n" + toString_r(1);
     }
 
-    // Quad-tree division
-    
+    /**
+     * Quad-tree division
+     * @param res_2
+     * @param swell
+     */
     public void divide(double res_2, double swell)
     {
         resolution_2 = res_2;
@@ -212,8 +224,11 @@ public class RrCSGPolygon
         q4.divide(resolution_2, swell);
     }
     
-    // Find the quad containing a point
-    
+    /**
+     * Find the quad containing a point
+     * @param p
+     * @return
+     */
     public RrCSGPolygon quad(Rr2Point p)
     {
         if(q1 == null)
@@ -241,9 +256,13 @@ public class RrCSGPolygon
         return this;
     }
     
-    // Note these do NOT find the closest half-plane unless the point
-    // is on a surface
     
+    /**
+     * Note these do NOT find the closest half-plane unless the point
+     * is on a surface
+     * @param p
+     * @return
+     */
     public RrCSG leaf(Rr2Point p)
     {
         RrCSGPolygon q = quad(p);
@@ -256,18 +275,26 @@ public class RrCSGPolygon
         return c.value(p);
     }
     
-    // Offset by a distance; grow or shrink the box by the same amount
-
+    /**
+     * Offset by a distance; grow or shrink the box by the same amount
+     * @param d
+     * @return
+     */
     public RrCSGPolygon offset(double d)
     {
         Rr2Point p = new Rr2Point(Math.sqrt(2)*d, Math.sqrt(2)*d);
         RrBox b = new RrBox( Rr2Point.add(box.ne(), p), Rr2Point.sub(box.sw(), p) );
 	return new RrCSGPolygon(csg.offset(d), b);
     }
-    
-    // Intersect a line with a polygon, adding to an existing
-    // unsorted list of the intersection parameters
-    
+        
+    /**
+     * Intersect a line with a polygon, adding to an existing
+     * unsorted list of the intersection parameters
+     * @param l0
+     * @param t
+     * @param big_wipe
+     * @return
+     */
     private List pl_intersect_r(RrLine l0, List t, boolean big_wipe)
     {
         RrInterval range;
@@ -358,9 +385,14 @@ public class RrCSGPolygon
     }
     
     
-    // Hatch a csg polygon parallel to line l0 with index gap
-    // Returning a polygon list as the result with flag values f
-    
+    /**
+     * Hatch a csg polygon parallel to line l0 with index gap
+     * @param l0
+     * @param gap
+     * @param fg
+     * @param fs
+     * @return a polygon list as the result with flag values f
+     */
     public RrPolygonList hatch(RrLine l0, double gap, int fg, int fs)
     {
 	RrBox big = box.scale(1.1);

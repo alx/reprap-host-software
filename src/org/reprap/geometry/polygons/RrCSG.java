@@ -114,8 +114,10 @@ public class RrCSG
 		return n;
 	}
 	
-	// Deep copy
-	
+	/**
+	 * Deep copy
+	 * @param c
+	 */
 	public RrCSG(RrCSG c)
 	{
 		if(this == u || this == n)
