@@ -15,7 +15,6 @@ import org.reprap.geometry.polygons.RrBox;
 import org.reprap.geometry.polygons.RrCSG;
 import org.reprap.geometry.polygons.RrCSGOp;
 import org.reprap.geometry.polygons.RrCSGPolygon;
-import org.reprap.geometry.polygons.RrGraphics;
 import org.reprap.geometry.polygons.RrInterval;
 import org.reprap.geometry.polygons.RrLine;
 import org.reprap.geometry.polygons.RrPolygon;
@@ -62,12 +61,14 @@ public class LayerProducer {
 	
 	private void plot(Rr2Point a) throws ReprapException, IOException
 	{
+		if (printer.isCancelled()) return;
 		printer.printTo(a.x(), a.y(), printer.getZ());
 		pos = a;
 	}
 
 	private void move(Rr2Point a) throws ReprapException, IOException
 	{
+		if (printer.isCancelled()) return;
 		printer.moveTo(a.x(), a.y(), printer.getZ());
 		pos = a;
 	}
@@ -87,8 +88,10 @@ public class LayerProducer {
 			int f = p.flag(i);
 			if(f != 0 && j != 0)
 			{
+				if (printer.isCancelled()) return;
 				plot(p.point(i));
 			} else
+				if (printer.isCancelled()) return;
 				move(p.point(i)); 
 		}
 	}
@@ -101,7 +104,9 @@ public class LayerProducer {
 	private void plot(RrLine a, RrInterval i) throws ReprapException, IOException
 	{
 		if(i.empty()) return;
+		if (printer.isCancelled()) return;
 		move(a.point(i.low()));
+		if (printer.isCancelled()) return;
 		plot(a.point(i.high()));
 	}
 	
@@ -126,6 +131,7 @@ public class LayerProducer {
 			RrInterval range = RrInterval.big_interval();
 			range = b.wipe(ln, range);
 			if(range.empty()) return;
+			if (printer.isCancelled()) return;
 			plot(ln, range);
 			break;
 			
@@ -148,7 +154,9 @@ public class LayerProducer {
 				range1 = c.c_2().plane().complement().wipe(ln1, range1);                    
 			}
 			
+			if (printer.isCancelled()) return;
 			plot(ln1, range1);
+			if (printer.isCancelled()) return;
 			plot(ln2, range2);
 			break;
 			
@@ -166,12 +174,17 @@ public class LayerProducer {
 	{
 		if(p.c_1() == null)
 		{
+			if (printer.isCancelled()) return;
 			plot(p.csg(), p.box());
 		} else
 		{
+			if (printer.isCancelled()) return;
 			plot(p.c_1());
+			if (printer.isCancelled()) return;
 			plot(p.c_2());
+			if (printer.isCancelled()) return;
 			plot(p.c_3());
+			if (printer.isCancelled()) return;
 			plot(p.c_4());
 		}
 	}
@@ -188,8 +201,11 @@ public class LayerProducer {
 		else
 		{
 			int leng = p_list.size();
-			for(int i = 0; i < leng; i++)
+			for(int i = 0; i < leng; i++) {
+				if (printer.isCancelled())
+					break;
 				plot(p_list.polygon(i));
+			}
 		}
 	}
 	
