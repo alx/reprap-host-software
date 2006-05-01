@@ -35,4 +35,7 @@ public interface Printer {
 
 	public void initialise();
 	
+	public double getX();
+	public double getY();
+	public double getZ();
 }

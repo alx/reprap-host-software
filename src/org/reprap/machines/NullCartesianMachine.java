@@ -86,4 +86,16 @@ public class NullCartesianMachine implements CartesianPrinter {
 		previewer.reset();
 	}
 
+	public double getX() {
+		return currentX;
+	}
+
+	public double getY() {
+		return currentY;
+	}
+
+	public double getZ() {
+		return currentZ;
+	}
+
 }

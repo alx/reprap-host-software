@@ -34,14 +34,14 @@ public class Reprap implements CartesianPrinter {
 	
 	double scaleX, scaleY, scaleZ;
 	
-	double currentZ;
+	double currentX, currentY, currentZ;
 	
 	private int speed = 236;
 	private int speedExtruder = 200;
 	
 	private GenericExtruder extruder;  ///< Only one supported for now
 
-	final boolean dummyZ = true;  // Don't perform Z operations
+	final boolean dummyZ = true;  ///< Don't perform Z operations.  Should be removed later.
 	
 	public Reprap(Properties config) throws Exception {
 		int axes = Integer.parseInt(config.getProperty("AxisCount"));
@@ -77,6 +77,8 @@ public class Reprap implements CartesianPrinter {
 		// Assume 400 steps per turn, 1.5mm travel per turn
 		scaleX = scaleY = scaleZ = 400.0 / 1.5;
 		
+		currentX = convertToPositionZ(motorX.getPosition());
+		currentY = convertToPositionZ(motorY.getPosition());
 		if (!dummyZ) {
 			currentZ = convertToPositionZ(motorZ.getPosition());
 		}
@@ -260,6 +262,18 @@ public class Reprap implements CartesianPrinter {
 	public void initialise() {
 		if (previewer != null)
 			previewer.reset();
+	}
+
+	public double getX() {
+		return currentX;
+	}
+
+	public double getY() {
+		return currentY;
+	}
+
+	public double getZ() {
+		return currentZ;
 	}
 }
 
