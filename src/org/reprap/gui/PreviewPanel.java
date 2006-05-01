@@ -1,13 +1,11 @@
 package org.reprap.gui;
 
 import javax.media.j3d.AmbientLight;
-import javax.media.j3d.Appearance;
 import javax.media.j3d.Background;
 import javax.media.j3d.Bounds;
 import javax.media.j3d.BranchGroup;
 import javax.media.j3d.DirectionalLight;
 import javax.media.j3d.Group;
-import javax.media.j3d.Material;
 import javax.media.j3d.TransformGroup;
 import javax.media.j3d.ViewPlatform;
 import javax.swing.JCheckBoxMenuItem;

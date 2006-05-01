@@ -34,7 +34,6 @@ import javax.vecmath.Vector3d;
 
 import com.sun.j3d.audioengines.javasound.JavaSoundMixer;
 import com.sun.j3d.utils.geometry.Cylinder;
-import com.sun.j3d.utils.picking.PickCanvas;
 
 abstract public class Panel3D extends JPanel {
 
@@ -43,7 +42,7 @@ abstract public class Panel3D extends JPanel {
 	// What follows are defaults.  These values should be overwritten from
 	// the reprap.properties file.
 	
-	protected String wv_location = "reprap-wv.stl";
+	protected String wv_location = null;
 
 	// Translate and zoom scaling factors
 	
