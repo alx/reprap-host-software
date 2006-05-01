@@ -6,11 +6,10 @@
  */
 package org.reprap.geometry;
 
-import java.awt.Graphics2D;
-
-import javax.swing.JFrame;
+import java.io.IOException;
 
 import org.reprap.Printer;
+import org.reprap.ReprapException;
 import org.reprap.geometry.polygons.Rr2Point;
 import org.reprap.geometry.polygons.RrBox;
 import org.reprap.geometry.polygons.RrCSG;
@@ -60,34 +59,26 @@ public class LayerProducer {
 		double height = big.y().length();
 	}
 	
-/*	private void plot(Rr2Point p)
+	private void plot(Rr2Point a) throws ReprapException, IOException
 	{
-		Rr2Point a = transform(p);
-		g2d.drawLine((int)(pos.x() + 0.5), (int)(pos.y() + 0.5), 
-				(int)(a.x() + 0.5), (int)(a.y() + 0.5));
+		printer.printTo(a.x(), a.y(), printer.getZ());
+		pos = a;
+	}
+
+	private void move(Rr2Point a) throws ReprapException, IOException
+	{
+		printer.moveTo(a.x(), a.y(), printer.getZ());
 		pos = a;
 	}
 
 
-	// Plot a box
-	
-	private void plot(RrBox b)
+	/**
+	 * Plot a polygon
+	 * @throws IOException
+	 * @throws ReprapException
+	 */
+	private void plot(RrPolygon p) throws ReprapException, IOException
 	{
-		colour(4);
-		move(b.sw());
-		plot(b.nw());
-		plot(b.ne());
-		plot(b.se());
-		plot(b.sw());
-	}
-	
-	// Plot a polygon
-	
-	private void plot(RrPolygon p)
-	{
-		if(plot_box)
-			plot(p.box);
-		
 		int leng = p.size();
 		for(int j = 0; j <= leng; j++)
 		{
@@ -95,31 +86,31 @@ public class LayerProducer {
 			int f = p.flag(i);
 			if(f != 0 && j != 0)
 			{
-				colour(f);
 				plot(p.point(i));
 			} else
 				move(p.point(i)); 
 		}
 	}
 	
-	// Plot a section of parametric line
-	
-	private void plot(RrLine a, RrInterval i)
+	/**
+	 * Plot a section of parametric line
+	 * @throws IOException
+	 * @throws ReprapException
+	 */
+	private void plot(RrLine a, RrInterval i) throws ReprapException, IOException
 	{
 		if(i.empty()) return;
 		move(a.point(i.low()));
 		plot(a.point(i.high()));
 	}
 	
-	// Plot a set in a box
-	
-	private void plot(RrCSG c, RrBox b)
+	/**
+	 * Plot a set in a box
+	 * @throws IOException
+	 * @throws ReprapException
+	 */
+	private void plot(RrCSG c, RrBox b) throws ReprapException, IOException
 	{
-		if(plot_box)
-			plot(b);
-		
-		colour(1);
-		
 		switch(c.complexity())
 		{
 		case 0:
@@ -165,9 +156,12 @@ public class LayerProducer {
 		}
 	}
 	
-	// Plot a divided CSG polygon recursively
-	
-	private void plot(RrCSGPolygon p)
+	/**
+	 * Plot a divided CSG polygon recursively
+	 * @throws IOException
+	 * @throws ReprapException
+	 */
+	private void plot(RrCSGPolygon p) throws ReprapException, IOException
 	{
 		if(p.c_1() == null)
 		{
@@ -180,21 +174,22 @@ public class LayerProducer {
 			plot(p.c_4());
 		}
 	}
-	*/
 	
 	/**
 	 * Master plot function - draw everything
+	 * @throws IOException
+	 * @throws ReprapException
 	 */
-	public void plot()
+	public void plot() throws ReprapException, IOException
 	{
-	/*	if(p_list == null)
+		if(p_list == null)
 			plot(csg_p);
 		else
 		{
 			int leng = p_list.size();
 			for(int i = 0; i < leng; i++)
 				plot(p_list.polygon(i));
-		}*/
+		}
 	}
 	
 }
