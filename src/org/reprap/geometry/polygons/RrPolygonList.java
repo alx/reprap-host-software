@@ -234,7 +234,7 @@ public class RrPolygonList
 	 * Hatch a polygon list parallel to line l0 with index gap
 	 * Returning a polygon as the result with flag values f
 	 * @param l0
-	 * @param gap
+	 * @param gap The size of the gap between hatching strokes
 	 * @param fg
 	 * @param fs
 	 * @return
@@ -271,7 +271,7 @@ public class RrPolygonList
 			
 		default:
 			System.err.println("RrPolygon hatch(): The atan2 function doesn't seem to work...");
-		org = big.sw();
+		    org = big.sw();
 		}
 		
 		double g = 0;
@@ -295,6 +295,3 @@ public class RrPolygonList
 	
 	
 }
-
-
-
