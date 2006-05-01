@@ -71,8 +71,9 @@ public class TestMain
 		RrCSG sc = new RrCSG(sh);
 		
 		pc = RrCSG.intersection(pc, qc);
-		rc = RrCSG.intersection(rc, sc);
+		rc = RrCSG.intersection(rc, sc);		
 		pc = RrCSG.intersection(pc, rc);
+		//pc = RrCSG.union(pc, rc); // !!
 		
 		RrCSG ppc = new RrCSG(pph);
 		RrCSG qqc = new RrCSG(qqh);
@@ -87,25 +88,25 @@ public class TestMain
 		ppc = RrCSG.difference(ppc, pc);
 		
 		//ppc = RrCSG.union(ppc, rc);
-		System.out.println(ppc.toString());
+		//System.out.println(ppc.toString());
 		ppc = ppc.simplify(1.0e-6);
-		System.out.println(ppc.toString());
+		//System.out.println(ppc.toString());
 		RrCSGPolygon cp = new RrCSGPolygon(ppc, new 
 				RrBox(new Rr2Point(0,0), new Rr2Point(1,1)));
 		
 		cp.divide(1.0e-6, 1.0);
-		//new rr_graphics(cp, false);
+		new RrGraphics(cp, true);
 		
-		RrPolygon  h = cp.hatch_join(x, 0.005, 1, 3);
-		RrPolygonList hp = new RrPolygonList();
-		RrPolygon a = new RrPolygon();
-		a.append(p, 5);
-		a.append(q, 5);
-		a.append(r, 5);
-		a.append(s, 5);
-		hp.append(h);
-		//hp.append(a);
-		new RrGraphics(hp, false);  
+//		RrPolygon  h = cp.hatch_join(x, 0.005, 1, 3);
+//		RrPolygonList hp = new RrPolygonList();
+//		RrPolygon a = new RrPolygon();
+//		a.append(p, 5);
+//		a.append(q, 5);
+//		a.append(r, 5);
+//		a.append(s, 5);
+//		hp.append(h);
+//		//hp.append(a);
+//		new RrGraphics(hp, false);  
 		
 	}
 }

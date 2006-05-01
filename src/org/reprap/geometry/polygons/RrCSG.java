@@ -51,7 +51,7 @@
 package org.reprap.geometry.polygons;
 
 /**
- * RepRap Computation Solid Geometry class
+ * RepRap Constructive Solid Geometry class
  * 
  * RrCSG: 2D polygons as boolean combinations of half-planes
  * First version 14 November 2005 
@@ -120,7 +120,7 @@ public class RrCSG
 	 */
 	public RrCSG(RrCSG c)
 	{
-		if(this == u || this == n)
+		if(c == u || c == n)
 			System.err.println("RrCSG deep copy: copying null or universal set.");
 		
 		if(c.hp != null)
@@ -138,12 +138,8 @@ public class RrCSG
 		else
 			c2 = null;
 		
-		if(c.comp != null)
-		{
-			comp = new RrCSG(comp);
-			comp.comp = comp;
-		} else
-			comp = null;
+		comp = null;  // This'll be built if it's needed
+		
 		op = c.op;
 		complexity = c.complexity;
 	}
@@ -181,14 +177,16 @@ public class RrCSG
 			
 		case RrCSGOp.UNION:
 			result = result + white + "U\n";
-			result = c1.toString_r(result, white + " ");
-			result = c2.toString_r(result, white + " ");
+			white = white + " ";
+			result = c1.toString_r(result, white);
+			result = c2.toString_r(result, white);
 			break;
 			
 		case RrCSGOp.INTERSECTION:
 			result = result + white + "I\n";
-			result = c1.toString_r(result, white + " ");
-			result = c2.toString_r(result, white + " ");
+			white = white + " ";
+			result = c1.toString_r(result, white);
+			result = c2.toString_r(result, white);
 			break;
 			
 		default:
@@ -199,7 +197,8 @@ public class RrCSG
 	
 	public String toString()
 	{
-		String result = "RrCSG: complexity = " + Integer.toString(complexity) + "\n";
+		String result = "RrCSG: complexity = " + 
+			Integer.toString(complexity) + "\n";
 		result = toString_r(result, " ");
 		return result;
 	}
@@ -271,29 +270,28 @@ public class RrCSG
 		return r;
 	}
 	
+	/**
+	 * Lazy evaluation for complement.
+	 * @return
+	 */
 	public RrCSG complement()
-	{
+	{		
+		if(comp != null)
+			return comp;
+		
 		RrCSG result;
 		
 		switch(op)
 		{
 		case RrCSGOp.LEAF:
-			if(comp == null)
-			{
-				result = new RrCSG(hp.complement());
-				comp = result;
-				result.comp = this;
-			} else
-				result = comp;
+			result = new RrCSG(hp.complement());
 			break;
 			
 		case RrCSGOp.NULL:
-			result = universe();
-			break;
+			return universe();
 			
 		case RrCSGOp.UNIVERSE:
-			result = nothing();
-			break;
+			return nothing();
 			
 		case RrCSGOp.UNION:
 			result = intersection(c1.complement(), c2.complement());
@@ -305,11 +303,34 @@ public class RrCSG
 			
 		default:
 			System.err.println("complement(): invalid operator.");
-		result = nothing();
+			return nothing();
 		}
-		return result;
+		
+		// Remember, so we don't have to do it again.
+		
+		comp = result;
+		result.comp = this;
+		
+		return comp;
 	}
 	
+	/**
+	 * Set difference is intersection with complement
+	 * @param a
+	 * @param b
+	 * @return
+	 */		
+	public static RrCSG difference(RrCSG a, RrCSG b)
+	{
+		return intersection(a, b.complement());
+	}
+	
+	
+	/**
+	 * Regularise a set with a contents of 3
+	 * This assumes simplify has been run over this set
+	 * @return
+	 */	
 	private RrCSG reg_3()
 	{
 		RrCSG result = this;
@@ -384,6 +405,11 @@ public class RrCSG
 		return result;
 	}
 	
+	/**
+	 * Regularise a set with a contents of 4
+	 * This assumes simplify has been run over the set
+	 * @return
+	 */	
 	private RrCSG reg_4()
 	{            
 		RrCSG result = this;
@@ -391,15 +417,17 @@ public class RrCSG
 		if(complexity != 4)
 			return result;
 		
+		RrCSG temp;	
+		
 		if(c1.complexity == 1)
 		{
-			result = c2.reg_3();
-			if(result.complexity <= 2)
+			temp = c2.reg_3();
+			if(temp.complexity <= 2)
 			{
 				if(op == RrCSGOp.UNION)
-					result = union(c1, result).reg_3();
+					result = union(c1, temp).reg_3();
 				else
-					result = intersection(c1, result).reg_3();
+					result = intersection(c1, temp).reg_3();
 			}else
 			{
 				// c1 can only equal at most one leaf of c2 as all three c2 leaves
@@ -446,7 +474,6 @@ public class RrCSG
 		} else
 		{
 			int type = 0;
-			RrCSG temp;
 			if(c1.c1 == c2.c1)
 				type++;
 			else if(c1.c1 == c2.c2)
@@ -528,115 +555,148 @@ public class RrCSG
 		return result;
 	}
 	
+	/**
+	 * Regularise a set with simple contents ( < 4 )
+	 * This assumes simplify has been run over the set
+	 * @return
+	 */	
 	public RrCSG regularise()
 	{
 		RrCSG result = this;
 		
-		/*switch(complexity)
-		 {
-		 case 0:
-		 case 1:
-		 case 2:
-		 break;
-		 case 3:
-		 result = reg_3();
-		 break;
-		 case 4:
-		 result = reg_4();
-		 break;
-		 
-		 default:
-		 System.err.println("regularise(): set too complicated.");
-		 }*/
+		switch(complexity)
+		{
+		case 0:
+		case 1:
+		case 2:
+			break;
+		case 3:
+			result = reg_3();
+			if(result.complexity < complexity)
+				System.out.println("regularise: \n" + toString() + " > " + 
+						result.toString());
+			break;
+			
+		case 4:
+			result = reg_4();
+			if(result.complexity < complexity)
+				System.out.println("regularise: \n" + toString() + " > " + 
+						result.toString());
+			break;
+			
+		default:
+			System.err.println("regularise(): set too complicated.");
+		}
 		
 		return result;
 	}
 	
-	private RrCSG replace_all_same(RrCSG leaf, double tolerance)
-	{
-		RrCSG result = this;
-		
+	/**
+	 * Replace duplicate of leaf with leaf itself
+	 * @param leaf
+	 * @param tolerance
+	 */		
+	private void replace_all_same(RrCSG leaf, double tolerance)
+	{	
 		switch(op)
 		{
 		case RrCSGOp.LEAF:
 		case RrCSGOp.NULL:   
 		case RrCSGOp.UNIVERSE:
-			//System.err.println("replace_all_same(): at a leaf!");
+			//System.out.println("replace_all_same(): at a leaf!");
 			break;
 			
 		case RrCSGOp.UNION:
 		case RrCSGOp.INTERSECTION:    
 			if (complexity > 2)
 			{
-				result.c1 = c1.replace_all_same(leaf, tolerance);
-				result.c2 = c2.replace_all_same(leaf, tolerance);
+				c1.replace_all_same(leaf, tolerance);
+				c2.replace_all_same(leaf, tolerance);
 			} else
 			{
 				RrHalfPlane hp = leaf.hp;
 				if(c1.op == RrCSGOp.LEAF && c1 != leaf)
 				{
 					if(RrHalfPlane.same(hp, c1.hp, tolerance))
-						result.c1 = leaf;
+						c1 = leaf;
 				}
 				
 				if(c2.op == RrCSGOp.LEAF && c2 != leaf)
 				{
 					if(RrHalfPlane.same(hp, c2.hp, tolerance))
-						result.c2 = leaf;                        
+						c2 = leaf;                        
 				}
+				
+				// If we've made the children the we become one of them
+				
 				if(c1 == c2)
-					result = c1;
+				{
+					hp = c1.hp;
+					op = c1.op;
+					c1 = c1.c1;
+					c2 = c1.c2;
+					comp = c1.comp;
+					complexity = c1.complexity;
+				}
 			}
 			break;
 			
 		default:
-			System.err.println("replace_all_same(): invalid operator.");
-		
+			System.err.println("replace_all_same(): invalid operator.");		
 		}
-		return result;
 	}
 	
-	public RrCSG simplify(double tolerance)
+	/**
+	 * Replace duplicate of all leaves with the first instance of each
+	 * @param root
+	 * @param tolerance
+	 * @return
+	 */		
+	private void simplify_r(RrCSG root, double tolerance)
 	{
-		RrCSG result = this;
 		switch(op)
 		{
 		case RrCSGOp.LEAF:
 		case RrCSGOp.NULL:   
 		case RrCSGOp.UNIVERSE:
-			//System.err.println("simplify(): at a leaf!");
+			//System.out.println("simplify_r(): at a leaf!");
 			break;
 			
 		case RrCSGOp.UNION:
 		case RrCSGOp.INTERSECTION:    
 			if (complexity > 2)
 			{
-				result.c1 = c1.simplify(tolerance);
-				result.c2 = c2.simplify(tolerance);
+				c1.simplify_r(root, tolerance);
+				c2.simplify_r(root, tolerance);
 			} else
 			{
 				if(c1.op == RrCSGOp.LEAF)
-					result = replace_all_same(c1, tolerance);
+					root.replace_all_same(c1, tolerance);
 				if(c2.op == RrCSGOp.LEAF)
-					result = replace_all_same(c2, tolerance);
+					root.replace_all_same(c2, tolerance);
 			}
 			break;
 			
 		default:
-			System.err.println("simplify(): invalid operator.");
+			System.err.println("simplify_r(): invalid operator.");
 		
 		}
-		return result;
-	}
-	
-	
-	public static RrCSG difference(RrCSG a, RrCSG b)
-	{
-		return intersection(a, b.complement());
 	}
 	
 	/**
-	 * Offset by a distance
+	 * Replace duplicate of all leaves with the first instance of each
+	 * @param tolerance
+	 * @return
+	 */		
+	public RrCSG simplify(double tolerance)
+	{
+		RrCSG root = new RrCSG(this);
+		simplify_r(root, tolerance);
+		return root;
+	}
+	
+	/**
+	 * Offset by a distance (+ve or -ve)
 	 * @param d
 	 * @return
 	 */
@@ -665,16 +725,14 @@ public class RrCSG
 			
 		default:
 			System.err.println("offset(): invalid operator.");
-		result = nothing();
+			result = nothing();
 		}
 		return result;
 	}
 	
 	
 	/**
-	 * "Potential" value of a point; i.e. a membership test
-	 * -ve means inside; 0 means on the surface; +ve means outside
-	 * Leaf find the half-plane that generates the value for a point
+	 * leaf find the half-plane that generates the value for a point
 	 * @param p
 	 * @return
 	 */
@@ -714,11 +772,17 @@ public class RrCSG
 			
 		default:
 			System.err.println("leaf(Rr2Point): invalid operator.");
-		result = nothing();
+			result = nothing();
 		}
 		return result;
 	}
 	
+	/**
+	 * "Potential" value of a point; i.e. a membership test
+	 * -ve means inside; 0 means on the surface; +ve means outside
+	 * @param p
+	 * @return
+	 */
 	public double value(Rr2Point p)
 	{
 		double result = 1;
@@ -762,11 +826,11 @@ public class RrCSG
 			break;
 			
 		case RrCSGOp.NULL:
-			result = new RrInterval(1, 1.01);
+			result = new RrInterval(1, 1.01);  // Is this clever?  Or dumb?
 			break;
 			
 		case RrCSGOp.UNIVERSE:
-			result = new RrInterval(-1.01, -1);
+			result = new RrInterval(-1.01, -1);  // Ditto.
 			break;
 			
 		case RrCSGOp.UNION:
@@ -792,26 +856,22 @@ public class RrCSG
 	 */
 	public RrCSG prune(RrBox b)
 	{
-		RrCSG result;
+		RrCSG result = this;
+		
 		switch(op)
 		{
 		case RrCSGOp.LEAF:            
 			RrInterval i = hp.value(b);
 			if (i.empty())
-			{
 				System.err.println("prune(RrBox): empty interval!");
-				result = this;
-			} else if(i.neg())
+			else if(i.neg())
 				result = universe();
 			else if (i.pos())
 				result = nothing();
-			else
-				result = this;
 			break;
 			
 		case RrCSGOp.NULL:
 		case RrCSGOp.UNIVERSE:
-			result = this;
 			break;
 			
 		case RrCSGOp.UNION:
@@ -824,7 +884,6 @@ public class RrCSG
 			
 		default:
 			System.err.println("prune(RrBox): dud op value!");
-		result = this;
 		}
 		
 		return result;

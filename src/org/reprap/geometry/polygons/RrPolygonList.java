@@ -50,7 +50,7 @@
  RrPolygonList: A collection of 2D polygons
  
  First version 20 May 2005
- This version: 8 March 2006
+ This version: 1 May 2006 (Now in CVS - no more comments here)
  
  */
 
@@ -124,7 +124,9 @@ public class RrPolygonList
 	 */
 	public void append(RrPolygon p)
 	{
-		append(p.no_cross());
+		//append(p.no_cross());
+		polygons.add(p);
+		box.expand(p.box);
 	}
 	
 	
@@ -275,7 +277,7 @@ public class RrPolygonList
 		}
 		
 		double g = 0;
-		int i = 0;
+
 		orth = Rr2Point.mul(orth, gap);
 		
 		RrLine hatcher = new RrLine(org, Rr2Point.add(org, l0.direction()));

@@ -50,7 +50,7 @@
  RrGraphics: Simple 2D graphics
  
  First version 20 May 2005
- This version: 9 October 2005 (translation to Java)
+ This version: 1 May 2006 (Now in CVS - no more comments here)
  
  */
 
@@ -75,6 +75,12 @@ public class RrGraphics
 	
 	public RrGraphics(RrPolygonList pl, boolean pb) 
 	{
+		if(pl.size() <= 0)
+		{
+			System.err.println("Attempt to plot a null polygon list!");
+			return;
+		}
+		
 		p_list = pl;
 		csg_p = null;
 		plot_box = pb;

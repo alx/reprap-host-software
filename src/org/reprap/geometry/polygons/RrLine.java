@@ -49,7 +49,7 @@
  RrLine: 2D parametric line
  
  First version 20 May 2005
- This version: 9 March 2006
+ This version: 1 May 2006 (Now in CVS - no more comments here)
  
  */
 

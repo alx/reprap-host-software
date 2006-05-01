@@ -37,10 +37,26 @@ public class SNAPCommunicator implements Communicator {
 		CommPortIdentifier commId = CommPortIdentifier.getPortIdentifier(portName);
 		port = (SerialPort)commId.open(portName, 30000);
 		
+		// Workround for javax.comm bug.
+		// See http://forum.java.sun.com/thread.jspa?threadID=673793
+		
+		 try {
+			 port.setSerialPortParams(baudRate,
+						SerialPort.DATABITS_8,
+						SerialPort.STOPBITS_1,
+						SerialPort.PARITY_NONE);
+			 }
+			 catch (Exception e) {
+			 
+			 }
+			 
 		port.setSerialPortParams(baudRate,
 				SerialPort.DATABITS_8,
 				SerialPort.STOPBITS_1,
 				SerialPort.PARITY_NONE);
+		
+		// End of workround
+		
 		port.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
 		
 		writeStream = port.getOutputStream();

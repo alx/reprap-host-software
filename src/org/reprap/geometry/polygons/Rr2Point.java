@@ -50,7 +50,7 @@
  Rr2Point: 2D vectors
  
  First version 20 May 2005
- This version: 2 October 2005 (translation to Java)
+ This version: 1 May 2006 (Now in CVS - no more comments here)
  
  
  */
