@@ -49,7 +49,8 @@ public class LayerProducer {
 
 		p_list = new RrPolygonList();
 		p_list.append(hatched);
-		new RrGraphics(p_list, true);
+		
+		//new RrGraphics(p_list, false);
 		
 		csg_p = null;
 		
