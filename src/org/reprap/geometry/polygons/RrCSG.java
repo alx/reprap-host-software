@@ -46,31 +46,33 @@
  
  =====================================================================
  
- RrCSG: 2D polygons as boolean combinations of half-planes
- 
- First version 14 November 2005
- 
  */
 
 package org.reprap.geometry.polygons;
 
+/**
+ * RepRap Computation Solid Geometry class
+ * 
+ * RrCSG: 2D polygons as boolean combinations of half-planes
+ * First version 14 November 2005 
+ */
 public class RrCSG
 {
 	
-	// Universal and null set
+	private static final RrCSG u = new RrCSG(true);  ///< Universal set
+	private static final RrCSG n = new RrCSG(false); ///< Null set 
 	
-	private static final RrCSG u = new RrCSG(true);
-	private static final RrCSG n = new RrCSG(false);
+	private RrHalfPlane hp;    ///< Leaf half plane
+	//private RrCSGOp op;      ///< Type of set
+	private int op;			   ///< Will go at Java 1.5
+	private RrCSG c1, c2;      ///< Non-leaf child operands
+	private RrCSG comp;        ///< The complement (if there is one)
+	private int complexity;    ///< How much is in here (leaf count)?
 	
-	private RrHalfPlane hp;  // Leaf half plane
-	//private RrCSGOp op;      // Type of set
-	private int op;			  // Will go at Java 1.5
-	private RrCSG c1, c2;     // Non-leaf child operands
-	private RrCSG comp;       // The complement (if there is one)
-	private int complexity;    // How much is in here (leaf count)?
-	
-	// Make a leaf from a single half-plane
-	
+	/**
+	 * Make a leaf from a single half-plane
+	 * @param h
+	 */
 	public RrCSG(RrHalfPlane h)
 	{
 		hp = new RrHalfPlane(h);
@@ -81,8 +83,10 @@ public class RrCSG
 		complexity = 1;
 	}
 	
-	// One off constructor for the universal and null sets
-	
+	/**
+	 * One off constructor for the universal and null sets
+	 * @param b
+	 */
 	private RrCSG(boolean b)
 	{
 		hp = null;
@@ -96,8 +100,10 @@ public class RrCSG
 		complexity = 0;
 	}
 	
-	// Universal or null set
-	
+	/**
+	 * Universal or null set
+	 * @return
+	 */
 	public static RrCSG universe()
 	{
 		return u;
@@ -149,8 +155,12 @@ public class RrCSG
 	public RrHalfPlane plane() { return hp; }
 	public int complexity() { return complexity; }
 	
-	// Convert to a string
-	
+	/**
+	 * Convert to a string
+	 * @param result
+	 * @param white
+	 * @return
+	 */
 	private String toString_r(String result, String white)
 	{
 		switch(op)
@@ -192,8 +202,11 @@ public class RrCSG
 		return result;
 	}
 	
-	// Private constructor for common work setting up booleans
-	
+	/**
+	 * Private constructor for common work setting up booleans
+	 * @param a
+	 * @param b
+	 */
 	private RrCSG(RrCSG a, RrCSG b)
 	{
 		hp = null;
@@ -210,8 +223,12 @@ public class RrCSG
 		complexity = c1.complexity + c2.complexity;
 	}
 	
-	// Boolean operations, with de Morgan simplifications
-	
+	/**
+	 * Boolean operations, with de Morgan simplifications
+	 * @param a
+	 * @param b
+	 * @return
+	 */
 	public static RrCSG union(RrCSG a, RrCSG b)
 	{
 		if(a == b)
@@ -616,8 +633,11 @@ public class RrCSG
 		return intersection(a, b.complement());
 	}
 	
-	// Offset by a distance
-	
+	/**
+	 * Offset by a distance
+	 * @param d
+	 * @return
+	 */
 	public RrCSG offset(double d)
 	{
 		RrCSG result;
@@ -649,10 +669,13 @@ public class RrCSG
 	}
 	
 	
-	// "Potential" value of a point; i.e. a membership test
-	// -ve means inside; 0 means on the surface; +ve means outside
-	// Leaf find the half-plane that generates the value for a point
-	
+	/**
+	 * "Potential" value of a point; i.e. a membership test
+	 * -ve means inside; 0 means on the surface; +ve means outside
+	 * Leaf find the half-plane that generates the value for a point
+	 * @param p
+	 * @return
+	 */
 	public RrCSG leaf(Rr2Point p)
 	{
 		RrCSG result, r1, r2;
@@ -721,8 +744,11 @@ public class RrCSG
 		return result;
 	}
 	
-	// The interval value of a box (analagous to point)
-	
+	/**
+	 * The interval value of a box (analagous to point)
+	 * @param b
+	 * @return
+	 */
 	public RrInterval value(RrBox b)
 	{
 		RrInterval result;
@@ -757,8 +783,11 @@ public class RrCSG
 		return result;
 	}
 	
-	// Prune the set to a box
-	
+	/**
+	 * Prune the set to a box
+	 * @param b
+	 * @return
+	 */
 	public RrCSG prune(RrBox b)
 	{
 		RrCSG result;
