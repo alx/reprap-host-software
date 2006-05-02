@@ -93,7 +93,7 @@ public class RrCSGPolygon
 	 */
 	public RrCSGPolygon(RrCSG p, RrBox bx)
 	{
-		csg = p;              // Efficient, but do we need a deep copy here?
+		csg = p;
 		box = new RrBox(bx);
 		q1 = null;
 		q2 = null;
@@ -141,23 +141,27 @@ public class RrCSGPolygon
 	
 	private String toString_r(String quad)
 	{
+		if(csg.operator() == RrCSGOp.UNIVERSE)
+			quad = quad + "U";
+		else
+			quad = quad + Integer.toString(csg.complexity());
+		
 		if(q1 == null)
 		{
-			String result = quad + " = " +
-				Integer.toString(csg.complexity()) + "\n";
+			String result = quad + "\n";
 			return result;
 		} else
 		{
-			return(q1.toString_r(quad + ":NW") + 
-					q2.toString_r(quad + ":NE") +
-					q3.toString_r(quad + ":SE") +
-					q4.toString_r(quad + ":SW"));
+			return(q1.toString_r(quad + ":NW-") + 
+					q2.toString_r(quad + ":NE-") +
+					q3.toString_r(quad + ":SE-") +
+					q4.toString_r(quad + ":SW-"));
 		}      
 	}
 	
 	public String toString()
 	{
-		return "RrCSGPolygon\n" + toString_r(":--");
+		return "RrCSGPolygon\n" + toString_r(":-");
 	}
 	
 	/**

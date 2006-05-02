@@ -87,14 +87,15 @@ public class TestMain
 		pc = ppc.offset(-0.15);
 		ppc = RrCSG.difference(ppc, pc);
 		
-		//ppc = RrCSG.union(ppc, rc);
+		ppc = RrCSG.union(ppc, rc);
 		//System.out.println(ppc.toString());
 		ppc = ppc.simplify(1.0e-6);
 		//System.out.println(ppc.toString());
 		RrCSGPolygon cp = new RrCSGPolygon(ppc, new 
-				RrBox(new Rr2Point(0,0), new Rr2Point(1,1)));
+				RrBox(new Rr2Point(0,-0.732), new Rr2Point(1,1)));
 		
 		cp.divide(1.0e-6, 1.0);
+		System.out.println(cp.toString());
 		new RrGraphics(cp, true);
 		
 //		RrPolygon  h = cp.hatch_join(x, 0.005, 1, 3);

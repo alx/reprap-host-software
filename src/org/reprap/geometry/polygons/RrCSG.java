@@ -172,18 +172,18 @@ public class RrCSG
 			break;
 			
 		case RrCSGOp.UNIVERSE:
-			result = result + white + "1\n";
+			result = result + white + "U\n";
 			break;
 			
 		case RrCSGOp.UNION:
-			result = result + white + "U\n";
+			result = result + white + "+\n";
 			white = white + " ";
 			result = c1.toString_r(result, white);
 			result = c2.toString_r(result, white);
 			break;
 			
 		case RrCSGOp.INTERSECTION:
-			result = result + white + "I\n";
+			result = result + white + "&\n";
 			white = white + " ";
 			result = c1.toString_r(result, white);
 			result = c2.toString_r(result, white);
@@ -307,6 +307,9 @@ public class RrCSG
 		}
 		
 		// Remember, so we don't have to do it again.
+		// (I do hope that the Java garbage collector is up to 
+		// spotting this deadly embrace, or we - I mean it - has
+		// a memory leak.)
 		
 		comp = result;
 		result.comp = this;
@@ -378,11 +381,11 @@ public class RrCSG
 				if(c2.op == RrCSGOp.UNION)
 					result = universe();
 				else
-					result = RrCSG.union(c1, c2.c2);
+					result = union(c1, c2.c2);
 			}else 
 			{
 				if(c2.op == RrCSGOp.UNION)
-					result = RrCSG.intersection(c1, c2.c2);
+					result = intersection(c1, c2.c2);
 				else
 					result = nothing();
 			}            
@@ -517,27 +520,25 @@ public class RrCSG
 				switch(ops)
 				{
 				case 0:
-					result = RrCSG.intersection(c1, c2.c2);
+					result = intersection(c1, c2.c2);
 					break;
 				case 1:
-					result = RrCSG.intersection(c1.c1, c2.c2);
+					result = intersection(c1.c1, c2.c2);
 					break;
 				case 2:
 				case 5:
 					result = c1;
 				case 3:
-					result = RrCSG.union(c1.c1, 
-							RrCSG.intersection(c1.c2, c2.c2));
+					result = union(c1.c1, intersection(c1.c2, c2.c2));
 					break;
 				case 4:
-					result = RrCSG.intersection(c1.c1, 
-							RrCSG.union(c1.c2, c2.c2));
+					result = intersection(c1.c1, union(c1.c2, c2.c2));
 					break;
 				case 6:
-					result = RrCSG.union(c1.c1, c2.c2);
+					result = union(c1.c1, c2.c2);
 					break;
 				case 7:
-					result = RrCSG.union(c1, c2.c2);
+					result = union(c1, c2.c2);
 					break;
 				default:
 					System.err.println("reg_4() 2: addition doesn't work...");
