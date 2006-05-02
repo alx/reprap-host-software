@@ -37,6 +37,7 @@ public class SNAPCommunicator implements Communicator {
 		CommPortIdentifier commId = CommPortIdentifier.getPortIdentifier(portName);
 		port = (SerialPort)commId.open(portName, 30000);
 		
+		
 		// Workround for javax.comm bug.
 		// See http://forum.java.sun.com/thread.jspa?threadID=673793
 		
@@ -57,8 +58,12 @@ public class SNAPCommunicator implements Communicator {
 		
 		// End of workround
 		
-		port.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
-		
+		try {
+			port.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
+		} catch (Exception e) {
+			// Um, Linux USB ports don't do this. What can I do about it?
+		}
+
 		writeStream = port.getOutputStream();
 		readStream = port.getInputStream();
 		
