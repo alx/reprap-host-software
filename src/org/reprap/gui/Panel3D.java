@@ -33,7 +33,9 @@ import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
 
 import com.sun.j3d.audioengines.javasound.JavaSoundMixer;
+import com.sun.j3d.utils.geometry.Box;
 import com.sun.j3d.utils.geometry.Cylinder;
+import com.sun.j3d.utils.geometry.Primitive;
 
 abstract public class Panel3D extends JPanel {
 
@@ -382,17 +384,17 @@ abstract public class Panel3D extends JPanel {
 			double x1, double y1, double z1,
 			double x2, double y2, double z2,
 			float thickness) {
-		root.addChild(addBlock(appearance, x1, y1, z1, x2, y2, z2, thickness));
+		root.addChild(addRectangularSegment(appearance, x1, y1, z1, x2, y2, z2, thickness));
 	}
 
 	protected void addBlock(TransformGroup root, Appearance appearance,
 			double x1, double y1, double z1,
 			double x2, double y2, double z2,
 			float thickness) {
-		root.addChild(addBlock(appearance, x1, y1, z1, x2, y2, z2, thickness));
+		root.addChild(addRectangularSegment(appearance, x1, y1, z1, x2, y2, z2, thickness));
 	}
 	
-	protected TransformGroup addBlock(Appearance appearance,
+	protected TransformGroup addRectangularSegment(Appearance appearance,
 			double x1, double y1, double z1,
 			double x2, double y2, double z2,
 			float thickness) {
@@ -403,7 +405,7 @@ abstract public class Panel3D extends JPanel {
 		Vector3d unity = new Vector3d(0, 1, 0);
 		Vector3d v = new Vector3d(x2 - x1, y2 - y1, z2 - z1);
 		
-		Cylinder cyl = new Cylinder(thickness, (float)v.length(), appearance);
+		Primitive segment = new Box(thickness, (float)v.length() / 2.0f, thickness, appearance);
 		
 		Transform3D transform = new Transform3D();
 		
@@ -419,10 +421,41 @@ abstract public class Panel3D extends JPanel {
 		transform.setRotation(rotationAngle);
 		
 		TransformGroup tg = new TransformGroup(transform);
-		tg.addChild(cyl);
+		tg.addChild(segment);
 		return tg;
 	}
+	
+	protected TransformGroup addCylindricalSegment(Appearance appearance,
+			double x1, double y1, double z1,
+			double x2, double y2, double z2,
+			float thickness) {
+		
+		Point3d p1 = new Point3d(x1, y1, z1);
+		//Point3d p2 = new Point3d(x2, y2, z2);
 
+		Vector3d unity = new Vector3d(0, 1, 0);
+		Vector3d v = new Vector3d(x2 - x1, y2 - y1, z2 - z1);
+		
+		Primitive segment = new Cylinder(thickness, (float)v.length(), appearance);
+		
+		Transform3D transform = new Transform3D();
+		
+		Vector3d translate = new Vector3d(p1);
+		v.scale(0.5);
+		translate.add(v);
+		transform.setTranslation(translate);
+				
+		double angle = v.angle(unity);
+		Vector3d axis = new Vector3d();
+		axis.cross(unity, v);
+		AxisAngle4d rotationAngle = new AxisAngle4d(axis.x, axis.y, axis.z, angle);
+		transform.setRotation(rotationAngle);
+		
+		TransformGroup tg = new TransformGroup(transform);
+		tg.addChild(segment);
+		return tg;
+	}
+	
 	protected double getScale() {
 		return 1.0;
 	}
