@@ -39,6 +39,8 @@ public class Producer {
 
 		boolean isEvenLayer = true;
 		for(double z = 0.0; z < 5.0; z += layerSpacing) {
+			reprap.moveTo(reprap.getX(), reprap.getY(), z);
+			
 			if (reprap.isCancelled())
 				break;
 			
@@ -59,8 +61,6 @@ public class Producer {
 			LayerProducer layer = new LayerProducer(reprap, list,
 					isEvenLayer?evenHatchDirection:oddHatchDirection);
 			layer.plot();
-			
-			reprap.moveTo(reprap.getX(), reprap.getY(), z);
 			
 			isEvenLayer = !isEvenLayer;
 		}
