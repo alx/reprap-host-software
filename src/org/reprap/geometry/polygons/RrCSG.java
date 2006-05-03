@@ -487,15 +487,7 @@ public class RrCSG
 				c2.c1 = temp;
 			}
 			if(c1.c2 == c2.c2)
-			{
 				type++;
-				temp = c2.c2;
-				c2.c1 = c2.c2;
-				c2.c2 = temp;
-				temp = c1.c2;
-				c1.c1 = c1.c2;
-				c1.c2 = temp;
-			}
 			else if(c1.c2 == c2.c1)
 			{
 				type++;
@@ -545,7 +537,7 @@ public class RrCSG
 				}
 				break;
 			case 2:
-				
+				result = c1;
 				break;
 				
 			default:
@@ -564,7 +556,7 @@ public class RrCSG
 	public RrCSG regularise()
 	{
 		RrCSG result = this;
-		
+
 		switch(complexity)
 		{
 		case 0:
@@ -573,16 +565,16 @@ public class RrCSG
 			break;
 		case 3:
 			result = reg_3();
-			if(result.complexity < complexity)
-				System.out.println("regularise: \n" + toString() + " > " + 
-						result.toString());
+//			if(result.complexity < complexity)
+//				System.out.println("regularise: \n" + toString() + " > " + 
+//						result.toString());
 			break;
 			
 		case 4:
 			result = reg_4();
-			if(result.complexity < complexity)
-				System.out.println("regularise: \n" + toString() + " > " + 
-						result.toString());
+//			if(result.complexity < complexity)
+//				System.out.println("regularise: \n" + toString() + " > " + 
+//						result.toString());
 			break;
 			
 		default:
@@ -597,7 +589,7 @@ public class RrCSG
 	 * @param leaf
 	 * @param tolerance
 	 */		
-	private void replace_all_same(RrCSG leaf, double tolerance)
+	private void replace_all_same_leaves(RrCSG leaf, double tolerance)
 	{	
 		switch(op)
 		{
@@ -609,37 +601,20 @@ public class RrCSG
 			
 		case RrCSGOp.UNION:
 		case RrCSGOp.INTERSECTION:    
-			if (complexity > 2)
+			RrHalfPlane hp = leaf.hp;
+			if(c1.op == RrCSGOp.LEAF)
 			{
-				c1.replace_all_same(leaf, tolerance);
-				c2.replace_all_same(leaf, tolerance);
+				if(RrHalfPlane.same(hp, c1.hp, tolerance))
+					c1 = leaf;
 			} else
+				c1.replace_all_same_leaves(leaf, tolerance);
+			
+			if(c2.op == RrCSGOp.LEAF)
 			{
-				RrHalfPlane hp = leaf.hp;
-				if(c1.op == RrCSGOp.LEAF && c1 != leaf)
-				{
-					if(RrHalfPlane.same(hp, c1.hp, tolerance))
-						c1 = leaf;
-				}
-				
-				if(c2.op == RrCSGOp.LEAF && c2 != leaf)
-				{
-					if(RrHalfPlane.same(hp, c2.hp, tolerance))
-						c2 = leaf;                        
-				}
-				
-				// If we've made the children the we become one of them
-				
-				if(c1 == c2)
-				{
-					hp = c1.hp;
-					op = c1.op;
-					c1 = c1.c1;
-					c2 = c1.c2;
-					comp = c1.comp;
-					complexity = c1.complexity;
-				}
-			}
+				if(RrHalfPlane.same(hp, c2.hp, tolerance))
+					c2 = leaf;                        
+			} else
+				c2.replace_all_same_leaves(leaf, tolerance);
 			break;
 			
 		default:
@@ -648,7 +623,7 @@ public class RrCSG
 	}
 	
 	/**
-	 * Replace duplicate of all leaves with the first instance of each
+	 * Replace duplicate of all leaves with the last instance of each
 	 * @param root
 	 * @param tolerance
 	 * @return
@@ -665,17 +640,16 @@ public class RrCSG
 			
 		case RrCSGOp.UNION:
 		case RrCSGOp.INTERSECTION:    
-			if (complexity > 2)
-			{
+			if(c1.op == RrCSGOp.LEAF)
+				root.replace_all_same_leaves(c1, tolerance);
+			else
 				c1.simplify_r(root, tolerance);
+			
+			if(c2.op == RrCSGOp.LEAF)
+				root.replace_all_same_leaves(c2, tolerance);
+			else
 				c2.simplify_r(root, tolerance);
-			} else
-			{
-				if(c1.op == RrCSGOp.LEAF)
-					root.replace_all_same(c1, tolerance);
-				if(c2.op == RrCSGOp.LEAF)
-					root.replace_all_same(c2, tolerance);
-			}
+			
 			break;
 			
 		default:
@@ -685,7 +659,7 @@ public class RrCSG
 	}
 	
 	/**
-	 * Replace duplicate of all leaves with the first instance of each
+	 * Replace duplicate of all leaves with the last instance of each
 	 * @param tolerance
 	 * @return
 	 */		
