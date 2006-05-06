@@ -293,6 +293,150 @@ public class RrCSGPolygon
 		return new RrCSGPolygon(csg.offset(d), b);
 	}
 	
+	 /**
+	 * Find the nearest direction along the edge hp to direction
+     * @param leaf
+     * @param direction
+     * @param result
+     * @return vector in the edge and the inner product
+     */
+	private double nearest(RrHalfPlane hp, Rr2Point direction, 
+			Rr2Point result)
+	{	
+		Rr2Point p = hp.normal().orthogonal();
+		Rr2Point n = p.neg();
+		double vp = Rr2Point.mul(p, direction);
+		double vn = Rr2Point.mul(n, direction);
+		if(vp > vn)
+		{
+			result.set(p);
+			return vp;
+		} else
+		{
+			result.set(n);
+			return vn;
+		}
+	}
+	
+	 /**
+	 * Find the nearest direction from a corner two to direction
+     * @param two
+     * @param here
+     * @param direction
+     * @return vector in the edge and the inner product
+     */
+	private double nearest(RrCSG two, Rr2Point here, 
+			Rr2Point direction, Rr2Point result)
+	{	
+		if(two.complexity() != 2)
+		{
+			System.err.println("nearest(): not a corner!");
+			result.set(direction);
+			return -1;
+		}
+		Rr2Point p1 = new Rr2Point();
+		Rr2Point p2 = new Rr2Point();
+		double v1 = nearest(two.c_1().plane(), direction, p1);
+		if(two.value(Rr2Point.add(here, p1)) > Math.sqrt(resolution_2))
+		{
+			v1 = -v1;
+			p1 = p1.neg();
+		}
+		double v2 = nearest(two.c_2().plane(), direction, p2);
+		if(two.value(Rr2Point.add(here, p2)) > Math.sqrt(resolution_2))
+		{
+			v2 = -v2;
+			p2 = p2.neg();
+		}	
+		
+		if(v1 > v2)
+		{
+			result.set(p1);
+			return v1;
+		} else
+		{
+			result.set(p2);
+			return v2;
+		}
+	}
+	
+	 /**
+	 * Walk round the edges of a polygon from here to there, trying
+     * to start roughly in direction.
+     * If here and there coincide, then a full circuit is returned.
+     * @param here
+     * @param there
+     * @param direction
+     * @return a polygon as the result
+     */
+    public RrPolygon meg(Rr2Point here, Rr2Point there, Rr2Point direction)
+    {
+            if(q1 == null)
+            {
+                    System.err.println("meg(): edge finding in an undivided polygon!  Making it up...");
+                    double r2 = box.d_2()*1.0e-8;
+                    divide(r2, 1);
+            }
+
+            RrPolygon result = new RrPolygon();
+            RrCSGPolygon qh = quad(here);
+            RrCSGPolygon qt = quad(there);
+            int oncount = 0;
+            double v;
+
+            RrCSG leaf;
+
+            switch (qh.csg.complexity())
+            {
+            case 0:
+                    System.err.println("meg(): leaf quad with 0 complexity!");
+                    return result;
+
+            case 1:
+                    v = csg.value(here);
+                    if(v*v > resolution_2)
+                    {
+                            System.err.println("meg(): point not on single surface!");
+                            return result;
+                    }
+                    leaf = csg;
+                    oncount = 1;
+                    break;
+
+            case 2:
+            		v = csg.c_1().value(here);
+            		if(v*v <= resolution_2)
+            			oncount = 1;
+            		v = csg.c_2().value(here);
+            		if(v*v <= resolution_2)
+            			oncount = oncount + 2;
+            		if(oncount < 1 || oncount > 3)
+            		{
+            			System.err.println("meg(): point not on double surface!");
+                    	return result;
+            		} else if (oncount == 1)
+            			leaf = csg.c_1();
+            		else if (oncount == 2)
+            		{
+            			leaf = csg.c_2();
+            			oncount = 1;
+            		} else
+            		{
+            			// On a corner
+            		}
+            		
+                    break;
+
+            default:
+                    System.err.println("meg(): leaf quad with complexity greater than 2!");
+                    return result;
+            }
+
+            return result;
+    }
+
+	
+	
 	/**
 	 * Intersect a line with a polygon, adding to an existing
 	 * unsorted list of the intersection parameters

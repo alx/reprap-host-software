@@ -88,6 +88,14 @@ public class Rr2Point
 		y = r.y;
 	}
 	
+	// Overwrite
+	
+	public void set(Rr2Point p)
+	{
+		x = p.x;
+		y = p.y;
+	}
+	
 	
 	// Convert to a string
 	
@@ -106,6 +114,11 @@ public class Rr2Point
 	public Rr2Point neg()
 	{
 		return new Rr2Point(-x, -y);
+	}
+	
+	public Rr2Point orthogonal()
+	{
+		return new Rr2Point(y, -x);
 	}
 	
 	public static Rr2Point add(Rr2Point a, Rr2Point b)
