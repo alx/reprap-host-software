@@ -59,7 +59,7 @@ abstract public class Panel3D extends JPanel {
 	
 	protected double RADFAC = 0.7;
 	protected double BACKFAC = 2.0;
-	protected double FRONTFAC = 0.025;
+	protected double FRONTFAC = 0.001;
 	protected double BOUNDFAC = 3.0;
 	
 	protected String worldName = "RepRap World";
@@ -128,11 +128,6 @@ abstract public class Panel3D extends JPanel {
 		zwv = 300;
 
 		// Factors for front and back clipping planes and so on
-		
-		RADFAC = 0.7;
-		BACKFAC = 2.0;
-		FRONTFAC = 0.025;
-		BOUNDFAC = 3.0;
 		
 		worldName = "RepRap World";
 		wv_offset = new Vector3d(-17.3, -24.85, -2);
