@@ -27,7 +27,8 @@ public class LayerProducer {
 	
 
 	private Printer printer;
-	private RrPolygonList p_list;
+	private RrPolygonList hatchedPolygons;
+	private RrPolygonList borderPolygons;
 	
 	private RrCSGPolygon csg_p;
 	private double scale;
@@ -43,17 +44,19 @@ public class LayerProducer {
 	public LayerProducer(Printer printer, RrPolygonList list, RrLine hatchDirection) {
 		this.printer = printer;
 
+		borderPolygons = list;
+		
 		RrPolygon hatched = list.hatch(hatchDirection, extrusionWidth,
 				gapMaterial, solidMaterial);
 
-		p_list = new RrPolygonList();
-		p_list.append(hatched);
+		hatchedPolygons = new RrPolygonList();
+		hatchedPolygons.append(hatched);
 		
 		//new RrGraphics(p_list, false);
 		
 		csg_p = null;
 		
-		RrBox big = p_list.box.scale(1.1);
+		RrBox big = hatchedPolygons.box.scale(1.1);
 		
 		double width = big.x().length();
 		double height = big.y().length();
@@ -196,15 +199,18 @@ public class LayerProducer {
 	 */
 	public void plot() throws ReprapException, IOException
 	{
-		if(p_list == null)
+		if (hatchedPolygons == null)
 			plot(csg_p);
-		else
-		{
-			int leng = p_list.size();
+		else {
+			int leng = borderPolygons.size();
+			for(int i = 0; i < leng; i++) {
+				plot(borderPolygons.polygon(i));
+			}			
+			leng = hatchedPolygons.size();
 			for(int i = 0; i < leng; i++) {
 				if (printer.isCancelled())
 					break;
-				plot(p_list.polygon(i));
+				plot(hatchedPolygons.polygon(i));
 			}
 		}
 	}
