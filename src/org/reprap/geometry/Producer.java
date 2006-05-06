@@ -43,20 +43,39 @@ public class Producer {
 			
 			if (reprap.isCancelled())
 				break;
-			
+			RrPolygonList list = new RrPolygonList();
+
+			// Add a square block
+			RrPolygon a = new RrPolygon();
 			Rr2Point p1 = new Rr2Point(10, 10);
 			Rr2Point p2 = new Rr2Point(20, 10);
 			Rr2Point p3 = new Rr2Point(20, 20);
 			Rr2Point p4 = new Rr2Point(10, 20);
-	
-			RrPolygon a = new RrPolygon();
 			a.append(p1, 1);
 			a.append(p2, 1);
 			a.append(p3, 1);
 			a.append(p4, 1);
-	
-			RrPolygonList list = new RrPolygonList();
 			list.append(a);
+	
+			// Add a hex block
+			RrPolygon b = new RrPolygon();
+			double hexSize = 10;
+			double hexLongSize = Math.cos(Math.PI * 30. / 180.0);
+			double hexShortSize = Math.sin(Math.PI * 30. / 180.0);
+			double hexX = 35, hexY = 15;
+			Rr2Point h1 = new Rr2Point(hexX - hexSize / 2.0, hexY - hexSize * hexLongSize);
+			Rr2Point h2 = new Rr2Point(hexX - hexSize / 2.0 - hexSize * hexShortSize, hexY);
+			Rr2Point h3 = new Rr2Point(hexX - hexSize / 2.0, hexY + hexSize * hexLongSize);
+			Rr2Point h4 = new Rr2Point(hexX + hexSize / 2.0, hexY + hexSize * hexLongSize);
+			Rr2Point h5 = new Rr2Point(hexX + hexSize / 2.0 + hexSize * hexShortSize, hexY);
+			Rr2Point h6 = new Rr2Point(hexX + hexSize / 2.0, hexY - hexSize * hexLongSize);
+			b.append(h1, 1);
+			b.append(h2, 1);
+			b.append(h3, 1);
+			b.append(h4, 1);
+			b.append(h5, 1);
+			b.append(h6, 1);
+			list.append(b);
 	
 			LayerProducer layer = new LayerProducer(reprap, list,
 					isEvenLayer?evenHatchDirection:oddHatchDirection);
