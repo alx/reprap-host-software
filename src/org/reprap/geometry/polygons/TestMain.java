@@ -53,7 +53,6 @@ public class TestMain
 		Rr2Point pp = new Rr2Point(0.35, 0.62);
 		Rr2Point qq = new Rr2Point(0.55, 0.95);
 		Rr2Point rr = new Rr2Point(0.45, 0.5);
-		Rr2Point ss = new Rr2Point(0.4, 0.3);    
 		RrLine x = new RrLine(new Rr2Point(-1, -1), new Rr2Point(1, 1));
 		
 		RrHalfPlane ph = new RrHalfPlane(p, q);

@@ -6,24 +6,19 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.util.Properties;
 
-import javax.comm.CommPortIdentifier;
-import javax.comm.NoSuchPortException;
-import javax.comm.PortInUseException;
-import javax.comm.SerialPort;
-import javax.comm.UnsupportedCommOperationException;
-
 import org.reprap.Device;
 import org.reprap.comms.Address;
 import org.reprap.comms.Communicator;
 import org.reprap.comms.IncomingContext;
 import org.reprap.comms.IncomingMessage;
 import org.reprap.comms.OutgoingMessage;
+import org.reprap.comms.port.Port;
 
 public class SNAPCommunicator implements Communicator {
 	
 	private Address localAddress;
 	
-	private SerialPort port;
+	private Port port;
 	private OutputStream writeStream;
 	private InputStream readStream;
 	
@@ -31,39 +26,11 @@ public class SNAPCommunicator implements Communicator {
 	
 	private CommsLock lock = new CommsLock();
 		
-	public SNAPCommunicator(String portName, int baudRate, Address localAddress)
-			throws NoSuchPortException, PortInUseException, IOException, UnsupportedCommOperationException {
+	public SNAPCommunicator(Port port, Address localAddress)
+			throws Exception {
 		this.localAddress = localAddress;
-		CommPortIdentifier commId = CommPortIdentifier.getPortIdentifier(portName);
-		port = (SerialPort)commId.open(portName, 30000);
+		this.port = port;
 		
-		
-		// Workround for javax.comm bug.
-		// See http://forum.java.sun.com/thread.jspa?threadID=673793
-		
-		 try {
-			 port.setSerialPortParams(baudRate,
-						SerialPort.DATABITS_8,
-						SerialPort.STOPBITS_1,
-						SerialPort.PARITY_NONE);
-			 }
-			 catch (Exception e) {
-			 
-			 }
-			 
-		port.setSerialPortParams(baudRate,
-				SerialPort.DATABITS_8,
-				SerialPort.STOPBITS_1,
-				SerialPort.PARITY_NONE);
-		
-		// End of workround
-		
-		try {
-			port.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
-		} catch (Exception e) {
-			// Um, Linux USB ports don't do this. What can I do about it?
-		}
-
 		writeStream = port.getOutputStream();
 		readStream = port.getInputStream();
 		

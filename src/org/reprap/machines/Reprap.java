@@ -6,6 +6,8 @@ import java.util.Properties;
 import org.reprap.CartesianPrinter;
 import org.reprap.ReprapException;
 import org.reprap.comms.Communicator;
+import org.reprap.comms.port.Port;
+import org.reprap.comms.port.SerialPort;
 import org.reprap.comms.snap.SNAPAddress;
 import org.reprap.comms.snap.SNAPCommunicator;
 import org.reprap.devices.GenericExtruder;
@@ -53,8 +55,9 @@ public class Reprap implements CartesianPrinter {
 		
 		String commPortName = config.getProperty("Port");
 		
-		SNAPAddress myAddress = new SNAPAddress(localNodeNumber); 
-		communicator = new SNAPCommunicator(commPortName, baudRate, myAddress);
+		SNAPAddress myAddress = new SNAPAddress(localNodeNumber);
+		Port port = new SerialPort(commPortName, baudRate);
+		communicator = new SNAPCommunicator(port, myAddress);
 		
 		motorX = new GenericStepperMotor(communicator,
 				new SNAPAddress(config.getProperty("Axis1Address")),
