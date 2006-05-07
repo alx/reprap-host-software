@@ -30,6 +30,16 @@ import org.reprap.gui.PreviewPanel;
 import org.reprap.gui.RepRapBuild;
 import org.reprap.gui.Utility;
 
+/**
+ *
+ * @mainpage RepRap Host Controller Software
+ * 
+ * @section overview Overview
+ * 
+ * Please see http://reprap.org/ for more details.
+ *  
+ */
+
 public class Main {
 
     // Window to walk the file tree
