@@ -394,6 +394,9 @@ abstract public class Panel3D extends JPanel {
 			double x2, double y2, double z2,
 			float thickness) {
 		
+		z1 += thickness / 2.0;
+		z2 += thickness / 2.0;
+		
 		Point3d p1 = new Point3d(x1, y1, z1);
 		//Point3d p2 = new Point3d(x2, y2, z2);
 
@@ -429,7 +432,7 @@ abstract public class Panel3D extends JPanel {
 		//Point3d p2 = new Point3d(x2, y2, z2);
 
 		Vector3d unity = new Vector3d(0, 1, 0);
-		Vector3d v = new Vector3d(x2 - x1, y2 - y1, z2 - z1);
+		Vector3d v = new Vector3d(x2 - x1, y2 - y1, z2 - z1 + thickness / 2.0);
 		
 		Primitive segment = new Cylinder(thickness, (float)v.length(), appearance);
 		
