@@ -38,6 +38,14 @@ public class Preferences extends javax.swing.JDialog {
 	private JLabel jLabel2;
 	private JLabel jLabel4;
 	private JLabel jLabel8;
+	private JTextField extruderRz1;
+	private JTextField extruderAddress1;
+	private JTextField extruderBeta1;
+	private JLabel jLabel15;
+	private JLabel jLabel14;
+	private JLabel jLabel13;
+	private JLabel jLabel12;
+	private JLabel jLabel11;
 	private JPanel jPanelExtruders;
 	private JLabel jLabel10;
 	private JLabel jLabel9;
@@ -57,6 +65,12 @@ public class Preferences extends javax.swing.JDialog {
 	private JLabel jLabel1;
 	private JPanel jPanelGeneral;
 	private JTabbedPane jTabbedPane1;
+	
+	private String [][] geometries =
+	{
+			{ "cartesian", "Cartesian" },
+			{ "nullcartesian", "Null cartesian" }
+	};
 	
 	/**
 	 * Auto-generated main method to display this JDialog
@@ -80,6 +94,15 @@ public class Preferences extends javax.swing.JDialog {
 			motorTorque1.setText(props.getProperty("Axis1Torque"));
 			motorTorque2.setText(props.getProperty("Axis2Torque"));
 			motorTorque3.setText(props.getProperty("Axis3Torque"));
+			
+			extruderAddress1.setText(props.getProperty("Extruder1Address"));
+			extruderBeta1.setText(props.getProperty("Extruder1Beta"));
+			extruderRz1.setText(props.getProperty("Extruder1Rz"));
+			
+			String geometryName = props.getProperty("Geometry");
+			for(int i = 0; i < geometries.length; i++)
+				if (geometries[i][0].compareToIgnoreCase(geometryName) == 0)
+					geometry.setSelectedIndex(i);
 			
 			// Fall back to some defaults
 			if (motorTorque1.getText().length() == 0) motorTorque1.setText("33");
@@ -105,6 +128,16 @@ public class Preferences extends javax.swing.JDialog {
 			props.setProperty("Axis1Torque", motorTorque1.getText());
 			props.setProperty("Axis2Torque", motorTorque2.getText());
 			props.setProperty("Axis3Torque", motorTorque3.getText());
+			props.setProperty("Geometry", geometries[geometry.getSelectedIndex()][0]);
+
+			props.setProperty("Extruder1Address", extruderAddress1.getText());
+			props.setProperty("Extruder1Beta", extruderBeta1.getText());
+			props.setProperty("Extruder1Rz", extruderRz1.getText());
+
+			extruderAddress1.setText(props.getProperty("Extruder1Address"));
+			extruderBeta1.setText(props.getProperty("Extruder1Beta"));
+			extruderRz1.setText(props.getProperty("Extruder1Rz"));
+
 			
 			OutputStream output = new java.io.FileOutputStream(url.getPath());
 			props.store(output, "Reprap properties http://reprap.org/");
@@ -118,6 +151,7 @@ public class Preferences extends javax.swing.JDialog {
 		super(frame);
 		initGUI();
 		loadPreferences();
+        Utility.centerWindowOnParent(this, frame);
 	}
 	
 	private void initGUI() {
@@ -179,8 +213,11 @@ public class Preferences extends javax.swing.JDialog {
 					jTabbedPane1.addTab("Axes", null, jPanelMotors, null);
 					jPanelMotors.setLayout(null);
 					{
+						String [] geometryList = new String[geometries.length];
+						for(int i = 0; i < geometries.length; i++)
+							geometryList[i] = geometries[i][1];
 						ComboBoxModel geometryModel = new DefaultComboBoxModel(
-							new String[] { "Cartesian" });
+								geometryList);
 						geometry = new JComboBox();
 						jPanelMotors.add(geometry);
 						geometry.setModel(geometryModel);
@@ -279,6 +316,54 @@ public class Preferences extends javax.swing.JDialog {
 						null,
 						jPanelExtruders,
 						null);
+					jPanelExtruders.setLayout(null);
+					{
+						jLabel11 = new JLabel();
+						jPanelExtruders.add(jLabel11);
+						jLabel11.setText("Extruder");
+						jLabel11.setBounds(7, 7, 56, 21);
+						jLabel11.setHorizontalAlignment(SwingConstants.RIGHT);
+					}
+					{
+						jLabel14 = new JLabel();
+						jPanelExtruders.add(jLabel14);
+						jLabel14.setText("Rz");
+						jLabel14.setBounds(224, 7, 63, 21);
+					}
+					{
+						jLabel12 = new JLabel();
+						jPanelExtruders.add(jLabel12);
+						jLabel12.setText("1");
+						jLabel12.setBounds(35, 28, 21, 28);
+						jLabel12.setHorizontalAlignment(SwingConstants.RIGHT);
+					}
+					{
+						jLabel15 = new JLabel();
+						jPanelExtruders.add(jLabel15);
+						jLabel15.setText("Beta");
+						jLabel15.setBounds(154, 7, 63, 21);
+					}
+					{
+						jLabel13 = new JLabel();
+						jPanelExtruders.add(jLabel13);
+						jLabel13.setText("Address");
+						jLabel13.setBounds(77, 7, 63, 21);
+					}
+					{
+						extruderBeta1 = new JTextField();
+						jPanelExtruders.add(extruderBeta1);
+						extruderBeta1.setBounds(140, 28, 63, 28);
+					}
+					{
+						extruderAddress1 = new JTextField();
+						jPanelExtruders.add(extruderAddress1);
+						extruderAddress1.setBounds(70, 28, 63, 28);
+					}
+					{
+						extruderRz1 = new JTextField();
+						jPanelExtruders.add(extruderRz1);
+						extruderRz1.setBounds(210, 28, 63, 28);
+					}
 				}
 			}
 			{

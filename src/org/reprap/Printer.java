@@ -20,15 +20,22 @@ public interface Printer {
 	 * Indicates end of job, homes extruder, powers down etc
 	 *
 	 */
-	public void terminate() throws IOException;
+	public void terminate() throws Exception;
+	public void dispose();
 	
 	
 	public int getSpeed();
 	public void setSpeed(int speed);
 	public int getExtruderSpeed();
 	public void setExtruderSpeed(int speed);
-	
 	public void setPreviewer(Previewer previewer);
+	public void setTemperature(int temperature) throws Exception;
 
+	public boolean isCancelled();
+
+	public void initialise();
 	
+	public double getX();
+	public double getY();
+	public double getZ();
 }

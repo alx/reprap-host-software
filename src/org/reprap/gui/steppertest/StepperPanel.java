@@ -1,4 +1,4 @@
-package org.reprap.steppertestgui;
+package org.reprap.gui.steppertest;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -16,6 +16,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -36,7 +37,8 @@ import org.reprap.devices.GenericStepperMotor;
 /// request if they occur very quickly.  It still has to be sent eventually
 /// or else the motor will not go to the correct location represented in the gui.
 /// One way to avoid this is for the short term to use keys instead of the mouse
-/// (eg pgup, pgdown) and don't press too quickly.
+/// (eg pgup, pgdown) and don't press too quickly.  This problem has no
+/// consequences for normal software driven operation, just interactive use.
 
 public class StepperPanel extends JPanel implements ChangeListener {
 
@@ -85,7 +87,7 @@ public class StepperPanel extends JPanel implements ChangeListener {
         c.gridy = 0;
                 
         add(new JLabel("Set " + name + " axis position"), c);
-        positionRequest = new JSlider(JSlider.HORIZONTAL, minValue, maxValue, 0);
+        positionRequest = new JSlider(SwingConstants.HORIZONTAL, minValue, maxValue, 0);
         
         positionRequest.addChangeListener(this);
         c.gridy = 1;
@@ -93,7 +95,7 @@ public class StepperPanel extends JPanel implements ChangeListener {
 
         c.gridy = 2;
         add(new JLabel("Actual " + name + " axis position"), c);
-        positionActual = new JSlider(JSlider.HORIZONTAL, minValue, maxValue, 0);
+        positionActual = new JSlider(SwingConstants.HORIZONTAL, minValue, maxValue, 0);
         positionActual.setEnabled(false);
         c.gridy = 3;
         add(positionActual, c);
@@ -203,6 +205,7 @@ public class StepperPanel extends JPanel implements ChangeListener {
 			waiting = true;
 			TimerTask task = new TimerTask() {
 				public void run() {
+					Thread.currentThread().setName("Stepper position poll");
 					waiting = false;
 					updatePosition();
 				}			
@@ -285,5 +288,10 @@ public class StepperPanel extends JPanel implements ChangeListener {
 		positionActual.setValue(motor.getPosition());
 		positionRequest.setValue(motor.getPosition());
 		torque.setSelected(true);
+	}
+	
+	public void dispose() {
+		motor.dispose();
+		updateTimer.cancel();
 	}
 }

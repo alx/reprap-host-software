@@ -1,4 +1,4 @@
-package org.reprap.steppertestgui;
+package org.reprap.gui.steppertest;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;

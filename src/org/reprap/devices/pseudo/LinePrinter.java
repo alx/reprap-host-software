@@ -44,7 +44,7 @@ public class LinePrinter {
 		
 		GenericStepperMotor master, slave;
 
-		int x0, x1, y0, y1;
+		int x1, y0, y1;
 		
 		// Whichever is the greater distance will be the master
 		// From an algorithmic point of view, we'll just consider
@@ -53,14 +53,12 @@ public class LinePrinter {
 		if (Math.abs(endX - currentX) > Math.abs(endY - currentY)) {
 			master = motorX;
 			slave = motorY;
-			x0 = currentX;
 			x1 = endX;
 			y0 = currentY;
 			y1 = endY;
 		} else {
 			master = motorY;
 			slave = motorX;
-			x0 = currentY;
 			x1 = endY;
 			y0 = currentX;
 			y1 = endX;
@@ -73,7 +71,7 @@ public class LinePrinter {
 			slave.setSync(GenericStepperMotor.SYNC_DEC);
 
 		int deltaY = Math.abs(y1 - y0); 
-		int deltaX = Math.abs(x1 - x0); 
+		//int deltaX = Math.abs(x1 - x0); 
 				
 		master.dda(movementSpeed, x1, deltaY);
 		
@@ -86,7 +84,7 @@ public class LinePrinter {
 	public void printTo(int endX, int endY, int movementSpeed, int extruderSpeed) throws IOException {
 		extruder.setExtrusion(extruderSpeed);
 		moveTo(endX, endY, movementSpeed);
-		extruder.setExtrusion(0);		
+		extruder.setExtrusion(0);
 	}
 	
 	public void printLine(int startX, int startY, int endX, int endY, int movementSpeed, int extruderSpeed) throws IOException {

@@ -1,4 +1,4 @@
-package org.reprap.steppertestgui;
+package org.reprap.gui.steppertest;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
@@ -41,18 +41,12 @@ public class LineTest extends javax.swing.JDialog {
 	private JLabel jLabel2;
 	private JLabel jLabel1;
 	
-	private GenericStepperMotor motorX, motorY;
-	private GenericExtruder extruder;
 	private int motorSpeed, extruderSpeed;
 	
 	private LinePrinter line;
 
 	public LineTest(JFrame frame, GenericStepperMotor motorX, GenericStepperMotor motorY, GenericExtruder extruder, int motorSpeed, int extruderSpeed) throws IOException {
 		super(frame);
-		this.motorX = motorX;
-		this.motorY = motorY;
-		this.extruder = extruder;
-		
 		this.motorSpeed = motorSpeed;
 		this.extruderSpeed = extruderSpeed;
 		
@@ -62,6 +56,9 @@ public class LineTest extends javax.swing.JDialog {
 		
 		startX.setText(Integer.toString(motorX.getPosition()));
 		startY.setText(Integer.toString(motorY.getPosition()));
+		
+		if (!extruder.isAvailable())
+			plotButton.setEnabled(false);
 	}
 	
 	private void initGUI() {

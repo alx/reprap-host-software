@@ -54,95 +54,157 @@ public class GenericStepperMotor extends Device {
 		}
 	}
 	
+	public void dispose() {
+	}
+	
 	/**
 	 * Set the motor speed (or turn it off) 
 	 * @param speed A value between -255 and 255.
 	 * @throws ReprapException
 	 * @throws IOException
 	 */
-	public synchronized void setSpeed(int speed) throws ReprapException, IOException {
+	public void setSpeed(int speed) throws IOException {
 		initialiseIfNeeded();
-		OutgoingMessage request = new RequestSetSpeed(speed);
-		sendMessage(request);
+		lock();
+		try {
+			OutgoingMessage request = new RequestSetSpeed(speed);
+			sendMessage(request);
+		}
+		finally {
+			unlock();
+		}
 	}
 
-	public synchronized void setIdle() throws IOException {
+	public void setIdle() throws IOException {
 		initialiseIfNeeded();
-		OutgoingMessage request = new RequestSetSpeed();
-		sendMessage(request);
+		lock();
+		try {
+			OutgoingMessage request = new RequestSetSpeed();
+			sendMessage(request);
+		}
+		finally {
+			unlock();
+		}
 	}
 	
-	public synchronized void resetPosition() throws IOException {
+	public void resetPosition() throws IOException {
 		setPosition(0);
 	}
 	
-	public synchronized void setPosition(int position) throws IOException {
+	public void setPosition(int position) throws IOException {
 		initialiseIfNeeded();
-		sendMessage(new RequestSetPosition(position));
-	}
-	
-	public synchronized int getPosition() throws IOException {
-		initialiseIfNeeded();
-		IncomingContext replyContext = sendMessage(
-				new OutgoingBlankMessage(MSG_GetPosition));
-		
-		IncomingIntMessage reply = new RequestPositionResponse(replyContext);
+		lock();
 		try {
-			int value = reply.getValue();
-			return value;
+			sendMessage(new RequestSetPosition(position));
 		}
-		catch (IncomingMessage.InvalidPayloadException ex) {
-			throw new IOException(ex.getMessage());
+		finally {
+			unlock();
 		}
 	}
 	
-	public synchronized void seek(int speed, int position) throws IOException {
+	public int getPosition() throws IOException {
+		//System.out.println("get enter");
+		int value;
+		initialiseIfNeeded();
+		lock();
+		try {
+			IncomingContext replyContext = sendMessage(
+					new OutgoingBlankMessage(MSG_GetPosition));
+			
+			IncomingIntMessage reply = new RequestPositionResponse(replyContext);
+			try {
+				value = reply.getValue();
+			}
+			catch (IncomingMessage.InvalidPayloadException ex) {
+				throw new IOException(ex.getMessage());
+			}
+		}
+		finally {
+			unlock();
+		}
+		//System.out.println("get leave");
+		return value;
+	}
+	
+	public void seek(int speed, int position) throws IOException {
+		//System.out.println("seek enter");
 		initialiseIfNeeded()	;
-		sendMessage(new RequestSeekPosition(speed, position));		
+		lock();
+		try {
+			sendMessage(new RequestSeekPosition(speed, position));
+		}
+		finally {
+			unlock();
+			//System.out.println("seek leave");
+		}
 	}
 
-	public synchronized void seekBlocking(int speed, int position) throws IOException {
+	public void seekBlocking(int speed, int position) throws IOException {
 		initialiseIfNeeded();
-		setNotification();
-		IncomingContext replyContext = sendMessage(new RequestSeekPosition(speed, position));
-		RequestSeekResponse reply = new RequestSeekResponse(replyContext);
-		setNotificationOff();
+		lock();
+		try {
+			setNotification();
+			IncomingContext replyContext = sendMessage(new RequestSeekPosition(speed, position));
+			new RequestSeekResponse(replyContext);
+			setNotificationOff();
+		}
+		finally {
+			unlock();
+		}
 	}
 
 	public Range getRange(int speed) throws IOException, InvalidPayloadException {
 		initialiseIfNeeded()	;
-		if (haveCalibrated) {
-			IncomingContext replyContext = sendMessage(
-					new OutgoingBlankMessage(MSG_GetRange));
-			RequestRangeResponse response = new RequestRangeResponse(replyContext);
-			return response.getRange();
-		} else {
-			setNotification();
-			IncomingContext replyContext = sendMessage(
-					new OutgoingByteMessage(MSG_Calibrate, (byte)speed));
-			RequestRangeResponse response = new RequestRangeResponse(replyContext);
-			setNotificationOff();
-			return response.getRange();
+		lock();
+		try {
+			if (haveCalibrated) {
+				IncomingContext replyContext = sendMessage(
+						new OutgoingBlankMessage(MSG_GetRange));
+				RequestRangeResponse response = new RequestRangeResponse(replyContext);
+				return response.getRange();
+			} else {
+				setNotification();
+				IncomingContext replyContext = sendMessage(
+						new OutgoingByteMessage(MSG_Calibrate, (byte)speed));
+				RequestRangeResponse response = new RequestRangeResponse(replyContext);
+				setNotificationOff();
+				return response.getRange();
+			}
+		}
+		finally {
+			unlock();
 		}
 	}
 	
 	public void setSync(byte syncType) throws IOException {
 		initialiseIfNeeded()	;
-		sendMessage(
-				new OutgoingByteMessage(MSG_SetSyncMode, syncType));
+		lock();
+		try {
+			sendMessage(
+					new OutgoingByteMessage(MSG_SetSyncMode, syncType));
+		}
+		finally {
+			unlock();
+		}
 		
 	}
 	
 	public void dda(int speed, int x1, int deltaY) throws IOException {
 		initialiseIfNeeded()	;
-		setNotification();
-		
-		IncomingContext replyContext = sendMessage(
-				new RequestDDAMaster(speed, x1, deltaY));
-		
-		RequestDDAMasterResponse response = new RequestDDAMasterResponse(replyContext);
-		
-		setNotificationOff();
+		lock();
+		try {
+			setNotification();
+			
+			IncomingContext replyContext = sendMessage(
+					new RequestDDAMaster(speed, x1, deltaY));
+			
+			new RequestDDAMasterResponse(replyContext);
+			
+			setNotificationOff();
+		}
+		finally {
+			unlock();
+		}
 	}
 	
 	private void setNotification() throws IOException {
@@ -170,10 +232,16 @@ public class GenericStepperMotor extends Device {
 	public void setMaxTorque(int maxTorque) throws IOException {
 		initialiseIfNeeded()	;
 		if (maxTorque > 100) maxTorque = 100;
-		double power = (double)maxTorque * 68.0 / 100.0;
+		double power = maxTorque * 68.0 / 100.0;
 		byte scaledPower = (byte)power;
-		sendMessage(
-				new OutgoingByteMessage(MSG_SetPower, scaledPower));
+		lock();
+		try {
+			sendMessage(
+					new OutgoingByteMessage(MSG_SetPower, scaledPower));
+		}
+		finally {
+			unlock();
+		}
 		
 	}
 	
@@ -309,5 +377,5 @@ public class GenericStepperMotor extends Device {
 		public int minimum;
 		public int maximum;
 	}
-	
+
 }

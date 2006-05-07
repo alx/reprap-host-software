@@ -6,6 +6,8 @@ import java.util.Properties;
 import org.reprap.CartesianPrinter;
 import org.reprap.ReprapException;
 import org.reprap.comms.Communicator;
+import org.reprap.comms.port.Port;
+import org.reprap.comms.port.SerialPort;
 import org.reprap.comms.snap.SNAPAddress;
 import org.reprap.comms.snap.SNAPCommunicator;
 import org.reprap.devices.GenericExtruder;
@@ -34,14 +36,14 @@ public class Reprap implements CartesianPrinter {
 	
 	double scaleX, scaleY, scaleZ;
 	
-	double currentZ;
+	double currentX, currentY, currentZ;
 	
 	private int speed = 236;
 	private int speedExtruder = 200;
 	
 	private GenericExtruder extruder;  ///< Only one supported for now
 
-	final boolean dummyZ = true;  // Don't perform Z operations
+	final boolean dummyZ = true;  ///< Don't perform Z operations.  Should be removed later.
 	
 	public Reprap(Properties config) throws Exception {
 		int axes = Integer.parseInt(config.getProperty("AxisCount"));
@@ -53,8 +55,9 @@ public class Reprap implements CartesianPrinter {
 		
 		String commPortName = config.getProperty("Port");
 		
-		SNAPAddress myAddress = new SNAPAddress(localNodeNumber); 
-		communicator = new SNAPCommunicator(commPortName, baudRate, myAddress);
+		SNAPAddress myAddress = new SNAPAddress(localNodeNumber);
+		Port port = new SerialPort(commPortName, baudRate);
+		communicator = new SNAPCommunicator(port, myAddress);
 		
 		motorX = new GenericStepperMotor(communicator,
 				new SNAPAddress(config.getProperty("Axis1Address")),
@@ -67,7 +70,9 @@ public class Reprap implements CartesianPrinter {
 				Integer.parseInt(config.getProperty("Axis3Torque")));
 		
 		extruder = new GenericExtruder(communicator,
-				new SNAPAddress(config.getProperty("Extruder1Address")));
+				new SNAPAddress(config.getProperty("Extruder1Address")),
+				Integer.parseInt(config.getProperty("Extruder1Beta")),
+				Integer.parseInt(config.getProperty("Extruder1Rz")));
 
 		layer = new LinePrinter(motorX, motorY, extruder);
 
@@ -75,6 +80,8 @@ public class Reprap implements CartesianPrinter {
 		// Assume 400 steps per turn, 1.5mm travel per turn
 		scaleX = scaleY = scaleZ = 400.0 / 1.5;
 		
+		currentX = convertToPositionZ(motorX.getPosition());
+		currentY = convertToPositionZ(motorY.getPosition());
 		if (!dummyZ) {
 			currentZ = convertToPositionZ(motorZ.getPosition());
 		}
@@ -89,6 +96,8 @@ public class Reprap implements CartesianPrinter {
 	}
 
 	public void moveTo(double x, double y, double z) throws ReprapException, IOException {
+		if (isCancelled()) return;
+
 		layer.moveTo(convertToStepX(x), convertToStepY(y), speed);
 		if (z != currentZ) {
 			if (!dummyZ) motorZ.seekBlocking(speed, convertToStepZ(z));
@@ -97,14 +106,24 @@ public class Reprap implements CartesianPrinter {
 	}
 
 	public void printTo(double x, double y, double z) throws ReprapException, IOException {
-		if (previewer != null)
-			previewer.addSegment(layer.getCurrentX(), layer.getCurrentY(), currentZ,
-					x, y, z);
-		
-		if ((x != layer.getCurrentX() || y != layer.getCurrentY()) && z != currentZ)
+		if (isCancelled()) return;
+		EnsureNotEmpty();
+		if (isCancelled()) return;
+		EnsureHot();
+		if (isCancelled()) return;
+
+		if ((x != convertToPositionX(layer.getCurrentX()) || y != convertToPositionY(layer.getCurrentY())) && z != currentZ)
 			throw new ReprapException("Reprap cannot print a line across 3 axes simultaneously");
+
+		if (previewer != null)
+			previewer.addSegment(convertToPositionX(layer.getCurrentX()),
+					convertToPositionY(layer.getCurrentY()), currentZ,
+					x, y, z);
+
+		if (isCancelled()) return;
 		
-		if (x == layer.getCurrentX() && y == layer.getCurrentY() && z != currentZ) {
+		
+		if (x == convertToPositionX(layer.getCurrentX()) && y == convertToPositionY(layer.getCurrentY()) && z != currentZ) {
 			// Print a simple vertical extrusion
 			// TODO extrusion speed should be based on actual head speed
 			// which depends on the angle of the line
@@ -120,8 +139,13 @@ public class Reprap implements CartesianPrinter {
 	}
 
 	public void selectMaterial(int materialIndex) {
+		if (isCancelled()) return;
+
 		if (previewer != null)
 			previewer.setMaterial(materialIndex);
+
+		if (isCancelled()) return;
+		// TODO Select new material
 	}
 
 	protected int convertToStepX(double n) {
@@ -136,26 +160,36 @@ public class Reprap implements CartesianPrinter {
 		return (int)(n * scaleZ);
 	}
 
-	protected int convertToPositionX(double n) {
-		return (int)(n / scaleX);
+	protected double convertToPositionX(int n) {
+		return n / scaleX;
 	}
 
-	protected int convertToPositionY(double n) {
-		return (int)(n / scaleY);
+	protected double convertToPositionY(int n) {
+		return n / scaleY;
 	}
 
-	protected int convertToPositionZ(double n) {
-		return (int)(n / scaleZ);
+	protected double convertToPositionZ(int n) {
+		return n / scaleZ;
 	}
 
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#terminate()
 	 */
-	public void terminate() throws IOException {
+	public void terminate() throws Exception {
 		motorX.setIdle();
 		motorY.setIdle();
 		motorX.setIdle();
 		extruder.setExtrusion(0);
+		extruder.setTemperature(0);
+	}
+	
+	public void dispose() {
+		motorX.dispose();
+		motorY.dispose();
+		motorZ.dispose();
+		extruder.dispose();
+		communicator.close();
+		communicator.dispose();
 	}
 
 	/**
@@ -185,6 +219,64 @@ public class Reprap implements CartesianPrinter {
 	
 	public void setPreviewer(Previewer previewer) {
 		this.previewer = previewer;
+	}
+
+	public void setTemperature(int temperature) throws Exception {
+		extruder.setTemperature(temperature);
+	}
+
+	private void EnsureNotEmpty() {
+		if (!extruder.isEmpty()) return;
+		
+		while (extruder.isEmpty() && !isCancelled()) {
+			if (previewer != null)
+				previewer.setMessage("Extruder is out of feedstock.  Waiting for refill.");
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+			}
+		}
+		if (previewer != null) previewer.setMessage(null);
+	}
+	
+	private void EnsureHot() {
+		double threshold = extruder.getTemperatureTarget() * 0.95;
+		
+		if (extruder.getTemperature() >= threshold)
+			return;
+
+		while(extruder.getTemperature() < threshold && !isCancelled()) {
+			if (previewer != null) previewer.setMessage("Waiting for extruder to reach working temperature (" + Math.round(extruder.getTemperature()) + ")");
+			try {
+				Thread.sleep(1000);
+			} catch (InterruptedException e) {
+			}
+		}
+		if (previewer != null) previewer.setMessage(null);
+		
+	}
+
+	public boolean isCancelled() {
+		if (previewer == null)
+			return false;
+		return previewer.isCancelled();
+	}
+	
+	public void initialise() {
+		if (previewer != null)
+			previewer.reset();
+	}
+
+	public double getX() {
+		return currentX;
+	}
+
+	public double getY() {
+		return currentY;
+	}
+
+	public double getZ() {
+		return currentZ;
 	}
 }
 

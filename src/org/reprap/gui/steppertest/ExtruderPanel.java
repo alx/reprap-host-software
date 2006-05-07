@@ -1,4 +1,4 @@
-package org.reprap.steppertestgui;
+package org.reprap.gui.steppertest;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -10,6 +10,7 @@ import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
+import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
@@ -33,7 +34,7 @@ public class ExtruderPanel extends JPanel {
 		c.gridy = 0;
 		add(new JLabel("Extrusion speed: "), c);
 		
-		speed = new JSlider(JSlider.HORIZONTAL, 0, 255, 255);
+		speed = new JSlider(SwingConstants.HORIZONTAL, 0, 255, 255);
 		speed.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent evt) {
 				onExtrudeSpeed();
@@ -54,6 +55,11 @@ public class ExtruderPanel extends JPanel {
 		c.gridy = 0;
 		c.insets.left = 5;
 		add(extrudeButton, c);
+		
+        if (!extruder.isAvailable()) {
+      	  extrudeButton.setEnabled(false);
+      	  speed.setEnabled(false);
+        }
 		
 	}
 	

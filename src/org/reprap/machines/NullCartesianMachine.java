@@ -28,6 +28,8 @@ public class NullCartesianMachine implements CartesianPrinter {
 	}
 
 	public void moveTo(double x, double y, double z) throws ReprapException, IOException {
+		if (isCancelled()) return;
+
 		currentX = x;
 		currentY = y;
 		currentZ = z;
@@ -36,12 +38,15 @@ public class NullCartesianMachine implements CartesianPrinter {
 	public void printTo(double x, double y, double z) throws ReprapException, IOException {
 		if (previewer != null)
 			previewer.addSegment(currentX, currentY, currentZ, x, y, z);
+		if (isCancelled()) return;
+
 		currentX = x;
 		currentY = y;
 		currentZ = z;
 	}
 
 	public void selectMaterial(int materialIndex) {
+		if (isCancelled()) return;
 		if (previewer != null)
 			previewer.setMaterial(materialIndex);
 	}
@@ -65,6 +70,32 @@ public class NullCartesianMachine implements CartesianPrinter {
 
 	public void setPreviewer(Previewer previewer) {
 		this.previewer = previewer;
+	}
+
+	public void setTemperature(int temperature) {
+	}
+
+	public void dispose() {
+	}
+
+	public boolean isCancelled() {
+		return previewer.isCancelled();
+	}
+
+	public void initialise() {
+		previewer.reset();
+	}
+
+	public double getX() {
+		return currentX;
+	}
+
+	public double getY() {
+		return currentY;
+	}
+
+	public double getZ() {
+		return currentZ;
 	}
 
 }

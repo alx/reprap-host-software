@@ -9,6 +9,8 @@ public class SquareTest {
 	
 		Printer reprap = MachineFactory.create();
 
+		// Comment out the following three
+		// lines if you don't have java3d or don't want to preview
 		PreviewWindow preview = new PreviewWindow();
 		preview.setVisible(true);
 		reprap.setPreviewer(preview);
@@ -17,13 +19,14 @@ public class SquareTest {
 		reprap.selectMaterial(0);
 		reprap.setSpeed(248);
 		reprap.setExtruderSpeed(180);
+		reprap.setTemperature(60);
 
 		// Print a square, rotated 45 degrees
-		reprap.moveTo(20, 5, 0);
-		reprap.printTo(15, 10, 0);
-		reprap.printTo(20, 15, 0);
-		reprap.printTo(25, 10, 0);
-		reprap.printTo(20, 5, 0);
+		reprap.moveTo(20, 5, 2);
+		reprap.printTo(15, 10, 2);
+		reprap.printTo(20, 15, 2);
+		reprap.printTo(25, 10, 2);
+		reprap.printTo(20, 5, 2);
 		
 		reprap.terminate();
 	}

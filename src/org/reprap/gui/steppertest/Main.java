@@ -1,4 +1,4 @@
-package org.reprap.steppertestgui;
+package org.reprap.gui.steppertest;
 
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -8,17 +8,30 @@ import java.io.IOException;
 import java.net.URL;
 import java.util.Properties;
 
-import javax.swing.*;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JSlider;
+import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.reprap.comms.Communicator;
+import org.reprap.comms.port.Port;
+import org.reprap.comms.port.SerialPort;
 import org.reprap.comms.snap.SNAPAddress;
 import org.reprap.comms.snap.SNAPCommunicator;
 import org.reprap.devices.GenericExtruder;
+import org.reprap.gui.Utility;
 
-public class Main implements ChangeListener {
-	
+public class Main extends javax.swing.JDialog implements ChangeListener {
+
 	private final int localNodeNumber = 0;
 	private final int baudRate = 19200;
 	
@@ -35,32 +48,52 @@ public class Main implements ChangeListener {
 	
 	Communicator communicator;
 	
-	public Main() throws Exception {
+	public static void main(String[] args) throws Exception {
+		Thread.currentThread().setName("Stepper Exerciser");
+		JFrame frame = new JFrame();
+		Main inst = new Main(frame);
+		inst.setVisible(true);
+	}
+	
+	public Main(JFrame frame) throws Exception {
+		super(frame);
+		
 		Properties props = new Properties();
 		URL url = ClassLoader.getSystemResource("reprap.properties");
 		props.load(url.openStream());
 		String commPortName = props.getProperty("Port");
 		
 		SNAPAddress myAddress = new SNAPAddress(localNodeNumber); 
-		communicator = new SNAPCommunicator(commPortName, baudRate, myAddress);
+		Port port = new SerialPort(commPortName, baudRate);
+		communicator = new SNAPCommunicator(port, myAddress);
 		
-		extruder = new GenericExtruder(communicator, new SNAPAddress(props.getProperty("Extruder1Address")));
+		extruder = new GenericExtruder(communicator,
+				new SNAPAddress(props.getProperty("Extruder1Address")),
+				Integer.parseInt(props.getProperty("Extruder1Beta")),
+				Integer.parseInt(props.getProperty("Extruder1Rz")));
+		
+		initGUI();
+        Utility.centerWindowOnScreen(this);
 	}
 	
-	public void createAndShowGUI(boolean terminateOnClose) throws IOException {
-		JFrame.setDefaultLookAndFeelDecorated(false);
-		JFrame frame = new JFrame("Stepper Exerciser") {
-			public void dispose() {
-				communicator.close();
-			}
-		};
-		frame.setDefaultCloseOperation(terminateOnClose?JFrame.EXIT_ON_CLOSE:JFrame.DISPOSE_ON_CLOSE);
-		
+	public void dispose() {
+		super.dispose();
+		extruder.dispose();
+		motorX.dispose();
+		motorY.dispose();
+		motorZ.dispose();
+		communicator.dispose();
+	}
+	
+	private void initGUI() throws Exception {
+		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
+		setTitle("Stepper Exerciser");
+
 		JPanel panel = new JPanel(new GridBagLayout());
 		GridBagConstraints c = new GridBagConstraints();
 		
-		frame.getContentPane().add(panel);
-		
+		getContentPane().add(panel);
+
 		c.gridx = 0;
 		c.gridy = 0;
 		c.gridwidth = 2;
@@ -74,7 +107,7 @@ public class Main implements ChangeListener {
 		c.gridx = 2;
 		panel.add(new JLabel("Z"), c);
 		
-		speedX = new JSlider(JSlider.VERTICAL, 0, 255, intialSpeed);
+		speedX = new JSlider(SwingConstants.VERTICAL, 0, 255, intialSpeed);
 		speedX.addChangeListener(this);
 		speedX.setMajorTickSpacing(50);
 		speedX.setMinorTickSpacing(10);
@@ -84,7 +117,7 @@ public class Main implements ChangeListener {
 		c.gridy = 2;
 		panel.add(speedX, c);
 		
-		speedY = new JSlider(JSlider.VERTICAL, 1, 255, intialSpeed);
+		speedY = new JSlider(SwingConstants.VERTICAL, 1, 255, intialSpeed);
 		speedY.addChangeListener(this);
 		speedY.setMajorTickSpacing(50);
 		speedY.setMinorTickSpacing(10);
@@ -93,7 +126,7 @@ public class Main implements ChangeListener {
 		c.gridx = 1;
 		panel.add(speedY, c);
 		
-		speedZ = new JSlider(JSlider.VERTICAL, 1, 255, intialSpeed);
+		speedZ = new JSlider(SwingConstants.VERTICAL, 1, 255, intialSpeed);
 		speedZ.addChangeListener(this);
 		speedZ.setMajorTickSpacing(50);
 		speedZ.setMinorTickSpacing(10);
@@ -157,27 +190,24 @@ public class Main implements ChangeListener {
 		});
 		buttons.add(lineButton);
 		
-		JButton squareButton = new JButton("Square Test");
-		squareButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				onSquareButton();
-			}
-		});
+		//JButton squareButton = new JButton("Square Test");
+		//squareButton.addActionListener(new ActionListener() {
+		//	public void actionPerformed(ActionEvent evt) {
+		//		onSquareButton();
+		//	}
+		//});
 		//buttons.add(squareButton);
 		
-		JButton circleButton = new JButton("Circle Test");
-		circleButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent evt) {
-				onCircleButton();
-			}
-		});
+		//JButton circleButton = new JButton("Circle Test");
+		//circleButton.addActionListener(new ActionListener() {
+		//	public void actionPerformed(ActionEvent evt) {
+		//		onCircleButton();
+		//	}
+		//});
 		//buttons.add(circleButton);
-		
-		
-		frame.pack();
-		frame.setVisible(true);
+pack();
 	}
-	
+
 	public void stateChanged(ChangeEvent evt) {
 		try {
 			Object srcObj = evt.getSource();
@@ -243,20 +273,5 @@ public class Main implements ChangeListener {
 		motorX.loadPosition();
 		motorY.loadPosition();
 	}
-	
-	public static void main(String[] args) {
-		
-		javax.swing.SwingUtilities.invokeLater(new Runnable() {
-			public void run() {
-				try {
-					Main gui = new Main();
-					gui.createAndShowGUI(true);
-				}
-				catch (Exception ex) {
-					JOptionPane.showMessageDialog(null, "General exception: " + ex);
-					ex.printStackTrace();
-				}
-			}
-		});
-	}
+
 }

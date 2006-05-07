@@ -39,4 +39,12 @@ public abstract class Device {
 		return communicator.sendMessage(this, message);
 	}
 	
+	protected void lock() {
+		communicator.lock();
+	}
+	
+	protected void unlock() {
+		communicator.unlock();
+	}
+	
 }

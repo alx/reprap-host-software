@@ -6,40 +6,30 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.util.Properties;
 
-import javax.comm.CommPortIdentifier;
-import javax.comm.NoSuchPortException;
-import javax.comm.PortInUseException;
-import javax.comm.SerialPort;
-import javax.comm.UnsupportedCommOperationException;
-
 import org.reprap.Device;
 import org.reprap.comms.Address;
 import org.reprap.comms.Communicator;
 import org.reprap.comms.IncomingContext;
 import org.reprap.comms.IncomingMessage;
 import org.reprap.comms.OutgoingMessage;
+import org.reprap.comms.port.Port;
 
 public class SNAPCommunicator implements Communicator {
 	
 	private Address localAddress;
 	
-	private SerialPort port;
+	private Port port;
 	private OutputStream writeStream;
 	private InputStream readStream;
 	
 	private boolean debugMode;
 	
-	public SNAPCommunicator(String portName, int baudRate, Address localAddress)
-			throws NoSuchPortException, PortInUseException, IOException, UnsupportedCommOperationException {
-		this.localAddress = localAddress;
-		CommPortIdentifier commId = CommPortIdentifier.getPortIdentifier(portName);
-		port = (SerialPort)commId.open(portName, 30000);
+	private CommsLock lock = new CommsLock();
 		
-		port.setSerialPortParams(baudRate,
-				SerialPort.DATABITS_8,
-				SerialPort.STOPBITS_1,
-				SerialPort.PARITY_NONE);
-		port.setFlowControlMode(SerialPort.FLOWCONTROL_NONE);
+	public SNAPCommunicator(Port port, Address localAddress)
+			throws Exception {
+		this.localAddress = localAddress;
+		this.port = port;
 		
 		writeStream = port.getOutputStream();
 		readStream = port.getInputStream();
@@ -58,7 +48,9 @@ public class SNAPCommunicator implements Communicator {
 	
 	public void close()
 	{
-		port.close();
+		if (port != null)
+			port.close();
+		port = null;
 	}
 	
 	public IncomingContext sendMessage(Device device,
@@ -77,7 +69,7 @@ public class SNAPCommunicator implements Communicator {
 				System.out.print(device.getAddress().toString());
 				System.out.print(": ");
 				for(int i = 0; i < binaryMessage.length; i++)
-					System.out.print(Integer.toHexString((int)binaryMessage[i]) + " ");
+					System.out.print(Integer.toHexString(binaryMessage[i]) + " ");
 				System.out.println("");
 			}
 			sendRawMessage(packet);
@@ -169,6 +161,18 @@ public class SNAPCommunicator implements Communicator {
 
 	public Address getAddress() {
 		return localAddress;
+	}
+
+	public void dispose() {
+		close();
+	}
+
+	public void lock() {
+		lock.lock();
+	}
+
+	public void unlock() {
+		lock.unlock();
 	}
 	
 	// TODO make a background receiver thread.  It can keep a pool of async receive contexts and

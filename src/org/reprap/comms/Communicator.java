@@ -14,5 +14,11 @@ public interface Communicator {
 	
 	public void close();
 	
+	public void dispose();
+	
 	public Address getAddress();
+	
+	// These methods will be removed when the asynchronous contexts are completed
+	public void lock();
+	public void unlock();
 }
