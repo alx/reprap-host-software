@@ -307,7 +307,7 @@ public class GenericExtruder extends Device {
 	 * @param ref Set reference voltage (0-63)
 	 * @throws IOException
 	 */
-	protected void setVref(int ref) throws IOException {
+	private void setVref(int ref) throws IOException {
 		lock();
 		try {
 			sendMessage(new OutgoingByteMessage(MSG_SetVRef, (byte)ref));		
@@ -324,7 +324,7 @@ public class GenericExtruder extends Device {
 	 * @param scale
 	 * @throws IOException
 	 */
-	protected void setTempScaler(int scale) throws IOException {
+	private void setTempScaler(int scale) throws IOException {
 		lock();
 		try {
 			sendMessage(new OutgoingByteMessage(MSG_SetTempScaler, (byte)scale));		

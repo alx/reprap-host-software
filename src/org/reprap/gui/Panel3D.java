@@ -267,7 +267,7 @@ abstract public class Panel3D extends JPanel {
 
 		javax.media.j3d.Locale locale = createLocale(universe);
 
-		BranchGroup sceneBG = createSceneBranchGroup();
+		BranchGroup sceneBranchGroup = createSceneBranchGroup();
 
 		ViewPlatform vp = createViewPlatform();
 		BranchGroup viewBranchGroup = createViewBranchGroup(
@@ -278,9 +278,9 @@ abstract public class Panel3D extends JPanel {
 		Background background = createBackground();
 
 		if (background != null)
-			sceneBG.addChild(background);
+			sceneBranchGroup.addChild(background);
 
-		locale.addBranchGraph(sceneBG);
+		locale.addBranchGraph(sceneBranchGroup);
 		addViewBranchGroup(locale, viewBranchGroup);
 
 	}

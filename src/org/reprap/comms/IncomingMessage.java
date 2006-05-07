@@ -45,14 +45,14 @@ public abstract class IncomingMessage {
 	/**
 	 * Called by the framework to provide data to the IncomingMessage.
 	 * This should not normally be called by a user. 
-	 * @param payloadData The completed message to insert into the IncomingMessage
+	 * @param payload The completed message to insert into the IncomingMessage
 	 * @return true is the data was accepted, otherwise false.
 	 */
-	public boolean receiveData(byte [] payloadData) {
+	public boolean receiveData(byte [] payload) {
 		// We assume the packet was for us, etc.  But we need to
 		// know it contains the correct contents
-		if (isExpectedPacketType(payloadData[0])) {
-			this.payload = (byte[])payloadData.clone();
+		if (isExpectedPacketType(payload[0])) {
+			this.payload = (byte[])payload.clone();
 			return true;
 		} else {
 			// That's not what we were after, so discard and wait for more

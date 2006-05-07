@@ -18,8 +18,6 @@ import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
 import org.reprap.comms.Communicator;
-import org.reprap.comms.port.Port;
-import org.reprap.comms.port.SerialPort;
 import org.reprap.comms.snap.SNAPAddress;
 import org.reprap.comms.snap.SNAPCommunicator;
 import org.reprap.devices.GenericExtruder;
@@ -81,8 +79,7 @@ public class Main extends javax.swing.JDialog {
 		
 		SNAPAddress myAddress = new SNAPAddress(localNodeNumber); 
 		this.setResizable(false);
-		Port port = new SerialPort(commPortName, baudRate);
-		communicator = new SNAPCommunicator(port, myAddress);
+		communicator = new SNAPCommunicator(commPortName, baudRate, myAddress);
 
 		extruder = new GenericExtruder(communicator,
 				new SNAPAddress(props.getProperty("Extruder1Address")),

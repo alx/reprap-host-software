@@ -31,6 +31,10 @@ public class LayerProducer {
 	private RrPolygonList borderPolygons;
 	
 	private RrCSGPolygon csg_p;
+	private double scale;
+	private Rr2Point p_0;
+	private Rr2Point pos;
+	
 	
 	/**
 	 * @param reprap
@@ -52,22 +56,24 @@ public class LayerProducer {
 		
 		csg_p = null;
 		
-		//RrBox big = hatchedPolygons.box.scale(1.1);
+		RrBox big = hatchedPolygons.box.scale(1.1);
 		
-		//double width = big.x().length();
-		//double height = big.y().length();
+		double width = big.x().length();
+		double height = big.y().length();
 	}
 	
 	private void plot(Rr2Point a) throws ReprapException, IOException
 	{
 		if (printer.isCancelled()) return;
 		printer.printTo(a.x(), a.y(), printer.getZ());
+		pos = a;
 	}
 
 	private void move(Rr2Point a) throws ReprapException, IOException
 	{
 		if (printer.isCancelled()) return;
 		printer.moveTo(a.x(), a.y(), printer.getZ());
+		pos = a;
 	}
 
 

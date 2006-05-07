@@ -114,14 +114,6 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	public void setMaterial(int index) {
 		material = index;
 	}
-	
-	/**
-	 * Get the current extrusion material
-	 * @return The current extrusion material as an integer index
-	 */
-	public int getMaterial() {
-		return material;
-	}
 
 	/**
 	 * Called to add a new segment of extruded material to the preview

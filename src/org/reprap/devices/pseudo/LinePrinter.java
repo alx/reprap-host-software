@@ -44,7 +44,7 @@ public class LinePrinter {
 		
 		GenericStepperMotor master, slave;
 
-		int x1, y0, y1;
+		int x0, x1, y0, y1;
 		
 		// Whichever is the greater distance will be the master
 		// From an algorithmic point of view, we'll just consider
@@ -53,12 +53,14 @@ public class LinePrinter {
 		if (Math.abs(endX - currentX) > Math.abs(endY - currentY)) {
 			master = motorX;
 			slave = motorY;
+			x0 = currentX;
 			x1 = endX;
 			y0 = currentY;
 			y1 = endY;
 		} else {
 			master = motorY;
 			slave = motorX;
+			x0 = currentY;
 			x1 = endY;
 			y0 = currentX;
 			y1 = endX;

@@ -16,11 +16,15 @@ public class MachineFactory {
 	private MachineFactory() {
 	}
 	
-	static public Printer create(Properties props) throws Exception {
+	static public Printer create() throws Exception {
 		// Currently this just always assumes we're building
 		// a 3-axis cartesian printer.  It should build an
 		// appropriate type based on the local configuration.
 		
+		Properties props = new Properties();
+		URL url = ClassLoader.getSystemResource("reprap.properties");
+		props.load(url.openStream());
+
 		String geometry = props.getProperty("Geometry");
 		
 		if (geometry.compareToIgnoreCase("cartesian") == 0)
@@ -30,15 +34,6 @@ public class MachineFactory {
 		else
 			throw new ReprapException("Invalid geometry in properties file");
 		
-		
-	}
-	
-	static public Printer create() throws Exception {
-		Properties props = new Properties();
-		URL url = ClassLoader.getSystemResource("reprap.properties");
-		props.load(url.openStream());
-
-		return create(props);
 	}
 	
 }

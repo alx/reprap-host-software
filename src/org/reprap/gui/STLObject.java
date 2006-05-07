@@ -226,7 +226,7 @@ public class STLObject
     // method to recursively set the user data for objects in the scenegraph tree
     // we also set the capabilites on Shape3D and Morph objects required by the PickTool
 
-    void recursiveSetUserData( Object value, Object key, String nameToSet) 
+    void recursiveSetUserData( Object value, Object key , String name) 
     {
         if( value instanceof SceneGraphObject != false ) 
         {
@@ -243,11 +243,11 @@ public class STLObject
                 java.util.Enumeration enumKids = g.getAllChildren( );
                 
                 while( enumKids.hasMoreElements( ) != false )
-                    recursiveSetUserData( enumKids.nextElement( ), key, nameToSet );
+                    recursiveSetUserData( enumKids.nextElement( ), key, name );
             } else if ( sg instanceof Shape3D || sg instanceof Morph ) 
             {
                 if ( sg instanceof Shape3D)
-                    ((Shape3D)sg).setUserData(nameToSet);
+                    ((Shape3D)sg).setUserData(name);
                 PickTool.setCapabilities( (Node) sg, PickTool.INTERSECT_FULL );
             }
         }

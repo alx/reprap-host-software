@@ -601,17 +601,17 @@ public class RrCSG
 			
 		case RrCSGOp.UNION:
 		case RrCSGOp.INTERSECTION:    
-			RrHalfPlane halfPlane = leaf.hp;
+			RrHalfPlane hp = leaf.hp;
 			if(c1.op == RrCSGOp.LEAF)
 			{
-				if(RrHalfPlane.same(halfPlane, c1.hp, tolerance))
+				if(RrHalfPlane.same(hp, c1.hp, tolerance))
 					c1 = leaf;
 			} else
 				c1.replace_all_same_leaves(leaf, tolerance);
 			
 			if(c2.op == RrCSGOp.LEAF)
 			{
-				if(RrHalfPlane.same(halfPlane, c2.hp, tolerance))
+				if(RrHalfPlane.same(hp, c2.hp, tolerance))
 					c2 = leaf;                        
 			} else
 				c2.replace_all_same_leaves(leaf, tolerance);
