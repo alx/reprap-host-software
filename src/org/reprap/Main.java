@@ -322,10 +322,13 @@ public class Main {
 					
 					Producer producer = new Producer(preview, builder);
 					producer.produce();
+					double moved = producer.getTotalDistanceMoved();
+					double extruded = producer.getTotalDistanceExtruded();
 					producer.dispose();
 			        cancelMenuItem.setEnabled(false);
 			        produceProduce.setEnabled(true);
-					JOptionPane.showMessageDialog(mainFrame, "Production complete");
+					JOptionPane.showMessageDialog(mainFrame, "Production complete.  Total distance travelled=" +
+							moved + ".  Total distance extruded=" + extruded);
 				}
 				catch (Exception ex) {
 					JOptionPane.showMessageDialog(mainFrame, "Production exception: " + ex);

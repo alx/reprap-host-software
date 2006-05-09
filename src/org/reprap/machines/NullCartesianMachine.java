@@ -8,9 +8,12 @@ import org.reprap.ReprapException;
 import org.reprap.gui.Previewer;
 
 public class NullCartesianMachine implements CartesianPrinter {
-
+	
 	private Previewer previewer = null;
 
+	double totalDistanceMoved = 0.0;
+	double totalDistanceExtruded = 0.0;
+	
 	double currentX, currentY, currentZ;
 	
 	public NullCartesianMachine(Properties config) {
@@ -96,6 +99,20 @@ public class NullCartesianMachine implements CartesianPrinter {
 
 	public double getZ() {
 		return currentZ;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#getTotalDistanceMoved()
+	 */
+	public double getTotalDistanceMoved() {
+		return totalDistanceMoved;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#getTotalDistanceExtruded()
+	 */
+	public double getTotalDistanceExtruded() {
+		return totalDistanceExtruded;
 	}
 
 }

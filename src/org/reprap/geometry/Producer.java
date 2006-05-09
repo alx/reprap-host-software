@@ -87,6 +87,15 @@ public class Producer {
 		reprap.terminate();
 
 	}
+
+	public double getTotalDistanceMoved() {
+		return reprap.getTotalDistanceMoved();
+	}
+	
+	public double getTotalDistanceExtruded() {
+		return reprap.getTotalDistanceExtruded();
+	}
+	
 	
 	public void dispose() {
 		reprap.dispose();

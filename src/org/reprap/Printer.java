@@ -38,4 +38,16 @@ public interface Printer {
 	public double getX();
 	public double getY();
 	public double getZ();
+	
+	/**
+	 * Get the total distance moved (whether extruding or not)
+	 * @return a double representing the distance travelled (mm)
+	 */
+	public double getTotalDistanceMoved();
+	
+	/**
+	 * Get the total distance moved while extruding
+	 * @return a double representing the distance travelled (mm)
+	 */
+	public double getTotalDistanceExtruded();
 }

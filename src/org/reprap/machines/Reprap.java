@@ -30,6 +30,9 @@ public class Reprap implements CartesianPrinter {
 	private GenericStepperMotor motorY;
 	private GenericStepperMotor motorZ;
 
+	double totalDistanceMoved = 0.0;
+	double totalDistanceExtruded = 0.0;
+
 	private LinePrinter layer;
 	
 	double scaleX, scaleY, scaleZ;
@@ -96,10 +99,16 @@ public class Reprap implements CartesianPrinter {
 		if (isCancelled()) return;
 
 		layer.moveTo(convertToStepX(x), convertToStepY(y), speed);
+		totalDistanceMoved += segmentLength(x - currentX, y - currentY);
+
 		if (z != currentZ) {
+			totalDistanceMoved += Math.abs(currentZ - z);
 			if (!dummyZ) motorZ.seekBlocking(speed, convertToStepZ(z));
 			currentZ = z;
 		}
+		currentX = x;
+		currentY = y;
+		currentZ = z;
 	}
 
 	public void printTo(double x, double y, double z) throws ReprapException, IOException {
@@ -124,6 +133,9 @@ public class Reprap implements CartesianPrinter {
 			// Print a simple vertical extrusion
 			// TODO extrusion speed should be based on actual head speed
 			// which depends on the angle of the line
+			double distance = Math.abs(currentZ - z);
+			totalDistanceExtruded += distance;
+			totalDistanceMoved += distance;
 			extruder.setExtrusion(speedExtruder);
 			if (!dummyZ) motorZ.seekBlocking(speed, convertToStepZ(z));
 			extruder.setExtrusion(0);
@@ -132,7 +144,12 @@ public class Reprap implements CartesianPrinter {
 		}
 
 		// Otherwise printing only in X/Y plane
+		double distance = segmentLength(x - currentX, y - currentY);
+		totalDistanceExtruded += distance;
+		totalDistanceMoved += distance;
 		layer.printTo(convertToStepX(x), convertToStepY(y), speed, speedExtruder);
+		currentX = x;
+		currentY = y;
 	}
 
 	public void selectMaterial(int materialIndex) {
@@ -274,6 +291,24 @@ public class Reprap implements CartesianPrinter {
 
 	public double getZ() {
 		return currentZ;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#getTotalDistanceMoved()
+	 */
+	public double getTotalDistanceMoved() {
+		return totalDistanceMoved;
+	}
+
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#getTotalDistanceExtruded()
+	 */
+	public double getTotalDistanceExtruded() {
+		return totalDistanceExtruded;
+	}
+	
+	public double segmentLength(double x, double y) {
+		return Math.sqrt(x*x + y*y);
 	}
 }
 
