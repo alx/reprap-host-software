@@ -24,6 +24,7 @@ import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 
+import org.reprap.geometry.EstimationProducer;
 import org.reprap.geometry.Producer;
 import org.reprap.gui.Preferences;
 import org.reprap.gui.PreviewPanel;
@@ -198,6 +199,15 @@ public class Main {
 
         layerPause = new JCheckBoxMenuItem("Pause before layer");
         produceMenu.add(layerPause);
+
+        produceMenu.addSeparator();
+
+        JMenuItem estimateMenuItem = new JMenuItem("Estimate resources...", KeyEvent.VK_E);
+        estimateMenuItem.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				estimateResources();
+			}});
+        produceMenu.add(estimateMenuItem);
                 
         JMenu toolsMenu = new JMenu("Tools");
         toolsMenu.setMnemonic(KeyEvent.VK_T);
@@ -322,13 +332,15 @@ public class Main {
 					
 					Producer producer = new Producer(preview, builder);
 					producer.produce();
-					double moved = producer.getTotalDistanceMoved();
-					double extruded = producer.getTotalDistanceExtruded();
+					double moved = Math.round(producer.getTotalDistanceMoved() * 10.0) / 10.0;
+					double extruded = Math.round(producer.getTotalDistanceExtruded() * 10.0) / 10.0;
 					producer.dispose();
 			        cancelMenuItem.setEnabled(false);
 			        produceProduce.setEnabled(true);
-					JOptionPane.showMessageDialog(mainFrame, "Production complete.  Total distance travelled=" +
-							moved + ".  Total distance extruded=" + extruded);
+					JOptionPane.showMessageDialog(mainFrame, "Production complete.  " +
+							"Total distance travelled=" + moved	+
+							"mm.  Total distance extruded=" + Math.round(extruded * 10.0) / 10.0 +
+							"mm.");
 				}
 				catch (Exception ex) {
 					JOptionPane.showMessageDialog(mainFrame, "Production exception: " + ex);
@@ -394,6 +406,28 @@ public class Main {
   	    	  panel.setDividerLocation(1.0);
     	    else
     	    	  panel.setDividerLocation(0.0);
+    }
+    
+    private void estimateResources() {
+    	EstimationProducer producer = null;
+    	try {
+        	producer = new EstimationProducer(builder);
+	    	producer.produce();
+
+	    	double moved = Math.round(producer.getTotalDistanceMoved() * 10.0) / 10.0;
+			double extruded = Math.round(producer.getTotalDistanceExtruded() * 10.0) / 10.0;
+
+	    	JOptionPane.showMessageDialog(mainFrame,
+					"Expected total distance travelled=" + moved +
+					"mm.  Total distance extruded=" + extruded +
+					"mm.");
+	    	
+    	} catch (Exception ex) {
+    		JOptionPane.showMessageDialog(null, "Exception during estimation: " + ex);    
+    	} finally {
+    		if (producer != null)
+    	    	producer.dispose();
+    	}
     }
     
 	public static void main(String[] args) {

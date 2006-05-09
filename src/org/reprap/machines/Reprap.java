@@ -104,7 +104,6 @@ public class Reprap implements CartesianPrinter {
 		if (z != currentZ) {
 			totalDistanceMoved += Math.abs(currentZ - z);
 			if (!dummyZ) motorZ.seekBlocking(speed, convertToStepZ(z));
-			currentZ = z;
 		}
 		currentX = x;
 		currentY = y;

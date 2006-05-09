@@ -33,6 +33,10 @@ public class NullCartesianMachine implements CartesianPrinter {
 	public void moveTo(double x, double y, double z) throws ReprapException, IOException {
 		if (isCancelled()) return;
 
+		totalDistanceMoved += segmentLength(x - currentX, y - currentY);
+		if (z != currentZ)
+			totalDistanceMoved += Math.abs(currentZ - z);
+
 		currentX = x;
 		currentY = y;
 		currentZ = z;
@@ -43,6 +47,12 @@ public class NullCartesianMachine implements CartesianPrinter {
 			previewer.addSegment(currentX, currentY, currentZ, x, y, z);
 		if (isCancelled()) return;
 
+		double distance = segmentLength(x - currentX, y - currentY);
+		if (z != currentZ)
+			distance += Math.abs(currentZ - z);
+		totalDistanceExtruded += distance;
+		totalDistanceMoved += distance;
+		
 		currentX = x;
 		currentY = y;
 		currentZ = z;
@@ -82,11 +92,14 @@ public class NullCartesianMachine implements CartesianPrinter {
 	}
 
 	public boolean isCancelled() {
-		return previewer.isCancelled();
+		if (previewer != null)
+			return previewer.isCancelled();
+		return false;
 	}
 
 	public void initialise() {
-		previewer.reset();
+		if (previewer != null)
+			previewer.reset();
 	}
 
 	public double getX() {
@@ -115,4 +128,7 @@ public class NullCartesianMachine implements CartesianPrinter {
 		return totalDistanceExtruded;
 	}
 
+	public double segmentLength(double x, double y) {
+		return Math.sqrt(x*x + y*y);
+	}
 }

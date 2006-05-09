@@ -13,9 +13,9 @@ public class Producer {
 	
 	static private final double layerSpacing = 0.3; ///< Vertical spacing in mm
 
-	private Printer reprap;
-	private RrLine oddHatchDirection;
-	private RrLine evenHatchDirection;
+	protected Printer reprap;
+	protected RrLine oddHatchDirection;
+	protected RrLine evenHatchDirection;
 	
 	public Producer(PreviewPanel preview, RepRapBuild builder) throws Exception {
 		reprap = MachineFactory.create();
