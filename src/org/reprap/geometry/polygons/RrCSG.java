@@ -508,6 +508,7 @@ public class RrCSG
 			{
 			case 0:
 				break;
+				
 			case 1:
 				switch(ops)
 				{
@@ -536,8 +537,12 @@ public class RrCSG
 					System.err.println("reg_4() 2: addition doesn't work...");
 				}
 				break;
-			case 2:
-				result = c1;
+				
+			case 2:		// Pick the child that's an intersection (if there is one)		
+				if(c1.op == RrCSGOp.UNION)
+					result = c2;
+				else
+					result = c1;
 				break;
 				
 			default:
@@ -596,7 +601,7 @@ public class RrCSG
 		case RrCSGOp.LEAF:
 		case RrCSGOp.NULL:   
 		case RrCSGOp.UNIVERSE:
-			//System.out.println("replace_all_same(): at a leaf!");
+			//System.out.println("replace_all_same_leaves(): at a leaf!");
 			break;
 			
 		case RrCSGOp.UNION:

@@ -137,8 +137,11 @@ public class RrCSGPolygon
 	public RrBox box() { return box; }
 	public double resolution() { return resolution_2; }
 	
-	// Convert to a string
 	
+	/**
+	 * Convert to a string - internal recursive call
+	 * @param quad
+	 */
 	private String toString_r(String quad)
 	{
 		if(csg.operator() == RrCSGOp.UNIVERSE)
@@ -159,6 +162,9 @@ public class RrCSGPolygon
 		}      
 	}
 	
+	/**
+	 * Convert to a string
+	 */	
 	public String toString()
 	{
 		return "RrCSGPolygon\n" + toString_r(":-");
@@ -263,8 +269,9 @@ public class RrCSGPolygon
 	
 	
 	/**
-	 * Note these do NOT find the closest half-plane unless the point
-	 * is on a surface
+	 * Find the RrCSG expression that gives the potentaial at point p.
+	 * Note this does NOT find the closest half-plane unless the point
+	 * is on a surface.
 	 * @param p
 	 * @return
 	 */
@@ -274,6 +281,11 @@ public class RrCSGPolygon
 		return(q.csg.leaf(p));
 	}
 	
+	/**
+	 * Find the potentaial at point p.
+	 * @param p
+	 * @return
+	 */	
 	public double value(Rr2Point p)
 	{
 		RrCSG c = leaf(p);
