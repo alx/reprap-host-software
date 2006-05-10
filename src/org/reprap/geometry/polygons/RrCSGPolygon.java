@@ -309,11 +309,9 @@ public class RrCSGPolygon
 	 * Find the nearest direction along the edge hp to direction
      * @param leaf
      * @param direction
-     * @param result
      * @return vector in the edge and the inner product
      */
-	private double nearest(RrHalfPlane hp, Rr2Point direction, 
-			Rr2Point result)
+	private double nearest(RrHalfPlane hp, Rr2Point direction)
 	{	
 		Rr2Point p = hp.normal().orthogonal();
 		Rr2Point n = p.neg();
@@ -321,11 +319,11 @@ public class RrCSGPolygon
 		double vn = Rr2Point.mul(n, direction);
 		if(vp > vn)
 		{
-			result.set(p);
+			direction.set(p);
 			return vp;
 		} else
 		{
-			result.set(n);
+			direction.set(n);
 			return vn;
 		}
 	}
@@ -335,26 +333,25 @@ public class RrCSGPolygon
      * @param two
      * @param here
      * @param direction
-     * @return vector in the edge and the inner product
+     * @return vector in the edge and the edge
      */
-	private double nearest(RrCSG two, Rr2Point here, 
-			Rr2Point direction, Rr2Point result)
-	{	
+	private RrCSG nearest(RrCSG two, Rr2Point here, Rr2Point direction)
+	{
+		RrCSG leaf = null;
 		if(two.complexity() != 2)
 		{
 			System.err.println("nearest(): not a corner!");
-			result.set(direction);
-			return -1;
+			return leaf;
 		}
-		Rr2Point p1 = new Rr2Point();
-		Rr2Point p2 = new Rr2Point();
-		double v1 = nearest(two.c_1().plane(), direction, p1);
+		Rr2Point p1 = new Rr2Point(direction);
+		Rr2Point p2 = new Rr2Point(direction);
+		double v1 = nearest(two.c_1().plane(), p1);
 		if(two.value(Rr2Point.add(here, p1)) > Math.sqrt(resolution_2))
 		{
 			v1 = -v1;
 			p1 = p1.neg();
 		}
-		double v2 = nearest(two.c_2().plane(), direction, p2);
+		double v2 = nearest(two.c_2().plane(), p2);
 		if(two.value(Rr2Point.add(here, p2)) > Math.sqrt(resolution_2))
 		{
 			v2 = -v2;
@@ -363,14 +360,83 @@ public class RrCSGPolygon
 		
 		if(v1 > v2)
 		{
-			result.set(p1);
-			return v1;
+			direction.set(p1);
+			leaf = two.c_1();
 		} else
 		{
-			result.set(p2);
-			return v2;
+			direction.set(p2);
+			leaf = two.c_2();
 		}
+		
+		return leaf;
 	}
+	
+	 /**
+	 * Decide which way to go...
+	 * @param onThis
+     * @param here
+     * @param direction
+     * @param wayToGo
+     * @return the leaf CSG as the result plus the way to go
+     */
+    private RrCSG whichWay(RrCSG onThis, Rr2Point here, 
+    		Rr2Point direction)
+    {
+    	RrCSG result = onThis;
+    	double v;
+    	int oncount = 0;
+    	
+        switch (onThis.complexity())
+        {
+        case 0:
+                System.err.println("whichWay(): leaf quad with 0 complexity!");
+                return result;
+
+        case 1:
+                v = nearest(onThis.plane(), direction);
+                if(v*v > resolution_2)
+                {
+                        System.err.println("meg(): point not on single surface!");
+                        return result;
+                }
+                break;
+
+        case 2:
+        		v = onThis.c_1().value(here);
+        		if(v*v <= resolution_2)
+        			oncount = 1;
+        		v = onThis.c_2().value(here);
+        		if(v*v <= resolution_2)
+        			oncount += 2;
+        		
+        		switch(oncount)
+        		{
+        		case 1:
+        			result = onThis.c_1();
+        			v = nearest(result.plane(), direction);
+        			break;
+        			
+        		case 2:
+        			result = onThis.c_2();
+        			v = nearest(result.plane(), direction);
+        			break;
+        			
+        		case 3:
+        			result = nearest(onThis, here, direction);
+        			break;
+        		
+        		default:
+        			System.err.println("whichWay(): point not on double surface!");
+                	return result;
+        		}
+                break;
+        
+        default:
+                System.err.println("whichWay(): leaf quad with complexity greater than 2!");
+        }
+        return result;
+    }
+	
 	
 	 /**
 	 * Walk round the edges of a polygon from here to there, trying
@@ -393,61 +459,19 @@ public class RrCSGPolygon
             RrPolygon result = new RrPolygon();
             RrCSGPolygon qh = quad(here);
             RrCSGPolygon qt = quad(there);
-            int oncount = 0;
-            double v;
+            Rr2Point wayToGo = new Rr2Point(direction);
 
-            RrCSG leaf;
-
-            switch (qh.csg.complexity())
+            RrCSG leaf = whichWay(qh.csg, here, wayToGo);
+            
+            while(qh != qt)
             {
-            case 0:
-                    System.err.println("meg(): leaf quad with 0 complexity!");
-                    return result;
-
-            case 1:
-                    v = csg.value(here);
-                    if(v*v > resolution_2)
-                    {
-                            System.err.println("meg(): point not on single surface!");
-                            return result;
-                    }
-                    leaf = csg;
-                    oncount = 1;
-                    break;
-
-            case 2:
-            		v = csg.c_1().value(here);
-            		if(v*v <= resolution_2)
-            			oncount = 1;
-            		v = csg.c_2().value(here);
-            		if(v*v <= resolution_2)
-            			oncount = oncount + 2;
-            		if(oncount < 1 || oncount > 3)
-            		{
-            			System.err.println("meg(): point not on double surface!");
-                    	return result;
-            		} else if (oncount == 1)
-            			leaf = csg.c_1();
-            		else if (oncount == 2)
-            		{
-            			leaf = csg.c_2();
-            			oncount = 1;
-            		} else
-            		{
-            			// On a corner
-            		}
-            		
-                    break;
-
-            default:
-                    System.err.println("meg(): leaf quad with complexity greater than 2!");
-                    return result;
+            	
             }
 
+  
+                    
             return result;
     }
-
-	
 	
 	/**
 	 * Intersect a line with a polygon, adding to an existing
