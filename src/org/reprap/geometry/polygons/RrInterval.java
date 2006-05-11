@@ -277,6 +277,25 @@ public class RrInterval
 	}
 	
 	/**
+	 * Identical within tolerance
+	 * @param a
+	 * @param b
+	 * @param tolerance
+	 * @return
+	 */
+	public static boolean same(RrInterval a, RrInterval b, double tolerance)
+	{
+		if(a.empty() && b.empty())   //??? !!!
+			return true;
+		
+		if( Math.abs(a.low - b.low) > tolerance)
+			return false;
+		if (Math.abs(a.high - b.high) > tolerance)
+			return false;
+		return true;
+	}
+	
+	/**
 	 * Absolute value of an interval
 	 * @return
 	 */

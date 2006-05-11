@@ -53,7 +53,6 @@ First version 14 November 2005
 
 */
 
-//import java.io.*;
 
 package org.reprap.geometry.polygons;
 
@@ -490,6 +489,7 @@ public class RrCSGPolygon
             RrPolygon result = new RrPolygon();
             RrCSGPolygon qh = quad(here);
             RrCSGPolygon qt = quad(there);
+            RrQContents qc = new RrQContents(qh);
 
             RrDSearch d = whichWay(qh.csg, here, direction);
             result.append(here, flag);

@@ -362,9 +362,6 @@ public class RrPolygon
 		for (int j = 0; j < leng; j++)
 		{
 			int k = (j + 1) % leng;
-			
-			// Is the Java distinction between primitive and reference types a pain, or what?...
-			
 			rr_bisector bs = RrLine.bisect(point(i), point(j), point(k));
 			r.append(bs.b.point(d/bs.s_angle), flag(j));
 			i = (i + 1) % leng;

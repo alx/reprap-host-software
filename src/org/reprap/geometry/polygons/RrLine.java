@@ -106,7 +106,8 @@ public class RrLine
 	 */
 	public RrLine(RrHalfPlane p)
 	{
-		origin = new Rr2Point(-p.normal().x()*p.offset(), -p.normal().y()*p.offset());
+		origin = new Rr2Point(-p.normal().x()*p.offset(), 
+				-p.normal().y()*p.offset());
 		direction = new Rr2Point(p.normal().y(), -p.normal().x());
 	}
 	
@@ -198,6 +199,16 @@ public class RrLine
 		return point(cross_t(a));
 	}
 	
+	
+	/**
+	 * The nearest point on a line to another as a line parameter
+	 * @param p
+	 * @return
+	 */
+	public double nearest(Rr2Point p)
+	{
+		return Rr2Point.mul(direction, p) - Rr2Point.mul(direction, origin);
+	}
 	
 	/**
 	 * The squared distance of a point from a line

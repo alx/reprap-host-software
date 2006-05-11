@@ -88,7 +88,7 @@ public class TestMain
 		ppc = RrCSG.difference(ppc, pc);
 		
 		//ppc = RrCSG.union(rc, ppc);
-		ppc = RrCSG.union(new RrCSG(ppc), ppc);
+		//ppc = RrCSG.union(new RrCSG(ppc), ppc);
 		//System.out.println(ppc.toString());
 		ppc = ppc.simplify(1.0e-6);
 		//System.out.println(ppc.toString());
@@ -98,19 +98,19 @@ public class TestMain
 				RrBox(new Rr2Point(0,0), new Rr2Point(1,1)));
 		
 		cp.divide(1.0e-6, 1.0);
-		//System.out.println(cp.toString());
-		//new RrGraphics(cp, true);
+		System.out.println(cp.toString());
+		new RrGraphics(cp, true);
 		
-		RrPolygon  h = cp.hatch_join(x, 0.005, 1, 3);
-		RrPolygonList hp = new RrPolygonList();
-		RrPolygon a = new RrPolygon();
-		a.append(p, 5);
-		a.append(q, 5);
-		a.append(r, 5);
-		a.append(s, 5);
-		hp.append(h);
-		//hp.append(a);
-		new RrGraphics(hp, false);  
+//		RrPolygon  h = cp.hatch_join(x, 0.005, 1, 3);
+//		RrPolygonList hp = new RrPolygonList();
+//		RrPolygon a = new RrPolygon();
+//		a.append(p, 5);
+//		a.append(q, 5);
+//		a.append(r, 5);
+//		a.append(s, 5);
+//		hp.append(h);
+//		//hp.append(a);
+//		new RrGraphics(hp, false);  
 		
 	}
 }
