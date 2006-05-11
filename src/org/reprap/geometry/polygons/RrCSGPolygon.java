@@ -63,13 +63,32 @@ import java.util.*;
 /**
  * Small class for containing results of hatch searches
  */
-class rr_h_search
+class RrHSearch
 {
 	public boolean join;
-	public boolean not_finished;
-	public int the_line;
-	public int the_point;
+	public boolean notFinished;
+	public int theLine;
+	public int thePoint;
 	public double dsq;
+}
+
+/**
+ * Small class for containing results of edge direction searches
+ */
+class RrDSearch
+{
+	public int onCount;
+	public RrCSG leaf;
+	public Rr2Point whichWay;
+	public double value;
+	
+	public RrDSearch(int i, RrCSG c, Rr2Point p, double v)
+	{
+		onCount = i;
+		leaf = c;
+		whichWay = p;
+		value = v;
+	}
 }
 
 /**
@@ -307,7 +326,7 @@ public class RrCSGPolygon
 	
 	 /**
 	 * Find the nearest direction along the edge hp to direction
-     * @param leaf
+     * @param hp
      * @param direction
      * @return vector in the edge and the inner product
      */
@@ -335,40 +354,37 @@ public class RrCSGPolygon
      * @param direction
      * @return vector in the edge and the edge
      */
-	private RrCSG nearest(RrCSG two, Rr2Point here, Rr2Point direction)
+	private RrDSearch nearest(RrCSG two, Rr2Point here, Rr2Point direction)
 	{
-		RrCSG leaf = null;
+		RrDSearch r = null;
 		if(two.complexity() != 2)
 		{
 			System.err.println("nearest(): not a corner!");
-			return leaf;
+			return r;
 		}
 		Rr2Point p1 = new Rr2Point(direction);
 		Rr2Point p2 = new Rr2Point(direction);
 		double v1 = nearest(two.c_1().plane(), p1);
-		if(two.value(Rr2Point.add(here, p1)) > Math.sqrt(resolution_2))
+		if(Math.abs(two.value(Rr2Point.add(here, p1))) > 
+			Math.sqrt(resolution_2))
 		{
 			v1 = -v1;
 			p1 = p1.neg();
 		}
 		double v2 = nearest(two.c_2().plane(), p2);
-		if(two.value(Rr2Point.add(here, p2)) > Math.sqrt(resolution_2))
+		if(Math.abs(two.value(Rr2Point.add(here, p2))) > 
+			Math.sqrt(resolution_2))
 		{
 			v2 = -v2;
 			p2 = p2.neg();
 		}	
 		
 		if(v1 > v2)
-		{
-			direction.set(p1);
-			leaf = two.c_1();
-		} else
-		{
-			direction.set(p2);
-			leaf = two.c_2();
-		}
+			r = new RrDSearch(2, two.c_1(), p1, v1);
+		else
+			r = new RrDSearch(2, two.c_2(), p2, v2);
 		
-		return leaf;
+		return r;
 	}
 	
 	 /**
@@ -376,67 +392,81 @@ public class RrCSGPolygon
 	 * @param onThis
      * @param here
      * @param direction
-     * @param wayToGo
      * @return the leaf CSG as the result plus the way to go
      */
-    private RrCSG whichWay(RrCSG onThis, Rr2Point here, 
+    private RrDSearch whichWay(RrCSG onThis, Rr2Point here, 
     		Rr2Point direction)
     {
-    	RrCSG result = onThis;
+    	RrDSearch r = null;
+    	Rr2Point dir = new Rr2Point(direction);
     	double v;
-    	int oncount = 0;
+    	int oc = 0;
     	
         switch (onThis.complexity())
         {
         case 0:
                 System.err.println("whichWay(): leaf quad with 0 complexity!");
-                return result;
+                return r;
 
         case 1:
-                v = nearest(onThis.plane(), direction);
+                v = nearest(onThis.plane(), dir);
                 if(v*v > resolution_2)
                 {
                         System.err.println("meg(): point not on single surface!");
-                        return result;
+                        return r;
                 }
+                r = new RrDSearch(1, onThis, dir, v);
                 break;
 
         case 2:
         		v = onThis.c_1().value(here);
         		if(v*v <= resolution_2)
-        			oncount = 1;
+        			oc = 1;
         		v = onThis.c_2().value(here);
         		if(v*v <= resolution_2)
-        			oncount += 2;
+        			oc += 2;
         		
-        		switch(oncount)
+        		switch(oc)
         		{
         		case 1:
-        			result = onThis.c_1();
-        			v = nearest(result.plane(), direction);
+        			v = nearest(onThis.c_1().plane(), dir);
+        			r = new RrDSearch(1, onThis.c_1(), dir, v);
         			break;
         			
         		case 2:
-        			result = onThis.c_2();
-        			v = nearest(result.plane(), direction);
+        			v = nearest(onThis.c_2().plane(), dir);
+        			r = new RrDSearch(1, onThis.c_2(), dir, v);
         			break;
         			
         		case 3:
-        			result = nearest(onThis, here, direction);
+        			r = nearest(onThis, here, dir);
         			break;
         		
         		default:
         			System.err.println("whichWay(): point not on double surface!");
-                	return result;
+                	return r;
         		}
                 break;
         
         default:
                 System.err.println("whichWay(): leaf quad with complexity greater than 2!");
         }
-        return result;
+        return r;
     }
-	
+    
+    
+	 /**
+	 * Move just across the boundary of the quad here is in
+     * @param here
+     * @param d
+     * @return the point over the edge
+     */
+    private Rr2Point overTheEdge(Rr2Point here, RrDSearch d)
+    {
+    	Rr2Point r = here;
+    	
+    	return r;
+    }
 	
 	 /**
 	 * Walk round the edges of a polygon from here to there, trying
@@ -447,7 +477,8 @@ public class RrCSGPolygon
      * @param direction
      * @return a polygon as the result
      */
-    public RrPolygon meg(Rr2Point here, Rr2Point there, Rr2Point direction)
+    public RrPolygon meg(Rr2Point here, Rr2Point there, 
+    		Rr2Point direction, int flag)
     {
             if(q1 == null)
             {
@@ -459,13 +490,38 @@ public class RrCSGPolygon
             RrPolygon result = new RrPolygon();
             RrCSGPolygon qh = quad(here);
             RrCSGPolygon qt = quad(there);
-            Rr2Point wayToGo = new Rr2Point(direction);
 
-            RrCSG leaf = whichWay(qh.csg, here, wayToGo);
+            RrDSearch d = whichWay(qh.csg, here, direction);
+            result.append(here, flag);
+            boolean start = true;
             
             while(qh != qt)
             {
-            	
+            	if(d.onCount == 2)
+            	{
+                    if(!start)
+                    	result.append(here, flag);
+           			here = overTheEdge(here, d);
+        			qh = quad(here);
+        			d = whichWay(qh.csg, here, d.whichWay);
+            	} else
+            	{
+            		switch(qh.csg.complexity())
+            		{
+            		case 1:
+            			here = overTheEdge(here, d);
+            			qh = quad(here);
+            			d = whichWay(qh.csg, here, d.whichWay);
+            			break;
+            			
+            		case 2:
+            		
+            		default:
+            			System.err.println("meg(): edge in quad with complexity: "
+            					+ qh.csg.complexity());
+            		}
+            	}
+            	start = false;
             }
 
   
@@ -674,10 +730,10 @@ public class RrCSGPolygon
 	}
 	
 	
-	private rr_h_search search_line(RrPolygon pg, Rr2Point here, double ds)
+	private RrHSearch search_line(RrPolygon pg, Rr2Point here, double ds)
 	{
-		rr_h_search result = new rr_h_search();
-		result.the_point = -1;
+		RrHSearch result = new RrHSearch();
+		result.thePoint = -1;
 		result.dsq = ds;
 		Rr2Point there;
 		double d2;
@@ -692,7 +748,7 @@ public class RrCSGPolygon
 				{
 					if(all_inside(here, there)) 
 					{
-						result.the_point = i;
+						result.thePoint = i;
 						result.dsq = d2;
 					} 
 				}
@@ -702,7 +758,7 @@ public class RrCSGPolygon
 				{
 					if(all_inside(here, there)) 
 					{
-						result.the_point = i + 1;
+						result.thePoint = i + 1;
 						result.dsq = d2;
 						
 					}
@@ -712,54 +768,54 @@ public class RrCSGPolygon
 		return result;
 	}
 	
-	private rr_h_search search_join(RrPolygonList p_l, Rr2Point here, int line)
+	private RrHSearch search_join(RrPolygonList p_l, Rr2Point here, int line)
 	{
-		rr_h_search result = new rr_h_search();
-		rr_h_search intermediate;
-		result.not_finished = true;
+		RrHSearch result = new RrHSearch();
+		RrHSearch intermediate;
+		result.notFinished = true;
 		result.join = false;
 		double dsq = Double.POSITIVE_INFINITY;
-		int the_point = -1;
-		int the_line = -1;
+		int thePoint = -1;
+		int theLine = -1;
 		RrPolygon pg;
 		
 		if(line > 0) 
 		{
 			pg = p_l.polygon(line - 1);
 			intermediate = search_line(pg, here, dsq);
-			if(intermediate.the_point >= 0) 
+			if(intermediate.thePoint >= 0) 
 			{
 				dsq = intermediate.dsq;
-				the_line = line - 1;
-				the_point = intermediate.the_point;
+				theLine = line - 1;
+				thePoint = intermediate.thePoint;
 			}
 		}
 		if(line < p_l.size() - 1) 
 		{
 			pg = p_l.polygon(line + 1);
 			intermediate = search_line(pg, here, dsq);
-			if(intermediate.the_point >= 0) 
+			if(intermediate.thePoint >= 0) 
 			{
 				dsq = intermediate.dsq;
-				the_line = line + 1;
-				the_point = intermediate.the_point;
+				theLine = line + 1;
+				thePoint = intermediate.thePoint;
 			}
 		}
 		
-		if(the_point >= 0)
+		if(thePoint >= 0)
 		{
 			result.join = true;
-			result.the_line = the_line;
-			result.the_point = the_point;
+			result.theLine = theLine;
+			result.thePoint = thePoint;
 		}
 		
 		return result;
 	}
 	
-	private rr_h_search new_start(RrPolygonList p_l, Rr2Point here)
+	private RrHSearch new_start(RrPolygonList p_l, Rr2Point here)
 	{
-		rr_h_search result = new rr_h_search();
-		result.not_finished = false;        
+		RrHSearch result = new RrHSearch();
+		result.notFinished = false;        
 		result.join = false;
 		result.dsq = Double.POSITIVE_INFINITY;
 		double d2;
@@ -776,18 +832,18 @@ public class RrCSGPolygon
 					if(d2 < result.dsq) 
 					{
 						result.dsq = d2;
-						result.not_finished = true;
-						result.the_line = i;
-						result.the_point = j;   
+						result.notFinished = true;
+						result.theLine = i;
+						result.thePoint = j;   
 					}
 					there = pg.point(j + 1);
 					d2 = Rr2Point.d_2(here, there);
 					if(d2 < result.dsq) 
 					{
 						result.dsq = d2;
-						result.not_finished = true;
-						result.the_line = i;
-						result.the_point = j + 1;   
+						result.notFinished = true;
+						result.theLine = i;
+						result.thePoint = j + 1;   
 					}
 				}
 			}
@@ -829,58 +885,58 @@ public class RrCSGPolygon
 		
 		Rr2Point pa, pb;
 		
-		rr_h_search next = new_start(p_l, here);
-		int line = next.the_line;
-		boolean not_finished = next.not_finished;
+		RrHSearch next = new_start(p_l, here);
+		int line = next.theLine;
+		boolean notFinished = next.notFinished;
 		next.join = true;
 		int flag = fs;
 		
-		while(not_finished) 
+		while(notFinished) 
 		{
 			if(next.join) 
 			{
-				if(next.the_point%2 == 1) 
+				if(next.thePoint%2 == 1) 
 				{
-					pa = p_l.polygon(next.the_line).point(next.the_point);
-					pb = p_l.polygon(next.the_line).point(next.the_point - 1);
-					p_l.polygon(next.the_line).flag(next.the_point - 1, -1);
+					pa = p_l.polygon(next.theLine).point(next.thePoint);
+					pb = p_l.polygon(next.theLine).point(next.thePoint - 1);
+					p_l.polygon(next.theLine).flag(next.thePoint - 1, -1);
 				} else 
 				{
-					pa = p_l.polygon(next.the_line).point(next.the_point);
-					p_l.polygon(next.the_line).flag(next.the_point, -1);
-					pb = p_l.polygon(next.the_line).point(next.the_point + 1);
+					pa = p_l.polygon(next.theLine).point(next.thePoint);
+					p_l.polygon(next.theLine).flag(next.thePoint, -1);
+					pb = p_l.polygon(next.theLine).point(next.thePoint + 1);
 				}
 				p1.append(pa, flag);
 				flag = fg;
 				here = pb;
-				line = next.the_line;
+				line = next.theLine;
 				p1.append(here, flag);
 			} else 
 			{
 				flag = fs;
 				next = new_start(p_l, here);
-				not_finished = next.not_finished;
-				if(not_finished) 
+				notFinished = next.notFinished;
+				if(notFinished) 
 				{
-					if(next.the_point%2 == 1) 
+					if(next.thePoint%2 == 1) 
 					{
-						pa = p_l.polygon(next.the_line).point(next.the_point);
-						pb = p_l.polygon(next.the_line).point(next.the_point - 1);
-						p_l.polygon(next.the_line).flag(next.the_point - 1, -1);
+						pa = p_l.polygon(next.theLine).point(next.thePoint);
+						pb = p_l.polygon(next.theLine).point(next.thePoint - 1);
+						p_l.polygon(next.theLine).flag(next.thePoint - 1, -1);
 					} else 
 					{
-						pa = p_l.polygon(next.the_line).point(next.the_point);
-						p_l.polygon(next.the_line).flag(next.the_point, -1);
-						pb = p_l.polygon(next.the_line).point(next.the_point + 1);
+						pa = p_l.polygon(next.theLine).point(next.thePoint);
+						p_l.polygon(next.theLine).flag(next.thePoint, -1);
+						pb = p_l.polygon(next.theLine).point(next.thePoint + 1);
 					}
 					p1.append(pa, flag);
 					flag = fg;
 					here = pb;
-					line = next.the_line;
+					line = next.theLine;
 					p1.append(here, flag);
 				}
 			}
-			if(not_finished)
+			if(notFinished)
 				next = search_join(p_l, here, line);
 		}
 		
