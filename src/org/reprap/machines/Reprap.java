@@ -79,6 +79,10 @@ public class Reprap implements CartesianPrinter {
 		// TODO This should be from calibration
 		// Assume 400 steps per turn, 1.5mm travel per turn
 		scaleX = scaleY = scaleZ = 400.0 / 1.5;
+		if (config.getProperty("Axis1Scale")!=null)
+			scaleX=scaleY=scaleZ=Double.parseDouble(config.getProperty("Axis1Scale"));
+		
+		
 		
 		currentX = convertToPositionZ(motorX.getPosition());
 		currentY = convertToPositionZ(motorY.getPosition());

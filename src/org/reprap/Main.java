@@ -239,6 +239,18 @@ public class Main {
 			}});
         toolsMenu.add(toolsExtruderExerciser);
 
+        JMenuItem toolsSquareTest = new JMenuItem("Square Test", KeyEvent.VK_Q);
+        toolsSquareTest.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				try {
+					org.reprap.SquareTest.main(null);
+				}
+              	catch (Exception ex) {
+             		JOptionPane.showMessageDialog(null, "Square Test exception: " + ex);
+         			ex.printStackTrace();
+             	}
+			}});
+        toolsMenu.add(toolsSquareTest);
         
         JMenu diagnosticsMenu = new JMenu("Diagnostics");
         toolsMenu.add(diagnosticsMenu);
