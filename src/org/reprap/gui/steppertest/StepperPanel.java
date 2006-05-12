@@ -41,6 +41,7 @@ import org.reprap.devices.GenericStepperMotor;
 /// consequences for normal software driven operation, just interactive use.
 
 public class StepperPanel extends JPanel implements ChangeListener {
+	private static final int startingPosition = 5000;
 
 	private static final long serialVersionUID = 6262697694879478425L;
 
@@ -73,56 +74,69 @@ public class StepperPanel extends JPanel implements ChangeListener {
 		int maxTorque = Integer.parseInt(props.getProperty("Axis" + motorId + "Torque"));
 		
 		updateTimer = new Timer();
-
-        motor = new GenericStepperMotor(communicator, new SNAPAddress(address), maxTorque);
+		
+		motor = new GenericStepperMotor(communicator, new SNAPAddress(address), maxTorque);
 		
 		this.externalSpeedSlider = externalSpeedSlider;
-	
-        setLayout(new GridBagLayout());
-        GridBagConstraints c = new GridBagConstraints();
-
-        c.insets.bottom = c.insets.top = 0;
-        c.ipady = 0;
-        c.gridx = 0;
-        c.gridy = 0;
-                
-        add(new JLabel("Set " + name + " axis position"), c);
-        positionRequest = new JSlider(SwingConstants.HORIZONTAL, minValue, maxValue, 0);
-        
-        positionRequest.addChangeListener(this);
-        c.gridy = 1;
-        add(positionRequest, c);
-
-        c.gridy = 2;
-        add(new JLabel("Actual " + name + " axis position"), c);
-        positionActual = new JSlider(SwingConstants.HORIZONTAL, minValue, maxValue, 0);
-        positionActual.setEnabled(false);
-        c.gridy = 3;
-        add(positionActual, c);
-        
-        c.gridx = 1;
-        c.gridy = 0;
-        rangeLabel = new JLabel();
-        updateRange();
-        add(rangeLabel, c);
-        
-        c.gridy = 1;
-        JButton calibrate = new JButton("Calibrate");
-        calibrate.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent evt) {
-        		onCalibrate();
-        	}
-        });
-        add(calibrate, c);
-        
-        c.gridy = 2;
-        torque = new JCheckBox("Torque");
-        torque.addActionListener(new ActionListener() {
-        	public void actionPerformed(ActionEvent evt) {
-        		onTorqueUpdate();
+		
+		setLayout(new GridBagLayout());
+		GridBagConstraints c = new GridBagConstraints();
+		
+		c.insets.bottom = c.insets.top = 0;
+		c.ipady = 0;
+		c.gridx = 0;
+		c.gridy = 0;
+		
+		add(new JLabel("Set " + name + " axis position"), c);
+		positionRequest = new JSlider(SwingConstants.HORIZONTAL, minValue, maxValue, 0);
+		positionRequest.setValue(startingPosition);
+		positionRequest.addChangeListener(this);
+		c.gridy = 1;
+		add(positionRequest, c);
+		
+		c.gridy = 2;
+		add(new JLabel("Actual " + name + " axis position"), c);
+		positionActual = new JSlider(SwingConstants.HORIZONTAL, minValue, maxValue, 0);
+		positionActual.setValue(startingPosition);
+		positionActual.setEnabled(false);
+		c.gridy = 3;
+		add(positionActual, c);
+		
+		c.gridx = 1;
+		c.gridy = 0;
+		rangeLabel = new JLabel();
+		updateRange();
+		add(rangeLabel, c);
+		
+		c.gridy = 1;
+		JButton calibrate = new JButton("Calibrate");
+		calibrate.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				onCalibrate();
+			}
+		});
+		add(calibrate, c);
+		
+		c.gridy = 2;
+		torque = new JCheckBox("Torque");
+		torque.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				onTorqueUpdate();
         	}
         });
         add(torque, c);
+        
+		try {
+			motor.setPosition(5000);
+		} catch (Exception ex) {
+			motor.dispose();
+			motor = null;
+			positionRequest.setEnabled(false);
+			calibrate.setEnabled(false);
+			torque.setEnabled(false);
+			return;
+		}
+
 	}
 
 	/**
@@ -291,7 +305,8 @@ public class StepperPanel extends JPanel implements ChangeListener {
 	}
 	
 	public void dispose() {
-		motor.dispose();
+		if (motor != null)
+			motor.dispose();
 		updateTimer.cancel();
 	}
 }
