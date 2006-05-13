@@ -66,6 +66,7 @@ public class RrQContents
 		public boolean corner;
 		public RrLine l1, l2;
 		public RrInterval i1, i2;
+		public Rr2Point vertex;
 		
 		public RrQContents(RrCSGPolygon q)
 		{
@@ -76,6 +77,7 @@ public class RrQContents
 			corner = false;
 			l1 = null;
 			l2 = null;
+			vertex = null;
 			
 			switch(c.complexity())
 			{
@@ -120,11 +122,15 @@ public class RrQContents
 					i1 = c.c_2().plane().complement().wipe(l1, i1);                    
 				}
 				
+				Rr2Point[] p = new Rr2Point[] { null, null, null, null };
+				
 				if(!i1.empty())
 				{
 					corner = !RrInterval.same(i1, oldR1, 
 							Math.sqrt(q.resolution()));
 					count++;
+					p[0] = l1.point(i1.low());
+					p[1] = l1.point(i1.high());
 				} else
 					l1 = null;
 				
@@ -133,13 +139,29 @@ public class RrQContents
 					corner = corner || !RrInterval.same(i2, oldR2, 
 							Math.sqrt(q.resolution()));
 					count++;
+					p[2] = l2.point(i2.low());
+					p[3] = l2.point(i2.high());
 				} else
 					l2 = null;
 				
+				for(int i = 0; i < 3; i++)
+				{
+					if(p[i] != null)
+					{
+						for(int j = i+1; j < 4; j++)
+						{
+							if(p[j] != null)
+								if(Rr2Point.same(p[j], p[i], q.resolution()))
+									vertex = p[i];
+						}
+					}
+				}
+				if(corner && vertex == null)
+					System.err.println("RrQContents(): can't find cross point!");
 				return;
 				
 			default:
-				System.err.println("RrQContents: complexity > 2.");
+				System.err.println("RrQContents(): complexity > 2.");
 			}
 		}
 	}

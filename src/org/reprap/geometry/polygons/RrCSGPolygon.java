@@ -323,150 +323,255 @@ public class RrCSGPolygon
 		return new RrCSGPolygon(csg.offset(d), b);
 	}
 	
-	 /**
-	 * Find the nearest direction along the edge hp to direction
-     * @param hp
-     * @param direction
-     * @return vector in the edge and the inner product
-     */
-	private double nearest(RrHalfPlane hp, Rr2Point direction)
-	{	
-		Rr2Point p = hp.normal().orthogonal();
-		Rr2Point n = p.neg();
-		double vp = Rr2Point.mul(p, direction);
-		double vn = Rr2Point.mul(n, direction);
-		if(vp > vn)
-		{
-			direction.set(p);
-			return vp;
-		} else
-		{
-			direction.set(n);
-			return vn;
-		}
-	}
-	
-	 /**
-	 * Find the nearest direction from a corner two to direction
-     * @param two
-     * @param here
-     * @param direction
-     * @return vector in the edge and the edge
-     */
-	private RrDSearch nearest(RrCSG two, Rr2Point here, Rr2Point direction)
-	{
-		RrDSearch r = null;
-		if(two.complexity() != 2)
-		{
-			System.err.println("nearest(): not a corner!");
-			return r;
-		}
-		Rr2Point p1 = new Rr2Point(direction);
-		Rr2Point p2 = new Rr2Point(direction);
-		double v1 = nearest(two.c_1().plane(), p1);
-		if(Math.abs(two.value(Rr2Point.add(here, p1))) > 
-			Math.sqrt(resolution_2))
-		{
-			v1 = -v1;
-			p1 = p1.neg();
-		}
-		double v2 = nearest(two.c_2().plane(), p2);
-		if(Math.abs(two.value(Rr2Point.add(here, p2))) > 
-			Math.sqrt(resolution_2))
-		{
-			v2 = -v2;
-			p2 = p2.neg();
-		}	
-		
-		if(v1 > v2)
-			r = new RrDSearch(2, two.c_1(), p1, v1);
-		else
-			r = new RrDSearch(2, two.c_2(), p2, v2);
-		
-		return r;
-	}
-	
-	 /**
-	 * Decide which way to go...
-	 * @param onThis
-     * @param here
-     * @param direction
-     * @return the leaf CSG as the result plus the way to go
-     */
-    private RrDSearch whichWay(RrCSG onThis, Rr2Point here, 
-    		Rr2Point direction)
-    {
-    	RrDSearch r = null;
-    	Rr2Point dir = new Rr2Point(direction);
-    	double v;
-    	int oc = 0;
-    	
-        switch (onThis.complexity())
-        {
-        case 0:
-                System.err.println("whichWay(): leaf quad with 0 complexity!");
-                return r;
-
-        case 1:
-                v = nearest(onThis.plane(), dir);
-                if(v*v > resolution_2)
-                {
-                        System.err.println("meg(): point not on single surface!");
-                        return r;
-                }
-                r = new RrDSearch(1, onThis, dir, v);
-                break;
-
-        case 2:
-        		v = onThis.c_1().value(here);
-        		if(v*v <= resolution_2)
-        			oc = 1;
-        		v = onThis.c_2().value(here);
-        		if(v*v <= resolution_2)
-        			oc += 2;
-        		
-        		switch(oc)
-        		{
-        		case 1:
-        			v = nearest(onThis.c_1().plane(), dir);
-        			r = new RrDSearch(1, onThis.c_1(), dir, v);
-        			break;
-        			
-        		case 2:
-        			v = nearest(onThis.c_2().plane(), dir);
-        			r = new RrDSearch(1, onThis.c_2(), dir, v);
-        			break;
-        			
-        		case 3:
-        			r = nearest(onThis, here, dir);
-        			break;
-        		
-        		default:
-        			System.err.println("whichWay(): point not on double surface!");
-                	return r;
-        		}
-                break;
-        
-        default:
-                System.err.println("whichWay(): leaf quad with complexity greater than 2!");
-        }
-        return r;
-    }
+//	 /**
+//	 * Find the nearest direction along the edge hp to direction
+//     * @param hp
+//     * @param direction
+//     * @return vector in the edge and the inner product
+//     */
+//	private double nearest(RrHalfPlane hp, Rr2Point direction)
+//	{	
+//		Rr2Point p = hp.normal().orthogonal();
+//		Rr2Point n = p.neg();
+//		double vp = Rr2Point.mul(p, direction);
+//		double vn = Rr2Point.mul(n, direction);
+//		if(vp > vn)
+//		{
+//			direction.set(p);
+//			return vp;
+//		} else
+//		{
+//			direction.set(n);
+//			return vn;
+//		}
+//	}
+//	
+//	 /**
+//	 * Find the nearest direction from a corner two to direction
+//     * @param two
+//     * @param here
+//     * @param direction
+//     * @return vector in the edge and the edge
+//     */
+//	private RrDSearch nearest(RrCSG two, Rr2Point here, Rr2Point direction)
+//	{
+//		RrDSearch r = null;
+//		if(two.complexity() != 2)
+//		{
+//			System.err.println("nearest(): not a corner!");
+//			return r;
+//		}
+//		Rr2Point p1 = new Rr2Point(direction);
+//		Rr2Point p2 = new Rr2Point(direction);
+//		double v1 = nearest(two.c_1().plane(), p1);
+//		if(Math.abs(two.value(Rr2Point.add(here, p1))) > 
+//			Math.sqrt(resolution_2))
+//		{
+//			v1 = -v1;
+//			p1 = p1.neg();
+//		}
+//		double v2 = nearest(two.c_2().plane(), p2);
+//		if(Math.abs(two.value(Rr2Point.add(here, p2))) > 
+//			Math.sqrt(resolution_2))
+//		{
+//			v2 = -v2;
+//			p2 = p2.neg();
+//		}	
+//		
+//		if(v1 > v2)
+//			r = new RrDSearch(2, two.c_1(), p1, v1);
+//		else
+//			r = new RrDSearch(2, two.c_2(), p2, v2);
+//		
+//		return r;
+//	}
+//	
+//	 /**
+//	 * Decide which way to go...
+//	 * @param onThis
+//     * @param here
+//     * @param direction
+//     * @return the leaf CSG as the result plus the way to go
+//     */
+//    private RrDSearch whichWay(RrCSG onThis, Rr2Point here, 
+//    		Rr2Point direction)
+//    {
+//    	RrDSearch r = null;
+//    	Rr2Point dir = new Rr2Point(direction);
+//    	double v;
+//    	int oc = 0;
+//    	
+//        switch (onThis.complexity())
+//        {
+//        case 0:
+//                System.err.println("whichWay(): leaf quad with 0 complexity!");
+//                return r;
+//
+//        case 1:
+//                v = nearest(onThis.plane(), dir);
+//                if(v*v > resolution_2)
+//                {
+//                        System.err.println("meg(): point not on single surface!");
+//                        return r;
+//                }
+//                r = new RrDSearch(1, onThis, dir, v);
+//                break;
+//
+//        case 2:
+//        		v = onThis.c_1().value(here);
+//        		if(v*v <= resolution_2)
+//        			oc = 1;
+//        		v = onThis.c_2().value(here);
+//        		if(v*v <= resolution_2)
+//        			oc += 2;
+//        		
+//        		switch(oc)
+//        		{
+//        		case 1:
+//        			v = nearest(onThis.c_1().plane(), dir);
+//        			r = new RrDSearch(1, onThis.c_1(), dir, v);
+//        			break;
+//        			
+//        		case 2:
+//        			v = nearest(onThis.c_2().plane(), dir);
+//        			r = new RrDSearch(1, onThis.c_2(), dir, v);
+//        			break;
+//        			
+//        		case 3:
+//        			r = nearest(onThis, here, dir);
+//        			break;
+//        		
+//        		default:
+//        			System.err.println("whichWay(): point not on double surface!");
+//                	return r;
+//        		}
+//                break;
+//        
+//        default:
+//                System.err.println("whichWay(): leaf quad with complexity greater than 2!");
+//        }
+//        return r;
+//    }
     
-    
 	 /**
-	 * Move just across the boundary of the quad here is in
+	 * Deal with the case where a quad contains a single edge
+     * @param l
+     * @param i
+     * @param r
      * @param here
      * @param d
-     * @return the point over the edge
-     */
-    private Rr2Point overTheEdge(Rr2Point here, RrDSearch d)
+     * @param st
+     * @param fin
+     * @param flag
+     */   
+    private void oneLine(RrLine l, RrInterval i, RrPolygon r, 
+    		Rr2Point here, Rr2Point d, Rr2Point st, Rr2Point fin, int flag)
     {
-    	Rr2Point r = here;
+    	if(st != null)
+    		r.append(st, flag);
     	
-    	return r;
+    	if(Rr2Point.mul(d, l.direction()) < 0)
+    	{
+    		l = l.neg();
+    		i = RrInterval.sub(0, i);
+    	}
+    	d.set(l.direction());
+    	
+    	here.set(l.point(i.high() + Math.sqrt(resolution_2)));
+    	
+    	if(fin != null)
+    		r.append(fin, flag);
     }
-	
+    
+    /**
+	 * Deal with the case where a quad contains two edges
+     * @param qc
+     * @param r
+     * @param here
+     * @param d
+     * @param st
+     * @param fin
+     * @param flag
+     */   
+    private void twoLine(RrQContents qc, RrPolygon r, 
+    		Rr2Point here, Rr2Point d, Rr2Point st, Rr2Point fin, int flag)
+    {
+    	Rr2Point d1 = qc.l1.d_2(here);
+    	Rr2Point d2 = qc.l2.d_2(here);
+    	
+    	// If there's no corner in the quad, find the line we're 
+    	// on and go along it
+    	
+    	if(!qc.corner)
+    	{
+    		if(d1.x() <= d2.x())
+    			oneLine(qc.l1, qc.i1, r, here, d, st, fin, flag);
+    		else
+    			oneLine(qc.l2, qc.i2, r, here, d, st, fin, flag);
+    		return;
+    	}
+    	
+       	RrLine l1, l2;
+    	RrInterval i1, i2;
+    	
+    	if(d1.x() <= d2.x())
+    	{
+    		l1 = qc.l1;
+    		i1 = qc.i1;
+    		l2 = qc.l2;
+    		i2 = qc.i2;
+    	} else
+    	{
+    		l1 = qc.l2;
+    		i1 = qc.i2;
+    		l2 = qc.l1;
+    		i2 = qc.i1;
+    	}
+    	
+    	if(Rr2Point.mul(l1.direction(), d) < 0)
+    	{
+    		l1 = l1.neg();
+    		i1 = RrInterval.sub(0, i1);
+    	}
+    	
+    	boolean before = true;
+    	
+    	if(st != null)
+    	{
+    		if(!Rr2Point.same(qc.vertex, st, resolution_2))
+    		{
+    			r.append(st, flag);
+    			before = Rr2Point.same(qc.vertex, l1.point(i1.high()), 
+    					resolution_2);
+    		}
+    	}
+    	
+    	
+    	if(before)
+    	{
+   			r.append(qc.vertex, flag);
+ 
+    		if(Rr2Point.same(qc.vertex, l2.point(i2.high()), resolution_2))
+    		{
+    			l2 = l2.neg();
+    			i2 = RrInterval.sub(0, i2);
+    		}
+    		d.set(l2.direction());
+    		here.set(l2.point(i2.high() + Math.sqrt(resolution_2)));
+    	} else
+    	{
+    		d.set(l1.direction());
+    		here.set(l1.point(i1.high() + Math.sqrt(resolution_2)));
+    	}
+    	
+    	if(fin != null)
+    	{
+    		if(!Rr2Point.same(qc.vertex, fin, resolution_2))
+    			r.append(fin, flag);
+    	}
+    		
+    }
+    
 	 /**
 	 * Walk round the edges of a polygon from here to there, trying
      * to start roughly in direction.
@@ -485,48 +590,52 @@ public class RrCSGPolygon
                     double r2 = box.d_2()*1.0e-8;
                     divide(r2, 1);
             }
-
-            RrPolygon result = new RrPolygon();
-            RrCSGPolygon qh = quad(here);
-            RrCSGPolygon qt = quad(there);
-            RrQContents qc = new RrQContents(qh);
-
-            RrDSearch d = whichWay(qh.csg, here, direction);
-            result.append(here, flag);
-            boolean start = true;
             
-            while(qh != qt)
-            {
-            	if(d.onCount == 2)
-            	{
-                    if(!start)
-                    	result.append(here, flag);
-           			here = overTheEdge(here, d);
-        			qh = quad(here);
-        			d = whichWay(qh.csg, here, d.whichWay);
-            	} else
-            	{
-            		switch(qh.csg.complexity())
-            		{
-            		case 1:
-            			here = overTheEdge(here, d);
-            			qh = quad(here);
-            			d = whichWay(qh.csg, here, d.whichWay);
-            			break;
-            			
-            		case 2:
-            		
-            		default:
-            			System.err.println("meg(): edge in quad with complexity: "
-            					+ qh.csg.complexity());
-            		}
-            	}
-            	start = false;
-            }
+            RrCSGPolygon qh;
+            RrCSGPolygon qt = quad(there);
+            
+            RrPolygon r = new RrPolygon();
+            Rr2Point h = new Rr2Point(here);
+            Rr2Point d = new Rr2Point(direction);
+            Rr2Point fin, st;
+            
+            RrQContents qc;
 
-  
-                    
-            return result;
+            st = here;
+            do
+            {
+            	qh = quad(h);
+            	qc = new RrQContents(qh);
+            	
+            	if(qh == qt)
+            		fin = there;
+            	else
+            		fin = null;
+            	
+            	switch(qc.count)
+            	{
+            	case 1:
+            		if(qc.l1 != null)
+            		{
+            			oneLine(qc.l1, qc.i1, r, h, d, st, fin, flag);
+            		} else if (qc.l2 != null)
+            		{
+            			oneLine(qc.l2, qc.i2, r, h, d, st, fin, flag);
+            		} else
+            			System.err.println("meg(): both segments null!");
+            		break;
+            		
+            	case 2:
+            		twoLine(qc, r, h, d, st, fin, flag);
+            		break;
+            		
+            	default:
+            		System.err.println("meg(): count not 1 or 2!");	
+            	}
+            	st = null;
+            } while (qh != qt);
+            
+            return r;
     }
 	
 	/**

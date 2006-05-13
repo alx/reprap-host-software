@@ -216,6 +216,17 @@ public class Rr2Point
 		Rr2Point c = sub(a, b);
 		return mul(c, c);
 	}
+	
+	/**
+	 * The same, withing tolerance?
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	public static boolean same(Rr2Point a, Rr2Point b, double tol_2)
+	{
+		return d_2(a, b) < tol_2;
+	}
 }
 
 
