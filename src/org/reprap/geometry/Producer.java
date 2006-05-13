@@ -103,6 +103,8 @@ public class Producer {
 			isEvenLayer = !isEvenLayer;
 		}
 		
+		reprap.moveTo(0, 0, reprap.getZ());
+		
 		reprap.terminate();
 
 	}
