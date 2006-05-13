@@ -32,6 +32,7 @@ public class Producer {
 
         // Fallback defaults
 		int extrusionSpeed = 200;
+		int extrusionTemp = 40;
 		int movementSpeed = 230;
 		
 		try {
@@ -40,6 +41,7 @@ public class Producer {
 			props.load(url.openStream());
 		
 			extrusionSpeed = Integer.parseInt(props.getProperty("ExtrusionSpeed"));
+			extrusionTemp = Integer.parseInt(props.getProperty("ExtrusionTemp"));
 			movementSpeed = Integer.parseInt(props.getProperty("MovementSpeed"));
 		} catch (Exception ex) {
 			System.out.println("Warning: could not load ExtrusionSpeed/MovementSpeed, using defaults");
@@ -48,9 +50,9 @@ public class Producer {
 		
 		reprap.initialise();
 		reprap.selectMaterial(0);
-		reprap.setSpeed(230);
-		reprap.setExtruderSpeed(180);
-		reprap.setTemperature(40);
+		reprap.setSpeed(movementSpeed);
+		reprap.setExtruderSpeed(extrusionSpeed);
+		reprap.setTemperature(extrusionTemp);
 
 		// This should now split off layers one at a time
 		// and pass them to the LayerProducer.  At the moment,

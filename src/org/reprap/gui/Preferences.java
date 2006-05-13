@@ -38,6 +38,8 @@ public class Preferences extends javax.swing.JDialog {
 	private JLabel jLabel2;
 	private JLabel jLabel4;
 	private JLabel jLabel8;
+	private JTextField extrusionTemp;
+	private JLabel jLabel18;
 	private JTextField extrusionSpeed;
 	private JLabel jLabel17;
 	private JLabel jLabel16;
@@ -104,6 +106,7 @@ public class Preferences extends javax.swing.JDialog {
 			extruderRz1.setText(props.getProperty("Extruder1Rz"));
 			
 			extrusionSpeed.setText(props.getProperty("ExtrusionSpeed"));
+			extrusionTemp.setText(props.getProperty("ExtrusionTemp"));
 			movementSpeed.setText(props.getProperty("MovementSpeed"));
 			
 			String geometryName = props.getProperty("Geometry");
@@ -142,6 +145,7 @@ public class Preferences extends javax.swing.JDialog {
 			props.setProperty("Extruder1Rz", extruderRz1.getText());
 			
 			props.setProperty("ExtrusionSpeed", extrusionSpeed.getText());
+			props.setProperty("ExtrusionTemp", extrusionTemp.getText());
 			props.setProperty("MovementSpeed", movementSpeed.getText());
 
 			extruderAddress1.setText(props.getProperty("Extruder1Address"));
@@ -386,15 +390,26 @@ public class Preferences extends javax.swing.JDialog {
 						extruderRz1.setBounds(210, 28, 63, 28);
 					}
 					{
+						jLabel18 = new JLabel();
+						jPanelExtruders.add(jLabel18);
+						jLabel18.setText("Temperature");
+						jLabel18.setBounds(14, 130, 84, 28);
+					}
+					{
+						extrusionTemp = new JTextField();
+						jPanelExtruders.add(extrusionTemp);
+						extrusionTemp.setBounds(105, 133, 70, 21);
+					}
+					{
 						jLabel17 = new JLabel();
 						jPanelExtruders.add(jLabel17);
 						jLabel17.setText("Speed");
-						jLabel17.setBounds(14, 165, 84, 28);
+						jLabel17.setBounds(14, 158, 84, 28);
 					}
 					{
 						extrusionSpeed = new JTextField();
 						jPanelExtruders.add(extrusionSpeed);
-						extrusionSpeed.setBounds(105, 168, 70, 21);
+						extrusionSpeed.setBounds(105, 161, 70, 21);
 					}
 				}
 			}
