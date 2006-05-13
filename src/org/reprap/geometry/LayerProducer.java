@@ -21,7 +21,6 @@ import org.reprap.geometry.polygons.RrPolygon;
 import org.reprap.geometry.polygons.RrPolygonList;
 
 public class LayerProducer {
-	private static final double extrusionWidth = 0.3;  ///< Extrusion thickness in millimeters
 	private static int gapMaterial = 0;
 	private static int solidMaterial = 1;
 	
@@ -46,7 +45,7 @@ public class LayerProducer {
 
 		borderPolygons = list;
 		
-		RrPolygon hatched = list.hatch(hatchDirection, extrusionWidth,
+		RrPolygon hatched = list.hatch(hatchDirection, printer.getExtrusionSize(),
 				gapMaterial, solidMaterial);
 
 		hatchedPolygons = new RrPolygonList();

@@ -14,8 +14,6 @@ import org.reprap.machines.MachineFactory;
 
 public class Producer {
 	
-	static private final double layerSpacing = 0.3; ///< Vertical spacing in mm
-
 	protected Printer reprap;
 	protected RrLine oddHatchDirection;
 	protected RrLine evenHatchDirection;
@@ -59,7 +57,7 @@ public class Producer {
 		// we just construct a simple test layer and produce that.
 
 		boolean isEvenLayer = true;
-		for(double z = 0.0; z < 5.0; z += layerSpacing) {
+		for(double z = 0.0; z < 5.0; z += reprap.getExtrusionSize()) {
 			reprap.moveTo(reprap.getX(), reprap.getY(), z);
 			
 			if (reprap.isCancelled())

@@ -39,8 +39,10 @@ public class Reprap implements CartesianPrinter {
 	
 	double currentX, currentY, currentZ;
 	
-	private int speed = 236;
-	private int speedExtruder = 200;
+	private int speed = 236;  			// Initial default speed
+	private int speedExtruder = 200;    // Initial default extruder speed
+	
+	private double extrusionSize;
 	
 	private GenericExtruder extruder;  ///< Only one supported for now
 
@@ -74,15 +76,24 @@ public class Reprap implements CartesianPrinter {
 				Integer.parseInt(config.getProperty("Extruder1Beta")),
 				Integer.parseInt(config.getProperty("Extruder1Rz")));
 
+		try {
+			extrusionSize = Double.parseDouble(config.getProperty("ExtrusionSize"));
+		} catch (Exception ex) {
+			extrusionSize = 1.0;
+		}
+		
 		layer = new LinePrinter(motorX, motorY, extruder);
 
 		// TODO This should be from calibration
-		// Assume 400 steps per turn, 1.5mm travel per turn
-		scaleX = scaleY = scaleZ = 400.0 / 1.5;
-		if (config.getProperty("Axis1Scale")!=null)
-			scaleX=scaleY=scaleZ=Double.parseDouble(config.getProperty("Axis1Scale"));
-		
-		
+		try {
+			scaleX = Double.parseDouble(config.getProperty("Axis1Scale"));
+			scaleY = Double.parseDouble(config.getProperty("Axis2Scale"));
+			scaleZ = Double.parseDouble(config.getProperty("Axis3Scale"));
+		} catch (Exception ex) {
+			System.out.println("Warning: axis scaling not loaded, reverting to defaults");
+			// Assume 400 steps per turn, 1.5mm travel per turn
+			scaleX = scaleY = scaleZ = 400.0 / 1.5;
+		}
 		
 		currentX = convertToPositionZ(motorX.getPosition());
 		currentY = convertToPositionZ(motorY.getPosition());
@@ -159,7 +170,7 @@ public class Reprap implements CartesianPrinter {
 		if (isCancelled()) return;
 
 		if (previewer != null)
-			previewer.setMaterial(materialIndex);
+			previewer.setMaterial(materialIndex, extrusionSize);
 
 		if (isCancelled()) return;
 		// TODO Select new material
@@ -312,6 +323,10 @@ public class Reprap implements CartesianPrinter {
 	
 	public double segmentLength(double x, double y) {
 		return Math.sqrt(x*x + y*y);
+	}
+	
+	public double getExtrusionSize() {
+		return extrusionSize;
 	}
 }
 

@@ -20,6 +20,8 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	private BranchGroup extrusions;
 
 	private StatusMessage statusWindow;
+	
+	private double extrusionSize = 1.0;
 		
 	/**
 	 * Constructor
@@ -111,8 +113,9 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	/**
 	 * Set the current extrusion material (or equivalently, the extruder head)
 	 */
-	public void setMaterial(int index) {
+	public void setMaterial(int index, double extrusionSize) {
 		material = index;
+		this.extrusionSize = extrusionSize;
 	}
 
 	/**
@@ -128,7 +131,6 @@ public class PreviewPanel extends Panel3D implements Previewer {
 		
 		if (isCancelled()) return;
 		
-		final double extrusionSize = 0.3;
 		BranchGroup group = new BranchGroup();
 		group.setCapability(BranchGroup.ALLOW_DETACH);
 		addBlock(group, extrusion_app,

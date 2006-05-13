@@ -14,12 +14,21 @@ public class NullCartesianMachine implements CartesianPrinter {
 	double totalDistanceMoved = 0.0;
 	double totalDistanceExtruded = 0.0;
 	
+	double extrusionSize;
+	
 	double currentX, currentY, currentZ;
 	
 	public NullCartesianMachine(Properties config) {
 		currentX = 0;
 		currentY = 0;
 		currentZ = 0;
+		
+		try {
+			extrusionSize = Double.parseDouble(config.getProperty("ExtrusionSize"));
+		} catch (Exception ex) {
+			extrusionSize = 1.0;
+		}
+
 	}
 	
 	public void calibrate() {
@@ -61,7 +70,7 @@ public class NullCartesianMachine implements CartesianPrinter {
 	public void selectMaterial(int materialIndex) {
 		if (isCancelled()) return;
 		if (previewer != null)
-			previewer.setMaterial(materialIndex);
+			previewer.setMaterial(materialIndex, extrusionSize);
 	}
 
 	public void terminate() throws IOException {
@@ -130,5 +139,12 @@ public class NullCartesianMachine implements CartesianPrinter {
 
 	public double segmentLength(double x, double y) {
 		return Math.sqrt(x*x + y*y);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#getExtrusionSize()
+	 */
+	public double getExtrusionSize() {
+		return extrusionSize;
 	}
 }

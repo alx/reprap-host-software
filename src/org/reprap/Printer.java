@@ -40,6 +40,12 @@ public interface Printer {
 	public double getZ();
 	
 	/**
+	 * Returns the extrusion size for the currently selected material
+	 * @return the size in mm
+	 */
+	public double getExtrusionSize();
+	
+	/**
 	 * Get the total distance moved (whether extruding or not)
 	 * @return a double representing the distance travelled (mm)
 	 */
