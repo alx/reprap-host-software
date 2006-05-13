@@ -38,6 +38,10 @@ public class Preferences extends javax.swing.JDialog {
 	private JLabel jLabel2;
 	private JLabel jLabel4;
 	private JLabel jLabel8;
+	private JTextField extrusionSpeed;
+	private JLabel jLabel17;
+	private JLabel jLabel16;
+	private JTextField movementSpeed;
 	private JTextField extruderRz1;
 	private JTextField extruderAddress1;
 	private JTextField extruderBeta1;
@@ -99,6 +103,9 @@ public class Preferences extends javax.swing.JDialog {
 			extruderBeta1.setText(props.getProperty("Extruder1Beta"));
 			extruderRz1.setText(props.getProperty("Extruder1Rz"));
 			
+			extrusionSpeed.setText(props.getProperty("ExtrusionSpeed"));
+			movementSpeed.setText(props.getProperty("MovementSpeed"));
+			
 			String geometryName = props.getProperty("Geometry");
 			for(int i = 0; i < geometries.length; i++)
 				if (geometries[i][0].compareToIgnoreCase(geometryName) == 0)
@@ -133,6 +140,9 @@ public class Preferences extends javax.swing.JDialog {
 			props.setProperty("Extruder1Address", extruderAddress1.getText());
 			props.setProperty("Extruder1Beta", extruderBeta1.getText());
 			props.setProperty("Extruder1Rz", extruderRz1.getText());
+			
+			props.setProperty("ExtrusionSpeed", extrusionSpeed.getText());
+			props.setProperty("MovementSpeed", movementSpeed.getText());
 
 			extruderAddress1.setText(props.getProperty("Extruder1Address"));
 			extruderBeta1.setText(props.getProperty("Extruder1Beta"));
@@ -244,8 +254,14 @@ public class Preferences extends javax.swing.JDialog {
 					{
 						jLabel5 = new JLabel();
 						jPanelMotors.add(jLabel5);
-						jLabel5.setText("Motor 3 (Z)");
-						jLabel5.setBounds(14, 137, 84, 28);
+						jLabel5.setText("Speed");
+						jLabel5.setBounds(14, 165, 84, 28);
+					}
+					{
+						jLabel16 = new JLabel();
+						jPanelMotors.add(jLabel16);
+						jLabel16.setText("Motor 3 (Z)");
+						jLabel16.setBounds(14, 137, 84, 28);
 					}
 					{
 						jLabel6 = new JLabel();
@@ -308,6 +324,11 @@ public class Preferences extends javax.swing.JDialog {
 						jLabel10.setText("%");
 						jLabel10.setBounds(224, 112, 21, 21);
 					}
+					{
+						movementSpeed = new JTextField();
+						jPanelMotors.add(movementSpeed);
+						movementSpeed.setBounds(112, 168, 105, 21);
+					}
 				}
 				{
 					jPanelExtruders = new JPanel();
@@ -363,6 +384,17 @@ public class Preferences extends javax.swing.JDialog {
 						extruderRz1 = new JTextField();
 						jPanelExtruders.add(extruderRz1);
 						extruderRz1.setBounds(210, 28, 63, 28);
+					}
+					{
+						jLabel17 = new JLabel();
+						jPanelExtruders.add(jLabel17);
+						jLabel17.setText("Speed");
+						jLabel17.setBounds(14, 165, 84, 28);
+					}
+					{
+						extrusionSpeed = new JTextField();
+						jPanelExtruders.add(extrusionSpeed);
+						extrusionSpeed.setBounds(105, 168, 70, 21);
 					}
 				}
 			}
