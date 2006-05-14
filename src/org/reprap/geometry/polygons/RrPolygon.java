@@ -441,8 +441,8 @@ public class RrPolygon
 	}
 	
 	/**
-	 * Take a list of parameter values and a line, sort
-	 * them, and turn them into a polygon.  Use the trace
+	 * Take a sorted list of parameter values and a line, and 
+	 * turn them into a polygon.  Use the trace
 	 * value to flag the start of solid lines.
 	 * @param t
 	 * @param line
@@ -453,7 +453,6 @@ public class RrPolygon
 	public static RrPolygon rr_t_polygon(List t, RrLine line, int fg, int fs)
 	{
 		RrPolygon r = new RrPolygon();
-		java.util.Collections.sort(t);
 		int leng = t.size();
 		for(int i = 0; i < leng-1; i = i+2)
 		{

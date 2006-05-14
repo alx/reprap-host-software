@@ -287,7 +287,10 @@ public class RrPolygonList
 			hatcher = hatcher.neg();
 			List t_vals = pl_intersect(hatcher);
 			if (t_vals.size() > 0)
+			{
+				java.util.Collections.sort(t_vals);
 				r.append(RrPolygon.rr_t_polygon(t_vals, hatcher, fg, fs));
+			}
 			hatcher = hatcher.add(orth);
 			g = g + gap;
 		}

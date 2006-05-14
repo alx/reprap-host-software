@@ -43,18 +43,16 @@ public class TestMain
 		new RrGraphics(c, false);
 	}
 	
-	public static void main(String[] args)
+	public static RrCSGPolygon testPol()
 	{
 		Rr2Point p = new Rr2Point(0.1, 0.15);
 		Rr2Point q = new Rr2Point(0.2, 0.85);
-		Rr2Point r = new Rr2Point(1, 0.89);
+		Rr2Point r = new Rr2Point(0.97, 0.89);
 		Rr2Point s = new Rr2Point(0.95, 0.03);
 		
 		Rr2Point pp = new Rr2Point(0.35, 0.62);
 		Rr2Point qq = new Rr2Point(0.55, 0.95);
-		Rr2Point rr = new Rr2Point(0.45, 0.5);
-		Rr2Point ss = new Rr2Point(0.4, 0.3);    
-		RrLine x = new RrLine(new Rr2Point(-1, -1), new Rr2Point(1, 1));
+		Rr2Point rr = new Rr2Point(0.45, 0.5);    
 		
 		RrHalfPlane ph = new RrHalfPlane(p, q);
 		RrHalfPlane qh = new RrHalfPlane(q, r);
@@ -73,12 +71,10 @@ public class TestMain
 		pc = RrCSG.intersection(pc, qc);
 		rc = RrCSG.intersection(sc, rc);		
 		pc = RrCSG.intersection(pc, rc);
-		//pc = RrCSG.union(pc, rc); // !!
 		
 		RrCSG ppc = new RrCSG(pph);
 		RrCSG qqc = new RrCSG(qqh);
 		RrCSG rrc = new RrCSG(rrh);
-		
 		
 		ppc = RrCSG.intersection(ppc, qqc);
 		ppc = RrCSG.intersection(ppc, rrc);
@@ -87,30 +83,38 @@ public class TestMain
 		pc = ppc.offset(-0.15);
 		ppc = RrCSG.difference(ppc, pc);
 		
-		//ppc = RrCSG.union(rc, ppc);
-		//ppc = RrCSG.union(new RrCSG(ppc), ppc);
-		//System.out.println(ppc.toString());
-		ppc = ppc.simplify(1.0e-6);
-		//System.out.println(ppc.toString());
-		//ppc = ppc.regularise();
-		//System.out.println(ppc.toString());
-		RrCSGPolygon cp = new RrCSGPolygon(ppc, new 
-				RrBox(new Rr2Point(0,0), new Rr2Point(1,1)));
+		return new RrCSGPolygon(ppc, new 
+				RrBox(new Rr2Point(0,0), new Rr2Point(1.1,1.1)));
+	}
+	
+	public static void main(String[] args)
+	{
+		RrCSGPolygon cp = testPol();
 		
 		cp.divide(1.0e-6, 1.0);
-		System.out.println(cp.toString());
-		new RrGraphics(cp, true);
+		//System.out.println(cp.toString());
+		RrGraphics g = new RrGraphics(new 
+				RrBox(new Rr2Point(0,0), new Rr2Point(1.1,1.1)), true);
 		
-//		RrPolygon  h = cp.hatch_join(x, 0.005, 1, 3);
-//		RrPolygonList hp = new RrPolygonList();
-//		RrPolygon a = new RrPolygon();
-//		a.append(p, 5);
-//		a.append(q, 5);
-//		a.append(r, 5);
-//		a.append(s, 5);
-//		hp.append(h);
-//		//hp.append(a);
-//		new RrGraphics(hp, false);  
+		g.addCSG(cp);
 		
+//		Rr2Point p = new Rr2Point(0.1, 0.15);
+//		Rr2Point q = new Rr2Point(0.2, 0.85);
+//		Rr2Point r = new Rr2Point(0.97, 0.89);
+//		Rr2Point s = new Rr2Point(0.95, 0.03);
+//		Rr2Point d = Rr2Point.sub(q, p);
+//		Rr2Point p2 = Rr2Point.add(p, Rr2Point.mul(d, 0.47));
+//		//Rr2Point p3 = Rr2Point.add(p, Rr2Point.mul(d, 1));
+//		Rr2Point p3 = Rr2Point.add(Rr2Point.mul(Rr2Point.sub(r, q), 0.07), q);
+//		d = Rr2Point.add(d, new Rr2Point(0.0032, 0.0017));
+//		
+//		RrPolygon pg = cp.meg(p2, p3, d, 1);
+		
+		RrLine x = new RrLine(new Rr2Point(-1, -1), new Rr2Point(1, 1));
+		RrPolygon  h = cp.hatch_join(x, 0.005, 1, 3);
+		RrPolygonList hp = new RrPolygonList();
+		hp.append(h);
+
+		g.addPol(hp);  
 	}
 }

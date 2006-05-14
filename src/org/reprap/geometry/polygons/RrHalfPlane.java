@@ -283,5 +283,4 @@ public class RrHalfPlane
 				return new RrInterval();  
 		}
 	}
-	
 }

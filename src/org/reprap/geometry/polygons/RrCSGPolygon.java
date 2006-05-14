@@ -71,24 +71,6 @@ class RrHSearch
 	public double dsq;
 }
 
-/**
- * Small class for containing results of edge direction searches
- */
-class RrDSearch
-{
-	public int onCount;
-	public RrCSG leaf;
-	public Rr2Point whichWay;
-	public double value;
-	
-	public RrDSearch(int i, RrCSG c, Rr2Point p, double v)
-	{
-		onCount = i;
-		leaf = c;
-		whichWay = p;
-		value = v;
-	}
-}
 
 /**
  * Polygons as CSG combinations of half spaces with recursive quad-tree
@@ -323,135 +305,6 @@ public class RrCSGPolygon
 		return new RrCSGPolygon(csg.offset(d), b);
 	}
 	
-//	 /**
-//	 * Find the nearest direction along the edge hp to direction
-//     * @param hp
-//     * @param direction
-//     * @return vector in the edge and the inner product
-//     */
-//	private double nearest(RrHalfPlane hp, Rr2Point direction)
-//	{	
-//		Rr2Point p = hp.normal().orthogonal();
-//		Rr2Point n = p.neg();
-//		double vp = Rr2Point.mul(p, direction);
-//		double vn = Rr2Point.mul(n, direction);
-//		if(vp > vn)
-//		{
-//			direction.set(p);
-//			return vp;
-//		} else
-//		{
-//			direction.set(n);
-//			return vn;
-//		}
-//	}
-//	
-//	 /**
-//	 * Find the nearest direction from a corner two to direction
-//     * @param two
-//     * @param here
-//     * @param direction
-//     * @return vector in the edge and the edge
-//     */
-//	private RrDSearch nearest(RrCSG two, Rr2Point here, Rr2Point direction)
-//	{
-//		RrDSearch r = null;
-//		if(two.complexity() != 2)
-//		{
-//			System.err.println("nearest(): not a corner!");
-//			return r;
-//		}
-//		Rr2Point p1 = new Rr2Point(direction);
-//		Rr2Point p2 = new Rr2Point(direction);
-//		double v1 = nearest(two.c_1().plane(), p1);
-//		if(Math.abs(two.value(Rr2Point.add(here, p1))) > 
-//			Math.sqrt(resolution_2))
-//		{
-//			v1 = -v1;
-//			p1 = p1.neg();
-//		}
-//		double v2 = nearest(two.c_2().plane(), p2);
-//		if(Math.abs(two.value(Rr2Point.add(here, p2))) > 
-//			Math.sqrt(resolution_2))
-//		{
-//			v2 = -v2;
-//			p2 = p2.neg();
-//		}	
-//		
-//		if(v1 > v2)
-//			r = new RrDSearch(2, two.c_1(), p1, v1);
-//		else
-//			r = new RrDSearch(2, two.c_2(), p2, v2);
-//		
-//		return r;
-//	}
-//	
-//	 /**
-//	 * Decide which way to go...
-//	 * @param onThis
-//     * @param here
-//     * @param direction
-//     * @return the leaf CSG as the result plus the way to go
-//     */
-//    private RrDSearch whichWay(RrCSG onThis, Rr2Point here, 
-//    		Rr2Point direction)
-//    {
-//    	RrDSearch r = null;
-//    	Rr2Point dir = new Rr2Point(direction);
-//    	double v;
-//    	int oc = 0;
-//    	
-//        switch (onThis.complexity())
-//        {
-//        case 0:
-//                System.err.println("whichWay(): leaf quad with 0 complexity!");
-//                return r;
-//
-//        case 1:
-//                v = nearest(onThis.plane(), dir);
-//                if(v*v > resolution_2)
-//                {
-//                        System.err.println("meg(): point not on single surface!");
-//                        return r;
-//                }
-//                r = new RrDSearch(1, onThis, dir, v);
-//                break;
-//
-//        case 2:
-//        		v = onThis.c_1().value(here);
-//        		if(v*v <= resolution_2)
-//        			oc = 1;
-//        		v = onThis.c_2().value(here);
-//        		if(v*v <= resolution_2)
-//        			oc += 2;
-//        		
-//        		switch(oc)
-//        		{
-//        		case 1:
-//        			v = nearest(onThis.c_1().plane(), dir);
-//        			r = new RrDSearch(1, onThis.c_1(), dir, v);
-//        			break;
-//        			
-//        		case 2:
-//        			v = nearest(onThis.c_2().plane(), dir);
-//        			r = new RrDSearch(1, onThis.c_2(), dir, v);
-//        			break;
-//        			
-//        		case 3:
-//        			r = nearest(onThis, here, dir);
-//        			break;
-//        		
-//        		default:
-//        			System.err.println("whichWay(): point not on double surface!");
-//                	return r;
-//        		}
-//                break;
-//        
-//        default:
-//                System.err.println("whichWay(): leaf quad with complexity greater than 2!");
-//        }
-//        return r;
-//    }
     
 	 /**
 	 * Deal with the case where a quad contains a single edge
@@ -468,7 +321,7 @@ public class RrCSGPolygon
     		Rr2Point here, Rr2Point d, Rr2Point st, Rr2Point fin, int flag)
     {
     	if(st != null)
-    		r.append(st, flag);
+    		r.append(st, 0);
     	
     	if(Rr2Point.mul(d, l.direction()) < 0)
     	{
@@ -480,7 +333,10 @@ public class RrCSGPolygon
     	here.set(l.point(i.high() + Math.sqrt(resolution_2)));
     	
     	if(fin != null)
+    	{
     		r.append(fin, flag);
+    		here.set(fin);
+    	}
     }
     
     /**
@@ -540,7 +396,7 @@ public class RrCSGPolygon
     	{
     		if(!Rr2Point.same(qc.vertex, st, resolution_2))
     		{
-    			r.append(st, flag);
+    			r.append(st, 0);
     			before = Rr2Point.same(qc.vertex, l1.point(i1.high()), 
     					resolution_2);
     		}
@@ -568,6 +424,7 @@ public class RrCSGPolygon
     	{
     		if(!Rr2Point.same(qc.vertex, fin, resolution_2))
     			r.append(fin, flag);
+    		here.set(fin);
     	}
     		
     }
@@ -602,12 +459,17 @@ public class RrCSGPolygon
             RrQContents qc;
 
             st = here;
+            int loop = 0;
+            if(Rr2Point.same(here, there, resolution_2))
+            	loop = -1;
+            qh = quad(h);
+            
             do
             {
             	qh = quad(h);
             	qc = new RrQContents(qh);
             	
-            	if(qh == qt)
+            	if(qh == qt && loop >= 0)
             		fin = there;
             	else
             		fin = null;
@@ -633,7 +495,8 @@ public class RrCSGPolygon
             		System.err.println("meg(): count not 1 or 2!");	
             	}
             	st = null;
-            } while (qh != qt);
+            	loop++;
+            } while (qh != qt || loop == 0);
             
             return r;
     }
@@ -712,7 +575,7 @@ public class RrCSGPolygon
 				break;
 				
 			default:
-				System.out.println("pl_intersect_r(): complicated quad ignored. Complexity: " +
+				System.err.println("pl_intersect_r(): complicated quad ignored. Complexity: " +
 						Integer.toString(csg.complexity()));
 			}
 		}
@@ -720,18 +583,55 @@ public class RrCSGPolygon
 		return t;
 	}
 	
+	/**
+	 * Take a sorted list of parameter values and a line, and
+	 * make sure they alternate solid/void/solid etc.  Insert
+	 * dummy parameter values if need be to ensure this. 
+	 * @param t
+	 * @param l0
+	 */
+	private void solidSet(List t, RrLine l0)
+	{
+		
+		double half, v;
+		Rr2Point h;
+		int i = 0;
+		boolean odd = true;
+		while(i < t.size()-1)
+		{
+			half = 0.5*(((Double)(t.get(i))).doubleValue() + 
+				((Double)(t.get(i+1))).doubleValue());
+			h = l0.point(half);
+			v = value(h);
+			if(odd)
+			{
+				if(v > 0)
+					t.add(i, t.get(i));
+			} else
+			{
+				if(v <= 0)
+					t.add(i, t.get(i));
+			}
+			odd = !odd;
+			i++;
+		}
+		if (t.size()%2 != 0)
+			t.remove(t.size() - 1);
+	}
+	
 	public List pl_intersect(RrLine l0, boolean big_wipe)
 	{
 		if(q1 == null)
 		{
-			System.out.println("pl_intersect(): Ray intersection with undivided polygon!  Making it up...");
+			System.err.println("pl_intersect(): Ray intersection with undivided polygon!  Making it up...");
 			double r2 = box.d_2()*1.0e-8;
 			divide(r2, 1);
 		}
 		List t = new ArrayList();	
 		t = pl_intersect_r(l0, t, big_wipe);
-		if ((t.size()%2 != 0) && big_wipe)
-			System.err.println("pl_intersect(): odd winding number!");
+		java.util.Collections.sort(t);
+		if(big_wipe)
+			solidSet(t, l0);
 		return t;
 	}
 	
@@ -776,7 +676,7 @@ public class RrCSGPolygon
 			
 		default:
 			System.err.println("RrPolygon hatch(): The atan2 function doesn't seem to work...");
-		org = big.sw();
+			org = big.sw();
 		}
 		
 		double g = 0;

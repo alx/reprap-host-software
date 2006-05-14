@@ -61,7 +61,8 @@ import javax.swing.*;
 
 public class RrGraphics 
 {
-	private final int frameWidth = 600; // Pixels
+	private final int frame = 600; // Pixels
+	private int frameWidth;
 	private int frameHeight;
 	private RrPolygonList p_list;
 	private RrCSGPolygon csg_p;
@@ -70,6 +71,42 @@ public class RrGraphics
 	private Rr2Point pos;
 	private Graphics2D g2d;
 	private boolean plot_box;
+	
+	private void setScales(RrBox b)
+	{
+		RrBox big = b.scale(1.1);
+		
+		double width = big.x().length();
+		double height = big.y().length();
+		if(width > height)
+		{
+			frameWidth = frame;
+			frameHeight = (int)(0.5 + (frameWidth*height)/width);
+		} else
+		{
+			frameHeight = frame;
+			frameWidth = (int)(0.5 + (frameHeight*width)/height);
+		}
+		double xs = (double)frameWidth/width;
+		double ys = (double)frameHeight/height;
+		
+		if (xs < ys)
+			scale = xs;
+		else
+			scale = ys;
+		
+		// God alone knows why the 5 and 10 are needed next...
+		
+		p_0 = new Rr2Point((frameWidth - (width + 2*big.x().low())*scale)*0.5 - 5,
+				10 + (frameHeight - (height + 2*big.y().low())*scale)*0.5);
+		
+		pos = new Rr2Point(width*0.5, height*0.5);
+		
+		JFrame frame = new JFrame();
+		frame.setSize(frameWidth, frameHeight);
+		frame.getContentPane().add(new MyComponent());
+		frame.setVisible(true);
+	}
 	
 	// Constructor for point-list polygon
 	
@@ -85,29 +122,7 @@ public class RrGraphics
 		csg_p = null;
 		plot_box = pb;
 		
-		RrBox big = pl.box.scale(1.1);
-		
-		double width = big.x().length();
-		double height = big.y().length();
-		frameHeight = (int)(0.5 + (frameWidth*height)/width);
-		double xs = (double)frameWidth/width;
-		double ys = (double)frameHeight/height;
-		
-		if (xs < ys)
-			scale = xs;
-		else
-			scale = ys;
-		p_0 = new Rr2Point((frameWidth - (width + 2*big.x().low())*scale)*0.5,
-				(frameHeight - (height + 2*big.y().low())*scale)*0.5);
-		
-		pos = new Rr2Point(width*0.5, height*0.5);
-		
-		// Display the frame
-		
-		JFrame frame = new JFrame();
-		frame.setSize(frameWidth, frameHeight);
-		frame.getContentPane().add(new MyComponent());
-		frame.setVisible(true);
+		setScales(pl.box);
 	}
 	
 	// Constructor for CSG polygon
@@ -118,29 +133,28 @@ public class RrGraphics
 		csg_p = cp;
 		plot_box = pb;
 		
-		RrBox big = csg_p.box().scale(1.1);
+		setScales(csg_p.box());
+	}
+	
+	// Constructor for just a box - add stuff later
+	
+	public RrGraphics(RrBox b, boolean pb) 
+	{
+		p_list = null;
+		csg_p = null;
+		plot_box = pb;
 		
-		double width = big.x().length();
-		double height = big.y().length();
-		frameHeight = (int)(0.5 + (frameWidth*height)/width);
-		double xs = (double)frameWidth/width;
-		double ys = (double)frameHeight/height;
-		
-		if (xs < ys)
-			scale = xs;
-		else
-			scale = ys;
-		p_0 = new Rr2Point((frameWidth - (width + 2*big.x().low())*scale)*0.5,
-				(frameHeight - (height + 2*big.y().low())*scale)*0.5);
-		
-		pos = new Rr2Point(width*0.5, height*0.5);
-		
-		// Display the frame
-		
-		JFrame frame = new JFrame();
-		frame.setSize(frameWidth, frameHeight);
-		frame.getContentPane().add(new MyComponent());
-		frame.setVisible(true);
+		setScales(b);
+	}
+	
+	public void addPol(RrPolygonList pl)
+	{
+		p_list = pl;
+	}
+	
+	public void addCSG(RrCSGPolygon cp)
+	{
+		csg_p = cp;
 	}
 	
 	// Real-world coordinates to pixels
@@ -194,6 +208,13 @@ public class RrGraphics
 			g2d.setColor(Color.blue);
 			break;
 			
+		case 5:
+			g2d.setColor(Color.magenta);
+			break;
+			
+		case 6:
+			g2d.setColor(Color.pink);
+			
 		default:
 			g2d.setColor(Color.orange);
 		break;
@@ -205,7 +226,6 @@ public class RrGraphics
 	
 	private void plot(RrBox b)
 	{
-		colour(4);
 		move(b.sw());
 		plot(b.nw());
 		plot(b.ne());
@@ -218,7 +238,10 @@ public class RrGraphics
 	private void plot(RrPolygon p)
 	{
 		if(plot_box)
+		{
+			colour(5);
 			plot(p.box);
+		}
 		
 		int leng = p.size();
 		for(int j = 0; j <= leng; j++)
@@ -248,9 +271,12 @@ public class RrGraphics
 	private void plotLeaf(RrCSGPolygon q)
 	{
 		if(plot_box)
+		{
+			colour(4);
 			plot(q.box());
+		}
 		
-		colour(1);
+		colour(2);
 		
 		RrQContents qc = new RrQContents(q);
 		
@@ -281,9 +307,9 @@ public class RrGraphics
 	
 	private void plot()
 	{
-		if(p_list == null)
+		if(csg_p != null)
 			plot(csg_p);
-		else
+		if(p_list != null)
 		{
 			int leng = p_list.size();
 			for(int i = 0; i < leng; i++)
