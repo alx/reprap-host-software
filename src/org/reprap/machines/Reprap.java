@@ -43,6 +43,7 @@ public class Reprap implements CartesianPrinter {
 	private int speedExtruder = 200;    // Initial default extruder speed
 	
 	private double extrusionSize;
+	private double extrusionHeight;
 	
 	private GenericExtruder extruder;  ///< Only one supported for now
 
@@ -78,8 +79,9 @@ public class Reprap implements CartesianPrinter {
 
 		try {
 			extrusionSize = Double.parseDouble(config.getProperty("ExtrusionSize"));
+			extrusionHeight = Double.parseDouble(config.getProperty("ExtrusionHeight"));
 		} catch (Exception ex) {
-			extrusionSize = 1.0;
+			extrusionSize = extrusionHeight = 1.0;
 		}
 		
 		layer = new LinePrinter(motorX, motorY, extruder);
@@ -177,7 +179,7 @@ public class Reprap implements CartesianPrinter {
 		if (isCancelled()) return;
 
 		if (previewer != null)
-			previewer.setMaterial(materialIndex, extrusionSize);
+			previewer.setMaterial(materialIndex, extrusionSize, extrusionHeight);
 
 		if (isCancelled()) return;
 		// TODO Select new material
@@ -334,6 +336,10 @@ public class Reprap implements CartesianPrinter {
 	
 	public double getExtrusionSize() {
 		return extrusionSize;
+	}
+
+	public double getExtrusionHeight() {
+		return extrusionHeight;
 	}
 }
 

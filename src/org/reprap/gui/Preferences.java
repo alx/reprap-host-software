@@ -46,6 +46,8 @@ public class Preferences extends javax.swing.JDialog {
 	private JLabel jLabel20;
 	private JLabel jLabel19;
 	private JTextField extrusionSize;
+	private JLabel jLabel23;
+	private JTextField extrusionHeight;
 	private JPanel jPanelProduction;
 	private JTextField extrusionTemp;
 	private JLabel jLabel18;
@@ -120,6 +122,7 @@ public class Preferences extends javax.swing.JDialog {
 			extrusionSpeed.setText(props.getProperty("ExtrusionSpeed"));
 			extrusionTemp.setText(props.getProperty("ExtrusionTemp"));
 			extrusionSize.setText(props.getProperty("ExtrusionSize"));
+			extrusionHeight.setText(props.getProperty("ExtrusionHeight"));
 			movementSpeed.setText(props.getProperty("MovementSpeed"));
 			
 			String geometryName = props.getProperty("Geometry");
@@ -164,6 +167,7 @@ public class Preferences extends javax.swing.JDialog {
 			props.setProperty("ExtrusionSpeed", extrusionSpeed.getText());
 			props.setProperty("ExtrusionTemp", extrusionTemp.getText());
 			props.setProperty("ExtrusionSize", extrusionSize.getText());
+			props.setProperty("ExtrusionHeight", extrusionHeight.getText());
 			props.setProperty("MovementSpeed", movementSpeed.getText());
 
 			extruderAddress1.setText(props.getProperty("Extruder1Address"));
@@ -192,7 +196,7 @@ public class Preferences extends javax.swing.JDialog {
 				jButtonOK = new JButton();
 				getContentPane().add(jButtonOK);
 				jButtonOK.setText("OK");
-				jButtonOK.setBounds(308, 238, 77, 28);
+				jButtonOK.setBounds(357, 238, 77, 28);
 				jButtonOK.addMouseListener(new MouseAdapter() {
 					public void mouseClicked(MouseEvent evt) {
 						jButtonOKMouseClicked(evt);
@@ -203,7 +207,7 @@ public class Preferences extends javax.swing.JDialog {
 				jButtonCancel = new JButton();
 				getContentPane().add(jButtonCancel);
 				jButtonCancel.setText("Cancel");
-				jButtonCancel.setBounds(217, 238, 77, 28);
+				jButtonCancel.setBounds(266, 238, 77, 28);
 				jButtonCancel.addMouseListener(new MouseAdapter() {
 					public void mouseClicked(MouseEvent evt) {
 						jButtonCancelMouseClicked(evt);
@@ -213,7 +217,7 @@ public class Preferences extends javax.swing.JDialog {
 			{
 				jTabbedPane1 = new JTabbedPane();
 				getContentPane().add(jTabbedPane1);
-				jTabbedPane1.setBounds(7, 7, 378, 224);
+				jTabbedPane1.setBounds(7, 7, 427, 224);
 				{
 					jPanelGeneral = new JPanel();
 					jTabbedPane1.addTab("General", null, jPanelGeneral, null);
@@ -375,12 +379,11 @@ public class Preferences extends javax.swing.JDialog {
 				}
 				{
 					jPanelExtruders = new JPanel();
-					jTabbedPane1.addTab(
-						"Extruders",
-						null,
-						jPanelExtruders,
-						null);
+					jTabbedPane1.addTab("Extruders", null, jPanelExtruders, null);
 					jPanelExtruders.setLayout(null);
+					jPanelExtruders.setPreferredSize(new java.awt.Dimension(
+						420,
+						196));
 					{
 						jLabel11 = new JLabel();
 						jPanelExtruders.add(jLabel11);
@@ -431,13 +434,13 @@ public class Preferences extends javax.swing.JDialog {
 					{
 						jLabel19 = new JLabel();
 						jPanelExtruders.add(jLabel19);
-						jLabel19.setText("Nozzle size");
-						jLabel19.setBounds(14, 102, 84, 28);
+						jLabel19.setText("Extrusion size");
+						jLabel19.setBounds(14, 105, 105, 28);
 					}
 					{
 						extrusionSize = new JTextField();
 						jPanelExtruders.add(extrusionSize);
-						extrusionSize.setBounds(105, 105, 70, 21);
+						extrusionSize.setBounds(119, 105, 70, 21);
 					}
 					{
 						jLabel18 = new JLabel();
@@ -446,9 +449,14 @@ public class Preferences extends javax.swing.JDialog {
 						jLabel18.setBounds(14, 130, 84, 28);
 					}
 					{
+						extrusionHeight = new JTextField();
+						jPanelExtruders.add(extrusionHeight);
+						extrusionHeight.setBounds(245, 105, 70, 21);
+					}
+					{
 						extrusionTemp = new JTextField();
 						jPanelExtruders.add(extrusionTemp);
-						extrusionTemp.setBounds(105, 133, 70, 21);
+						extrusionTemp.setBounds(119, 133, 70, 21);
 					}
 					{
 						jLabel17 = new JLabel();
@@ -459,28 +467,30 @@ public class Preferences extends javax.swing.JDialog {
 					{
 						extrusionSpeed = new JTextField();
 						jPanelExtruders.add(extrusionSpeed);
-						extrusionSpeed.setBounds(105, 161, 70, 21);
+						extrusionSpeed.setBounds(119, 161, 70, 21);
 					}
 					{
 						jLabel20 = new JLabel();
 						jPanelExtruders.add(jLabel20);
-						jLabel20.setText("mm");
-						jLabel20.setBounds(182, 105, 63, 21);
+						jLabel20.setText("mm high");
+						jLabel20.setBounds(322, 105, 63, 21);
 					}
 					{
 						jLabel21 = new JLabel();
 						jPanelExtruders.add(jLabel21);
 						jLabel21.setText("C");
-						jLabel21.setBounds(182, 133, 63, 21);
+						jLabel21.setBounds(196, 133, 63, 21);
+					}
+					{
+						jLabel23 = new JLabel();
+						jPanelExtruders.add(jLabel23);
+						jLabel23.setText("mm  by");
+						jLabel23.setBounds(196, 105, 49, 21);
 					}
 				}
 				{
 					jPanelProduction = new JPanel();
-					jTabbedPane1.addTab(
-						"Production",
-						null,
-						jPanelProduction,
-						null);
+					jTabbedPane1.addTab("Production", null, jPanelProduction, null);
 					jPanelProduction.setLayout(null);
 				}
 			}
@@ -488,7 +498,7 @@ public class Preferences extends javax.swing.JDialog {
 				getContentPane().setLayout(null);
 				this.setTitle("RepRap Preferences");
 			}
-			setSize(400, 300);
+			this.setSize(449, 298);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

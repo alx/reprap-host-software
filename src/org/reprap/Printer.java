@@ -46,6 +46,14 @@ public interface Printer {
 	public double getExtrusionSize();
 	
 	/**
+	 * Related to the getExtrusionSize, except this is the height
+	 * of material that forms after any settling has taken place. 
+	 * @return the extrusion height in mm
+	 */
+	public double getExtrusionHeight();
+
+	
+	/**
 	 * Get the total distance moved (whether extruding or not)
 	 * @return a double representing the distance travelled (mm)
 	 */

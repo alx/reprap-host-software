@@ -57,7 +57,7 @@ public class Producer {
 		// we just construct a simple test layer and produce that.
 
 		boolean isEvenLayer = true;
-		for(double z = 0.0; z < 5.0; z += reprap.getExtrusionSize()) {
+		for(double z = 0.0; z < 5.0; z += reprap.getExtrusionHeight()) {
 			reprap.moveTo(reprap.getX(), reprap.getY(), z);
 			
 			if (reprap.isCancelled())

@@ -378,24 +378,24 @@ abstract public class Panel3D extends JPanel {
 	protected void addBlock(BranchGroup root, Appearance appearance,
 			double x1, double y1, double z1,
 			double x2, double y2, double z2,
-			float thickness) {
-		root.addChild(addRectangularSegment(appearance, x1, y1, z1, x2, y2, z2, thickness));
+			float width, float height) {
+		root.addChild(addRectangularSegment(appearance, x1, y1, z1, x2, y2, z2, width, height));
 	}
 
 	protected void addBlock(TransformGroup root, Appearance appearance,
 			double x1, double y1, double z1,
 			double x2, double y2, double z2,
-			float thickness) {
-		root.addChild(addRectangularSegment(appearance, x1, y1, z1, x2, y2, z2, thickness));
+			float width, float height) {
+		root.addChild(addRectangularSegment(appearance, x1, y1, z1, x2, y2, z2, width, height));
 	}
 	
 	protected TransformGroup addRectangularSegment(Appearance appearance,
 			double x1, double y1, double z1,
 			double x2, double y2, double z2,
-			float thickness) {
+			float width, float height) {
 		
-		z1 += thickness / 2.0;
-		z2 += thickness / 2.0;
+		z1 += width / 2.0;
+		z2 += width / 2.0;
 		
 		Point3d p1 = new Point3d(x1, y1, z1);
 		//Point3d p2 = new Point3d(x2, y2, z2);
@@ -403,7 +403,7 @@ abstract public class Panel3D extends JPanel {
 		Vector3d unity = new Vector3d(0, 1, 0);
 		Vector3d v = new Vector3d(x2 - x1, y2 - y1, z2 - z1);
 		
-		Primitive segment = new Box(thickness, (float)v.length() / 2.0f, thickness, appearance);
+		Primitive segment = new Box(width, (float)v.length() / 2.0f, height, appearance);
 		
 		Transform3D transform = new Transform3D();
 		

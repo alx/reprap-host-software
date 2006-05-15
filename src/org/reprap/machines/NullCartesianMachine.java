@@ -14,7 +14,7 @@ public class NullCartesianMachine implements CartesianPrinter {
 	double totalDistanceMoved = 0.0;
 	double totalDistanceExtruded = 0.0;
 	
-	double extrusionSize;
+	double extrusionSize, extrusionHeight;
 	
 	double currentX, currentY, currentZ;
 	
@@ -25,8 +25,10 @@ public class NullCartesianMachine implements CartesianPrinter {
 		
 		try {
 			extrusionSize = Double.parseDouble(config.getProperty("ExtrusionSize"));
+			extrusionHeight = Double.parseDouble(config.getProperty("ExtrusionHeight"));
 		} catch (Exception ex) {
 			extrusionSize = 1.0;
+			extrusionHeight = 1.0;
 		}
 
 	}
@@ -70,7 +72,7 @@ public class NullCartesianMachine implements CartesianPrinter {
 	public void selectMaterial(int materialIndex) {
 		if (isCancelled()) return;
 		if (previewer != null)
-			previewer.setMaterial(materialIndex, extrusionSize);
+			previewer.setMaterial(materialIndex, extrusionSize, extrusionHeight);
 	}
 
 	public void terminate() throws IOException {
@@ -147,4 +149,9 @@ public class NullCartesianMachine implements CartesianPrinter {
 	public double getExtrusionSize() {
 		return extrusionSize;
 	}
+
+	public double getExtrusionHeight() {
+		return extrusionHeight;
+	}
+
 }

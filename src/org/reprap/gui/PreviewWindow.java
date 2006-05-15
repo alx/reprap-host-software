@@ -25,8 +25,8 @@ public class PreviewWindow extends javax.swing.JFrame implements Previewer {
 		}
 	}
 	
-	public void setMaterial(int index, double extrusionSize) {
-		panel.setMaterial(index, extrusionSize);
+	public void setMaterial(int index, double extrusionSize, double extrusionHeight) {
+		panel.setMaterial(index, extrusionSize, extrusionHeight);
 	}
 	
 	public void addSegment(double x1, double y1, double z1,

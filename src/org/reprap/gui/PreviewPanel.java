@@ -22,6 +22,7 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	private StatusMessage statusWindow;
 	
 	private double extrusionSize = 1.0;
+	private double extrusionHeight = 1.0;
 		
 	/**
 	 * Constructor
@@ -113,9 +114,10 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	/**
 	 * Set the current extrusion material (or equivalently, the extruder head)
 	 */
-	public void setMaterial(int index, double extrusionSize) {
+	public void setMaterial(int index, double extrusionSize, double extrusionHeight) {
 		material = index;
 		this.extrusionSize = extrusionSize;
+		this.extrusionHeight = extrusionHeight;
 	}
 
 	/**
@@ -136,7 +138,7 @@ public class PreviewPanel extends Panel3D implements Previewer {
 		addBlock(group, extrusion_app,
 				x1, y1, z1,
 				x2, y2, z2,
-				(float)(extrusionSize * 0.5));
+				(float)(extrusionSize * 0.5), (float)(extrusionHeight * 0.5));
 		extrusions.addChild(group);
 		previousZ = z2;
 	}
