@@ -13,7 +13,7 @@ import org.reprap.ReprapException;
 import org.reprap.geometry.polygons.*;
 
 public class LayerProducer {
-	private static final double resolution = 1.0e-6; // How close (in mm) are two points before they're the same?
+	private static final double resolution = 1.0e-6; // How close (in mm^2) are two points before they're the same?
 	private static int gapMaterial = 0;
 	private static int solidMaterial = 1;
 	

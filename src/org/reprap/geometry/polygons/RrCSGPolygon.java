@@ -86,7 +86,7 @@ public class RrCSGPolygon
 	q4;           ///< SW
 	private double resolution_2;  ///< Squared diagonal of the smallest box to go to
 	private boolean visit1, visit2; /// Used by the edge-generation software.
-	
+	private double sFactor;       /// Swell factor for division
 	/**
 	 * Set one up
 	 * @param p
@@ -103,6 +103,7 @@ public class RrCSGPolygon
 		resolution_2 = box.d_2()*1.0e-8;  // Default - set properly
 		visit1 = false;
 		visit2 = false;
+		sFactor = 1;
 	}
 	
 	/**
@@ -130,7 +131,8 @@ public class RrCSGPolygon
 		}
 
 		visit1 = p.visit1;
-		visit2 = p.visit2;	
+		visit2 = p.visit2;
+		sFactor = p.sFactor;
 	}
 	
 	// get children etc
@@ -142,6 +144,7 @@ public class RrCSGPolygon
 	public RrCSG csg() { return csg; }
 	public RrBox box() { return box; }
 	public double resolution() { return resolution_2; }
+	public double swell() { return sFactor; }
 	
 	
 	/**
@@ -184,6 +187,7 @@ public class RrCSGPolygon
 	public void divide(double res_2, double swell)
 	{
 		resolution_2 = res_2;
+		sFactor = swell;
 		
 		// Anything as simple as a single corner, do nothing
 		
@@ -217,28 +221,28 @@ public class RrCSGPolygon
 		
 		RrBox s = new RrBox(Rr2Point.mul(Rr2Point.add(sw, nw), 0.5), 
 				Rr2Point.mul(Rr2Point.add(nw, ne), 0.5));
-		s = s.scale(swell);
+		s = s.scale(sFactor);
 		q1 = new RrCSGPolygon(csg.prune(s), s);
 		
 		s = new RrBox(cen, ne);
-		s = s.scale(swell);
+		s = s.scale(sFactor);
 		q2 = new RrCSGPolygon(csg.prune(s), s);
 		
 		s = new RrBox(Rr2Point.mul(Rr2Point.add(sw, se), 0.5), 
 				Rr2Point.mul(Rr2Point.add(se, ne), 0.5));
-		s = s.scale(swell);
+		s = s.scale(sFactor);
 		q3 = new RrCSGPolygon(csg.prune(s), s);
 		
 		s = new RrBox(sw, cen);
-		s = s.scale(swell);
+		s = s.scale(sFactor);
 		q4 = new RrCSGPolygon(csg.prune(s), s);
 		
 		// Recursively divide the children
 		
-		q1.divide(resolution_2, swell);
-		q2.divide(resolution_2, swell);
-		q3.divide(resolution_2, swell);
-		q4.divide(resolution_2, swell);
+		q1.divide(resolution_2, sFactor);
+		q2.divide(resolution_2, sFactor);
+		q3.divide(resolution_2, sFactor);
+		q4.divide(resolution_2, sFactor);
 	}
 	
 	/**
@@ -300,15 +304,25 @@ public class RrCSGPolygon
 	
 	/**
 	 * Offset by a distance; grow or shrink the box by the same amount
-	 * NB this assumes an undivided polygon.
+	 * If the old polygon was divided, the new one will be too.
+	 * If we shrink out of existence, a standard null object is returned.
 	 * @param d
 	 * @return
 	 */
 	public RrCSGPolygon offset(double d)
 	{
+		RrBox b;
+		if(-d >= 0.5*box.x().length() || -d >= 0.5*box.y().length())
+		{
+			b = new RrBox(new Rr2Point(0,0), new Rr2Point(1,1));
+			return new RrCSGPolygon(RrCSG.nothing(), b);
+		}
 		Rr2Point p = new Rr2Point(Math.sqrt(2)*d, Math.sqrt(2)*d);
-		//RrBox b = new RrBox( Rr2Point.add(box.ne(), p), Rr2Point.sub(box.sw(), p) );
-		return new RrCSGPolygon(csg.offset(d), box());
+		b = new RrBox( Rr2Point.sub(box.sw(), p), Rr2Point.add(box.ne(), p) );
+		RrCSGPolygon result = new RrCSGPolygon(csg.offset(d), b);
+		if(q1 != null)
+			result.divide(resolution_2, sFactor);
+		return result;
 	}
 	
     
@@ -449,9 +463,11 @@ public class RrCSGPolygon
 	 * Walk round the edges of a polygon from here to there, trying
      * to start roughly in direction.
      * If here and there coincide, then a full circuit is returned.
+     * The MEG algorithm is due to my old chum John Woodwark.
      * @param here
      * @param there
      * @param direction
+     * @param flag
      * @return a polygon as the result
      */
     public RrPolygon meg(Rr2Point here, Rr2Point there, 
@@ -569,6 +585,8 @@ public class RrCSGPolygon
     }
 	 /**
 	 * Find all the polygons represented by a CSG object
+	 * @param fg
+	 * @param fs
      * @return a polygon list as the result
      */
     public RrPolygonList megList(int fg, int fs)
@@ -593,7 +611,8 @@ public class RrCSGPolygon
 	
 	/**
 	 * Intersect a line with a polygon, adding to an existing
-	 * unsorted list of the intersection parameters
+	 * unsorted list of the intersection parameters - recursive
+	 * internal call.
 	 * @param l0
 	 * @param t
 	 * @param big_wipe
@@ -707,6 +726,13 @@ public class RrCSGPolygon
 			t.remove(t.size() - 1);
 	}
 	
+	/**
+	 * Intersect a line with a polygon, giving a list of the 
+	 * intersection parameters.
+	 * @param l0
+	 * @param big_wipe
+	 * @return a sorted list of parameter values.
+	 */
 	public List pl_intersect(RrLine l0, boolean big_wipe)
 	{
 		if(q1 == null)
