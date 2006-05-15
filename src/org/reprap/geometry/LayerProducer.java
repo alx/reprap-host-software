@@ -10,17 +10,10 @@ import java.io.IOException;
 
 import org.reprap.Printer;
 import org.reprap.ReprapException;
-import org.reprap.geometry.polygons.Rr2Point;
-import org.reprap.geometry.polygons.RrBox;
-import org.reprap.geometry.polygons.RrCSG;
-import org.reprap.geometry.polygons.RrCSGOp;
-import org.reprap.geometry.polygons.RrCSGPolygon;
-import org.reprap.geometry.polygons.RrInterval;
-import org.reprap.geometry.polygons.RrLine;
-import org.reprap.geometry.polygons.RrPolygon;
-import org.reprap.geometry.polygons.RrPolygonList;
+import org.reprap.geometry.polygons.*;
 
 public class LayerProducer {
+	private static final double resolution = 1.0e-6; // How close (in mm) are two points before they're the same?
 	private static int gapMaterial = 0;
 	private static int solidMaterial = 1;
 	
@@ -61,6 +54,37 @@ public class LayerProducer {
 		double height = big.y().length();
 	}
 	
+	/**
+	 * @param reprap
+	 * @param list
+	 * @param hatchDirection
+	 */
+	public LayerProducer(Printer printer, RrCSGPolygon csgPol, RrLine hatchDirection) {
+		this.printer = printer;
+		
+		
+		RrCSGPolygon offBorder = csgPol.offset(-0.5*printer.getExtrusionSize());
+		RrCSGPolygon offHatch = csgPol.offset(-1.5*printer.getExtrusionSize());
+		
+		offBorder.divide(resolution, 1);
+		offHatch.divide(resolution, 1);
+				
+		borderPolygons = offBorder.megList(solidMaterial, gapMaterial);
+		
+		hatchedPolygons = new RrPolygonList();
+		hatchedPolygons.append(offHatch.hatch_join(hatchDirection, printer.getExtrusionSize(), 
+				solidMaterial, gapMaterial));
+		
+		//new RrGraphics(p_list, false);
+		
+		csg_p = null;
+		
+		RrBox big = csgPol.box().scale(1.1);
+		
+		double width = big.x().length();
+		double height = big.y().length();
+	}
+	
 	private void plot(Rr2Point a) throws ReprapException, IOException
 	{
 		if (printer.isCancelled()) return;
@@ -84,6 +108,8 @@ public class LayerProducer {
 	private void plot(RrPolygon p) throws ReprapException, IOException
 	{
 		int leng = p.size();
+		if(leng <= 0)
+			return;
 		for(int j = 0; j <= leng; j++)
 		{
 			int i = j%leng;
@@ -117,54 +143,18 @@ public class LayerProducer {
 	 * @throws IOException
 	 * @throws ReprapException
 	 */
-	private void plot(RrCSG c, RrBox b) throws ReprapException, IOException
+	private void plotLeaf(RrCSGPolygon p) throws ReprapException, IOException
 	{
-		switch(c.complexity())
-		{
-		case 0:
-			return;
-			
-			// One half-plane in the box
-			
-		case 1:
-			if(c.plane() == null)
-				System.err.println("plot(RrCSG, RrBox): hp not set.");
-			RrLine ln = new RrLine(c.plane());
-			RrInterval range = RrInterval.big_interval();
-			range = b.wipe(ln, range);
-			if(range.empty()) return;
-			if (printer.isCancelled()) return;
-			plot(ln, range);
-			break;
-			
-			// Two - maybe a corner, or they may not intersect
-			
-		case 2:
-			RrLine ln1 = new RrLine(c.c_1().plane());
-			RrInterval range1 = RrInterval.big_interval();
-			range1 = b.wipe(ln1, range1);
-			RrLine ln2 = new RrLine(c.c_2().plane());
-			RrInterval range2 = RrInterval.big_interval();
-			range2 = b.wipe(ln2, range2);              
-			if(c.operator() == RrCSGOp.INTERSECTION)
-			{
-				range2 = c.c_1().plane().wipe(ln2, range2);
-				range1 = c.c_2().plane().wipe(ln1, range1);
-			} else
-			{
-				range2 = c.c_1().plane().complement().wipe(ln2, range2);
-				range1 = c.c_2().plane().complement().wipe(ln1, range1);                    
-			}
-			
-			if (printer.isCancelled()) return;
-			plot(ln1, range1);
-			if (printer.isCancelled()) return;
-			plot(ln2, range2);
-			break;
-			
-		default:
-			System.err.println("plot(RrCSG, RrBox): complexity > 2.");
-		}
+		RrQContents qc = new RrQContents(p);
+		
+		if (printer.isCancelled()) return;		
+		if(qc.l1 != null)
+			plot(qc.l1, qc.i1);
+		
+		if (printer.isCancelled()) return;
+		if(qc.l2 != null)
+			plot(qc.l2, qc.i2);
+
 	}
 	
 	/**
@@ -177,7 +167,7 @@ public class LayerProducer {
 		if(p.c_1() == null)
 		{
 			if (printer.isCancelled()) return;
-			plot(p.csg(), p.box());
+			plotLeaf(p);
 		} else
 		{
 			if (printer.isCancelled()) return;

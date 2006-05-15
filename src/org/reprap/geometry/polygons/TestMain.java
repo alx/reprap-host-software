@@ -96,23 +96,26 @@ public class TestMain
 		RrGraphics g = new RrGraphics(new 
 				RrBox(new Rr2Point(0,0), new Rr2Point(1.1,1.1)), true);
 		
-		g.addCSG(cp);
+		//g.addCSG(cp);
+		RrPolygonList hp = new RrPolygonList();
 		
-//		Rr2Point p = new Rr2Point(0.1, 0.15);
-//		Rr2Point q = new Rr2Point(0.2, 0.85);
-//		Rr2Point r = new Rr2Point(0.97, 0.89);
-//		Rr2Point s = new Rr2Point(0.95, 0.03);
-//		Rr2Point d = Rr2Point.sub(q, p);
-//		Rr2Point p2 = Rr2Point.add(p, Rr2Point.mul(d, 0.47));
-//		//Rr2Point p3 = Rr2Point.add(p, Rr2Point.mul(d, 1));
-//		Rr2Point p3 = Rr2Point.add(Rr2Point.mul(Rr2Point.sub(r, q), 0.07), q);
-//		d = Rr2Point.add(d, new Rr2Point(0.0032, 0.0017));
-//		
+		Rr2Point p = new Rr2Point(0.1, 0.15);
+		Rr2Point q = new Rr2Point(0.2, 0.85);
+		Rr2Point r = new Rr2Point(0.97, 0.89);
+		Rr2Point s = new Rr2Point(0.95, 0.03);
+		Rr2Point d = Rr2Point.sub(q, p);
+		Rr2Point p2 = Rr2Point.add(p, Rr2Point.mul(d, 0.47));
+		//Rr2Point p3 = Rr2Point.add(p, Rr2Point.mul(d, 1));
+		Rr2Point p3 = Rr2Point.add(Rr2Point.mul(Rr2Point.sub(r, q), 0.57), q);
+		d = Rr2Point.add(d, new Rr2Point(0.0032, 0.0017));
+		
 //		RrPolygon pg = cp.meg(p2, p3, d, 1);
+//		hp.append(pg);
+		
+		hp = cp.megList(1, 0);
 		
 		RrLine x = new RrLine(new Rr2Point(-1, -1), new Rr2Point(1, 1));
 		RrPolygon  h = cp.hatch_join(x, 0.005, 1, 3);
-		RrPolygonList hp = new RrPolygonList();
 		hp.append(h);
 
 		g.addPol(hp);  

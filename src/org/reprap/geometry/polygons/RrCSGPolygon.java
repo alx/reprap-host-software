@@ -85,6 +85,7 @@ public class RrCSGPolygon
 	q3,           ///< SE
 	q4;           ///< SW
 	private double resolution_2;  ///< Squared diagonal of the smallest box to go to
+	private boolean visit1, visit2; /// Used by the edge-generation software.
 	
 	/**
 	 * Set one up
@@ -100,6 +101,8 @@ public class RrCSGPolygon
 		q3 = null;
 		q4 = null;
 		resolution_2 = box.d_2()*1.0e-8;  // Default - set properly
+		visit1 = false;
+		visit2 = false;
 	}
 	
 	/**
@@ -125,6 +128,9 @@ public class RrCSGPolygon
 			q4 = null;
 			resolution_2 = p.resolution_2;
 		}
+
+		visit1 = p.visit1;
+		visit2 = p.visit2;	
 	}
 	
 	// get children etc
@@ -301,8 +307,8 @@ public class RrCSGPolygon
 	public RrCSGPolygon offset(double d)
 	{
 		Rr2Point p = new Rr2Point(Math.sqrt(2)*d, Math.sqrt(2)*d);
-		RrBox b = new RrBox( Rr2Point.add(box.ne(), p), Rr2Point.sub(box.sw(), p) );
-		return new RrCSGPolygon(csg.offset(d), b);
+		//RrBox b = new RrBox( Rr2Point.add(box.ne(), p), Rr2Point.sub(box.sw(), p) );
+		return new RrCSGPolygon(csg.offset(d), box());
 	}
 	
     
@@ -330,13 +336,12 @@ public class RrCSGPolygon
     	}
     	d.set(l.direction());
     	
-    	here.set(l.point(i.high() + Math.sqrt(resolution_2)));
-    	
     	if(fin != null)
     	{
     		r.append(fin, flag);
     		here.set(fin);
-    	}
+    	} else
+    		here.set(l.point(i.high() + Math.sqrt(resolution_2)));
     }
     
     /**
@@ -361,9 +366,14 @@ public class RrCSGPolygon
     	if(!qc.corner)
     	{
     		if(d1.x() <= d2.x())
+    		{
     			oneLine(qc.l1, qc.i1, r, here, d, st, fin, flag);
-    		else
+    			visit1 = true;
+    		} else
+    		{
     			oneLine(qc.l2, qc.i2, r, here, d, st, fin, flag);
+    			visit2 = true;
+    		}
     		return;
     	}
     	
@@ -414,8 +424,14 @@ public class RrCSGPolygon
     		}
     		d.set(l2.direction());
     		here.set(l2.point(i2.high() + Math.sqrt(resolution_2)));
+    		visit1 = true;
+    		visit2 = true;
     	} else
     	{
+    		if(d1.x() <= d2.x())
+    			visit1 = true;
+    		else
+    			visit2 = true;
     		d.set(l1.direction());
     		here.set(l1.point(i1.high() + Math.sqrt(resolution_2)));
     	}
@@ -479,16 +495,18 @@ public class RrCSGPolygon
             	case 1:
             		if(qc.l1 != null)
             		{
-            			oneLine(qc.l1, qc.i1, r, h, d, st, fin, flag);
+            			qh.oneLine(qc.l1, qc.i1, r, h, d, st, fin, flag);
+            			qh.visit1 = true;
             		} else if (qc.l2 != null)
             		{
-            			oneLine(qc.l2, qc.i2, r, h, d, st, fin, flag);
+            			qh.oneLine(qc.l2, qc.i2, r, h, d, st, fin, flag);
+            			qh.visit2 = true;
             		} else
             			System.err.println("meg(): both segments null!");
             		break;
             		
             	case 2:
-            		twoLine(qc, r, h, d, st, fin, flag);
+            		qh.twoLine(qc, r, h, d, st, fin, flag);
             		break;
             		
             	default:
@@ -499,6 +517,78 @@ public class RrCSGPolygon
             } while (qh != qt || loop == 0);
             
             return r;
+    }
+    
+	 /**
+	 * Walk the tree setting all visited flags false
+     */
+    private void clearVisted()
+    {
+    	visit1 = false;
+    	visit2 = false;
+    	if(q1 != null)
+    	{
+    		q1.clearVisted();
+    		q2.clearVisted();
+    		q3.clearVisted();
+    		q4.clearVisted();    		
+    	}
+    }
+ 
+	 /**
+	 * Walk the tree to find an unvisited corner
+     */
+    private Rr2Point findCorner()
+    {
+    	Rr2Point result = null;
+    	
+    	if(csg.complexity() == 2 && !visit1 && !visit2)
+    	{
+    		RrQContents qc = new RrQContents(this);
+    		if(qc.corner)
+    			return qc.vertex;
+    	}
+ 
+    	if(q1 != null)
+    	{
+    		result = q1.findCorner();
+    		if(result != null)
+    			return result;
+       		result = q2.findCorner();
+    		if(result != null)
+    			return result; 
+      		result = q3.findCorner();
+    		if(result != null)
+    			return result; 
+     		result = q4.findCorner();
+    		if(result != null)
+    			return result;   		
+    	}
+    	
+    	return result;
+    }
+	 /**
+	 * Find all the polygons represented by a CSG object
+     * @return a polygon list as the result
+     */
+    public RrPolygonList megList(int fg, int fs)
+    {
+    	clearVisted();
+    	RrPolygonList result = new RrPolygonList();
+    	Rr2Point d = new Rr2Point(1,1);
+    	RrPolygon m;
+    	
+    	Rr2Point vertex = findCorner();
+    	while(vertex != null)
+    	{
+    		m = meg(vertex, vertex, d, fg);
+    		if(m.size() > 0)
+    			m.flag(0, fs);
+    		result.append(m);
+    		vertex = findCorner();
+    	}
+    	
+    	return result;
     }
 	
 	/**
@@ -586,7 +676,7 @@ public class RrCSGPolygon
 	/**
 	 * Take a sorted list of parameter values and a line, and
 	 * make sure they alternate solid/void/solid etc.  Insert
-	 * dummy parameter values if need be to ensure this. 
+	 * duplicate parameter values if need be to ensure this. 
 	 * @param t
 	 * @param l0
 	 */
@@ -594,15 +684,13 @@ public class RrCSGPolygon
 	{
 		
 		double half, v;
-		Rr2Point h;
 		int i = 0;
 		boolean odd = true;
 		while(i < t.size()-1)
 		{
 			half = 0.5*(((Double)(t.get(i))).doubleValue() + 
 				((Double)(t.get(i+1))).doubleValue());
-			h = l0.point(half);
-			v = value(h);
+			v = value(l0.point(half));
 			if(odd)
 			{
 				if(v > 0)
@@ -615,7 +703,7 @@ public class RrCSGPolygon
 			odd = !odd;
 			i++;
 		}
-		if (t.size()%2 != 0)
+		if (t.size()%2 != 0)    // Nasty hack that seems to work...
 			t.remove(t.size() - 1);
 	}
 	
@@ -867,7 +955,7 @@ public class RrCSGPolygon
 			System.err.println("hatch_join(): illegal negative flag value " + 
 					Integer.toString(fg) + " or " + Integer.toString(fs));
 		
-		RrPolygonList p_l = hatch(l0, gap, 1, 0);
+		RrPolygonList p_l = hatch(l0, gap, fg, fs);
 		RrPolygon p1 = new RrPolygon();
 		
 		int leng = p_l.size();
