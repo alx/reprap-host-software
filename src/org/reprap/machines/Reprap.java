@@ -46,7 +46,7 @@ public class Reprap implements CartesianPrinter {
 	
 	private GenericExtruder extruder;  ///< Only one supported for now
 
-	final boolean dummyZ = true;  ///< Don't perform Z operations.  Should be removed later.
+	private boolean excludeZ = false;  ///< Don't perform Z operations.  Should be removed later.
 	
 	public Reprap(Properties config) throws Exception {
 		int axes = Integer.parseInt(config.getProperty("AxisCount"));
@@ -95,10 +95,17 @@ public class Reprap implements CartesianPrinter {
 			scaleX = scaleY = scaleZ = 400.0 / 1.5;
 		}
 		
-		currentX = convertToPositionZ(motorX.getPosition());
-		currentY = convertToPositionZ(motorY.getPosition());
-		if (!dummyZ) {
+		try {
+			currentX = convertToPositionZ(motorX.getPosition());
+			currentY = convertToPositionZ(motorY.getPosition());
+		} catch (Exception ex) {
+			throw new Exception("Warning: X and/or Y controller not responding, cannot continue");
+		}
+		try {
 			currentZ = convertToPositionZ(motorZ.getPosition());
+		} catch (Exception ex) {
+			System.out.println("Z axis not responding and will be ignored");
+			excludeZ = true;
 		}
 	}
 	
@@ -118,7 +125,7 @@ public class Reprap implements CartesianPrinter {
 
 		if (z != currentZ) {
 			totalDistanceMoved += Math.abs(currentZ - z);
-			if (!dummyZ) motorZ.seekBlocking(speed, convertToStepZ(z));
+			if (!excludeZ) motorZ.seekBlocking(speed, convertToStepZ(z));
 		}
 		currentX = x;
 		currentY = y;
@@ -151,7 +158,7 @@ public class Reprap implements CartesianPrinter {
 			totalDistanceExtruded += distance;
 			totalDistanceMoved += distance;
 			extruder.setExtrusion(speedExtruder);
-			if (!dummyZ) motorZ.seekBlocking(speed, convertToStepZ(z));
+			if (!excludeZ) motorZ.seekBlocking(speed, convertToStepZ(z));
 			extruder.setExtrusion(0);
 			currentZ = z;
 			return;
