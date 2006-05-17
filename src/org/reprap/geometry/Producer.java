@@ -183,6 +183,9 @@ public class Producer {
 		return reprap.getTotalDistanceExtruded();
 	}
 	
+	public double getTotalVolumeExtruded() {
+		return reprap.getTotalDistanceExtruded() * reprap.getExtrusionHeight() * reprap.getExtrusionSize();
+	}
 	
 	public void dispose() {
 		reprap.dispose();

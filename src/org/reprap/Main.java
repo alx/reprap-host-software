@@ -344,15 +344,12 @@ public class Main {
 					
 					Producer producer = new Producer(preview, builder);
 					producer.produce();
-					double moved = Math.round(producer.getTotalDistanceMoved() * 10.0) / 10.0;
-					double extruded = Math.round(producer.getTotalDistanceExtruded() * 10.0) / 10.0;
+					String usage = getResourceMessage(producer);
 					producer.dispose();
 			        cancelMenuItem.setEnabled(false);
 			        produceProduce.setEnabled(true);
 					JOptionPane.showMessageDialog(mainFrame, "Production complete.  " +
-							"Total distance travelled=" + moved	+
-							"mm.  Total distance extruded=" + Math.round(extruded * 10.0) / 10.0 +
-							"mm.");
+							usage);
 				}
 				catch (Exception ex) {
 					JOptionPane.showMessageDialog(mainFrame, "Production exception: " + ex);
@@ -421,27 +418,31 @@ public class Main {
     }
     
     private void estimateResources() {
-    	EstimationProducer producer = null;
-    	try {
-        	producer = new EstimationProducer(builder);
-	    	producer.produce();
-
-	    	double moved = Math.round(producer.getTotalDistanceMoved() * 10.0) / 10.0;
-			double extruded = Math.round(producer.getTotalDistanceExtruded() * 10.0) / 10.0;
-
-	    	JOptionPane.showMessageDialog(mainFrame,
-					"Expected total distance travelled=" + moved +
-					"mm.  Total distance extruded=" + extruded +
-					"mm.");
-	    	
-    	} catch (Exception ex) {
-    		JOptionPane.showMessageDialog(null, "Exception during estimation: " + ex);    
-    	} finally {
-    		if (producer != null)
-    	    	producer.dispose();
-    	}
+	    	EstimationProducer producer = null;
+	    	try {
+	    		producer = new EstimationProducer(builder);
+	    		producer.produce();
+	    		JOptionPane.showMessageDialog(mainFrame,
+	    				"Expected " + getResourceMessage(producer));
+	    		
+	    	} catch (Exception ex) {
+	    		JOptionPane.showMessageDialog(null, "Exception during estimation: " + ex);    
+	    	} finally {
+	    		if (producer != null)
+	    			producer.dispose();
+	    	}
     }
     
+	private String getResourceMessage(Producer producer) {
+		double moved = Math.round(producer.getTotalDistanceMoved() * 10.0) / 10.0;
+		double extruded = Math.round(producer.getTotalDistanceExtruded() * 10.0) / 10.0;
+		double extrudedVolume = Math.round(producer.getTotalVolumeExtruded() * 10.0) / 10.0;  
+		return "Total distance travelled=" + moved +
+			"mm.  Total distance extruded=" + extruded +
+			"mm.  Total volume extruded=" + extrudedVolume +
+			"mm^3";
+	}
+	
 	public static void main(String[] args) {
 		Thread.currentThread().setName("Main");
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -459,5 +460,6 @@ public class Main {
         });
 
 	}
+
 
 }
