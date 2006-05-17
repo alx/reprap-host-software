@@ -43,16 +43,18 @@ public class GenericExtruder extends Device {
 	
 	private double beta;  ///< Thermistor beta
 	private double rz;    ///< Thermistor resistance at 0C
+	private int maxSpeed; ///< Maximum motor speed (0-255)
 	
 	/// Flag indicating if initialisation succeeded.  Usually this
 	/// indicates if the extruder is present in the network.
 	private boolean isCommsAvailable = false;
 	
-	public GenericExtruder(Communicator communicator, Address address, double beta, double rz) {
+	public GenericExtruder(Communicator communicator, Address address, double beta, double rz, int maxSpeed) {
 		super(communicator, address);
 
 		this.beta = beta;
 		this.rz = rz;
+		this.maxSpeed = maxSpeed;
 
 		//setVref(3);
 		//setTempScaler(7);
@@ -103,15 +105,19 @@ public class GenericExtruder extends Device {
 	}
 	
 	/**
-	 * Start the extruder motor at a given speed
+	 * Start the extruder motor at a given speed.  This ranges from 0
+	 * to 255 but is scaled by maxSpeed, so that 255 corresponds to the
+	 * highest permitted speed.
 	 * @param speed The speed to drive the motor at (0-255)
 	 * @throws IOException
 	 */
 	public void setExtrusion(int speed) throws IOException {
+		int scaledSpeed = (int)Math.round(speed * maxSpeed / 255.0);
+		
 		lock();
 		try {
 			OutgoingMessage request =
-				new OutgoingByteMessage(MSG_SetActive, (byte)speed);
+				new OutgoingByteMessage(MSG_SetActive, (byte)scaledSpeed);
 			sendMessage(request);
 		}
 		finally {

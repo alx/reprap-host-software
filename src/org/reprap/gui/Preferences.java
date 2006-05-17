@@ -46,6 +46,8 @@ public class Preferences extends javax.swing.JDialog {
 	private JLabel jLabel20;
 	private JLabel jLabel19;
 	private JTextField extrusionSize;
+	private JTextField extruderMaxSpeed1;
+	private JLabel jLabel24;
 	private JLabel jLabel23;
 	private JTextField extrusionHeight;
 	private JPanel jPanelProduction;
@@ -118,6 +120,7 @@ public class Preferences extends javax.swing.JDialog {
 			extruderAddress1.setText(props.getProperty("Extruder1Address"));
 			extruderBeta1.setText(props.getProperty("Extruder1Beta"));
 			extruderRz1.setText(props.getProperty("Extruder1Rz"));
+			extruderMaxSpeed1.setText(props.getProperty("Extruder1MaxSpeed"));
 			
 			extrusionSpeed.setText(props.getProperty("ExtrusionSpeed"));
 			extrusionTemp.setText(props.getProperty("ExtrusionTemp"));
@@ -163,6 +166,7 @@ public class Preferences extends javax.swing.JDialog {
 			props.setProperty("Extruder1Address", extruderAddress1.getText());
 			props.setProperty("Extruder1Beta", extruderBeta1.getText());
 			props.setProperty("Extruder1Rz", extruderRz1.getText());
+			props.setProperty("Extruder1MaxSpeed", extruderMaxSpeed1.getText());
 			
 			props.setProperty("ExtrusionSpeed", extrusionSpeed.getText());
 			props.setProperty("ExtrusionTemp", extrusionTemp.getText());
@@ -395,7 +399,7 @@ public class Preferences extends javax.swing.JDialog {
 						jLabel14 = new JLabel();
 						jPanelExtruders.add(jLabel14);
 						jLabel14.setText("Rz");
-						jLabel14.setBounds(224, 7, 63, 21);
+						jLabel14.setBounds(224, 7, 42, 21);
 					}
 					{
 						jLabel12 = new JLabel();
@@ -408,7 +412,7 @@ public class Preferences extends javax.swing.JDialog {
 						jLabel15 = new JLabel();
 						jPanelExtruders.add(jLabel15);
 						jLabel15.setText("Beta");
-						jLabel15.setBounds(154, 7, 63, 21);
+						jLabel15.setBounds(154, 7, 42, 21);
 					}
 					{
 						jLabel13 = new JLabel();
@@ -436,6 +440,17 @@ public class Preferences extends javax.swing.JDialog {
 						jPanelExtruders.add(jLabel19);
 						jLabel19.setText("Extrusion size");
 						jLabel19.setBounds(14, 105, 105, 28);
+					}
+					{
+						jLabel24 = new JLabel();
+						jPanelExtruders.add(jLabel24);
+						jLabel24.setText("Max Speed");
+						jLabel24.setBounds(280, 7, 84, 21);
+					}
+					{
+						extruderMaxSpeed1 = new JTextField();
+						jPanelExtruders.add(extruderMaxSpeed1);
+						extruderMaxSpeed1.setBounds(280, 28, 63, 28);
 					}
 					{
 						extrusionSize = new JTextField();

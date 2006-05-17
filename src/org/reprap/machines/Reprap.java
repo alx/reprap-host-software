@@ -74,8 +74,10 @@ public class Reprap implements CartesianPrinter {
 		
 		extruder = new GenericExtruder(communicator,
 				new SNAPAddress(config.getProperty("Extruder1Address")),
-				Integer.parseInt(config.getProperty("Extruder1Beta")),
-				Integer.parseInt(config.getProperty("Extruder1Rz")));
+				Double.parseDouble(config.getProperty("Extruder1Beta")),
+				Double.parseDouble(config.getProperty("Extruder1Rz")),
+				Integer.parseInt(config.getProperty("Extruder1MaxSpeed"))
+				);
 
 		try {
 			extrusionSize = Double.parseDouble(config.getProperty("ExtrusionSize"));

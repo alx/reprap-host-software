@@ -83,8 +83,9 @@ public class Main extends javax.swing.JDialog {
 
 		extruder = new GenericExtruder(communicator,
 				new SNAPAddress(props.getProperty("Extruder1Address")),
-				Integer.parseInt(props.getProperty("Extruder1Beta")),
-				Integer.parseInt(props.getProperty("Extruder1Rz"))
+				Double.parseDouble(props.getProperty("Extruder1Beta")),
+				Double.parseDouble(props.getProperty("Extruder1Rz")),
+				Integer.parseInt(props.getProperty("Extruder1MaxSpeed"))
 		);
 
 		initGUI();
