@@ -117,6 +117,16 @@ public class StepperPanel extends JPanel implements ChangeListener {
 		});
 		add(calibrate, c);
 		
+		c.gridx = 2;
+		JButton home = new JButton("Home");
+		home.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				onHomeReset();
+			}
+		});
+		add(home, c);
+		
+		c.gridx = 1;
 		c.gridy = 2;
 		torque = new JCheckBox("Torque");
 		torque.addActionListener(new ActionListener() {
@@ -134,6 +144,7 @@ public class StepperPanel extends JPanel implements ChangeListener {
 			positionRequest.setEnabled(false);
 			calibrate.setEnabled(false);
 			torque.setEnabled(false);
+			home.setEnabled(false);
 			return;
 		}
 
@@ -192,6 +203,21 @@ public class StepperPanel extends JPanel implements ChangeListener {
 			JOptionPane.showMessageDialog(null, "Could not idle motor: " + ex);
 		}
 			
+	}
+	
+	/**
+	 * Callback when the Home button is clicked
+	 */
+	protected void onHomeReset()
+	{
+		try {
+			motor.homeReset(externalSpeedSlider.getValue());
+			positionRequest.setValue(0);
+			positionActual.setValue(0);
+			torque.setSelected(true);
+		} catch (Exception ex) {
+			JOptionPane.showMessageDialog(null, "Could not home motor: " + ex);
+		}
 	}
 
 	/**

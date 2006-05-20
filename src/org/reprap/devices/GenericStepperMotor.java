@@ -30,6 +30,7 @@ public class GenericStepperMotor extends Device {
 	public static final byte MSG_GetRange = 10;
 	public static final byte MSG_DDAMaster = 11;
 	public static final byte MSG_SetPower = 14;
+	public static final byte MSG_HomeReset = 16;
 
 	public static final byte SYNC_NONE = 0;
 	public static final byte SYNC_SEEK = 1;
@@ -172,6 +173,20 @@ public class GenericStepperMotor extends Device {
 			}
 		}
 		finally {
+			unlock();
+		}
+	}
+	
+	public void homeReset(int speed) throws IOException, InvalidPayloadException {
+		initialiseIfNeeded()	;
+		lock();
+		try {
+			setNotification();
+			IncomingContext replyContext = sendMessage(
+					new OutgoingByteMessage(MSG_HomeReset, (byte)speed));
+			RequestHomeResetResponse response = new RequestHomeResetResponse(replyContext);
+			setNotificationOff();
+		} finally {
 			unlock();
 		}
 	}
@@ -371,6 +386,15 @@ public class GenericStepperMotor extends Device {
 		    return r;
 		}
 
+	}
+	
+	protected class RequestHomeResetResponse extends IncomingMessage {
+		public RequestHomeResetResponse(IncomingContext incomingContext) throws IOException {
+			super(incomingContext);
+		}
+		protected boolean isExpectedPacketType(byte packetType) {
+			return packetType == MSG_HomeReset; 
+		}
 	}
 	
 	public class Range {
