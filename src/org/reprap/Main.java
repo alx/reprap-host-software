@@ -239,6 +239,20 @@ public class Main {
 			}});
         toolsMenu.add(toolsExtruderExerciser);
 
+        JMenuItem toolsExtruderProfiler = new JMenuItem("Extruder heat profiler", KeyEvent.VK_H);
+        toolsExtruderProfiler.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				try {
+					org.reprap.gui.extruderprofile.Main.main(null);
+				}
+              	catch (Exception ex) {
+             		JOptionPane.showMessageDialog(null, "Extruder profiler exception: " + ex);
+         			ex.printStackTrace();
+             	}
+			}});
+        toolsMenu.add(toolsExtruderProfiler);
+
+        
         JMenuItem toolsSquareTest = new JMenuItem("Square Test", KeyEvent.VK_Q);
         toolsSquareTest.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {

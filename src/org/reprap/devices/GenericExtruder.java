@@ -130,7 +130,7 @@ public class GenericExtruder extends Device {
 	 * @param temperature
 	 * @throws Exception
 	 */
-	public void setTemperature(int temperature) throws Exception {
+	public void setTemperature(double temperature) throws Exception {
 		// Currently just implemented as a chop-chop heater by
 		// setting safety cutoff temperature to desired
 		// temperature.  This can be improved by modelling
@@ -154,6 +154,29 @@ public class GenericExtruder extends Device {
 		else
 			setHeater(255, safetyPICTemp);
 			
+	}
+	
+	/**
+	 * Set a heat output power.  For normal production use you would
+	 * normally call setTemperature, however this method may be useful
+	 * for lower temperature profiling, etc.
+	 * @param heat Heater power (0-255)
+	 * @param maxTemp Cutoff temperature in celcius
+	 * @throws IOException
+	 */
+	public void setHeater(int heat, double maxTemp) throws IOException {
+
+		double safetyResistance = calculateResistanceForTemperature(maxTemp);
+		// Determine equivalent raw value
+		int safetyPICTemp = calculatePicTempForResistance(safetyResistance);
+		if (safetyPICTemp < 0) safetyPICTemp = 0;
+		if (safetyPICTemp > 255) safetyPICTemp = 255;
+
+		if (heat == 0)
+			setHeater(0, 0);
+		else
+			setHeater(heat, safetyPICTemp);
+
 	}
 	
 	/**
