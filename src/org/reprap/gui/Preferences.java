@@ -47,6 +47,13 @@ public class Preferences extends javax.swing.JDialog {
 	private JLabel jLabel19;
 	private JTextField extrusionSize;
 	private JTextField extruderMaxSpeed1;
+	private JLabel jLabel30;
+	private JLabel jLabel29;
+	private JTextField extruderOffsetZ1;
+	private JTextField extruderOffsetY1;
+	private JLabel jLabel28;
+	private JTextField extruderOffsetX1;
+	private JLabel jLabel27;
 	private JLabel jLabel26;
 	private JLabel jLabel25;
 	private JTextField hb;
@@ -125,6 +132,10 @@ public class Preferences extends javax.swing.JDialog {
 			extruderBeta1.setText(props.getProperty("Extruder1Beta"));
 			extruderRz1.setText(props.getProperty("Extruder1Rz"));
 			extruderMaxSpeed1.setText(props.getProperty("Extruder1MaxSpeed"));
+			extruderOffsetX1.setText(props.getProperty("Extruder1OffsetX"));
+			extruderOffsetY1.setText(props.getProperty("Extruder1OffsetY"));
+			extruderOffsetZ1.setText(props.getProperty("Extruder1OffsetZ"));
+			
 			hm.setText(props.getProperty("Extruder1hm"));
 			hb.setText(props.getProperty("Extruder1hb"));
 			
@@ -173,6 +184,9 @@ public class Preferences extends javax.swing.JDialog {
 			props.setProperty("Extruder1Beta", extruderBeta1.getText());
 			props.setProperty("Extruder1Rz", extruderRz1.getText());
 			props.setProperty("Extruder1MaxSpeed", extruderMaxSpeed1.getText());
+			props.setProperty("Extruder1OffsetX", extruderOffsetX1.getText());
+			props.setProperty("Extruder1OffsetY", extruderOffsetY1.getText());
+			props.setProperty("Extruder1OffsetZ", extruderOffsetZ1.getText());
 			props.setProperty("Extruder1hm", hm.getText());
 			props.setProperty("Extruder1hb", hb.getText());
 			
@@ -533,6 +547,48 @@ public class Preferences extends javax.swing.JDialog {
 						jLabel25.setText("hm");
 						jLabel25.setBounds(217, 133, 42, 21);
 						jLabel25.setHorizontalAlignment(SwingConstants.RIGHT);
+					}
+					{
+						jLabel27 = new JLabel();
+						jPanelExtruders.add(jLabel27);
+						jLabel27.setText("Offsets:   X");
+						jLabel27.setBounds(7, 70, 98, 21);
+						jLabel27.setHorizontalAlignment(SwingConstants.RIGHT);
+					}
+					{
+						extruderOffsetX1 = new JTextField();
+						jPanelExtruders.add(extruderOffsetX1);
+						extruderOffsetX1.setBounds(119, 70, 49, 21);
+					}
+					{
+						extruderOffsetZ1 = new JTextField();
+						jPanelExtruders.add(extruderOffsetZ1);
+						extruderOffsetZ1.setBounds(273, 70, 49, 21);
+					}
+					{
+						jLabel28 = new JLabel();
+						jPanelExtruders.add(jLabel28);
+						jLabel28.setText("Z");
+						jLabel28.setBounds(245, 70, 21, 21);
+						jLabel28.setHorizontalAlignment(SwingConstants.RIGHT);
+					}
+					{
+						extruderOffsetY1 = new JTextField();
+						jPanelExtruders.add(extruderOffsetY1);
+						extruderOffsetY1.setBounds(196, 70, 49, 21);
+					}
+					{
+						jLabel29 = new JLabel();
+						jPanelExtruders.add(jLabel29);
+						jLabel29.setText("Y");
+						jLabel29.setHorizontalAlignment(SwingConstants.RIGHT);
+						jLabel29.setBounds(168, 70, 21, 21);
+					}
+					{
+						jLabel30 = new JLabel();
+						jPanelExtruders.add(jLabel30);
+						jLabel30.setText("mm");
+						jLabel30.setBounds(329, 70, 35, 21);
 					}
 				}
 				{

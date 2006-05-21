@@ -39,6 +39,9 @@ public class Reprap implements CartesianPrinter {
 	
 	double currentX, currentY, currentZ;
 	
+	double offsetX, offsetY, offsetZ;
+	
+	
 	private int speed = 236;  			// Initial default speed
 	private int speedExtruder = 200;    // Initial default extruder speed
 	
@@ -56,6 +59,8 @@ public class Reprap implements CartesianPrinter {
 		int extruders = Integer.parseInt(config.getProperty("ExtruderCount"));
 		if (extruders < 1)
 			throw new Exception("A Reprap printer must contain at least one extruder");
+		
+		offsetX = offsetY = offsetZ = 0.0;
 		
 		String commPortName = config.getProperty("Port");
 		
@@ -100,6 +105,13 @@ public class Reprap implements CartesianPrinter {
 			// Assume 400 steps per turn, 1.5mm travel per turn
 			scaleX = scaleY = scaleZ = 400.0 / 1.5;
 		}
+
+		try {
+			offsetX = Double.parseDouble(config.getProperty("Extruder1OffsetX"));
+			offsetY = Double.parseDouble(config.getProperty("Extruder1OffsetY"));
+			offsetZ = Double.parseDouble(config.getProperty("Extruder1OffsetZ"));
+		} catch (Exception ex) {
+		}
 		
 		try {
 			currentX = convertToPositionZ(motorX.getPosition());
@@ -113,6 +125,7 @@ public class Reprap implements CartesianPrinter {
 			System.out.println("Z axis not responding and will be ignored");
 			excludeZ = true;
 		}
+		
 	}
 	
 	public void calibrate() {
@@ -187,30 +200,31 @@ public class Reprap implements CartesianPrinter {
 
 		if (isCancelled()) return;
 		// TODO Select new material
+		// TODO Load new x/y/z offsets for the new extruder
 	}
 
 	protected int convertToStepX(double n) {
-		return (int)(n * scaleX);
+		return (int)((n + offsetX) * scaleX);
 	}
 
 	protected int convertToStepY(double n) {
-		return (int)(n * scaleY);
+		return (int)((n + offsetY) * scaleY);
 	}
 
 	protected int convertToStepZ(double n) {
-		return (int)(n * scaleZ);
+		return (int)((n + offsetZ) * scaleZ);
 	}
 
 	protected double convertToPositionX(int n) {
-		return n / scaleX;
+		return n / scaleX - offsetX;
 	}
 
 	protected double convertToPositionY(int n) {
-		return n / scaleY;
+		return n / scaleY - offsetY;
 	}
 
 	protected double convertToPositionZ(int n) {
-		return n / scaleZ;
+		return n / scaleZ - offsetZ;
 	}
 
 	/* (non-Javadoc)
