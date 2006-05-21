@@ -76,6 +76,8 @@ public class Reprap implements CartesianPrinter {
 				new SNAPAddress(config.getProperty("Extruder1Address")),
 				Double.parseDouble(config.getProperty("Extruder1Beta")),
 				Double.parseDouble(config.getProperty("Extruder1Rz")),
+				Double.parseDouble(config.getProperty("Extruder1hm")),
+				Double.parseDouble(config.getProperty("Extruder1hb")),
 				Integer.parseInt(config.getProperty("Extruder1MaxSpeed"))
 				);
 

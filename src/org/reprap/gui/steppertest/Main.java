@@ -68,6 +68,8 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 				new SNAPAddress(props.getProperty("Extruder1Address")),
 				Double.parseDouble(props.getProperty("Extruder1Beta")),
 				Double.parseDouble(props.getProperty("Extruder1Rz")),
+				Double.parseDouble(props.getProperty("Extruder1hm")),
+				Double.parseDouble(props.getProperty("Extruder1hb")),
 				Integer.parseInt(props.getProperty("Extruder1MaxSpeed"))
 		);
 		

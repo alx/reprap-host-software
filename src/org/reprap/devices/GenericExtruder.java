@@ -43,17 +43,23 @@ public class GenericExtruder extends Device {
 	
 	private double beta;  ///< Thermistor beta
 	private double rz;    ///< Thermistor resistance at 0C
+	private double hm;    ///< Heater power gradient
+	private double hb;    ///< Heater power intercept
 	private int maxSpeed; ///< Maximum motor speed (0-255)
+	
+	/// TODO hb should probably be ambient temperature
 	
 	/// Flag indicating if initialisation succeeded.  Usually this
 	/// indicates if the extruder is present in the network.
 	private boolean isCommsAvailable = false;
 	
-	public GenericExtruder(Communicator communicator, Address address, double beta, double rz, int maxSpeed) {
+	public GenericExtruder(Communicator communicator, Address address, double beta, double rz, double hm, double hb, int maxSpeed) {
 		super(communicator, address);
 
 		this.beta = beta;
 		this.rz = rz;
+		this.hm = hm;
+		this.hb = hb;
 		this.maxSpeed = maxSpeed;
 
 		//setVref(3);
@@ -131,19 +137,20 @@ public class GenericExtruder extends Device {
 	 * @throws Exception
 	 */
 	public void setTemperature(double temperature) throws Exception {
-		// Currently just implemented as a chop-chop heater by
-		// setting safety cutoff temperature to desired
-		// temperature.  This can be improved by modelling
-		// the thermal characteristics and directly setting
-		// the appropriate heat output, rather than full-on/full off
-		
 		requestedTemperature = temperature;
 		
-		// safety margin
-		double safetyTemperature = temperature;
+		double temperatureMax = temperature * 1.1; // 10% margin
+		
+		// Calculate power from hm, hb.  In general, the temperature
+		// we achieve is power * hm + hb.  So to achieve a given temperature
+		// we need a power of (temperature - hb) / hm
+		
+		int power = (int)Math.round((temperatureMax - hb) / hm);
+		if (power < 0) power = 0;
+		if (power > 255) power = 255;
 		
 		// Now convert safety level to equivalent raw PIC temperature value
-		double safetyResistance = calculateResistanceForTemperature(safetyTemperature);
+		double safetyResistance = calculateResistanceForTemperature(temperature);
 		// Determine equivalent raw value
 		int safetyPICTemp = calculatePicTempForResistance(safetyResistance);
 		if (safetyPICTemp < 0) safetyPICTemp = 0;
@@ -152,7 +159,7 @@ public class GenericExtruder extends Device {
 		if (temperature == 0)
 			setHeater(0, 0);
 		else
-			setHeater(255, safetyPICTemp);
+			setHeater(power, safetyPICTemp);
 			
 	}
 	

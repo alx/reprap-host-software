@@ -47,6 +47,10 @@ public class Preferences extends javax.swing.JDialog {
 	private JLabel jLabel19;
 	private JTextField extrusionSize;
 	private JTextField extruderMaxSpeed1;
+	private JLabel jLabel26;
+	private JLabel jLabel25;
+	private JTextField hb;
+	private JTextField hm;
 	private JLabel jLabel24;
 	private JLabel jLabel23;
 	private JTextField extrusionHeight;
@@ -121,6 +125,8 @@ public class Preferences extends javax.swing.JDialog {
 			extruderBeta1.setText(props.getProperty("Extruder1Beta"));
 			extruderRz1.setText(props.getProperty("Extruder1Rz"));
 			extruderMaxSpeed1.setText(props.getProperty("Extruder1MaxSpeed"));
+			hm.setText(props.getProperty("Extruder1hm"));
+			hb.setText(props.getProperty("Extruder1hb"));
 			
 			extrusionSpeed.setText(props.getProperty("ExtrusionSpeed"));
 			extrusionTemp.setText(props.getProperty("ExtrusionTemp"));
@@ -167,6 +173,8 @@ public class Preferences extends javax.swing.JDialog {
 			props.setProperty("Extruder1Beta", extruderBeta1.getText());
 			props.setProperty("Extruder1Rz", extruderRz1.getText());
 			props.setProperty("Extruder1MaxSpeed", extruderMaxSpeed1.getText());
+			props.setProperty("Extruder1hm", hm.getText());
+			props.setProperty("Extruder1hb", hb.getText());
 			
 			props.setProperty("ExtrusionSpeed", extrusionSpeed.getText());
 			props.setProperty("ExtrusionTemp", extrusionTemp.getText());
@@ -466,7 +474,7 @@ public class Preferences extends javax.swing.JDialog {
 					{
 						extrusionHeight = new JTextField();
 						jPanelExtruders.add(extrusionHeight);
-						extrusionHeight.setBounds(245, 105, 70, 21);
+						extrusionHeight.setBounds(266, 105, 70, 21);
 					}
 					{
 						extrusionTemp = new JTextField();
@@ -488,19 +496,43 @@ public class Preferences extends javax.swing.JDialog {
 						jLabel20 = new JLabel();
 						jPanelExtruders.add(jLabel20);
 						jLabel20.setText("mm high");
-						jLabel20.setBounds(322, 105, 63, 21);
+						jLabel20.setBounds(343, 105, 63, 21);
 					}
 					{
 						jLabel21 = new JLabel();
 						jPanelExtruders.add(jLabel21);
 						jLabel21.setText("C");
-						jLabel21.setBounds(196, 133, 63, 21);
+						jLabel21.setBounds(196, 133, 28, 21);
 					}
 					{
 						jLabel23 = new JLabel();
 						jPanelExtruders.add(jLabel23);
 						jLabel23.setText("mm  by");
 						jLabel23.setBounds(196, 105, 49, 21);
+					}
+					{
+						hm = new JTextField();
+						jPanelExtruders.add(hm);
+						hm.setBounds(266, 133, 70, 21);
+					}
+					{
+						jLabel26 = new JLabel();
+						jPanelExtruders.add(jLabel26);
+						jLabel26.setText("hb");
+						jLabel26.setHorizontalAlignment(SwingConstants.RIGHT);
+						jLabel26.setBounds(217, 161, 42, 21);
+					}
+					{
+						hb = new JTextField();
+						jPanelExtruders.add(hb);
+						hb.setBounds(266, 161, 70, 21);
+					}
+					{
+						jLabel25 = new JLabel();
+						jPanelExtruders.add(jLabel25);
+						jLabel25.setText("hm");
+						jLabel25.setBounds(217, 133, 42, 21);
+						jLabel25.setHorizontalAlignment(SwingConstants.RIGHT);
 					}
 				}
 				{
