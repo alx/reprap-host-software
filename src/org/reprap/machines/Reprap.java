@@ -42,7 +42,7 @@ public class Reprap implements CartesianPrinter {
 	double offsetX, offsetY, offsetZ;
 	
 	
-	private int speed = 236;  			// Initial default speed
+	private int speed = 230;  			// Initial default speed
 	private int speedExtruder = 200;    // Initial default extruder speed
 	
 	private double extrusionSize;
@@ -317,9 +317,12 @@ public class Reprap implements CartesianPrinter {
 		return previewer.isCancelled();
 	}
 	
-	public void initialise() {
+	public void initialise() throws Exception {
 		if (previewer != null)
 			previewer.reset();
+		motorX.homeReset(speed);
+		motorY.homeReset(speed);
+		if (!excludeZ) motorZ.homeReset(speed);
 	}
 
 	public double getX() {

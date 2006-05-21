@@ -33,7 +33,7 @@ public interface Printer {
 
 	public boolean isCancelled();
 
-	public void initialise();
+	public void initialise() throws Exception;
 	
 	public double getX();
 	public double getY();
