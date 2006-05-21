@@ -56,6 +56,9 @@ public class Main extends javax.swing.JDialog {
 	private int currentHeaterOutput = -1;
 	private double previousTemperature;
 	private long lastChangeTime = 0;
+	private long segmentStartTime = 0;
+	
+	private double ambientTemperature;
 	
 	/**
 	* Auto-generated main method to display this JDialog
@@ -125,14 +128,16 @@ public class Main extends javax.swing.JDialog {
 		
 		if (!profileInProgress)
 			return;
-		
+
 		if (currentHeaterOutput == -1) {
 			// Set first level
-			currentHeaterOutput = 31;
+			ambientTemperature = temperature;
+			System.out.println("Heater output 0, ambient temp is " + ambientTemperature + "C");
+			currentHeaterOutput = 15;
 			powerSetting.setText(String.valueOf(currentHeaterOutput));
 			extruder.setHeater(currentHeaterOutput, Integer.parseInt(maxTemp.getText()));
 			previousTemperature = temperature;
-			lastChangeTime = System.currentTimeMillis();
+			segmentStartTime = lastChangeTime = System.currentTimeMillis();
 			return;
 		}
 		
@@ -143,7 +148,7 @@ public class Main extends javax.swing.JDialog {
 		}
 			
 		
-		// If temperature max stable for 60 seconds, bump up level
+		// If temperature max stable for period, bump up level
 		// (ie ignore small decreases)
 		if (temperature > previousTemperature) {
 			lastChangeTime = System.currentTimeMillis();
@@ -153,16 +158,17 @@ public class Main extends javax.swing.JDialog {
 			long elapsed = now - lastChangeTime; 
 			elapsedTime.setText(String.valueOf(elapsed));
 			if (elapsed > stablePeriod) {
+				long duration = now - segmentStartTime;
 				System.out.println("Heater output " + currentHeaterOutput + " is " +
-						previousTemperature + "C");
-				currentHeaterOutput += 32;
+						previousTemperature + "C after " + duration + "ms");
+				currentHeaterOutput += 16;
 				if (currentHeaterOutput > 255) {
 					startButtonActionPerformed(null);
 				} else {
 					powerSetting.setText(String.valueOf(currentHeaterOutput));
 					extruder.setHeater(currentHeaterOutput, Integer.parseInt(maxTemp.getText()));
 					previousTemperature = temperature;
-					lastChangeTime = System.currentTimeMillis();
+					segmentStartTime = lastChangeTime = System.currentTimeMillis();
 				}
 			}
 		}
