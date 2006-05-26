@@ -42,7 +42,7 @@ public class LayerProducer {
 				gapMaterial, solidMaterial);
 
 		hatchedPolygons = new RrPolygonList();
-		hatchedPolygons.append(hatched);
+		hatchedPolygons.add(hatched);
 		
 		//new RrGraphics(p_list, false);
 		
@@ -72,7 +72,7 @@ public class LayerProducer {
 		borderPolygons = offBorder.megList(solidMaterial, gapMaterial);
 		
 		hatchedPolygons = new RrPolygonList();
-		hatchedPolygons.append(offHatch.hatch_join(hatchDirection, printer.getExtrusionSize(), 
+		hatchedPolygons.add(offHatch.hatch_join(hatchDirection, printer.getExtrusionSize(), 
 				solidMaterial, gapMaterial));
 		
 		//new RrGraphics(p_list, false);

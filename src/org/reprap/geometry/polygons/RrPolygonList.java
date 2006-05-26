@@ -108,7 +108,7 @@ public class RrPolygonList
 	 * Put a new list on the end
 	 * @param lst
 	 */
-	public void append(RrPolygonList lst)
+	public void add(RrPolygonList lst)
 	{
 		int leng = lst.size();
 		if(leng == 0)
@@ -122,9 +122,9 @@ public class RrPolygonList
 	 * Add one new polygon to the list
 	 * @param p
 	 */
-	public void append(RrPolygon p)
+	public void add(RrPolygon p)
 	{
-		//append(p.no_cross());
+		//add(p.no_cross());
 		polygons.add(p);
 		box.expand(p.box);
 	}
@@ -188,7 +188,7 @@ public class RrPolygonList
 		{
 			RrPolygon p = polygon(i);
 			if(p.box.d_2() > 2*d2)
-				r.append(p.simplify(d));
+				r.add(p.simplify(d));
 		}
 		
 		return r;
@@ -227,7 +227,7 @@ public class RrPolygonList
 		int leng = size();
 		RrPolygonList r = new RrPolygonList();
 		for (int i = 0; i < leng; i++)
-			r.append(polygon(i).offset(d));
+			r.add(polygon(i).offset(d));
 		return r;
 	}
 	
@@ -289,7 +289,7 @@ public class RrPolygonList
 			if (t_vals.size() > 0)
 			{
 				java.util.Collections.sort(t_vals);
-				r.append(RrPolygon.rr_t_polygon(t_vals, hatcher, fg, fs));
+				r.add(RrPolygon.rr_t_polygon(t_vals, hatcher, fg, fs));
 			}
 			hatcher = hatcher.add(orth);
 			g = g + gap;

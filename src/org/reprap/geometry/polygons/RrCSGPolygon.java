@@ -341,7 +341,7 @@ public class RrCSGPolygon
     		Rr2Point here, Rr2Point d, Rr2Point st, Rr2Point fin, int flag)
     {
     	if(st != null)
-    		r.append(st, 0);
+    		r.add(st, 0);
     	
     	if(Rr2Point.mul(d, l.direction()) < 0)
     	{
@@ -352,7 +352,7 @@ public class RrCSGPolygon
     	
     	if(fin != null)
     	{
-    		r.append(fin, flag);
+    		r.add(fin, flag);
     		here.set(fin);
     	} else
     		here.set(l.point(i.high() + Math.sqrt(resolution_2)));
@@ -420,7 +420,7 @@ public class RrCSGPolygon
     	{
     		if(!Rr2Point.same(qc.vertex, st, resolution_2))
     		{
-    			r.append(st, 0);
+    			r.add(st, 0);
     			before = Rr2Point.same(qc.vertex, l1.point(i1.high()), 
     					resolution_2);
     		}
@@ -429,7 +429,7 @@ public class RrCSGPolygon
     	
     	if(before)
     	{
-   			r.append(qc.vertex, flag);
+   			r.add(qc.vertex, flag);
  
     		if(Rr2Point.same(qc.vertex, l2.point(i2.high()), resolution_2))
     		{
@@ -453,7 +453,7 @@ public class RrCSGPolygon
     	if(fin != null)
     	{
     		if(!Rr2Point.same(qc.vertex, fin, resolution_2))
-    			r.append(fin, flag);
+    			r.add(fin, flag);
     		here.set(fin);
     	}
     		
@@ -602,7 +602,7 @@ public class RrCSGPolygon
     		m = meg(vertex, vertex, d, fg);
     		if(m.size() > 0)
     			m.flag(0, fs);
-    		result.append(m);
+    		result.add(m);
     		vertex = findCorner();
     	}
     	
@@ -811,7 +811,7 @@ public class RrCSGPolygon
 			if (t_vals.size() > 0)
 			{
 				r = RrPolygon.rr_t_polygon(t_vals, hatcher, fg, fs);
-				result.append(r);
+				result.add(r);
 			}
 			hatcher = hatcher.add(orth);
 			g = g + gap;
@@ -1029,11 +1029,11 @@ public class RrCSGPolygon
 					p_l.polygon(next.theLine).flag(next.thePoint, -1);
 					pb = p_l.polygon(next.theLine).point(next.thePoint + 1);
 				}
-				p1.append(pa, flag);
+				p1.add(pa, flag);
 				flag = fg;
 				here = pb;
 				line = next.theLine;
-				p1.append(here, flag);
+				p1.add(here, flag);
 			} else 
 			{
 				flag = fs;
@@ -1052,11 +1052,11 @@ public class RrCSGPolygon
 						p_l.polygon(next.theLine).flag(next.thePoint, -1);
 						pb = p_l.polygon(next.theLine).point(next.thePoint + 1);
 					}
-					p1.append(pa, flag);
+					p1.add(pa, flag);
 					flag = fg;
 					here = pb;
 					line = next.theLine;
-					p1.append(here, flag);
+					p1.add(here, flag);
 				}
 			}
 			if(notFinished)

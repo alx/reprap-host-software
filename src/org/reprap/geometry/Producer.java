@@ -30,10 +30,10 @@ public class Producer {
 		Rr2Point p2 = new Rr2Point(20, 10);
 		Rr2Point p3 = new Rr2Point(20, 20);
 		Rr2Point p4 = new Rr2Point(10, 20);
-		a.append(p1, 1);
-		a.append(p2, 1);
-		a.append(p3, 1);
-		a.append(p4, 1);
+		a.add(p1, 1);
+		a.add(p2, 1);
+		a.add(p3, 1);
+		a.add(p4, 1);
 		return a;
 	}
 	
@@ -50,12 +50,12 @@ public class Producer {
 		Rr2Point h4 = new Rr2Point(hexX + hexSize / 2.0, hexY + hexSize * hexLongSize);
 		Rr2Point h5 = new Rr2Point(hexX + hexSize / 2.0 + hexSize * hexShortSize, hexY);
 		Rr2Point h6 = new Rr2Point(hexX + hexSize / 2.0, hexY - hexSize * hexLongSize);
-		b.append(h1, 1);
-		b.append(h2, 1);
-		b.append(h3, 1);
-		b.append(h4, 1);
-		b.append(h5, 1);
-		b.append(h6, 1);
+		b.add(h1, 1);
+		b.add(h2, 1);
+		b.add(h3, 1);
+		b.add(h4, 1);
+		b.add(h5, 1);
+		b.add(h6, 1);
 		return b;
 	}
 	
@@ -148,11 +148,11 @@ public class Producer {
 			
 			// Add a square block
 
-			list.append(square());
+			list.add(square());
 	
 			// Add a hex block
 			
-			list.append(hex());
+			list.add(hex());
 
 			LayerProducer layer = new LayerProducer(reprap, list,
 					isEvenLayer?evenHatchDirection:oddHatchDirection);

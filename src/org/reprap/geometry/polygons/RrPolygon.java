@@ -177,7 +177,7 @@ public class RrPolygon
 				x = ip.readDouble();
 				y = ip.readDouble();
 				r = new Rr2Point(x, y);
-				this.append(r, 1);
+				this.add(r, 1);
 			}
 			
 			try
@@ -202,7 +202,7 @@ public class RrPolygon
 	 * @param p
 	 * @param f
 	 */
-	public void append(Rr2Point p, int f)
+	public void add(Rr2Point p, int f)
 	{
 		points.add(new Rr2Point(p));
 		flags.add(new Integer(f));
@@ -213,7 +213,7 @@ public class RrPolygon
 	 * Put a new polygon and its flag values on the end
 	 * @param p
 	 */
-	public void append(RrPolygon p)
+	public void add(RrPolygon p)
 	{
 		int leng = p.size();
 		if(leng == 0)
@@ -549,7 +549,7 @@ public class RrPolygon
 		int leng = size();
 		for(int i = 1; i <= leng; i++)
 		{
-			result.append(point(leng - i), flag(leng - i));
+			result.add(point(leng - i), flag(leng - i));
 		} 
 		return result;
 	}
@@ -569,7 +569,7 @@ public class RrPolygon
 		{
 			int k = (j + 1) % leng;
 			rr_bisector bs = RrLine.bisect(point(i), point(j), point(k));
-			r.append(bs.b.point(d/bs.s_angle), flag(j));
+			r.add(bs.b.point(d/bs.s_angle), flag(j));
 			i = (i + 1) % leng;
 		}
 		return r;
@@ -628,7 +628,7 @@ public class RrPolygon
 		int jold = 0;
 		while(i < leng - 1)
 		{
-			r.append(point(i), flag(i));
+			r.add(point(i), flag(i));
 			int j = i + 1;
 			find_ignored: while (j < leng + 1)
 			{
@@ -662,8 +662,8 @@ public class RrPolygon
 		int leng = t.size();
 		for(int i = 0; i < leng-1; i = i+2)
 		{
-			r.append(line.point(((Double)(t.get(i))).doubleValue()), fg);
-			r.append(line.point(((Double)(t.get(i+1))).doubleValue()), fs);
+			r.add(line.point(((Double)(t.get(i))).doubleValue()), fg);
+			r.add(line.point(((Double)(t.get(i+1))).doubleValue()), fs);
 		}
 		return r;
 	}
@@ -747,8 +747,8 @@ public class RrPolygon
 			}
 			if(j_near < 0)
 			{
-				r.append(p0, f);
-				r.append(p1, 0);
+				r.add(p0, f);
+				r.add(p1, 0);
 			} else
 			{
 				int j_far;
@@ -760,10 +760,10 @@ public class RrPolygon
 					if(j_far < 0)
 						j_far = leng - 1;
 				}
-				r.append(p_far, f);
-				r.append(p_near, f);
-				r.append(old.point(j_near), f);
-				r.append(old.point(j_far), f);
+				r.add(p_far, f);
+				r.add(p_near, f);
+				r.add(old.point(j_near), f);
+				r.add(old.point(j_far), f);
 				if(j_far > j_near)
 				{
 					old.remove(j_near);
