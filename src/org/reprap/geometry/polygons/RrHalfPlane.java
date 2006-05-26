@@ -86,8 +86,8 @@ public class RrHalfPlane
 	 */
 	public RrHalfPlane(RrLine l)
 	{
-		double rsq = 1/l.direction().mod();
-		normal = new Rr2Point(-l.direction().y()*rsq, l.direction().x()*rsq);
+		double r = 1/l.direction().mod();
+		normal = new Rr2Point(-l.direction().y()*r, l.direction().x()*r);
 		offset = -Rr2Point.mul(l.origin(), normal());
 	}
 	

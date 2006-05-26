@@ -206,6 +206,25 @@ public class Rr2Point
 	}
 	
 	/**
+	 * Gradient
+	 * @param a
+	 * @return
+	 */
+	public double gradient()
+	{
+		double g;
+		if(x == 0)
+		{
+			if(y > 0)
+				g = Double.POSITIVE_INFINITY;
+			else
+				g = Double.NEGATIVE_INFINITY;
+		} else
+			g = y/x;
+		return g;
+	}
+	
+	/**
 	 * Squared distance
 	 * @param a
 	 * @param b

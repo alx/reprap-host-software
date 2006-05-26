@@ -266,6 +266,212 @@ public class RrPolygon
 		opf.println("\" />");
 	}
 	
+	// Convex hull code - this uses the QuickHull algorithm
+	
+	/**
+	 * find a point from a list
+	 * @Param i
+	 * @param a
+	 * @return the point
+	 */
+	private Rr2Point listPoint(int i, List a)
+	{
+		return point(((Integer)a.get(i)).intValue());
+	}
+	
+	/**
+	 * find the top point of the polygon
+	 * @return the index in the list of the point
+	 */
+	private int topPoint()
+	{
+		int top = 0;
+		double yMax = point(top).y();
+		double y;
+
+		for(int i = 1; i < size(); i++)
+		{
+			y = point(i).y();
+			if(y > yMax)
+			{
+				yMax = y;
+				top = i;
+			}
+		}
+		
+		return top;
+	}
+	
+	/**
+	 * find the bottom point
+	 * @return the index in the list of the point
+	 */
+	private int bottomPoint()
+	{
+		int bottom = 0;
+		double yMin = point(bottom).y();
+		double y;
+		
+		for(int i = 1; i < size(); i++)
+		{
+			y = point(i).y();
+			if(y < yMin)
+			{
+				yMin = y;
+				bottom = i;
+			}
+		}
+		
+		return bottom;
+	}
+	
+
+	/**
+	 * Put the points on a triangle in the right order
+	 * @param a
+	 */
+	private void clockWise(List a)
+	{
+		if(a.size() == 3)
+		{
+			Rr2Point q = Rr2Point.sub(listPoint(1, a), listPoint(0, a));
+			Rr2Point r = Rr2Point.sub(listPoint(2, a), listPoint(0, a));
+			if(Rr2Point.op(q, r) > 0)
+			{
+				Object k = a.get(0);
+				a.set(0, a.get(1));
+				a.set(1, k);
+			}
+		} else
+			System.err.println("clockWise(): not called for a triangle!");
+	}
+	
+	
+	/**
+	 * Turn a list of points into a CSG convex polygon
+	 * @param hullPoints
+	 * @return list of point indices of the points on the hull
+	 */	
+	public RrCSG toCSGHull(List hullPoints)
+	{
+		Rr2Point p = listPoint(hullPoints.size() - 1, hullPoints);
+		Rr2Point q;
+		RrCSG hull = RrCSG.universe();
+		for(int i = 0; i < hullPoints.size(); i++)
+		{
+			q = listPoint(i, hullPoints);
+			hull = RrCSG.intersection(hull, new RrCSG(new RrHalfPlane(p, q)));
+			p = q;
+		}
+
+		return hull;
+	}
+	
+	/**
+	 * Remove all the points in a list that are within hull
+	 * @param inConsideration
+	 * @param hull
+	 * @return list of point indices of the points remaining outside the hull
+	 */		
+	private void outsideHull(List inConsideration, RrCSG hull)
+	{
+		Rr2Point p;
+		int i = inConsideration.size() - 1;
+		
+		while(i >= 0)
+		{
+			p = listPoint(i, inConsideration);
+			if(hull.value(p) < 0)
+				inConsideration.remove(i);
+			i--;
+		}
+	}
+	
+	/**
+	 * Compute the convex hull of a polygon
+	 * @return list of point indices of the points on the hull
+	 */
+	public List convexHull()
+	{
+		if(size() < 3)
+			System.err.println("convexHull(): polygon must have at least 3 points!");
+		
+		List inConsideration = new ArrayList();
+		for(int i = 0; i < size(); i++)
+			inConsideration.add(new Integer(i));
+		
+		List result = new ArrayList();
+		int t = topPoint();
+		int b = bottomPoint();
+		result.add(new Integer(t));
+		result.add(new Integer(b));
+		if(t > b)
+		{
+			inConsideration.remove(t);
+			inConsideration.remove(b);
+		} else
+		{
+			inConsideration.remove(b);
+			inConsideration.remove(t);			
+		}
+		
+		RrHalfPlane h = new RrHalfPlane(point(t), point(b));
+		int corner = 0;		
+		double vMax = Math.abs(h.value(listPoint(corner, inConsideration)));
+		double v;
+		for(int i = 1; i < inConsideration.size(); i++)
+		{
+			v = Math.abs(h.value(listPoint(i, inConsideration)));
+			if(v > vMax)
+			{
+				vMax = v;
+				corner = i;
+			}
+		}
+		
+		result.add(inConsideration.get(corner));
+		inConsideration.remove(corner);		
+		clockWise(result);
+		
+		RrCSG hull = toCSGHull(result);
+		outsideHull(inConsideration, hull);
+		
+		int after = 0;
+		corner = 0;
+		while(inConsideration.size() > 0)
+		{
+			vMax = 0;
+			for(int testPoint = 0; testPoint < inConsideration.size(); testPoint++)
+			{
+				Rr2Point p = listPoint(result.size() - 1, result);
+				Rr2Point q;
+				RrHalfPlane hp;
+				for(int i = 0; i < result.size(); i++)
+				{
+ 
+					q = listPoint(i, result);
+					hp = new RrHalfPlane(p, q);
+					v = hp.value(listPoint(testPoint, inConsideration));
+					if(v > vMax)
+					{
+						after = i;
+						vMax = v;
+						corner = testPoint;
+					}
+					p = q;
+				}
+			}
+			
+			result.add(after, inConsideration.get(corner));
+			inConsideration.remove(corner);
+			
+			hull = toCSGHull(result);
+			outsideHull(inConsideration, hull);
+		}
+		
+		return result;
+	}
+	
 	/**
 	 * Test for a self-intersecting polygon.  If the first entry in the
 	 * tuple returned is 0 the polygon does not self intersect.  If it is 1
