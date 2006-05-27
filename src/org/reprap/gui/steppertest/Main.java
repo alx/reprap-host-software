@@ -5,8 +5,6 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.net.URL;
-import java.util.Properties;
 
 import javax.swing.Box;
 import javax.swing.BoxLayout;
@@ -22,6 +20,7 @@ import javax.swing.WindowConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.reprap.Preferences;
 import org.reprap.comms.Communicator;
 import org.reprap.comms.snap.SNAPAddress;
 import org.reprap.comms.snap.SNAPCommunicator;
@@ -55,23 +54,14 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 	
 	public Main(JFrame frame) throws Exception {
 		super(frame);
-		
-		Properties props = new Properties();
-		URL url = ClassLoader.getSystemResource("reprap.properties");
-		props.load(url.openStream());
-		String commPortName = props.getProperty("Port");
-		
+
 		SNAPAddress myAddress = new SNAPAddress(localNodeNumber); 
-		communicator = new SNAPCommunicator(commPortName, baudRate, myAddress);
+		communicator = new SNAPCommunicator(Preferences.loadGlobalString("Port"),
+				baudRate, myAddress);
 		
 		extruder = new GenericExtruder(communicator,
-				new SNAPAddress(props.getProperty("Extruder1Address")),
-				Double.parseDouble(props.getProperty("Extruder1Beta")),
-				Double.parseDouble(props.getProperty("Extruder1Rz")),
-				Double.parseDouble(props.getProperty("Extruder1hm")),
-				Double.parseDouble(props.getProperty("Extruder1hb")),
-				Integer.parseInt(props.getProperty("Extruder1MaxSpeed"))
-		);
+				new SNAPAddress(Preferences.loadGlobalString("Extruder1Address")),
+				Preferences.getGlobalPreferences(), 1);
 		
 		initGUI();
         Utility.centerWindowOnScreen(this);

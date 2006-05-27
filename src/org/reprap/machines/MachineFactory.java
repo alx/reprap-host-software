@@ -1,8 +1,6 @@
 package org.reprap.machines;
 
-import java.net.URL;
-import java.util.Properties;
-
+import org.reprap.Preferences;
 import org.reprap.Printer;
 import org.reprap.ReprapException;
 
@@ -21,16 +19,14 @@ public class MachineFactory {
 		// a 3-axis cartesian printer.  It should build an
 		// appropriate type based on the local configuration.
 		
-		Properties props = new Properties();
-		URL url = ClassLoader.getSystemResource("reprap.properties");
-		props.load(url.openStream());
+		Preferences prefs = Preferences.getGlobalPreferences();
 
-		String geometry = props.getProperty("Geometry");
+		String geometry = prefs.loadString("Geometry");
 		
 		if (geometry.compareToIgnoreCase("cartesian") == 0)
-		  	return new Reprap(props);
+		  	return new Reprap(prefs);
 		else if (geometry.compareToIgnoreCase("nullcartesian") == 0)
-		    return new NullCartesianMachine(props);		
+		    return new NullCartesianMachine(prefs);		
 		else
 			throw new ReprapException("Invalid geometry in properties file");
 		

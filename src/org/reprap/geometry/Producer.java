@@ -1,8 +1,7 @@
 package org.reprap.geometry;
 
-import java.net.URL;
-import java.util.Properties;
 
+import org.reprap.Preferences;
 import org.reprap.Printer;
 import org.reprap.geometry.polygons.*;
 import org.reprap.gui.PreviewPanel;
@@ -114,17 +113,12 @@ public class Producer {
 		int movementSpeed = 230;
 		
 		try {
-			Properties props = new Properties();
-			URL url = ClassLoader.getSystemResource("reprap.properties");
-			props.load(url.openStream());
-		
-			extrusionSpeed = Integer.parseInt(props.getProperty("ExtrusionSpeed"));
-			extrusionTemp = Integer.parseInt(props.getProperty("ExtrusionTemp"));
-			movementSpeed = Integer.parseInt(props.getProperty("MovementSpeed"));
+			extrusionSpeed = Preferences.loadGlobalInt("ExtrusionSpeed");
+			extrusionTemp = Preferences.loadGlobalInt("ExtrusionTemp");
+			movementSpeed = Preferences.loadGlobalInt("MovementSpeed");
 		} catch (Exception ex) {
 			System.out.println("Warning: could not load ExtrusionSpeed/MovementSpeed, using defaults");
 		}
-
 		
 		reprap.initialise();
 		reprap.selectMaterial(0);

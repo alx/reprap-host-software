@@ -3,6 +3,7 @@ package org.reprap.devices;
 import java.io.IOException;
 
 import org.reprap.Device;
+import org.reprap.Preferences;
 import org.reprap.comms.Address;
 import org.reprap.comms.Communicator;
 import org.reprap.comms.IncomingContext;
@@ -53,14 +54,19 @@ public class GenericExtruder extends Device {
 	/// indicates if the extruder is present in the network.
 	private boolean isCommsAvailable = false;
 	
-	public GenericExtruder(Communicator communicator, Address address, double beta, double rz, double hm, double hb, int maxSpeed) {
+	public GenericExtruder(Communicator communicator, Address address, Preferences prefs, int extruderId) {
+		
+		//double beta, double rz, double hm, double hb, int maxSpeed
+		
 		super(communicator, address);
 
-		this.beta = beta;
-		this.rz = rz;
-		this.hm = hm;
-		this.hb = hb;
-		this.maxSpeed = maxSpeed;
+		String prefName = "Extruder" + extruderId; 
+		
+		beta = prefs.loadDouble(prefName + "Beta");
+		rz = prefs.loadDouble(prefName + "Rz");
+		hm = prefs.loadDouble(prefName + "hm");
+		hb = prefs.loadDouble(prefName + "hb");
+		maxSpeed = prefs.loadInt(prefName + "MaxSpeed");
 
 		//setVref(3);
 		//setTempScaler(7);

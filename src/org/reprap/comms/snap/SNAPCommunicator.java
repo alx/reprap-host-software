@@ -3,8 +3,6 @@ package org.reprap.comms.snap;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.net.URL;
-import java.util.Properties;
 
 import javax.comm.CommPortIdentifier;
 import javax.comm.NoSuchPortException;
@@ -13,6 +11,7 @@ import javax.comm.SerialPort;
 import javax.comm.UnsupportedCommOperationException;
 
 import org.reprap.Device;
+import org.reprap.Preferences;
 import org.reprap.comms.Address;
 import org.reprap.comms.Communicator;
 import org.reprap.comms.IncomingContext;
@@ -69,10 +68,7 @@ public class SNAPCommunicator implements Communicator {
 		
 		try {
 			// Try to load debug setting from properties file
-			Properties props = new Properties();
-			URL url = ClassLoader.getSystemResource("reprap.properties");
-			props.load(url.openStream());
-			debugMode = Boolean.valueOf(props.getProperty("CommsDebug")).booleanValue();
+			debugMode = Preferences.loadGlobalBool("CommsDebug");
 		} catch (Exception ex) {
 			// Fall back to non-debug mode if no setting is available
 			debugMode = false;

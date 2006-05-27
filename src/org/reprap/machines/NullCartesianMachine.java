@@ -1,9 +1,9 @@
 package org.reprap.machines;
 
 import java.io.IOException;
-import java.util.Properties;
 
 import org.reprap.CartesianPrinter;
+import org.reprap.Preferences;
 import org.reprap.ReprapException;
 import org.reprap.gui.Previewer;
 
@@ -18,14 +18,14 @@ public class NullCartesianMachine implements CartesianPrinter {
 	
 	double currentX, currentY, currentZ;
 	
-	public NullCartesianMachine(Properties config) {
+	public NullCartesianMachine(Preferences config) {
 		currentX = 0;
 		currentY = 0;
 		currentZ = 0;
 		
 		try {
-			extrusionSize = Double.parseDouble(config.getProperty("ExtrusionSize"));
-			extrusionHeight = Double.parseDouble(config.getProperty("ExtrusionHeight"));
+			extrusionSize = config.loadDouble("ExtrusionSize");
+			extrusionHeight = config.loadDouble("ExtrusionHeight");
 		} catch (Exception ex) {
 			extrusionSize = 1.0;
 			extrusionHeight = 1.0;

@@ -3,6 +3,7 @@ package org.reprap.devices;
 import java.io.IOException;
 
 import org.reprap.Device;
+import org.reprap.Preferences;
 import org.reprap.ReprapException;
 import org.reprap.comms.Address;
 import org.reprap.comms.Communicator;
@@ -43,9 +44,11 @@ public class GenericStepperMotor extends Device {
 	
 	private int maxTorque; ///< Power output limiting (0-100 percent)
 	
-	public GenericStepperMotor(Communicator communicator, Address address, int maxTorque) {
+	public GenericStepperMotor(Communicator communicator, Address address, Preferences prefs, int motorId) {
+		
+		//Address address, int maxTorque
 		super(communicator, address);
-		this.maxTorque = maxTorque;
+		this.maxTorque = prefs.loadInt("Axis" + motorId + "Torque");
 	}
 
 	private void initialiseIfNeeded() throws IOException {

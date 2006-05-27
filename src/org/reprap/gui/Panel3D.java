@@ -1,7 +1,5 @@
 package org.reprap.gui;
 
-import java.util.Properties;
-
 import java.awt.BorderLayout;
 import java.awt.Cursor;
 import java.awt.GraphicsConfigTemplate;
@@ -31,6 +29,8 @@ import javax.vecmath.AxisAngle4d;
 import javax.vecmath.Color3f;
 import javax.vecmath.Point3d;
 import javax.vecmath.Vector3d;
+
+import org.reprap.Preferences;
 
 import com.sun.j3d.audioengines.javasound.JavaSoundMixer;
 import com.sun.j3d.utils.geometry.Box;
@@ -112,11 +112,7 @@ abstract public class Panel3D extends JPanel {
 		// Set everything up from the properties file
 		// All this needs to go into Preferences.java
 
-		Properties props = new Properties();
-		URL url = ClassLoader.getSystemResource("reprap.properties");
-		props.load(url.openStream());
-		
-		wv_location = props.getProperty("WorkingLocation");
+		wv_location = Preferences.loadGlobalString("WorkingLocation");
 
 		// Translate and zoom scaling factors
 		

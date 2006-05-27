@@ -1,8 +1,6 @@
 package org.reprap.geometry;
 
-import java.net.URL;
-import java.util.Properties;
-
+import org.reprap.Preferences;
 import org.reprap.geometry.Producer;
 import org.reprap.gui.RepRapBuild;
 import org.reprap.machines.NullCartesianMachine;
@@ -18,11 +16,7 @@ public class EstimationProducer extends Producer {
 	public EstimationProducer(RepRapBuild builder) throws Exception {
 		super(null, builder);
 		
-		Properties props = new Properties();
-		URL url = ClassLoader.getSystemResource("reprap.properties");
-		props.load(url.openStream());
-		
-		reprap = new NullCartesianMachine(props); 
+		reprap = new NullCartesianMachine(Preferences.getGlobalPreferences()); 
 
 	}
 

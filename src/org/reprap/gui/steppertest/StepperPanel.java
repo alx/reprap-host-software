@@ -5,8 +5,6 @@ import java.awt.GridBagLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.io.IOException;
-import java.net.URL;
-import java.util.Properties;
 import java.util.Timer;
 import java.util.TimerTask;
 
@@ -20,6 +18,7 @@ import javax.swing.SwingConstants;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
+import org.reprap.Preferences;
 import org.reprap.comms.Communicator;
 import org.reprap.comms.snap.SNAPAddress;
 import org.reprap.devices.GenericStepperMotor;
@@ -67,15 +66,11 @@ public class StepperPanel extends JPanel implements ChangeListener {
 	public StepperPanel(String name, int motorId, JSlider externalSpeedSlider, Communicator communicator) throws IOException {
 		super();
 		
-		Properties props = new Properties();
-		URL url = ClassLoader.getSystemResource("reprap.properties");
-		props.load(url.openStream());
-		int address = Integer.parseInt(props.getProperty("Axis" + motorId + "Address"));
-		int maxTorque = Integer.parseInt(props.getProperty("Axis" + motorId + "Torque"));
+		int address = Preferences.loadGlobalInt("Axis" + motorId + "Address");
 		
 		updateTimer = new Timer();
 		
-		motor = new GenericStepperMotor(communicator, new SNAPAddress(address), maxTorque);
+		motor = new GenericStepperMotor(communicator, new SNAPAddress(address), Preferences.getGlobalPreferences(), motorId);
 		
 		this.externalSpeedSlider = externalSpeedSlider;
 		

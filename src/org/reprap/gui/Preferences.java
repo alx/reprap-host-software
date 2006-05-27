@@ -1,9 +1,7 @@
 package org.reprap.gui;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
-import java.io.OutputStream;
-import java.net.URL;
-import java.util.Properties;
+import java.io.IOException;
 import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 
@@ -111,49 +109,49 @@ public class Preferences extends javax.swing.JDialog {
 		inst.setVisible(true);
 	}
 	
+	private String loadString(String name) throws IOException {
+		return org.reprap.Preferences.loadGlobalString(name);
+	}
+	
+	private void saveString(String name, String value) throws IOException {
+		org.reprap.Preferences.setGlobalString(name, value);
+	}
+	
 	public void loadPreferences() {
 		try {
-			Properties props = new Properties();
-			URL url = ClassLoader.getSystemResource("reprap.properties");
-			props.load(url.openStream());
+			serialPort.setText(loadString("Port"));
+			motorAddress1.setText(loadString("Axis1Address"));
+			motorAddress2.setText(loadString("Axis2Address"));
+			motorAddress3.setText(loadString("Axis3Address"));
+			motorTorque1.setText(loadString("Axis1Torque"));
+			motorTorque2.setText(loadString("Axis2Torque"));
+			motorTorque3.setText(loadString("Axis3Torque"));
+			motorScale1.setText(loadString("Axis1Scale"));
+			motorScale2.setText(loadString("Axis2Scale"));
+			motorScale3.setText(loadString("Axis3Scale"));
 			
-			serialPort.setText(props.getProperty("Port"));
-			motorAddress1.setText(props.getProperty("Axis1Address"));
-			motorAddress2.setText(props.getProperty("Axis2Address"));
-			motorAddress3.setText(props.getProperty("Axis3Address"));
-			motorTorque1.setText(props.getProperty("Axis1Torque"));
-			motorTorque2.setText(props.getProperty("Axis2Torque"));
-			motorTorque3.setText(props.getProperty("Axis3Torque"));
-			motorScale1.setText(props.getProperty("Axis1Scale"));
-			motorScale2.setText(props.getProperty("Axis2Scale"));
-			motorScale3.setText(props.getProperty("Axis3Scale"));
+			extruderAddress1.setText(loadString("Extruder1Address"));
+			extruderBeta1.setText(loadString("Extruder1Beta"));
+			extruderRz1.setText(loadString("Extruder1Rz"));
+			extruderMaxSpeed1.setText(loadString("Extruder1MaxSpeed"));
+			extruderOffsetX1.setText(loadString("Extruder1OffsetX"));
+			extruderOffsetY1.setText(loadString("Extruder1OffsetY"));
+			extruderOffsetZ1.setText(loadString("Extruder1OffsetZ"));
 			
-			extruderAddress1.setText(props.getProperty("Extruder1Address"));
-			extruderBeta1.setText(props.getProperty("Extruder1Beta"));
-			extruderRz1.setText(props.getProperty("Extruder1Rz"));
-			extruderMaxSpeed1.setText(props.getProperty("Extruder1MaxSpeed"));
-			extruderOffsetX1.setText(props.getProperty("Extruder1OffsetX"));
-			extruderOffsetY1.setText(props.getProperty("Extruder1OffsetY"));
-			extruderOffsetZ1.setText(props.getProperty("Extruder1OffsetZ"));
+			hm.setText(loadString("Extruder1hm"));
+			hb.setText(loadString("Extruder1hb"));
 			
-			hm.setText(props.getProperty("Extruder1hm"));
-			hb.setText(props.getProperty("Extruder1hb"));
+			extrusionSpeed.setText(loadString("ExtrusionSpeed"));
+			extrusionTemp.setText(loadString("ExtrusionTemp"));
+			extrusionSize.setText(loadString("ExtrusionSize"));
+			extrusionHeight.setText(loadString("ExtrusionHeight"));
+			movementSpeed.setText(loadString("MovementSpeed"));
 			
-			extrusionSpeed.setText(props.getProperty("ExtrusionSpeed"));
-			extrusionTemp.setText(props.getProperty("ExtrusionTemp"));
-			extrusionSize.setText(props.getProperty("ExtrusionSize"));
-			extrusionHeight.setText(props.getProperty("ExtrusionHeight"));
-			movementSpeed.setText(props.getProperty("MovementSpeed"));
-			
-			String geometryName = props.getProperty("Geometry");
+			String geometryName = loadString("Geometry");
 			for(int i = 0; i < geometries.length; i++)
 				if (geometries[i][0].compareToIgnoreCase(geometryName) == 0)
 					geometry.setSelectedIndex(i);
 			
-			// Fall back to some defaults
-			if (motorTorque1.getText().length() == 0) motorTorque1.setText("33");
-			if (motorTorque2.getText().length() == 0) motorTorque2.setText("33");
-			if (motorTorque3.getText().length() == 0) motorTorque3.setText("33");
 		} catch (Exception ex) {
 			JOptionPane.showMessageDialog(null, "Loading preferences: " + ex);
 			ex.printStackTrace();
@@ -163,46 +161,36 @@ public class Preferences extends javax.swing.JDialog {
 
 	public void savePreferences() {
 		try {
-			Properties props = new Properties();
-			URL url = ClassLoader.getSystemResource("reprap.properties");
-			props.load(url.openStream());
+			saveString("Port", serialPort.getText());
+			saveString("Axis1Address", motorAddress1.getText());
+			saveString("Axis2Address", motorAddress2.getText());
+			saveString("Axis3Address", motorAddress3.getText());
+			saveString("Axis1Torque", motorTorque1.getText());
+			saveString("Axis2Torque", motorTorque2.getText());
+			saveString("Axis3Torque", motorTorque3.getText());
+			saveString("Axis1Scale", motorScale1.getText());
+			saveString("Axis2Scale", motorScale2.getText());
+			saveString("Axis3Scale", motorScale3.getText());
 			
-			props.setProperty("Port", serialPort.getText());
-			props.setProperty("Axis1Address", motorAddress1.getText());
-			props.setProperty("Axis2Address", motorAddress2.getText());
-			props.setProperty("Axis3Address", motorAddress3.getText());
-			props.setProperty("Axis1Torque", motorTorque1.getText());
-			props.setProperty("Axis2Torque", motorTorque2.getText());
-			props.setProperty("Axis3Torque", motorTorque3.getText());
-			props.setProperty("Axis1Scale", motorScale1.getText());
-			props.setProperty("Axis2Scale", motorScale2.getText());
-			props.setProperty("Axis3Scale", motorScale3.getText());
-			
-			props.setProperty("Geometry", geometries[geometry.getSelectedIndex()][0]);
+			saveString("Geometry", geometries[geometry.getSelectedIndex()][0]);
 
-			props.setProperty("Extruder1Address", extruderAddress1.getText());
-			props.setProperty("Extruder1Beta", extruderBeta1.getText());
-			props.setProperty("Extruder1Rz", extruderRz1.getText());
-			props.setProperty("Extruder1MaxSpeed", extruderMaxSpeed1.getText());
-			props.setProperty("Extruder1OffsetX", extruderOffsetX1.getText());
-			props.setProperty("Extruder1OffsetY", extruderOffsetY1.getText());
-			props.setProperty("Extruder1OffsetZ", extruderOffsetZ1.getText());
-			props.setProperty("Extruder1hm", hm.getText());
-			props.setProperty("Extruder1hb", hb.getText());
+			saveString("Extruder1Address", extruderAddress1.getText());
+			saveString("Extruder1Beta", extruderBeta1.getText());
+			saveString("Extruder1Rz", extruderRz1.getText());
+			saveString("Extruder1MaxSpeed", extruderMaxSpeed1.getText());
+			saveString("Extruder1OffsetX", extruderOffsetX1.getText());
+			saveString("Extruder1OffsetY", extruderOffsetY1.getText());
+			saveString("Extruder1OffsetZ", extruderOffsetZ1.getText());
+			saveString("Extruder1hm", hm.getText());
+			saveString("Extruder1hb", hb.getText());
 			
-			props.setProperty("ExtrusionSpeed", extrusionSpeed.getText());
-			props.setProperty("ExtrusionTemp", extrusionTemp.getText());
-			props.setProperty("ExtrusionSize", extrusionSize.getText());
-			props.setProperty("ExtrusionHeight", extrusionHeight.getText());
-			props.setProperty("MovementSpeed", movementSpeed.getText());
+			saveString("ExtrusionSpeed", extrusionSpeed.getText());
+			saveString("ExtrusionTemp", extrusionTemp.getText());
+			saveString("ExtrusionSize", extrusionSize.getText());
+			saveString("ExtrusionHeight", extrusionHeight.getText());
+			saveString("MovementSpeed", movementSpeed.getText());
 
-			extruderAddress1.setText(props.getProperty("Extruder1Address"));
-			extruderBeta1.setText(props.getProperty("Extruder1Beta"));
-			extruderRz1.setText(props.getProperty("Extruder1Rz"));
-
-			
-			OutputStream output = new java.io.FileOutputStream(url.getPath());
-			props.store(output, "Reprap properties http://reprap.org/");
+			org.reprap.Preferences.saveGlobal();
 		} catch (Exception ex) {
 			JOptionPane.showMessageDialog(null, "Saving preferences: " + ex);
 			ex.printStackTrace();

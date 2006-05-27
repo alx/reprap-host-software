@@ -1,9 +1,9 @@
 package org.reprap.machines;
 
 import java.io.IOException;
-import java.util.Properties;
 
 import org.reprap.CartesianPrinter;
+import org.reprap.Preferences;
 import org.reprap.ReprapException;
 import org.reprap.comms.Communicator;
 import org.reprap.comms.snap.SNAPAddress;
@@ -52,66 +52,44 @@ public class Reprap implements CartesianPrinter {
 
 	private boolean excludeZ = false;  ///< Don't perform Z operations.  Should be removed later.
 	
-	public Reprap(Properties config) throws Exception {
-		int axes = Integer.parseInt(config.getProperty("AxisCount"));
+	public Reprap(Preferences prefs) throws Exception {
+		int axes = prefs.loadInt("AxisCount");
 		if (axes != 3)
 			throw new Exception("A Reprap printer must contain 3 axes");
-		int extruders = Integer.parseInt(config.getProperty("ExtruderCount"));
+		int extruders = prefs.loadInt("ExtruderCount");
 		if (extruders < 1)
 			throw new Exception("A Reprap printer must contain at least one extruder");
 		
 		offsetX = offsetY = offsetZ = 0.0;
 		
-		String commPortName = config.getProperty("Port");
+		String commPortName = prefs.loadString("Port");
 		
 		SNAPAddress myAddress = new SNAPAddress(localNodeNumber); 
 		communicator = new SNAPCommunicator(commPortName, baudRate, myAddress);
 		
 		motorX = new GenericStepperMotor(communicator,
-				new SNAPAddress(config.getProperty("Axis1Address")),
-				Integer.parseInt(config.getProperty("Axis1Torque")));
+				new SNAPAddress(prefs.loadInt("Axis1Address")), prefs, 1);
 		motorY = new GenericStepperMotor(communicator,
-				new SNAPAddress(config.getProperty("Axis2Address")),
-				Integer.parseInt(config.getProperty("Axis2Torque")));
+				new SNAPAddress(prefs.loadInt("Axis2Address")), prefs, 2);
 		motorZ = new GenericStepperMotor(communicator,
-				new SNAPAddress(config.getProperty("Axis3Address")),
-				Integer.parseInt(config.getProperty("Axis3Torque")));
+				new SNAPAddress(prefs.loadInt("Axis3Address")), prefs, 3);
 		
 		extruder = new GenericExtruder(communicator,
-				new SNAPAddress(config.getProperty("Extruder1Address")),
-				Double.parseDouble(config.getProperty("Extruder1Beta")),
-				Double.parseDouble(config.getProperty("Extruder1Rz")),
-				Double.parseDouble(config.getProperty("Extruder1hm")),
-				Double.parseDouble(config.getProperty("Extruder1hb")),
-				Integer.parseInt(config.getProperty("Extruder1MaxSpeed"))
-				);
+				new SNAPAddress(prefs.loadInt("Extruder1Address")), prefs, 1);
 
-		try {
-			extrusionSize = Double.parseDouble(config.getProperty("ExtrusionSize"));
-			extrusionHeight = Double.parseDouble(config.getProperty("ExtrusionHeight"));
-		} catch (Exception ex) {
-			extrusionSize = extrusionHeight = 1.0;
-		}
+		extrusionSize = prefs.loadDouble("ExtrusionSize");
+		extrusionHeight = prefs.loadDouble("ExtrusionHeight");
 		
 		layer = new LinePrinter(motorX, motorY, extruder);
 
 		// TODO This should be from calibration
-		try {
-			scaleX = Double.parseDouble(config.getProperty("Axis1Scale"));
-			scaleY = Double.parseDouble(config.getProperty("Axis2Scale"));
-			scaleZ = Double.parseDouble(config.getProperty("Axis3Scale"));
-		} catch (Exception ex) {
-			System.out.println("Warning: axis scaling not loaded, reverting to defaults");
-			// Assume 400 steps per turn, 1.5mm travel per turn
-			scaleX = scaleY = scaleZ = 400.0 / 1.5;
-		}
+		scaleX = prefs.loadDouble("Axis1Scale");
+		scaleY = prefs.loadDouble("Axis2Scale");
+		scaleZ = prefs.loadDouble("Axis3Scale");
 
-		try {
-			offsetX = Double.parseDouble(config.getProperty("Extruder1OffsetX"));
-			offsetY = Double.parseDouble(config.getProperty("Extruder1OffsetY"));
-			offsetZ = Double.parseDouble(config.getProperty("Extruder1OffsetZ"));
-		} catch (Exception ex) {
-		}
+		offsetX = prefs.loadDouble("Extruder1OffsetX");
+		offsetY = prefs.loadDouble("Extruder1OffsetY");
+		offsetZ = prefs.loadDouble("Extruder1OffsetZ");
 		
 		try {
 			currentX = convertToPositionZ(motorX.getPosition());

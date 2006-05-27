@@ -1,0 +1,66 @@
+# Default distribution RepRap parameters
+# http://reprap.org/
+
+# User interface settings
+WorkingLocation=reprap-wv.stl
+WorkingX=300
+WorkingY=300
+WorkingZ=300
+WorkingOffsetX=-17.3
+WorkingOffsetY=-24.85
+WorkingOffsetZ=-2
+WorldName=RepRap-World
+FrontF=0.025
+RadiusF=0.7
+BoundF=3.0
+MouseZoomF=50
+BackF=2.0
+MouseTranslationF=50
+# User interface colours
+UnselectedColourR=0.3
+UnselectedColourG=0.3
+UnselectedColourB=0.3
+SelectedColourR=0.6
+SelectedColourG=0.2
+SelectedColourB=0.2
+BackColourR=0.9
+BackColourG=0.9
+BackColourB=0.9
+MachineColourR=0.3
+MachineColourG=0.4
+MachineColourB=0.3
+
+# General settings
+Port=/dev/ttyS0
+CommsDebug=false
+Geometry=nullcartesian
+
+# Motor settings
+AxisCount=3
+MovementSpeed=230
+Axis1Address=2
+Axis2Address=3
+Axis3Address=4
+Axis1Scale=400
+Axis2Scale=400
+Axis3Scale=400
+Axis1Torque=50
+Axis2Torque=50
+Axis3Torque=50
+
+# Extruder settings
+ExtruderCount=1
+ExtrusionSpeed=150
+ExtrusionTemp=40
+ExtrusionSize=0.5
+ExtrusionHeight=0.4
+Extruder1MaterialType=CAPA
+Extruder1Address=8
+Extruder1MaxSpeed=255
+Extruder1Beta=5000
+Extruder1hm=1.1
+Extruder1Rz=500000
+Extruder1hb=20
+Extruder1OffsetZ=500
+Extruder1OffsetY=0
+Extruder1OffsetX=0
