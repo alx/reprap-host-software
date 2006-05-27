@@ -56,11 +56,28 @@ ExtrusionSize=0.5
 ExtrusionHeight=0.4
 Extruder1MaterialType=CAPA
 Extruder1Address=8
+
+# The maximum permitted motor speed.  This is useful if driving
+# a motor with a voltage beyond it's design limits (eg running
+# a 6V motor from the 12V supply).
 Extruder1MaxSpeed=255
+
+# Extruder thermistor characteristics.  If these are unknown, see
+# http://reprapdoc.voodoo.co.nz/bin/view/Main/MeasuringThermistorBeta
 Extruder1Beta=5000
-Extruder1hm=1.1
 Extruder1Rz=500000
+
+# Extruder heater characteristics.  This defines an approximate relationship
+# between power input and heater temperature:
+# temperature = power * hm + hb
+# Where power is the heater output setting (0 to 255).
+# It can be determined by using the Extruder Heater Profiler tool.
+Extruder1hm=1.1
 Extruder1hb=20
-Extruder1OffsetZ=500
-Extruder1OffsetY=0
+
+# Offset of extruder to accomodate the extruder size, in order to
+# get the extruder tip and the desired location.  Without this
+# the extruder will most likely be driven through the floor.
 Extruder1OffsetX=0
+Extruder1OffsetY=0
+Extruder1OffsetZ=500
