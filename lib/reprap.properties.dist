@@ -62,6 +62,10 @@ Extruder1Address=8
 # a 6V motor from the 12V supply).
 Extruder1MaxSpeed=255
 
+# The extruder speed setting at which extrusion torque becomes zero
+# while extruding (ie the point below which the motor stops).
+Extruder1t0=150
+
 # Extruder thermistor characteristics.  If these are unknown, see
 # http://reprapdoc.voodoo.co.nz/bin/view/Main/MeasuringThermistorBeta
 Extruder1Beta=5000

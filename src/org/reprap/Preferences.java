@@ -8,8 +8,6 @@ import java.io.OutputStream;
 import java.net.URL;
 import java.util.Properties;
 
-import org.apache.xpath.axes.PathComponent;
-
 /**
  * A single centralised repository of the current preference settings.  This also
  * implements (almost) a singleton for easy global access.  If there are no current

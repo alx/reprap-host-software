@@ -84,7 +84,18 @@ public class LinePrinter {
 	}
 
 	public void printTo(int endX, int endY, int movementSpeed, int extruderSpeed) throws IOException {
-		extruder.setExtrusion(extruderSpeed);
+		// Determine the extruder speed, based on the geometry of the line
+		// to be printed
+		double dx = Math.abs(endX - currentX);
+		double dy = Math.abs(endY - currentY);
+		double h = Math.sqrt(dx * dx + dy * dy);
+		double speedFraction;
+		if (dx > dy)
+			speedFraction = h / (dx * Math.sqrt(2.0));
+		else
+			speedFraction = h / (dy * Math.sqrt(2.0));
+
+		extruder.setExtrusion((int)Math.round(extruderSpeed * speedFraction));
 		moveTo(endX, endY, movementSpeed);
 		extruder.setExtrusion(0);
 	}

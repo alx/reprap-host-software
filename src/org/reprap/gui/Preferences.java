@@ -45,6 +45,8 @@ public class Preferences extends javax.swing.JDialog {
 	private JLabel jLabel19;
 	private JTextField extrusionSize;
 	private JTextField extruderMaxSpeed1;
+	private JTextField extrudert01;
+	private JLabel jLabel31;
 	private JLabel jLabel30;
 	private JLabel jLabel29;
 	private JTextField extruderOffsetZ1;
@@ -140,6 +142,7 @@ public class Preferences extends javax.swing.JDialog {
 			
 			hm.setText(loadString("Extruder1hm"));
 			hb.setText(loadString("Extruder1hb"));
+			extrudert01.setText(loadString("Extruder1t0"));
 			
 			extrusionSpeed.setText(loadString("ExtrusionSpeed"));
 			extrusionTemp.setText(loadString("ExtrusionTemp"));
@@ -183,6 +186,7 @@ public class Preferences extends javax.swing.JDialog {
 			saveString("Extruder1OffsetZ", extruderOffsetZ1.getText());
 			saveString("Extruder1hm", hm.getText());
 			saveString("Extruder1hb", hb.getText());
+			saveString("Extruder1t0", extrudert01.getText());
 			
 			saveString("ExtrusionSpeed", extrusionSpeed.getText());
 			saveString("ExtrusionTemp", extrusionTemp.getText());
@@ -454,13 +458,24 @@ public class Preferences extends javax.swing.JDialog {
 					{
 						jLabel24 = new JLabel();
 						jPanelExtruders.add(jLabel24);
-						jLabel24.setText("Max Speed");
-						jLabel24.setBounds(280, 7, 84, 21);
+						jLabel24.setText("t0");
+						jLabel24.setBounds(357, 7, 35, 21);
 					}
 					{
 						extruderMaxSpeed1 = new JTextField();
 						jPanelExtruders.add(extruderMaxSpeed1);
 						extruderMaxSpeed1.setBounds(280, 28, 63, 28);
+					}
+					{
+						jLabel31 = new JLabel();
+						jPanelExtruders.add(jLabel31);
+						jLabel31.setText("Max Speed");
+						jLabel31.setBounds(280, 7, 77, 21);
+					}
+					{
+						extrudert01 = new JTextField();
+						jPanelExtruders.add(extrudert01);
+						extrudert01.setBounds(350, 28, 63, 28);
 					}
 					{
 						extrusionSize = new JTextField();

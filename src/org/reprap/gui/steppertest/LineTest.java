@@ -196,6 +196,8 @@ public class LineTest extends javax.swing.JDialog {
 			ex.printStackTrace();
 		}
 
+		startX.setText(endX.getText());
+		startY.setText(endY.getText());
 		
 	}
 

@@ -47,6 +47,7 @@ public class GenericExtruder extends Device {
 	private double hm;    ///< Heater power gradient
 	private double hb;    ///< Heater power intercept
 	private int maxSpeed; ///< Maximum motor speed (0-255)
+	private int t0;       ///< Zero torque speed
 	
 	/// TODO hb should probably be ambient temperature
 	
@@ -67,6 +68,7 @@ public class GenericExtruder extends Device {
 		hm = prefs.loadDouble(prefName + "hm");
 		hb = prefs.loadDouble(prefName + "hb");
 		maxSpeed = prefs.loadInt(prefName + "MaxSpeed");
+		t0 = prefs.loadInt(prefName + "t0");
 
 		//setVref(3);
 		//setTempScaler(7);
@@ -118,13 +120,20 @@ public class GenericExtruder extends Device {
 	
 	/**
 	 * Start the extruder motor at a given speed.  This ranges from 0
-	 * to 255 but is scaled by maxSpeed, so that 255 corresponds to the
-	 * highest permitted speed.
+	 * to 255 but is scaled by maxSpeed and t0, so that 255 corresponds to the
+	 * highest permitted speed.  It is also scaled so that 0 would correspond
+	 * with the lowest extrusion speed.
 	 * @param speed The speed to drive the motor at (0-255)
 	 * @throws IOException
 	 */
 	public void setExtrusion(int speed) throws IOException {
-		int scaledSpeed = (int)Math.round(speed * maxSpeed / 255.0);
+		// Assumption: Between t0 and maxSpeed, the speed is fairly linear
+		int scaledSpeed;
+		
+		if (speed > 0)
+			scaledSpeed = (int)Math.round((maxSpeed - t0) * speed / 255.0 + t0);
+		else
+			scaledSpeed = 0;
 		
 		lock();
 		try {
