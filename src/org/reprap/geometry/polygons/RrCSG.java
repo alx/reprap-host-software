@@ -738,17 +738,17 @@ public class RrCSG
 			r1 = c1.leaf(p);
 			r2 = c2.leaf(p);
 			if(r1.value(p) < r2.value(p))
-				return c1;
+				return r1;
 			else
-				return c2;
+				return r2;
 			
 		case RrCSGOp.INTERSECTION:
 			r1 = c1.leaf(p);
 			r2 = c2.leaf(p);
 			if(r1.value(p) > r2.value(p))
-				return c1;
+				return r1;
 			else
-				return c2;
+				return r2;
 			
 		default:
 			System.err.println("leaf(Rr2Point): invalid operator.");

@@ -280,7 +280,7 @@ public class RrPolygon
 	}
 	
 	/**
-	 * find the top point of the polygon
+	 * find the top (+y) point of the polygon
 	 * @return the index in the list of the point
 	 */
 	private int topPoint()
@@ -303,7 +303,7 @@ public class RrPolygon
 	}
 	
 	/**
-	 * find the bottom point
+	 * find the bottom (-y) point
 	 * @return the index in the list of the point
 	 */
 	private int bottomPoint()
@@ -348,9 +348,9 @@ public class RrPolygon
 	
 	
 	/**
-	 * Turn a list of points into a CSG convex polygon
+	 * Turn the list of hull points into a CSG convex polygon
 	 * @param hullPoints
-	 * @return list of point indices of the points on the hull
+	 * @return CSG representation
 	 */	
 	public RrCSG toCSGHull(List hullPoints)
 	{
@@ -368,20 +368,33 @@ public class RrPolygon
 	}
 	
 	/**
-	 * Remove all the points in a list that are within hull
+	 * Turn a list of hull points into a polygon
+	 * @param hullPoints
+	 * @return the hull as another polygon
+	 */	
+	public RrPolygon toRrPolygonHull(List hullPoints)
+	{
+		RrPolygon hull = new RrPolygon();
+		
+		for(int i = 0; i < hullPoints.size(); i++)
+			hull.add(listPoint(i, hullPoints), 1);
+
+		return hull;
+	}
+	
+	/**
+	 * Remove all the points in a list that are within or on the hull
 	 * @param inConsideration
 	 * @param hull
-	 * @return list of point indices of the points remaining outside the hull
 	 */		
 	private void outsideHull(List inConsideration, RrCSG hull)
 	{
 		Rr2Point p;
 		int i = inConsideration.size() - 1;
-		
 		while(i >= 0)
 		{
 			p = listPoint(i, inConsideration);
-			if(hull.value(p) < 0)
+			if(hull.value(p) <= 0)                // Need an epsilon here?
 				inConsideration.remove(i);
 			i--;
 		}
@@ -396,9 +409,13 @@ public class RrPolygon
 		if(size() < 3)
 			System.err.println("convexHull(): polygon must have at least 3 points!");
 		
+		// Initialise the points being considered to all the points
+		
 		List inConsideration = new ArrayList();
 		for(int i = 0; i < size(); i++)
 			inConsideration.add(new Integer(i));
+		
+		// The top-most and bottom-most points must be on the hull
 		
 		List result = new ArrayList();
 		int t = topPoint();
@@ -414,34 +431,18 @@ public class RrPolygon
 			inConsideration.remove(b);
 			inConsideration.remove(t);			
 		}
+			
+		// Repeatedly add the point that's furthest from the current hull
 		
-		RrHalfPlane h = new RrHalfPlane(point(t), point(b));
-		int corner = 0;		
-		double vMax = Math.abs(h.value(listPoint(corner, inConsideration)));
-		double v;
-		for(int i = 1; i < inConsideration.size(); i++)
-		{
-			v = Math.abs(h.value(listPoint(i, inConsideration)));
-			if(v > vMax)
-			{
-				vMax = v;
-				corner = i;
-			}
-		}
-		
-		result.add(inConsideration.get(corner));
-		inConsideration.remove(corner);		
-		clockWise(result);
-		
-		RrCSG hull = toCSGHull(result);
-		outsideHull(inConsideration, hull);
-		
-		int after = 0;
-		corner = 0;
+		int corner, after;
+		RrCSG hull;
+		double v, vMax;
 		while(inConsideration.size() > 0)
 		{
 			vMax = 0;
-			for(int testPoint = 0; testPoint < inConsideration.size(); testPoint++)
+			corner = -1;
+			after = -1;
+			for(int testPoint = inConsideration.size() - 1; testPoint >= 0; testPoint--)
 			{
 				Rr2Point p = listPoint(result.size() - 1, result);
 				Rr2Point q;
@@ -452,6 +453,8 @@ public class RrPolygon
 					q = listPoint(i, result);
 					hp = new RrHalfPlane(p, q);
 					v = hp.value(listPoint(testPoint, inConsideration));
+					if(result.size() == 2)
+						v = Math.abs(v);
 					if(v > vMax)
 					{
 						after = i;
@@ -462,9 +465,19 @@ public class RrPolygon
 				}
 			}
 			
-			result.add(after, inConsideration.get(corner));
-			inConsideration.remove(corner);
+			if(corner >= 0)
+			{
+				result.add(after, inConsideration.get(corner));
+				inConsideration.remove(corner);
+			} else if(inConsideration.size() > 0)
+			{
+				System.err.println("convexHull(): points left, but none included!");
+				return result;
+			}
 			
+			if(result.size() == 3)
+				clockWise(result);
+
 			hull = toCSGHull(result);
 			outsideHull(inConsideration, hull);
 		}
