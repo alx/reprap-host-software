@@ -60,6 +60,20 @@ import java.io.*;
 import java.util.*;
 
 /**
+ * chPair - small class to hold double pointers for convex hull calculations.
+ */
+class chPair
+{
+	public int polygon;
+	public int vertex;
+	
+	chPair(int p, int v)
+	{
+		polygon = p;
+		vertex = v;
+	}
+}
+/**
  * RrPolygonList: A collection of 2D polygons
  * 
  * List of polygons class.  This too maintains a maximum enclosing rectangle.
@@ -193,6 +207,227 @@ public class RrPolygonList
 		
 		return r;
 	}
+	
+	
+	
+	// Convex hull code - this uses the QuickHull algorithm
+	
+	/**
+	 * find a point from a list of polygon/vertex pairs
+	 * @Param i
+	 * @param a
+	 * @return the point
+	 */
+	private Rr2Point listPoint(int i, List a)
+	{
+		chPair chp = (chPair)a.get(i);
+		return polygon(chp.polygon).point(chp.vertex);
+	}
+	
+	/**
+	 * find the top (+y) point of the polygon list
+	 * @return the index/polygon pair of the point
+	 */
+	private int topPoint(List chps)
+	{
+		int top = 0;
+		double yMax = listPoint(top, chps).y();
+		double y;
+
+		for(int i = 1; i < chps.size(); i++)
+		{
+			y = listPoint(i, chps).y();
+			if(y > yMax)
+			{
+				yMax = y;
+				top = i;
+			}
+		}
+		
+		return top;
+	}
+	
+	/**
+	 * find the bottom (-y) point of the polygons
+	 * @return the index in the list of the point
+	 */
+	private int bottomPoint(List chps)
+	{
+		int bot = 0;
+		double yMin = listPoint(bot, chps).y();
+		double y;
+
+		for(int i = 1; i < chps.size(); i++)
+		{
+			y = listPoint(i, chps).y();
+			if(y < yMin)
+			{
+				yMin = y;
+				bot = i;
+			}
+		}
+		
+		return bot;
+	}
+
+	/**
+	 * Put the points on a triangle in the right order
+	 * @param a
+	 */
+	private void clockWise(List a)
+	{
+		if(a.size() == 3)
+		{
+			Rr2Point q = Rr2Point.sub(listPoint(1, a), listPoint(0, a));
+			Rr2Point r = Rr2Point.sub(listPoint(2, a), listPoint(0, a));
+			if(Rr2Point.op(q, r) > 0)
+			{
+				Object k = a.get(0);
+				a.set(0, a.get(1));
+				a.set(1, k);
+			}
+		} else
+			System.err.println("clockWise(): not called for a triangle!");
+	}
+	
+	
+	/**
+	 * Turn the list of hull points into a CSG convex polygon
+	 * @param hullPoints
+	 * @return CSG representation
+	 */	
+	public RrCSG toCSGHull(List hullPoints)
+	{
+		Rr2Point p = listPoint(hullPoints.size() - 1, hullPoints);
+		Rr2Point q;
+		RrCSG hull = RrCSG.universe();
+		for(int i = 0; i < hullPoints.size(); i++)
+		{
+			q = listPoint(i, hullPoints);
+			hull = RrCSG.intersection(hull, new RrCSG(new RrHalfPlane(p, q)));
+			p = q;
+		}
+
+		return hull;
+	}
+	
+	/**
+	 * Turn a list of hull points into a polygon
+	 * @param hullPoints
+	 * @return the hull as another polygon
+	 */	
+	public RrPolygon toRrPolygonHull(List hullPoints)
+	{
+		RrPolygon hull = new RrPolygon();
+		
+		for(int i = 0; i < hullPoints.size(); i++)
+			hull.add(listPoint(i, hullPoints), 1);
+
+		return hull;
+	}
+	
+	/**
+	 * Remove all the points in a list that are within or on the hull
+	 * @param inConsideration
+	 * @param hull
+	 */		
+	private void outsideHull(List inConsideration, RrCSG hull)
+	{
+		Rr2Point p;
+		int i = inConsideration.size() - 1;
+		while(i >= 0)
+		{
+			p = listPoint(i, inConsideration);
+			if(hull.value(p) <= 0)                // Need an epsilon here?
+				inConsideration.remove(i);
+			i--;
+		}
+	}
+	
+	/**
+	 * Compute the convex hull of all the polygons in the list
+	 * @return list of point index pairs of the points on the hull
+	 */
+	public List convexHull()
+	{	
+		// Initialise the points being considered to all the points
+		
+		List inConsideration = new ArrayList();
+		for(int i = 0; i < size(); i++)
+		{
+			for(int j = 0; j < polygon(i).size(); j++)
+				inConsideration.add(new chPair(i, j));
+		}
+		
+		// The top-most and bottom-most points must be on the hull
+		
+		List result = new ArrayList();
+		int t = topPoint(inConsideration);
+		int b = bottomPoint(inConsideration);
+		result.add(inConsideration.get(t));
+		result.add(inConsideration.get(b));
+		if(t > b)
+		{
+			inConsideration.remove(t);
+			inConsideration.remove(b);
+		} else
+		{
+			inConsideration.remove(b);
+			inConsideration.remove(t);			
+		}
+			
+		// Repeatedly add the point that's furthest from the current hull
+		
+		int corner, after;
+		RrCSG hull;
+		double v, vMax;
+		while(inConsideration.size() > 0)
+		{
+			vMax = 0;
+			corner = -1;
+			after = -1;
+			for(int testPoint = inConsideration.size() - 1; testPoint >= 0; testPoint--)
+			{
+				Rr2Point p = listPoint(result.size() - 1, result);
+				Rr2Point q;
+				RrHalfPlane hp;
+				for(int i = 0; i < result.size(); i++)
+				{
+					q = listPoint(i, result);
+					hp = new RrHalfPlane(p, q);
+					v = hp.value(listPoint(testPoint, inConsideration));
+					if(result.size() == 2)
+						v = Math.abs(v);
+					if(v > vMax)
+					{
+						after = i;
+						vMax = v;
+						corner = testPoint;
+					}
+					p = q;
+				}
+			}
+			
+			if(corner >= 0)
+			{
+				result.add(after, inConsideration.get(corner));
+				inConsideration.remove(corner);
+			} else if(inConsideration.size() > 0)
+			{
+				System.err.println("convexHull(): points left, but none included!");
+				return result;
+			}
+			
+			if(result.size() == 3)
+				clockWise(result);
+
+			hull = toCSGHull(result);
+			outsideHull(inConsideration, hull);
+		}
+		
+		return result;
+	}
+	
 	
 	
 	/**

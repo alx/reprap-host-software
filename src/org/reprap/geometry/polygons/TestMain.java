@@ -120,10 +120,9 @@ public class TestMain
 		
 		g.addCSG(cp);
 		
-		RrPolygon  h = hp.polygon(0);
-		List chl = h.convexHull();
+		List chl = hp.convexHull();
 		RrPolygonList ch = new RrPolygonList();		
-		ch.add(h.toRrPolygonHull(chl));
+		ch.add(hp.toRrPolygonHull(chl));
 		g.addPol(ch);  
 	}
 	
