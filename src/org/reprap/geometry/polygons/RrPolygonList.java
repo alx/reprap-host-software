@@ -293,19 +293,43 @@ public class RrPolygonList
 	
 	/**
 	 * Turn the list of hull points into a CSG convex polygon
+	 * if dontJoin is true only edges that are edges of the original
+	 * polygons are included; if false all edges are included.
 	 * @param hullPoints
+	 * @param dontJoin
 	 * @return CSG representation
 	 */	
-	public RrCSG toCSGHull(List hullPoints)
+	public RrCSG toCSGHull(List hullPoints, boolean dontJoin)
 	{
-		Rr2Point p = listPoint(hullPoints.size() - 1, hullPoints);
-		Rr2Point q;
+		Rr2Point p, q;
 		RrCSG hull = RrCSG.universe();
+		int pp, pq, vp, vq, ii, s;
+		boolean inc;
 		for(int i = 0; i < hullPoints.size(); i++)
 		{
-			q = listPoint(i, hullPoints);
-			hull = RrCSG.intersection(hull, new RrCSG(new RrHalfPlane(p, q)));
-			p = q;
+			ii = (i + 1)%hullPoints.size();
+
+			pp = ((chPair)hullPoints.get(i)).polygon;
+			vp = ((chPair)hullPoints.get(i)).vertex;
+			pq = ((chPair)hullPoints.get(ii)).polygon;
+			vq = ((chPair)hullPoints.get(ii)).vertex;
+			if(dontJoin)
+			{
+				if(pp != pq)
+					inc = false;
+				else
+				{
+					s = polygon(pp).size();
+					inc = ((vp%s) == ((vq - 1)%s)) || ((vp%s) == ((vq + 1)%s));
+				}
+			} else
+				inc = true;
+			if(inc)
+			{
+				p = polygon(pp).point(vp);
+				q = polygon(pq).point(vq);
+				hull = RrCSG.intersection(hull, new RrCSG(new RrHalfPlane(p, q)));
+			}
 		}
 
 		return hull;
@@ -376,7 +400,7 @@ public class RrPolygonList
 			inConsideration.remove(t);			
 		}
 			
-		// Repeatedly add the point that's furthest from the current hull
+		// Repeatedly add the point that's furthest outside the current hull
 		
 		int corner, after;
 		RrCSG hull;
@@ -421,14 +445,12 @@ public class RrPolygonList
 			if(result.size() == 3)
 				clockWise(result);
 
-			hull = toCSGHull(result);
+			hull = toCSGHull(result, false);
 			outsideHull(inConsideration, hull);
 		}
 		
 		return result;
 	}
-	
-	
 	
 	/**
 	 * Intersect a line with a polygon list, returning an
@@ -452,19 +474,19 @@ public class RrPolygonList
 	}
 	
 	
-	/**
-	 * Offset every polygon in the list
-	 * @param d
-	 * @return
-	 */
-	public RrPolygonList offset(double d)
-	{
-		int leng = size();
-		RrPolygonList r = new RrPolygonList();
-		for (int i = 0; i < leng; i++)
-			r.add(polygon(i).offset(d));
-		return r;
-	}
+//	/**
+//	 * Offset every polygon in the list
+//	 * @param d
+//	 * @return
+//	 */
+//	public RrPolygonList offset(double d)
+//	{
+//		int leng = size();
+//		RrPolygonList r = new RrPolygonList();
+//		for (int i = 0; i < leng; i++)
+//			r.add(polygon(i).offset(d));
+//		return r;
+//	}
 	
 	
 	/**

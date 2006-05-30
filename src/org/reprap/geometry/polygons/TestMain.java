@@ -34,9 +34,9 @@ public class TestMain
 		a.add(ss, 2);
 		c.add(a);
 		
-		RrPolygonList d = c.offset(0.03);
+		//RrPolygonList d = c.offset(0.03);
 		
-		RrPolygon  e = d.hatch(x, 0.03, 3, 4);
+		RrPolygon  e = c.hatch(x, 0.03, 3, 4);
 		//d = d.offset(0.003);
 		//e = e.join_up(d);
 		//c.add(d); 

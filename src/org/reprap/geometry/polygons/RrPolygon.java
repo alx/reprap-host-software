@@ -71,22 +71,22 @@ package org.reprap.geometry.polygons;
 import java.io.*;
 import java.util.*;
 
-/**
- * Small class to return the results of a polygon's crossing itself
- */
-class self_x
-{
-	public boolean flag;
-	public int l0;
-	public int l1;
-	
-	public self_x(boolean f, int a0, int a1)
-	{
-		flag = f;
-		l0 = a0;
-		l1 = a1;
-	}
-}
+///**
+// * Small class to return the results of a polygon's crossing itself
+// */
+//class self_x
+//{
+//	public boolean flag;
+//	public int l0;
+//	public int l1;
+//	
+//	public self_x(boolean f, int a0, int a1)
+//	{
+//		flag = f;
+//		l0 = a0;
+//		l1 = a1;
+//	}
+//}
 
 /**
  * The main polygon class
@@ -266,72 +266,72 @@ public class RrPolygon
 		opf.println("\" />");
 	}
 	
-	/**
-	 * Test for a self-intersecting polygon.  If the first entry in the
-	 * tuple returned is 0 the polygon does not self intersect.  If it is 1
-	 * the next two tuple entries give the start of the line segments first
-	 * encountered that intersect.  There may be others.
-	 * @return
-	 */
-	public self_x self_cross()
-	{
-		int k;
-		int leng = size();
-		
-		if(leng < 4)
-			return new self_x(false, 0, 0);
-		
-		for(int i = 0; i < leng; i++)
-		{
-			int ip = (i + 1) % leng;
-			RrLine s1 = new RrLine(point(i), point(ip));
-			int m = i + 2;
-			if(i > 0)
-				k = leng;
-			else
-				k = leng - 1;
-			for(int j = m; j <= k; j++)
-			{
-				int jp = (j + 1) % leng;
-				RrLine s2 = new RrLine(point(j), point(jp));
-				try
-				{
-					double t = s1.cross_t(s2);
-					
-					if (t >= 0 && t < 1)
-					{
-						try
-						{
-							t = s2.cross_t(s1);
-							if (t >= 0 && t < 1)
-								return new self_x(true, i, j);
-						}
-						catch(rr_ParallelLineException ple)
-						{
-							System.err.println("self_cross: A crosses B, but B does not cross A!");
-						}
-					}
-				}
-				catch (rr_ParallelLineException ple)
-				{}
-				
-			}
-		}
-		return new self_x(false, 0, 0);
-	}
-	
-	/**
-	 * Remove self-intersections
-	 * @return
-	 */
-	public RrPolygonList no_cross()
-	{
-		RrPolygonList result = new RrPolygonList();
-		result.polygons.add(new RrPolygon(this));
-		result.box.expand(box);
-		return result;
-		// Need some code in here...
-	}
+//	/**
+//	 * Test for a self-intersecting polygon.  If the first entry in the
+//	 * tuple returned is 0 the polygon does not self intersect.  If it is 1
+//	 * the next two tuple entries give the start of the line segments first
+//	 * encountered that intersect.  There may be others.
+//	 * @return
+//	 */
+//	public self_x self_cross()
+//	{
+//		int k;
+//		int leng = size();
+//		
+//		if(leng < 4)
+//			return new self_x(false, 0, 0);
+//		
+//		for(int i = 0; i < leng; i++)
+//		{
+//			int ip = (i + 1) % leng;
+//			RrLine s1 = new RrLine(point(i), point(ip));
+//			int m = i + 2;
+//			if(i > 0)
+//				k = leng;
+//			else
+//				k = leng - 1;
+//			for(int j = m; j <= k; j++)
+//			{
+//				int jp = (j + 1) % leng;
+//				RrLine s2 = new RrLine(point(j), point(jp));
+//				try
+//				{
+//					double t = s1.cross_t(s2);
+//					
+//					if (t >= 0 && t < 1)
+//					{
+//						try
+//						{
+//							t = s2.cross_t(s1);
+//							if (t >= 0 && t < 1)
+//								return new self_x(true, i, j);
+//						}
+//						catch(rr_ParallelLineException ple)
+//						{
+//							System.err.println("self_cross: A crosses B, but B does not cross A!");
+//						}
+//					}
+//				}
+//				catch (rr_ParallelLineException ple)
+//				{}
+//				
+//			}
+//		}
+//		return new self_x(false, 0, 0);
+//	}
+//	
+//	/**
+//	 * Remove self-intersections
+//	 * @return
+//	 */
+//	public RrPolygonList no_cross()
+//	{
+//		RrPolygonList result = new RrPolygonList();
+//		result.polygons.add(new RrPolygon(this));
+//		result.box.expand(box);
+//		return result;
+//		// Need some code in here...
+//	}
 	
 	/**
 	 * Negate (i.e. reverse cyclic order)
@@ -349,25 +349,25 @@ public class RrPolygon
 	}
 	
 	
-	/**
-	 * Offset a polygon to the right by d
-	 * @param d
-	 * @return
-	 */
-	public RrPolygon offset(double d)
-	{
-		int leng = size();
-		RrPolygon r = new RrPolygon();
-		int i = leng - 1;
-		for (int j = 0; j < leng; j++)
-		{
-			int k = (j + 1) % leng;
-			rr_bisector bs = RrLine.bisect(point(i), point(j), point(k));
-			r.add(bs.b.point(d/bs.s_angle), flag(j));
-			i = (i + 1) % leng;
-		}
-		return r;
-	}
+//	/**
+//	 * Offset a polygon to the right by d
+//	 * @param d
+//	 * @return
+//	 */
+//	public RrPolygon offset(double d)
+//	{
+//		int leng = size();
+//		RrPolygon r = new RrPolygon();
+//		int i = leng - 1;
+//		for (int j = 0; j < leng; j++)
+//		{
+//			int k = (j + 1) % leng;
+//			rr_bisector bs = RrLine.bisect(point(i), point(j), point(k));
+//			r.add(bs.b.point(d/bs.s_angle), flag(j));
+//			i = (i + 1) % leng;
+//		}
+//		return r;
+//	}
 	
 	/**
 	 * Intersect a line with a polygon, returning an
