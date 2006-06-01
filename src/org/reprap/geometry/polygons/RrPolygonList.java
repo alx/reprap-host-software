@@ -225,6 +225,18 @@ public class RrPolygonList
 	}
 	
 	/**
+	 * find a flag from a list of polygon/vertex pairs
+	 * @Param i
+	 * @param a
+	 * @return the point
+	 */
+	private int listFlag(int i, List a)
+	{
+		chPair chp = (chPair)a.get(i);
+		return polygon(chp.polygon).flag(chp.vertex);
+	}
+	
+	/**
 	 * find the top (+y) point of the polygon list
 	 * @return the index/polygon pair of the point
 	 */
@@ -293,43 +305,20 @@ public class RrPolygonList
 	
 	/**
 	 * Turn the list of hull points into a CSG convex polygon
-	 * if dontJoin is true only edges that are edges of the original
-	 * polygons are included; if false all edges are included.
 	 * @param hullPoints
-	 * @param dontJoin
 	 * @return CSG representation
 	 */	
-	public RrCSG toCSGHull(List hullPoints, boolean dontJoin)
+	public RrCSG toCSGHull(List hullPoints)
 	{
 		Rr2Point p, q;
 		RrCSG hull = RrCSG.universe();
-		int pp, pq, vp, vq, ii, s;
-		boolean inc;
-		for(int i = 0; i < hullPoints.size(); i++)
+		int i, iPlus;
+		for(i = 0; i < hullPoints.size(); i++)
 		{
-			ii = (i + 1)%hullPoints.size();
-
-			pp = ((chPair)hullPoints.get(i)).polygon;
-			vp = ((chPair)hullPoints.get(i)).vertex;
-			pq = ((chPair)hullPoints.get(ii)).polygon;
-			vq = ((chPair)hullPoints.get(ii)).vertex;
-			if(dontJoin)
-			{
-				if(pp != pq)
-					inc = false;
-				else
-				{
-					s = polygon(pp).size();
-					inc = ((vp%s) == ((vq - 1)%s)) || ((vp%s) == ((vq + 1)%s));
-				}
-			} else
-				inc = true;
-			if(inc)
-			{
-				p = polygon(pp).point(vp);
-				q = polygon(pq).point(vq);
-				hull = RrCSG.intersection(hull, new RrCSG(new RrHalfPlane(p, q)));
-			}
+			iPlus = (i + 1)%hullPoints.size();
+			p = listPoint(i, hullPoints);
+			q = listPoint(iPlus, hullPoints);
+			hull = RrCSG.intersection(hull, new RrCSG(new RrHalfPlane(p, q)));
 		}
 
 		return hull;
@@ -340,49 +329,49 @@ public class RrPolygonList
 	 * @param hullPoints
 	 * @return the hull as another polygon
 	 */	
-	public RrPolygon toRrPolygonHull(List hullPoints)
+	public RrPolygon toRrPolygonHull(List hullPoints, int flag)
 	{
 		RrPolygon hull = new RrPolygon();
 		
 		for(int i = 0; i < hullPoints.size(); i++)
-			hull.add(listPoint(i, hullPoints), 1);
+			hull.add(listPoint(i, hullPoints), flag);
 
 		return hull;
 	}
 	
 	/**
 	 * Remove all the points in a list that are within or on the hull
+	 * Maintain a candidate list of points that may be on it
 	 * @param inConsideration
 	 * @param hull
+	 * @param maybeZero
 	 */		
 	private void outsideHull(List inConsideration, RrCSG hull)
 	{
 		Rr2Point p;
+		double v;
 		int i = inConsideration.size() - 1;
 		while(i >= 0)
 		{
 			p = listPoint(i, inConsideration);
-			if(hull.value(p) <= 0)                // Need an epsilon here?
+			v = hull.value(p);
+			if(v <= 0)				// Need an epsilon here?
+			{
 				inConsideration.remove(i);
+			}
 			i--;
 		}
 	}
 	
 	/**
-	 * Compute the convex hull of all the polygons in the list
+	 * Compute the convex hull of all the points in the list
+	 * @param inConsideration
 	 * @return list of point index pairs of the points on the hull
 	 */
-	public List convexHull()
+	private List convexHull(List inConsideration)
 	{	
-		// Initialise the points being considered to all the points
-		
-		List inConsideration = new ArrayList();
-		for(int i = 0; i < size(); i++)
-		{
-			for(int j = 0; j < polygon(i).size(); j++)
-				inConsideration.add(new chPair(i, j));
-		}
-		
+		int i, j;
+
 		// The top-most and bottom-most points must be on the hull
 		
 		List result = new ArrayList();
@@ -405,6 +394,8 @@ public class RrPolygonList
 		int corner, after;
 		RrCSG hull;
 		double v, vMax;
+		Rr2Point p, q;
+		RrHalfPlane hp;
 		while(inConsideration.size() > 0)
 		{
 			vMax = 0;
@@ -412,10 +403,8 @@ public class RrPolygonList
 			after = -1;
 			for(int testPoint = inConsideration.size() - 1; testPoint >= 0; testPoint--)
 			{
-				Rr2Point p = listPoint(result.size() - 1, result);
-				Rr2Point q;
-				RrHalfPlane hp;
-				for(int i = 0; i < result.size(); i++)
+				p = listPoint(result.size() - 1, result);
+				for(i = 0; i < result.size(); i++)
 				{
 					q = listPoint(i, result);
 					hp = new RrHalfPlane(p, q);
@@ -442,15 +431,146 @@ public class RrPolygonList
 				return result;
 			}
 			
+			// Get the first triangle in the right order
+			
 			if(result.size() == 3)
 				clockWise(result);
 
-			hull = toCSGHull(result, false);
+			// Remove all points within the current hull from further consideration
+			
+			hull = toCSGHull(result);
 			outsideHull(inConsideration, hull);
 		}
 		
 		return result;
 	}
+	
+	/**
+	 * Construct a list of all the points in the polygons
+	 * @return list of point index pairs of the points in the polygons
+	 */
+	private List allPoints()
+	{
+		List inConsideration = new ArrayList();
+		for(int i = 0; i < size(); i++)
+		{
+			for(int j = 0; j < polygon(i).size(); j++)
+				inConsideration.add(new chPair(i, j));
+		}
+		
+		return inConsideration;
+	}
+	
+	/**
+	 * Compute the convex hull of all the polygons in the list
+	 * @return list of point index pairs of the points on the hull
+	 */
+	public List convexHull()
+	{
+		return convexHull(allPoints());
+	}
+		
+	/**
+	 * Set the polygon flag values for the points in a list
+	 */
+	private void flagSet(List a, int flag)
+	{
+		for(int i = 0; i < a.size(); i++)
+		{
+			chPair chp = (chPair)a.get(i);
+		    polygon(chp.polygon).flag(chp.vertex, flag);
+		}
+	}
+	
+	/**
+	 * Compute the CSG representation of all the polygons in the list
+	 * using Tony Woo's algorithm.
+	 * @return CSG representation
+	 */
+	private RrCSG toCSGRecursive(List a, List all, int level)
+	{
+		RrCSG result = null;
+		List sections = new ArrayList();
+		List section = new ArrayList();;
+		RrCSG hull = RrCSG.universe();
+		
+		int start = -1;
+		int i;
+		int oldFlag = listFlag(a.size()-1, a);
+		int flag;
+		for(i = 0; i < a.size(); i++)
+		{
+			flag = listFlag(i, a);
+			if(flag < level && oldFlag >= level)
+			{
+				start = i;
+				break;
+			}
+			oldFlag = flag;
+		}
+
+		if(start == -1)
+		{
+			System.err.println("toCSGRecursive(): no transition found.");
+			if(level%2 == 1)
+				return RrCSG.nothing();
+			else
+				return RrCSG.universe();
+		}
+
+		boolean tracking;
+		int oldi = start - 1;
+		if(oldi < 0)
+			oldi = a.size() - 1;
+		i = start;
+		for(int j = 0; j < a.size(); j++)
+		{
+			oldFlag = listFlag(oldi, a);
+			flag = listFlag(i, a);
+			if(flag < level && oldFlag >= level)
+			{
+				section = new ArrayList();
+				section.add(a.get(oldi));
+				section.add(a.get(i));
+			} else if (flag < level)
+			{
+				section.add(a.get(i));
+			} else if(flag >= level && oldFlag < level)
+			{
+				section.add(a.get(i));
+				sections.add(section);
+			} else if(flag >= level && oldFlag >= level)
+			{
+				RrHalfPlane hp = new RrHalfPlane(listPoint(oldi, a), listPoint(i, a));
+				hull = RrCSG.intersection(hull, new RrCSG(hp));
+			}
+
+			oldi = i;
+			i++;
+			if(i > a.size() - 1)
+				i = 0;
+		}
+	
+		return result;
+	}
+	
+	/**
+	 * Compute the CSG representation of all the polygons in the list
+	 * using Tony Woo's algorithm.
+	 * @return CSG representation
+	 */
+//	public RrCSGPolygon toCSG()
+//	{
+//		List all = allPoints();
+//		flagSet(all, 0);
+//		List hull = convexHull(all);
+//		flagSet(hull, 1);
+//		
+//		RrPolygon pg = polygon(((chPair)hull.get(0)).polygon);
+//		
+//		
+//		
+//	}
 	
 	/**
 	 * Intersect a line with a polygon list, returning an

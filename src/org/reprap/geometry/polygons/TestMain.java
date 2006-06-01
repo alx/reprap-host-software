@@ -122,7 +122,7 @@ public class TestMain
 		
 		List chl = hp.convexHull();
 		RrPolygonList ch = new RrPolygonList();		
-		ch.add(hp.toRrPolygonHull(chl));
+		ch.add(hp.toRrPolygonHull(chl, 1));
 		g.addPol(ch);  
 	}
 	
