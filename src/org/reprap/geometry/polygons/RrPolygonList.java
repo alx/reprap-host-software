@@ -368,9 +368,11 @@ public class RrPolygonList
 	 * @param inConsideration
 	 * @return list of point index pairs of the points on the hull
 	 */
-	private List convexHull(List inConsideration)
+	private List convexHull(List points)
 	{	
-		int i, j;
+		List inConsideration = new ArrayList(points);
+		
+		int i;
 
 		// The top-most and bottom-most points must be on the hull
 		
@@ -451,14 +453,14 @@ public class RrPolygonList
 	 */
 	private List allPoints()
 	{
-		List inConsideration = new ArrayList();
+		List points = new ArrayList();
 		for(int i = 0; i < size(); i++)
 		{
 			for(int j = 0; j < polygon(i).size(); j++)
-				inConsideration.add(new chPair(i, j));
+				points.add(new chPair(i, j));
 		}
 		
-		return inConsideration;
+		return points;
 	}
 	
 	/**
@@ -483,22 +485,37 @@ public class RrPolygonList
 	}
 	
 	/**
-	 * Compute the CSG representation of all the polygons in the list
-	 * using Tony Woo's algorithm.
+	 * Compute the CSG representation of a (sub)list recursively
+	 * @param a
+	 * @param level
 	 * @return CSG representation
 	 */
-	private RrCSG toCSGRecursive(List a, List all, int level)
-	{
-		RrCSG result = null;
-		List sections = new ArrayList();
-		List section = new ArrayList();;
-		RrCSG hull = RrCSG.universe();
+	private RrCSG toCSGRecursive(List a, int level, boolean closed)
+	{	
+		flagSet(a, level);	
+		level++;
+		List hl = convexHull(a);
+		flagSet(hl, level);
 		
-		int start = -1;
-		int i;
-		int oldFlag = listFlag(a.size()-1, a);
-		int flag;
-		for(i = 0; i < a.size(); i++)
+		List section = new ArrayList();
+		
+		RrCSG hull;
+		if(level%2 == 1)
+			hull = RrCSG.universe();
+		else
+			hull = RrCSG.nothing();
+		
+		int start, i, oldFlag, flag;
+		if(closed)
+		{
+			start = 0;
+			oldFlag = listFlag(a.size() - 1, a);
+		} else
+		{
+			start = 1;
+			oldFlag = listFlag(0, a);
+		}
+		for(i = start; i < a.size(); i++)
 		{
 			flag = listFlag(i, a);
 			if(flag < level && oldFlag >= level)
@@ -509,49 +526,52 @@ public class RrPolygonList
 			oldFlag = flag;
 		}
 
-		if(start == -1)
-		{
-			System.err.println("toCSGRecursive(): no transition found.");
-			if(level%2 == 1)
-				return RrCSG.nothing();
-			else
-				return RrCSG.universe();
-		}
-
-		boolean tracking;
 		int oldi = start - 1;
 		if(oldi < 0)
 			oldi = a.size() - 1;
+		oldFlag = listFlag(oldi, a);
 		i = start;
-		for(int j = 0; j < a.size(); j++)
+		int j0 = 1;
+		if(closed)
+			j0 = 0;
+		for(int j = j0; j < a.size(); j++)
 		{
-			oldFlag = listFlag(oldi, a);
 			flag = listFlag(i, a);
-			if(flag < level && oldFlag >= level)
+			
+			if (flag < level && oldFlag < level)
+			{
+				section.add(a.get(i));
+			} else if(flag < level && oldFlag >= level)
 			{
 				section = new ArrayList();
 				section.add(a.get(oldi));
 				section.add(a.get(i));
-			} else if (flag < level)
-			{
-				section.add(a.get(i));
 			} else if(flag >= level && oldFlag < level)
 			{
 				section.add(a.get(i));
-				sections.add(section);
-			} else if(flag >= level && oldFlag >= level)
+				if(level%2 == 1)
+					hull = RrCSG.intersection(hull, 
+							toCSGRecursive(section, level, false));
+				else
+					hull = RrCSG.union(hull, 
+							toCSGRecursive(section, level, false));
+			} else
 			{
 				RrHalfPlane hp = new RrHalfPlane(listPoint(oldi, a), listPoint(i, a));
-				hull = RrCSG.intersection(hull, new RrCSG(hp));
+				if(level%2 == 1)
+					hull = RrCSG.intersection(hull, new RrCSG(hp));
+				else
+					hull = RrCSG.union(hull, new RrCSG(hp));
 			}
 
+			oldFlag = flag;
 			oldi = i;
 			i++;
 			if(i > a.size() - 1)
 				i = 0;
 		}
-	
-		return result;
+
+		return hull;
 	}
 	
 	/**
@@ -559,18 +579,11 @@ public class RrPolygonList
 	 * using Tony Woo's algorithm.
 	 * @return CSG representation
 	 */
-//	public RrCSGPolygon toCSG()
-//	{
-//		List all = allPoints();
-//		flagSet(all, 0);
-//		List hull = convexHull(all);
-//		flagSet(hull, 1);
-//		
-//		RrPolygon pg = polygon(((chPair)hull.get(0)).polygon);
-//		
-//		
-//		
-//	}
+	public RrCSGPolygon toCSG()
+	{
+		List all = allPoints();
+		return new RrCSGPolygon(toCSGRecursive(all, 0, true), box.scale(1.1));
+	}
 	
 	/**
 	 * Intersect a line with a polygon list, returning an

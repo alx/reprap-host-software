@@ -114,16 +114,24 @@ public class TestMain
 		
 		cp.divide(1.0e-6, 1.0);
 		RrPolygonList hp;
-		hp = cp.megList(1, 0);
+		hp = cp.megList(2, 1);
+		RrPolygon hp0 = hp.polygon(0);
+		//hp0.svg(System.out);
+		RrPolygonList hpl0 = new RrPolygonList();
+		hpl0.add(hp0);
+		
+		RrCSGPolygon restored = hpl0.toCSG();
+		//System.out.println(restored.toString());
+		restored.divide(1.0e-6, 1.0);
 		RrGraphics g = new RrGraphics(new 
-				RrBox(new Rr2Point(0,0), new Rr2Point(1,1)), false);
+				RrBox(new Rr2Point(0,0), new Rr2Point(1,1)), true);
+		//g.addPol(hpl0);
+		g.addCSG(restored);
 		
-		g.addCSG(cp);
-		
-		List chl = hp.convexHull();
-		RrPolygonList ch = new RrPolygonList();		
-		ch.add(hp.toRrPolygonHull(chl, 1));
-		g.addPol(ch);  
+//		List chl = hp.convexHull();
+//		RrPolygonList ch = new RrPolygonList();		
+//		ch.add(hp.toRrPolygonHull(chl, 1));
+//		g.addPol(ch);  
 	}
 	
 	public static void main(String args[])

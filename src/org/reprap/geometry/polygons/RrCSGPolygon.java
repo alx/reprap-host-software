@@ -492,7 +492,8 @@ public class RrCSGPolygon
 
             st = here;
             int loop = 0;
-            if(Rr2Point.same(here, there, resolution_2))
+            boolean rightRound = Rr2Point.same(here, there, resolution_2);
+            if(rightRound)
             	loop = -1;
             qh = quad(h);
             
@@ -531,6 +532,19 @@ public class RrCSGPolygon
             	st = null;
             	loop++;
             } while (qh != qt || loop == 0);
+            
+            // If looping right round, the first and last
+            // points coincide.  Remove the last.
+            
+            if(rightRound)
+            {
+            	r.remove(r.size()-1);
+            	
+            	// Force the result to go clockwise if it's a full loop
+            	
+            	if(r.area() < 0)
+            		r = r.negate();
+            }
             
             return r;
     }
