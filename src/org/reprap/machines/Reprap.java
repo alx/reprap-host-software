@@ -212,7 +212,7 @@ public class Reprap implements CartesianPrinter {
 	public void terminate() throws Exception {
 		motorX.setIdle();
 		motorY.setIdle();
-		motorX.setIdle();
+		motorZ.setIdle();
 		extruder.setExtrusion(0);
 		extruder.setTemperature(0);
 	}
