@@ -117,13 +117,14 @@ public class Reprap implements CartesianPrinter {
 	public void moveTo(double x, double y, double z) throws ReprapException, IOException {
 		if (isCancelled()) return;
 
-		layer.moveTo(convertToStepX(x), convertToStepY(y), speed);
-		totalDistanceMoved += segmentLength(x - currentX, y - currentY);
-
 		if (z != currentZ) {
 			totalDistanceMoved += Math.abs(currentZ - z);
 			if (!excludeZ) motorZ.seekBlocking(speed, convertToStepZ(z));
 		}
+
+		layer.moveTo(convertToStepX(x), convertToStepY(y), speed);
+		totalDistanceMoved += segmentLength(x - currentX, y - currentY);
+
 		currentX = x;
 		currentY = y;
 		currentZ = z;
