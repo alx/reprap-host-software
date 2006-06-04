@@ -485,7 +485,13 @@ public class RrCSGPolygon
             
             RrPolygon r = new RrPolygon();
             Rr2Point h = new Rr2Point(here);
-            Rr2Point d = new Rr2Point(direction);
+            
+            Rr2Point d;
+            if(direction != null)
+            	d = new Rr2Point(direction);
+            else
+            	d = null;
+            
             Rr2Point fin, st;
             
             RrQContents qc;
@@ -512,10 +518,14 @@ public class RrCSGPolygon
             	case 1:
             		if(qc.l1 != null)
             		{
+            			if(d == null)
+            				d = new Rr2Point(qc.l1.direction());
             			qh.oneLine(qc.l1, qc.i1, r, h, d, st, fin, flag);
             			qh.visit1 = true;
             		} else if (qc.l2 != null)
             		{
+            			if(d == null)
+            				d = new Rr2Point(qc.l2.direction());
             			qh.oneLine(qc.l2, qc.i2, r, h, d, st, fin, flag);
             			qh.visit2 = true;
             		} else
@@ -523,6 +533,8 @@ public class RrCSGPolygon
             		break;
             		
             	case 2:
+            		if(d == null)
+        				d = new Rr2Point(qc.l1.direction());
             		qh.twoLine(qc, r, h, d, st, fin, flag);
             		break;
             		
@@ -537,14 +549,7 @@ public class RrCSGPolygon
             // points coincide.  Remove the last.
             
             if(rightRound)
-            {
             	r.remove(r.size()-1);
-            	
-            	// Force the result to go clockwise if it's a full loop
-            	
-            	if(r.area() < 0)
-            		r = r.negate();
-            }
             
             return r;
     }
@@ -607,16 +612,17 @@ public class RrCSGPolygon
     {
     	clearVisted();
     	RrPolygonList result = new RrPolygonList();
-    	Rr2Point d = new Rr2Point(1,1);
     	RrPolygon m;
     	
     	Rr2Point vertex = findCorner();
     	while(vertex != null)
     	{
-    		m = meg(vertex, vertex, d, fg);
+    		m = meg(vertex, vertex, null, fg);
     		if(m.size() > 0)
+    		{
     			m.flag(0, fs);
-    		result.add(m);
+    			result.add(m);
+    		}
     		vertex = findCorner();
     	}
     	

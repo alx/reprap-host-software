@@ -225,6 +225,50 @@ public class RrPolygonList
 	}
 	
 	/**
+	 * find a polygon from a list of polygon/vertex pairs
+	 * @Param i
+	 * @param a
+	 * @return the point
+	 */
+	private RrPolygon listPolygon(int i, List a)
+	{
+		chPair chp = (chPair)a.get(i);
+		return polygon(chp.polygon);
+	}
+	
+	/**
+	 * find a vertex from a list of polygon/vertex pairs
+	 * @Param i
+	 * @param a
+	 * @return the vertex index
+	 */
+	private int listVertex(int i, List a)
+	{
+		chPair chp = (chPair)a.get(i);
+		return chp.vertex;
+	}
+	
+	/**
+	 * find a list entry from a polygon/vertex pair
+	 * @Param p
+	 * @param v
+	 * @param a
+	 * @return the index of the entry (-1 if not found)
+	 */
+	private int listFind(RrPolygon p, int v, List a)
+	{
+		int i;
+		chPair chp;
+		for(i = 0; i < a.size(); i++)
+		{
+			chp = (chPair)a.get(i);
+			if(chp.vertex == v && polygon(chp.polygon) == p)
+				return i;
+		}
+		return -1;	
+	}
+	
+	/**
 	 * find a flag from a list of polygon/vertex pairs
 	 * @Param i
 	 * @param a
@@ -355,7 +399,7 @@ public class RrPolygonList
 		{
 			p = listPoint(i, inConsideration);
 			v = hull.value(p);
-			if(v <= 0)				// Need an epsilon here?
+			if(v <= 1.0e-6)				// Need an epsilon here?
 			{
 				inConsideration.remove(i);
 			}
@@ -474,6 +518,8 @@ public class RrPolygonList
 		
 	/**
 	 * Set the polygon flag values for the points in a list
+	 * @param a
+	 * @param flag
 	 */
 	private void flagSet(List a, int flag)
 	{
@@ -484,6 +530,105 @@ public class RrPolygonList
 		}
 	}
 	
+	/**
+	 * Get the next whole section to consider
+	 * @param a
+	 * @param section
+	 * @param start
+	 * @param level
+	 * @return the number to start from next time (-1 for done)
+	 */
+	private int nextSection(List a, List section, int start, int level)
+	{
+		boolean gotOne = false;
+		int i;
+		for(i = start; i < a.size(); i++)
+		{
+			if(listFlag(i, a) < level)
+			{
+				gotOne = true;
+				break;
+			}
+		}
+		if(!gotOne)
+			return -1;
+		
+		RrPolygon pg = listPolygon(i, a);
+		int vertex = listVertex(i,a);
+		while(pg.flag(vertex) < level)
+		{
+			vertex--;
+			if(vertex < 0)
+				vertex = pg.size() -1;
+		}
+		i = listFind(pg, vertex, a);
+		if(i < 0)
+		{
+			System.err.println("nextSection(): can't find vertex in list!");
+			return -1;
+		}
+		section.add(a.get(i));
+		i++;
+		if(i > a.size() - 1)
+			i = 0;
+		while(listFlag(i, a) < level)
+		{
+			section.add(a.get(i));
+			if(listPolygon(i, a) != pg)
+				System.err.println("nextSection(): jumped to wrong polygon!");
+			i++;
+			if(i > a.size() - 1)
+				i = 0;
+		}
+		section.add(a.get(i));
+		
+		return i;
+	}
+	
+	/**
+	 * Get the next whole polygon to consider
+	 * @param a
+	 * @param section
+	 * @param level
+	 * @return true if we've got one, false if not
+	 */
+	private boolean nextComplete(List a, List section, int level)
+	{
+		RrPolygon pg = null;
+		boolean gotOne = false;
+		int i, j;
+		for(i = 0; i < size(); i++)
+		{
+			pg = polygon(i);
+			gotOne = true;
+			for(j = 0; j < pg.size(); j++)
+			{
+				if(pg.flag(j) >= level || listFind(pg, j, a) < 0)
+				{
+					gotOne = false;
+					break;
+				}
+			}
+			if(gotOne)
+				break;
+		}
+		
+		if(gotOne)
+		{
+			i = listFind(pg, 0, a);
+			
+			while(listPolygon(i, a) == pg)
+			{
+				section.add(a.get(i));
+				i++;
+				if(i > a.size() - 1)
+					i = 0;
+			}
+			return true;
+		}
+		return false;
+	}
+		
 	/**
 	 * Compute the CSG representation of a (sub)list recursively
 	 * @param a
@@ -496,8 +641,19 @@ public class RrPolygonList
 		level++;
 		List hl = convexHull(a);
 		flagSet(hl, level);
+						
+		int i, oldi, flag, oldFlag, start;
+		RrPolygon pg, oldPg;
 		
-		List section = new ArrayList();
+		if(closed)
+		{
+			oldi = a.size() - 1;
+			start = 0;
+		} else
+		{
+			oldi = 0;
+			start = 1;
+		}
 		
 		RrCSG hull;
 		if(level%2 == 1)
@@ -505,72 +661,56 @@ public class RrPolygonList
 		else
 			hull = RrCSG.nothing();
 		
-		int start, i, oldFlag, flag;
-		if(closed)
-		{
-			start = 0;
-			oldFlag = listFlag(a.size() - 1, a);
-		} else
-		{
-			start = 1;
-			oldFlag = listFlag(0, a);
-		}
 		for(i = start; i < a.size(); i++)
 		{
+			oldFlag = listFlag(oldi, a);
+			oldPg = listPolygon(oldi, a);
 			flag = listFlag(i, a);
-			if(flag < level && oldFlag >= level)
-			{
-				start = i;
-				break;
-			}
-			oldFlag = flag;
-		}
+			pg = listPolygon(i, a);
 
-		int oldi = start - 1;
-		if(oldi < 0)
-			oldi = a.size() - 1;
-		oldFlag = listFlag(oldi, a);
-		i = start;
-		int j0 = 1;
-		if(closed)
-			j0 = 0;
-		for(int j = j0; j < a.size(); j++)
-		{
-			flag = listFlag(i, a);
-			
-			if (flag < level && oldFlag < level)
-			{
-				section.add(a.get(i));
-			} else if(flag < level && oldFlag >= level)
-			{
-				section = new ArrayList();
-				section.add(a.get(oldi));
-				section.add(a.get(i));
-			} else if(flag >= level && oldFlag < level)
-			{
-				section.add(a.get(i));
-				if(level%2 == 1)
-					hull = RrCSG.intersection(hull, 
-							toCSGRecursive(section, level, false));
-				else
-					hull = RrCSG.union(hull, 
-							toCSGRecursive(section, level, false));
-			} else
+			if(oldFlag == level && flag == level && pg == oldPg)
 			{
 				RrHalfPlane hp = new RrHalfPlane(listPoint(oldi, a), listPoint(i, a));
 				if(level%2 == 1)
 					hull = RrCSG.intersection(hull, new RrCSG(hp));
 				else
 					hull = RrCSG.union(hull, new RrCSG(hp));
-			}
+			} 
 
-			oldFlag = flag;
 			oldi = i;
-			i++;
-			if(i > a.size() - 1)
-				i = 0;
 		}
 
+		List section = new ArrayList();
+				
+		while(nextComplete(a, section, level))
+		{
+			if(level%2 == 1)
+				hull = RrCSG.intersection(hull,
+						toCSGRecursive(section, level, true));
+			else
+				hull = RrCSG.union(hull, 
+						toCSGRecursive(section, level, true));
+			
+			section = new ArrayList();
+		}
+		
+		section = new ArrayList();	
+		
+		start = nextSection(a, section, 0, level);
+		
+		while(start >= 0)
+		{
+			if(level%2 == 1)
+				hull = RrCSG.intersection(hull,
+						toCSGRecursive(section, level, false));
+			else
+				hull = RrCSG.union(hull, 
+						toCSGRecursive(section, level, false));
+			
+			section = new ArrayList();
+			start = nextSection(a, section, start, level);
+		}
+		
 		return hull;
 	}
 	
