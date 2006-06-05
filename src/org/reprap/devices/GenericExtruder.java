@@ -48,6 +48,8 @@ public class GenericExtruder extends Device {
 	private int maxSpeed; ///< Maximum motor speed (0-255)
 	private int t0;       ///< Zero torque speed
 	
+	private long lastTemperatureUpdate = 0;
+	
 	/// TODO hb should probably be ambient temperature
 	
 	/// Flag indicating if initialisation succeeded.  Usually this
@@ -269,6 +271,18 @@ public class GenericExtruder extends Device {
 
 	public double getTemperature() {
 		awaitSensorsInitialised();
+		
+		if (System.currentTimeMillis() - lastTemperatureUpdate > 20000) {
+			// Polled updates are having a hard time getting through
+			// the temporary comms locking, so we'll get them through here
+			try {
+				RefreshEmptySensor();
+				RefreshTemperature();
+			} catch (Exception ex) {
+				System.out.println("Exception during temperature/material update ignored");
+			}
+		}
+		
 		return currentTemperature;
 	}
 	
@@ -288,6 +302,9 @@ public class GenericExtruder extends Device {
 			double resistance = calculateResistance(reply.getHeat(), reply.getCalibration());
 			
 			currentTemperature = calculateTemperature(resistance);
+			System.out.println("Current temp " + currentTemperature);
+			
+			lastTemperatureUpdate = System.currentTimeMillis();
 		}
 		finally {
 			unlock();
@@ -393,7 +410,7 @@ public class GenericExtruder extends Device {
 
 	
 	protected class RequestTemperatureResponse extends IncomingMessage {
-		public RequestTemperatureResponse(Device device, OutgoingMessage message, long timeout) {
+		public RequestTemperatureResponse(Device device, OutgoingMessage message, long timeout) throws IOException {
 			super(device, message, timeout);
 		}
 		
@@ -432,7 +449,7 @@ public class GenericExtruder extends Device {
 	
 	protected class RequestIsEmptyResponse extends IncomingMessage {
 
-		public RequestIsEmptyResponse(Device device, OutgoingMessage message, long timeout) {
+		public RequestIsEmptyResponse(Device device, OutgoingMessage message, long timeout) throws IOException {
 			super(device, message, timeout);
 		}
 		
