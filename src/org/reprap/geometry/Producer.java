@@ -137,8 +137,8 @@ public class Producer {
 		reprap.moveTo(0, 5, 0);
 		System.out.println("Printing warmup segments, printing to (0,20)");
 		reprap.printTo(0, 20, 0);
-		System.out.println("Printing warmup segments, moving to (2,20)");
-		reprap.moveTo(2, 20, 0);
+		System.out.println("Printing warmup segments, printing to (2,20)");
+		reprap.printTo(2, 20, 0);
 		System.out.println("Printing warmup segments, printing to (2,5)");
 		reprap.printTo(2, 5, 0);
 		
