@@ -110,19 +110,22 @@ public class Producer {
         // Fallback defaults
 		int extrusionSpeed = 200;
 		int extrusionTemp = 40;
-		int movementSpeed = 230;
+		int movementSpeedXY = 230;
+		int movementSpeedZ = 230;
 		
 		try {
 			extrusionSpeed = Preferences.loadGlobalInt("ExtrusionSpeed");
 			extrusionTemp = Preferences.loadGlobalInt("ExtrusionTemp");
-			movementSpeed = Preferences.loadGlobalInt("MovementSpeed");
+			movementSpeedXY = Preferences.loadGlobalInt("MovementSpeed");
+			movementSpeedZ = Preferences.loadGlobalInt("MovementSpeedZ");
 		} catch (Exception ex) {
 			System.out.println("Warning: could not load ExtrusionSpeed/MovementSpeed, using defaults");
 		}
 		
 		reprap.initialise();
 		reprap.selectMaterial(0);
-		reprap.setSpeed(movementSpeed);
+		reprap.setSpeed(movementSpeedXY);
+		reprap.setSpeedZ(movementSpeedZ);
 		reprap.setExtruderSpeed(extrusionSpeed);
 		reprap.setTemperature(extrusionTemp);
 

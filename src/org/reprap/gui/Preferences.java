@@ -67,7 +67,8 @@ public class Preferences extends javax.swing.JDialog {
 	private JTextField extrusionSpeed;
 	private JLabel jLabel17;
 	private JLabel jLabel16;
-	private JTextField movementSpeed;
+	private JTextField movementSpeedXY;
+	private JTextField movementSpeedZ;
 	private JTextField extruderRz1;
 	private JTextField extruderAddress1;
 	private JTextField extruderBeta1;
@@ -87,7 +88,7 @@ public class Preferences extends javax.swing.JDialog {
 	private JTextField motorAddress3;
 	private JLabel jLabel7;
 	private JLabel jLabel6;
-	private JLabel jLabel5;
+	private JLabel speedLbl;
 	private JLabel jLabel3;
 	private JPanel jPanelMotors;
 	private JTextPane jTextPane1;
@@ -148,7 +149,8 @@ public class Preferences extends javax.swing.JDialog {
 			extrusionTemp.setText(loadString("ExtrusionTemp"));
 			extrusionSize.setText(loadString("ExtrusionSize"));
 			extrusionHeight.setText(loadString("ExtrusionHeight"));
-			movementSpeed.setText(loadString("MovementSpeed"));
+			movementSpeedXY.setText(loadString("MovementSpeed"));
+			movementSpeedZ.setText(loadString("MovementSpeedZ"));
 			
 			String geometryName = loadString("Geometry");
 			for(int i = 0; i < geometries.length; i++)
@@ -192,7 +194,8 @@ public class Preferences extends javax.swing.JDialog {
 			saveString("ExtrusionTemp", extrusionTemp.getText());
 			saveString("ExtrusionSize", extrusionSize.getText());
 			saveString("ExtrusionHeight", extrusionHeight.getText());
-			saveString("MovementSpeed", movementSpeed.getText());
+			saveString("MovementSpeed", movementSpeedXY.getText());
+			saveString("MovementSpeedZ", movementSpeedZ.getText());
 
 			org.reprap.Preferences.saveGlobal();
 		} catch (Exception ex) {
@@ -214,7 +217,7 @@ public class Preferences extends javax.swing.JDialog {
 				jButtonOK = new JButton();
 				getContentPane().add(jButtonOK);
 				jButtonOK.setText("OK");
-				jButtonOK.setBounds(357, 238, 77, 28);
+				jButtonOK.setBounds(357, 274, 77, 28);
 				jButtonOK.addMouseListener(new MouseAdapter() {
 					public void mouseClicked(MouseEvent evt) {
 						jButtonOKMouseClicked(evt);
@@ -225,7 +228,7 @@ public class Preferences extends javax.swing.JDialog {
 				jButtonCancel = new JButton();
 				getContentPane().add(jButtonCancel);
 				jButtonCancel.setText("Cancel");
-				jButtonCancel.setBounds(266, 238, 77, 28);
+				jButtonCancel.setBounds(266, 274, 77, 28);
 				jButtonCancel.addMouseListener(new MouseAdapter() {
 					public void mouseClicked(MouseEvent evt) {
 						jButtonCancelMouseClicked(evt);
@@ -235,7 +238,7 @@ public class Preferences extends javax.swing.JDialog {
 			{
 				jTabbedPane1 = new JTabbedPane();
 				getContentPane().add(jTabbedPane1);
-				jTabbedPane1.setBounds(7, 7, 427, 224);
+				jTabbedPane1.setBounds(7, 7, 427, 264);
 				{
 					jPanelGeneral = new JPanel();
 					jTabbedPane1.addTab("General", null, jPanelGeneral, null);
@@ -296,10 +299,16 @@ public class Preferences extends javax.swing.JDialog {
 						jLabel4.setBounds(14, 109, 84, 28);
 					}
 					{
-						jLabel5 = new JLabel();
-						jPanelMotors.add(jLabel5);
-						jLabel5.setText("Speed");
-						jLabel5.setBounds(14, 168, 70, 28);
+						speedLbl = new JLabel();
+						jPanelMotors.add(speedLbl);
+						speedLbl.setText("Speed (XY)");
+						speedLbl.setBounds(14, 168, 70, 28);
+					}
+					{
+						speedLbl = new JLabel();
+						jPanelMotors.add(speedLbl);
+						speedLbl.setText("Speed  (Z)");
+						speedLbl.setBounds(14, 198, 70, 28);
 					}
 					{
 						jLabel16 = new JLabel();
@@ -390,9 +399,14 @@ public class Preferences extends javax.swing.JDialog {
 						jLabel10.setBounds(224, 112, 21, 21);
 					}
 					{
-						movementSpeed = new JTextField();
-						jPanelMotors.add(movementSpeed);
-						movementSpeed.setBounds(112, 168, 105, 21);
+						movementSpeedXY = new JTextField();
+						jPanelMotors.add(movementSpeedXY);
+						movementSpeedXY.setBounds(112, 170, 105, 21);
+					}
+					{
+						movementSpeedZ = new JTextField();
+						jPanelMotors.add(movementSpeedZ);
+						movementSpeedZ.setBounds(112, 200, 105, 21);
 					}
 				}
 				{
@@ -604,7 +618,7 @@ public class Preferences extends javax.swing.JDialog {
 				getContentPane().setLayout(null);
 				this.setTitle("RepRap Preferences");
 			}
-			this.setSize(449, 298);
+			this.setSize(449, 338);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

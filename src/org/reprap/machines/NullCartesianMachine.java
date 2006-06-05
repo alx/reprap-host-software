@@ -85,6 +85,13 @@ public class NullCartesianMachine implements CartesianPrinter {
 	public void setSpeed(int speed) {
 	}
 
+	public int getSpeedZ() {
+		return 200;
+	}
+
+	public void setSpeedZ(int speed) {
+	}
+
 	public int getExtruderSpeed() {
 		return 200;
 	}

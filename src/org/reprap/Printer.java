@@ -26,6 +26,8 @@ public interface Printer {
 	
 	public int getSpeed();
 	public void setSpeed(int speed);
+	public int getSpeedZ();
+	public void setSpeedZ(int speed);
 	public int getExtruderSpeed();
 	public void setExtruderSpeed(int speed);
 	public void setPreviewer(Previewer previewer);

@@ -175,7 +175,6 @@ public class GenericExtruder extends Device {
 			setHeater(0, 0);
 		else
 			setHeater(power, safetyPICTemp);
-			
 	}
 	
 	/**

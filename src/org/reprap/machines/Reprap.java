@@ -42,7 +42,8 @@ public class Reprap implements CartesianPrinter {
 	double offsetX, offsetY, offsetZ;
 	
 	
-	private int speed = 230;  			// Initial default speed
+	private int speedXY = 230;  			// Initial default speed
+	private int speedZ = 230;  			// Initial default speed
 	private int speedExtruder = 200;    // Initial default extruder speed
 	
 	private double extrusionSize;
@@ -119,10 +120,10 @@ public class Reprap implements CartesianPrinter {
 
 		if (z != currentZ) {
 			totalDistanceMoved += Math.abs(currentZ - z);
-			if (!excludeZ) motorZ.seekBlocking(speed, convertToStepZ(z));
+			if (!excludeZ) motorZ.seekBlocking(speedZ, convertToStepZ(z));
 		}
 
-		layer.moveTo(convertToStepX(x), convertToStepY(y), speed);
+		layer.moveTo(convertToStepX(x), convertToStepY(y), speedXY);
 		totalDistanceMoved += segmentLength(x - currentX, y - currentY);
 
 		currentX = x;
@@ -156,7 +157,7 @@ public class Reprap implements CartesianPrinter {
 			totalDistanceExtruded += distance;
 			totalDistanceMoved += distance;
 			extruder.setExtrusion(speedExtruder);
-			if (!excludeZ) motorZ.seekBlocking(speed, convertToStepZ(z));
+			if (!excludeZ) motorZ.seekBlocking(speedZ, convertToStepZ(z));
 			extruder.setExtrusion(0);
 			currentZ = z;
 			return;
@@ -166,7 +167,7 @@ public class Reprap implements CartesianPrinter {
 		double distance = segmentLength(x - currentX, y - currentY);
 		totalDistanceExtruded += distance;
 		totalDistanceMoved += distance;
-		layer.printTo(convertToStepX(x), convertToStepY(y), speed, speedExtruder);
+		layer.printTo(convertToStepX(x), convertToStepY(y), speedXY, speedExtruder);
 		currentX = x;
 		currentY = y;
 	}
@@ -227,17 +228,31 @@ public class Reprap implements CartesianPrinter {
 	}
 
 	/**
-	 * @return Returns the speed.
+	 * @return Returns the speed for the X & Y axes.
 	 */
 	public int getSpeed() {
-		return speed;
+		return speedXY;
 	}
 	/**
-	 * @param speed The speed to set.
+	 * @param speed The speed to set for the X and Y axes.
 	 */
 	public void setSpeed(int speed) {
-		this.speed = speed;
+		this.speedXY = speed;
 	}
+
+	/**
+	 * @return Returns the speed for the Z axis.
+	 */
+	public int getSpeedZ() {
+		return speedZ;
+	}
+	/**
+	 * @param speed The speed to set for the Z axis.
+	 */
+	public void setSpeedZ(int speed) {
+		this.speedZ = speed;
+	}
+
 	/**
 	 * @return Returns the speedExtruder.
 	 */
@@ -299,9 +314,9 @@ public class Reprap implements CartesianPrinter {
 	public void initialise() throws Exception {
 		if (previewer != null)
 			previewer.reset();
-		motorX.homeReset(speed);
-		motorY.homeReset(speed);
-		if (!excludeZ) motorZ.homeReset(speed);
+		motorX.homeReset(speedXY);
+		motorY.homeReset(speedXY);
+		if (!excludeZ) motorZ.homeReset(speedZ);
 	}
 
 	public double getX() {
