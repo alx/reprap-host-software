@@ -288,12 +288,15 @@ public class Reprap implements CartesianPrinter {
 		if (previewer != null) previewer.setMessage(null);
 	}
 	
-	private void EnsureHot() {
+	private void EnsureHot() throws ReprapException, IOException {
 		double threshold = extruder.getTemperatureTarget() * 0.95;
 		
 		if (extruder.getTemperature() >= threshold)
 			return;
 
+		double x = currentX;
+		double y = currentY;
+		moveToHeatingZone();
 		while(extruder.getTemperature() < threshold && !isCancelled()) {
 			if (previewer != null) previewer.setMessage("Waiting for extruder to reach working temperature (" + Math.round(extruder.getTemperature()) + ")");
 			try {
@@ -301,8 +304,18 @@ public class Reprap implements CartesianPrinter {
 			} catch (InterruptedException e) {
 			}
 		}
+		moveTo(x, y, currentZ);
 		if (previewer != null) previewer.setMessage(null);
 		
+	}
+
+	/**
+	 * Moves the head to the predefined heating area
+	 * @throws IOException
+	 * @throws ReprapException
+	 */
+	private void moveToHeatingZone() throws ReprapException, IOException {
+		moveTo(0, 0, currentZ);
 	}
 
 	public boolean isCancelled() {
