@@ -173,8 +173,13 @@ public class GenericExtruder extends Device {
 		
 		if (temperature == 0)
 			setHeater(0, 0);
-		else
+		else {
+			// Increase power by 10% as I'm an impatient person.
+			power+=power/10;
+			if (power>255)
+				power=255;
 			setHeater(power, safetyPICTemp);
+		}
 	}
 	
 	/**
