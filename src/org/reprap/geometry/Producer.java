@@ -132,11 +132,15 @@ public class Producer {
 		reprap.selectMaterial(0);
 		reprap.setExtruderSpeed(extrusionSpeed);
 
-		// A "warmup" 20mm segment to get things in working order
-		System.out.println("Printing warmup segment, moving to (0,5)");
+		// A "warmup" segment to get things in working order
+		System.out.println("Printing warmup segments, moving to (0,5)");
 		reprap.moveTo(0, 5, 0);
-		System.out.println("Printing warmup segment, printing to (0,25)");
-		reprap.printTo(0, 25, 0);
+		System.out.println("Printing warmup segments, printing to (0,20)");
+		reprap.printTo(0, 20, 0);
+		System.out.println("Printing warmup segments, moving to (2,20)");
+		reprap.moveTo(2, 20, 0);
+		System.out.println("Printing warmup segments, printing to (2,5)");
+		reprap.printTo(2, 5, 0);
 		
 		// This should now split off layers one at a time
 		// and pass them to the LayerProducer.  At the moment,
