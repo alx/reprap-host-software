@@ -56,7 +56,7 @@ public class ExtruderPanel extends JPanel {
 		c.insets.left = 5;
 		add(extrudeButton, c);
 		
-        if (!extruder.isAvailable()) {
+        if (extruder == null || !extruder.isAvailable()) {
       	  extrudeButton.setEnabled(false);
       	  speed.setEnabled(false);
         }

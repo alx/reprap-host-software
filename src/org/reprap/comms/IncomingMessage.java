@@ -41,9 +41,9 @@ public abstract class IncomingMessage {
 		for(;;) {
 			try {
 				incomingContext = comm.sendMessage(device, message);
-				comm.receiveMessage(this);
+				comm.receiveMessage(this, timeout);
 			} catch (IOException e) {
-				
+				System.out.println("IO error/timeout, resending");
 				// Just to prevent any unexpected spinning
 				try {
 					Thread.sleep(1);

@@ -41,7 +41,7 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 	JCheckBox lockXYZSpeed;
 	
 	StepperPanel motorX, motorY, motorZ;
-	GenericExtruder extruder;
+	GenericExtruder extruder = null;
 	
 	Communicator communicator;
 	
@@ -69,7 +69,7 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 	
 	public void dispose() {
 		super.dispose();
-		extruder.dispose();
+		if (extruder != null) extruder.dispose();
 		motorX.dispose();
 		motorY.dispose();
 		motorZ.dispose();
@@ -164,7 +164,6 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 		c.gridheight = 1;
 		extruderPanel = new ExtruderPanel(extruder);
 		panel.add(extruderPanel, c);
-		
 		
 		JPanel buttons = new JPanel();
 		c.gridx = 0;

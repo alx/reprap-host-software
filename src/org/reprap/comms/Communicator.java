@@ -11,6 +11,7 @@ public interface Communicator {
 			OutgoingMessage messageToSend) throws IOException;
 
 	public void receiveMessage(IncomingMessage message) throws IOException;
+	public void receiveMessage(IncomingMessage message, long timeout) throws IOException;
 	
 	public void close();
 	
