@@ -122,15 +122,21 @@ public class Producer {
 			System.out.println("Warning: could not load ExtrusionSpeed/MovementSpeed, using defaults");
 		}
 		
+		System.out.println("Setting temperature and speed");
 		reprap.setTemperature(extrusionTemp);
-		reprap.initialise();
-		reprap.selectMaterial(0);
 		reprap.setSpeed(movementSpeedXY);
 		reprap.setSpeedZ(movementSpeedZ);
+		System.out.println("Intialising reprap");
+		reprap.initialise();
+		System.out.println("Selecting material");
+		reprap.selectMaterial(0);
 		reprap.setExtruderSpeed(extrusionSpeed);
 
 		// A "warmup" 20mm segment to get things in working order
-		reprap.printSegment(0, 5, 0, 0, 25, 0);
+		System.out.println("Printing warmup segment, moving to (0,5)");
+		reprap.moveTo(0, 5, 0);
+		System.out.println("Printing warmup segment, printing to (0,25)");
+		reprap.printTo(0, 25, 0);
 		
 		// This should now split off layers one at a time
 		// and pass them to the LayerProducer.  At the moment,
@@ -138,6 +144,10 @@ public class Producer {
 
 		boolean isEvenLayer = true;
 		for(double z = 0.0; z < 5.0; z += reprap.getExtrusionHeight()) {
+			if (reprap.isCancelled())
+				break;
+			System.out.println("Commencing layer at " + z);
+
 			// Change Z height
 			reprap.moveTo(reprap.getX(), reprap.getY(), z);
 			

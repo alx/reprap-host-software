@@ -296,6 +296,7 @@ public class Reprap implements CartesianPrinter {
 
 		double x = currentX;
 		double y = currentY;
+		System.out.println("Moving to heating zone");
 		moveToHeatingZone();
 		while(extruder.getTemperature() < threshold && !isCancelled()) {
 			if (previewer != null) previewer.setMessage("Waiting for extruder to reach working temperature (" + Math.round(extruder.getTemperature()) + ")");
@@ -304,6 +305,7 @@ public class Reprap implements CartesianPrinter {
 			} catch (InterruptedException e) {
 			}
 		}
+		System.out.println("Returning to previous position");
 		moveTo(x, y, currentZ);
 		if (previewer != null) previewer.setMessage(null);
 		
