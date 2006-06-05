@@ -2,8 +2,10 @@ package org.reprap.comms.messages;
 
 import java.io.IOException;
 
+import org.reprap.Device;
 import org.reprap.comms.IncomingContext;
 import org.reprap.comms.IncomingMessage;
+import org.reprap.comms.OutgoingMessage;
 
 public abstract class IncomingIntMessage extends IncomingMessage {
 
@@ -12,6 +14,12 @@ public abstract class IncomingIntMessage extends IncomingMessage {
 		super(incomingContext);
 	}
 
+	public IncomingIntMessage(Device device, OutgoingMessage message, long timeout)
+		throws IOException
+	{
+		super(device, message, timeout);
+	}
+	
 	public static int ConvertBytesToInt(byte b1, byte b2) {
 		int low = b1;
 		int high = b2;

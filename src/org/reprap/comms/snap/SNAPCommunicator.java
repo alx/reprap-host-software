@@ -19,12 +19,17 @@ import org.reprap.comms.IncomingMessage;
 import org.reprap.comms.OutgoingMessage;
 
 public class SNAPCommunicator implements Communicator {
-	
+
+	private final static int ackTimeout = 600;
+	private final static int messageTimeout = 600;
+    
 	private Address localAddress;
 	
 	private SerialPort port;
 	private OutputStream writeStream;
 	private InputStream readStream;
+	
+	//private ReceiveThread receiveThread = null;
 	
 	private boolean debugMode;
 	
@@ -40,15 +45,15 @@ public class SNAPCommunicator implements Communicator {
 		// Workround for javax.comm bug.
 		// See http://forum.java.sun.com/thread.jspa?threadID=673793
 		
-		 try {
-			 port.setSerialPortParams(baudRate,
-						SerialPort.DATABITS_8,
-						SerialPort.STOPBITS_1,
-						SerialPort.PARITY_NONE);
-			 }
-			 catch (Exception e) {
-			 
-			 }
+		try {
+			port.setSerialPortParams(baudRate,
+					SerialPort.DATABITS_8,
+					SerialPort.STOPBITS_1,
+					SerialPort.PARITY_NONE);
+		}
+		catch (Exception e) {
+			
+		}
 			 
 		port.setSerialPortParams(baudRate,
 				SerialPort.DATABITS_8,
@@ -82,6 +87,17 @@ public class SNAPCommunicator implements Communicator {
 		port = null;
 	}
 	
+	private void dumpPacket(Device device, OutgoingMessage messageToSend) {
+		byte [] binaryMessage = messageToSend.getBinary(); 
+		System.out.print(localAddress.toString());
+		System.out.print("->");
+		System.out.print(device.getAddress().toString());
+		System.out.print(": ");
+		for(int i = 0; i < binaryMessage.length; i++)
+			System.out.print(Integer.toHexString(binaryMessage[i]>=0?binaryMessage[i]:binaryMessage[i]+256) + " ");
+		System.out.println("");
+	}
+	
 	public IncomingContext sendMessage(Device device,
 			OutgoingMessage messageToSend) throws IOException {
 		
@@ -93,21 +109,31 @@ public class SNAPCommunicator implements Communicator {
 		for(;;) {
 			if (debugMode) {
 				System.out.print("TX ");
-				System.out.print(localAddress.toString());
-				System.out.print("->");
-				System.out.print(device.getAddress().toString());
-				System.out.print(": ");
-				for(int i = 0; i < binaryMessage.length; i++)
-					System.out.print(Integer.toHexString(binaryMessage[i]) + " ");
-				System.out.println("");
+				dumpPacket(device, messageToSend);
 			}
 			sendRawMessage(packet);
 
-			SNAPPacket ackPacket = receivePacket();
+			SNAPPacket ackPacket;
+			try {
+				ackPacket = receivePacket(ackTimeout);	
+			} catch (IOException ex) {
+				// An error occurred during receive, so send and try again
+				//if (debugMode) {
+					System.out.println("Receive error, re-sending");
+					dumpPacket(device, messageToSend);
+				//}
+				continue;
+			}
 			if (ackPacket.isAck())
 				break;
-			if (!ackPacket.isNak())
-				throw new IOException("Received data packet when expecting ACK");
+			if (ackPacket.getSourceAddress().equals(localAddress)) {
+				// Packet was from us, so assume no node present
+				System.out.println("Device at address " + device.getAddress() + " not present");
+				throw new IOException("Device at address " + device.getAddress() + " not present");
+			}
+			if (!ackPacket.isNak()) {
+				System.out.println("Received data packet when expecting ACK");
+			}
 		}
 		
 		IncomingContext replyContext = messageToSend.getReplyContext(this,
@@ -119,13 +145,41 @@ public class SNAPCommunicator implements Communicator {
 		writeStream.write(packet.getRawData());
 	}
 
-	protected synchronized SNAPPacket receivePacket() throws IOException {
+	private int readByte(long timeout) throws IOException {
+		long t0 = System.currentTimeMillis();
+		int c = -1;
+
+		// Sometimes javacomm seems to freak out and say something
+		// timed out when it didn't, so double check and try again
+		// if it really didn't time out
+		for(;;) {
+			c = readStream.read();
+			if (c != -1)
+				return c;
+			if (System.currentTimeMillis() - t0 >= timeout)
+				return -1;
+			
+			try {
+				// Just to avoid a deadly spin if something unexpected happens
+				Thread.sleep(1);
+			} catch (InterruptedException e) {
+			}
+		} 
+	}
+	
+	protected synchronized SNAPPacket receivePacket(long timeout) throws IOException {
 		SNAPPacket packet = null;
 		if (debugMode) System.out.print("RX ");
+		try {
+			port.enableReceiveTimeout(messageTimeout);
+		} catch (UnsupportedCommOperationException e) {
+			System.out.println("Read timeouts unsupported on this platform");
+		}
 		for(;;) {
-			int c = readStream.read();
+			int c = readByte(timeout);
 			if (debugMode) System.out.print(Integer.toHexString(c) + " ");
-			if (c == -1) throw new IOException();
+			if (c == -1)
+				throw new IOException();
 			if (packet == null) {
 				if (c != 0x54)  // Always wait for a sync byte before doing anything
 					continue;
@@ -137,16 +191,18 @@ public class SNAPCommunicator implements Communicator {
 					if (debugMode) System.out.println("");
 					return packet;
 				} else {
-					System.out.println("CRC error, NAKing");
-					/// TODO send NAK
-					//sendRawMessage(packet.generateNAK());
+					System.out.println("CRC error");
+					throw new IOException("CRC error");
 				}
-				packet = null;
 			}
 		}	
 	}
 	
 	public void receiveMessage(IncomingMessage message) throws IOException {
+		receiveMessage(message, messageTimeout);
+	}
+	
+	public void receiveMessage(IncomingMessage message, long timeout) throws IOException {
 		// Here we collect one packet and notify the message
 		// of its contents.  The message will respond
 		// to indicate if it wants the message.  If not,
@@ -159,7 +215,7 @@ public class SNAPCommunicator implements Communicator {
 		// We will also only pass packets to the message if they are for
 		// the local address.
 		for(;;) {
-			SNAPPacket packet = receivePacket();
+			SNAPPacket packet = receivePacket(timeout);
 			if (processPacket(message, packet))
 				return;
 		}
@@ -208,5 +264,5 @@ public class SNAPCommunicator implements Communicator {
 	// fire them off if anything matching arrives.
 	
 	// TODO Make a generic message receiver.  Use reflection to get correct class. 
-	
+
 }

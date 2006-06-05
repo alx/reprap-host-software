@@ -185,9 +185,7 @@ public class GenericStepperMotor extends Device {
 		lock();
 		try {
 			setNotification();
-			IncomingContext replyContext = sendMessage(
-					new OutgoingByteMessage(MSG_HomeReset, (byte)speed));
-			RequestHomeResetResponse response = new RequestHomeResetResponse(replyContext);
+			RequestHomeResetResponse response = new RequestHomeResetResponse(this, new OutgoingByteMessage(MSG_HomeReset, (byte)speed), 60000);
 			setNotificationOff();
 		} finally {
 			unlock();
@@ -213,10 +211,7 @@ public class GenericStepperMotor extends Device {
 		try {
 			setNotification();
 			
-			IncomingContext replyContext = sendMessage(
-					new RequestDDAMaster(speed, x1, deltaY));
-			
-			new RequestDDAMasterResponse(replyContext);
+			new RequestDDAMasterResponse(this, new RequestDDAMaster(speed, x1, deltaY), 60000);
 			
 			setNotificationOff();
 		}
@@ -361,8 +356,8 @@ public class GenericStepperMotor extends Device {
 	}
 
 	protected class RequestDDAMasterResponse extends IncomingIntMessage {
-		public RequestDDAMasterResponse(IncomingContext incomingContext) throws IOException {
-			super(incomingContext);
+		public RequestDDAMasterResponse(Device device, OutgoingMessage message, long timeout) throws IOException {
+			super(device, message, timeout);
 		}
 		
 		protected boolean isExpectedPacketType(byte packetType) {
@@ -392,8 +387,8 @@ public class GenericStepperMotor extends Device {
 	}
 	
 	protected class RequestHomeResetResponse extends IncomingMessage {
-		public RequestHomeResetResponse(IncomingContext incomingContext) throws IOException {
-			super(incomingContext);
+		public RequestHomeResetResponse(Device device, OutgoingMessage message, long timeout) throws IOException {
+			super(device, message, timeout);
 		}
 		protected boolean isExpectedPacketType(byte packetType) {
 			return packetType == MSG_HomeReset; 
