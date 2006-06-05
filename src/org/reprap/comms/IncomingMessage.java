@@ -36,11 +36,11 @@ public abstract class IncomingMessage {
 	 * @param message
 	 * @throws IOException
 	 */
-	public IncomingMessage(Device device, OutgoingMessage message, long timeout) {
+	public IncomingMessage(Device device, OutgoingMessage message, long timeout) throws IOException {
 		Communicator comm = device.getCommunicator();
 		for(;;) {
+			incomingContext = comm.sendMessage(device, message);
 			try {
-				incomingContext = comm.sendMessage(device, message);
 				comm.receiveMessage(this, timeout);
 			} catch (IOException e) {
 				System.out.println("IO error/timeout, resending");
