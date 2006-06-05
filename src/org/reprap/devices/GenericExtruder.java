@@ -6,7 +6,6 @@ import org.reprap.Device;
 import org.reprap.Preferences;
 import org.reprap.comms.Address;
 import org.reprap.comms.Communicator;
-import org.reprap.comms.IncomingContext;
 import org.reprap.comms.IncomingMessage;
 import org.reprap.comms.OutgoingMessage;
 import org.reprap.comms.IncomingMessage.InvalidPayloadException;
@@ -255,8 +254,7 @@ public class GenericExtruder extends Device {
 		//System.out.println("Refreshing sensor");
 		lock();
 		try {
-			IncomingContext replyContext = sendMessage(new OutgoingBlankMessage(MSG_IsEmpty));
-			RequestIsEmptyResponse reply = new RequestIsEmptyResponse(replyContext);
+			RequestIsEmptyResponse reply = new RequestIsEmptyResponse(this, new OutgoingBlankMessage(MSG_IsEmpty), 500);
 			currentMaterialOutSensor = reply.getValue() == 0 ? false : true; 
 		} catch (InvalidPayloadException e) {
 			throw new IOException();
@@ -283,8 +281,7 @@ public class GenericExtruder extends Device {
 		lock();
 		try {
 			OutgoingMessage request = new OutgoingBlankMessage(MSG_GetTemp);
-			IncomingContext replyContext = sendMessage(request);
-			RequestTemperatureResponse reply = new RequestTemperatureResponse(replyContext);
+			RequestTemperatureResponse reply = new RequestTemperatureResponse(this, request, 500);
 			
 			//System.out.println("Raw temp " + reply.getHeat());
 	
@@ -396,8 +393,8 @@ public class GenericExtruder extends Device {
 
 	
 	protected class RequestTemperatureResponse extends IncomingMessage {
-		public RequestTemperatureResponse(IncomingContext incomingContext) throws IOException {
-			super(incomingContext);
+		public RequestTemperatureResponse(Device device, OutgoingMessage message, long timeout) {
+			super(device, message, timeout);
 		}
 		
 		protected boolean isExpectedPacketType(byte packetType) {
@@ -435,9 +432,8 @@ public class GenericExtruder extends Device {
 	
 	protected class RequestIsEmptyResponse extends IncomingMessage {
 
-		public RequestIsEmptyResponse(IncomingContext incomingContext)
-		throws IOException {
-			super(incomingContext);
+		public RequestIsEmptyResponse(Device device, OutgoingMessage message, long timeout) {
+			super(device, message, timeout);
 		}
 		
 		public byte getValue() throws InvalidPayloadException {

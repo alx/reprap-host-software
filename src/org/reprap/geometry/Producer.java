@@ -122,13 +122,16 @@ public class Producer {
 			System.out.println("Warning: could not load ExtrusionSpeed/MovementSpeed, using defaults");
 		}
 		
+		reprap.setTemperature(extrusionTemp);
 		reprap.initialise();
 		reprap.selectMaterial(0);
 		reprap.setSpeed(movementSpeedXY);
 		reprap.setSpeedZ(movementSpeedZ);
 		reprap.setExtruderSpeed(extrusionSpeed);
-		reprap.setTemperature(extrusionTemp);
 
+		// A "warmup" 20mm segment to get things in working order
+		reprap.printSegment(0, 5, 0, 0, 25, 0);
+		
 		// This should now split off layers one at a time
 		// and pass them to the LayerProducer.  At the moment,
 		// we just construct a simple test layer and produce that.
