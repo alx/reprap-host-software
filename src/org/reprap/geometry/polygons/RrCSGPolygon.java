@@ -621,7 +621,10 @@ public class RrCSGPolygon
     		if(m.size() > 0)
     		{
     			m.flag(0, fs);
-    			result.add(m);
+    			if(m.size() > 2)
+    				result.add(m);
+    			else
+    				System.err.println("megList(): polygon with < 3 sides!");
     		}
     		vertex = findCorner();
     	}

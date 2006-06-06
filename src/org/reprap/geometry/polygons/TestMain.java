@@ -82,7 +82,7 @@ public class TestMain
 		ppc = RrCSG.intersection(ppc, rrc);
 		ppc = RrCSG.difference(pc, ppc);
 		
-		pc = ppc.offset(-0.09);
+		pc = ppc.offset(-0.15);
 		ppc = RrCSG.difference(ppc, pc);
 		
 		return new RrCSGPolygon(ppc, new 
@@ -115,8 +115,10 @@ public class TestMain
 		cp.divide(1.0e-6, 1.0);
 		RrPolygonList hp;
 		hp = cp.megList(2, 1);
-		
-		RrCSGPolygon restored = hp.toCSG();
+		RrPolygonList hpl0 = new RrPolygonList();
+		hpl0.add(hp.polygon(0));
+		//hpl0.add(hp.polygon(2));
+		RrCSGPolygon restored = hpl0.toCSG();
 		//System.out.println(restored.toString());
 		restored.divide(1.0e-6, 1.0);
 		RrGraphics g = new RrGraphics(new 

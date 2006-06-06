@@ -409,7 +409,7 @@ public class RrPolygonList
 	
 	/**
 	 * Compute the convex hull of all the points in the list
-	 * @param inConsideration
+	 * @param points
 	 * @return list of point index pairs of the points on the hull
 	 */
 	private List convexHull(List points)
@@ -531,102 +531,107 @@ public class RrPolygonList
 	}
 	
 	/**
-	 * Get the next whole section to consider
+	 * Get the next whole section to consider from list a
 	 * @param a
-	 * @param section
-	 * @param start
 	 * @param level
-	 * @return the number to start from next time (-1 for done)
+	 * @return the section (null for none left)
 	 */
-	private int nextSection(List a, List section, int start, int level)
+	private List polSection(List a, int level)
 	{
-		boolean gotOne = false;
-		int i;
-		for(i = start; i < a.size(); i++)
+		int flag, oldi;
+		oldi = a.size() - 1;
+		RrPolygon oldPg = listPolygon(oldi, a);
+		int oldFlag = listFlag(oldi, a);
+		RrPolygon pg = null;
+
+		int ptr = -1;
+		int pgStart = 0;
+		for(int i = 0; i < a.size(); i++)
 		{
-			if(listFlag(i, a) < level)
+			flag = listFlag(i, a);
+			pg = listPolygon(i, a);
+			if(pg != oldPg)
+				pgStart = i;
+			if(flag < level && oldFlag >= level && pg == oldPg)
 			{
-				gotOne = true;
+				ptr = oldi;
 				break;
 			}
+			oldi = i;
 		}
-		if(!gotOne)
-			return -1;
+		if(ptr < 0)
+			return null;
 		
-		RrPolygon pg = listPolygon(i, a);
-		int vertex = listVertex(i,a);
-		while(pg.flag(vertex) < level)
+		List result = new ArrayList();
+		result.add(a.get(ptr));
+		ptr++;
+		if(ptr > a.size() - 1)
+			ptr = 0;
+		if(listPolygon(ptr, a) != pg)
 		{
-			vertex--;
-			if(vertex < 0)
-				vertex = pg.size() -1;
+			ptr = pgStart;
+			if(listFlag(ptr, a) >= level)
+				System.err.println("polSection(): polygon loop failed 1!");
 		}
-		i = listFind(pg, vertex, a);
-		if(i < 0)
+		while(listFlag(ptr, a) < level)
 		{
-			System.err.println("nextSection(): can't find vertex in list!");
-			return -1;
+			result.add(a.get(ptr));
+			ptr++;
+			if(ptr > a.size() - 1)
+				ptr = 0;
+			if(listPolygon(ptr, a) != pg)
+			{
+				ptr = pgStart;
+				if(listFlag(ptr, a) >= level)
+					System.err.println("polSection(): polygon loop failed 2!");
+			}
 		}
-		section.add(a.get(i));
-		i++;
-		if(i > a.size() - 1)
-			i = 0;
-		while(listFlag(i, a) < level)
-		{
-			section.add(a.get(i));
-			if(listPolygon(i, a) != pg)
-				System.err.println("nextSection(): jumped to wrong polygon!");
-			i++;
-			if(i > a.size() - 1)
-				i = 0;
-		}
-		section.add(a.get(i));
-		
-		return i;
+
+		result.add(a.get(ptr));
+		return result;
 	}
 	
 	/**
-	 * Get the next whole polygon to consider
+	 * Get all whole polygons from list a
 	 * @param a
-	 * @param section
 	 * @param level
-	 * @return true if we've got one, false if not
+	 * @return the polygons (null for none left)
 	 */
-	private boolean nextComplete(List a, List section, int level)
+	private List getComplete(List a, int level)
 	{
-		RrPolygon pg = null;
-		boolean gotOne = false;
-		int i, j;
-		for(i = 0; i < size(); i++)
+		List result = new ArrayList();
+		
+		RrPolygon pg = listPolygon(0, a);
+		int count = 0;
+		boolean gotOne = true;
+		for(int i = 0; i < a.size(); i++)
 		{
-			pg = polygon(i);
-			gotOne = true;
-			for(j = 0; j < pg.size(); j++)
+			if(listPolygon(i, a) != pg)
 			{
-				if(pg.flag(j) >= level || listFind(pg, j, a) < 0)
+				if(count == pg.size() && gotOne)
 				{
-					gotOne = false;
-					break;
+					for(int j = i - count; j < i; j++)
+						result.add(a.get(j));
 				}
+				count = 0;
+				gotOne = true;
+				pg = listPolygon(i, a);
 			}
-			if(gotOne)
-				break;
+			if(listFlag(i, a) >= level)
+				gotOne = false;
+			count++;
 		}
 		
-		if(gotOne)
+		if(count == pg.size() && gotOne)
 		{
-			i = listFind(pg, 0, a);
-			
-			while(listPolygon(i, a) == pg)
-			{
-				section.add(a.get(i));
-				i++;
-				if(i > a.size() - 1)
-					i = 0;
-			}
-			return true;
+			for(int j = a.size() - count; j < a.size(); j++)
+				result.add(a.get(j));
 		}
-		return false;
+		
+		if(result.size() > 0)
+			return result;
+		else
+			return null;
 	}
 		
 	/**
@@ -639,8 +644,7 @@ public class RrPolygonList
 	{	
 		flagSet(a, level);	
 		level++;
-		List hl = convexHull(a);
-		flagSet(hl, level);
+		flagSet(convexHull(a), level);
 						
 		int i, oldi, flag, oldFlag, start;
 		RrPolygon pg, oldPg;
@@ -679,26 +683,9 @@ public class RrPolygonList
 
 			oldi = i;
 		}
-
-		List section = new ArrayList();
 				
-		while(nextComplete(a, section, level))
-		{
-			if(level%2 == 1)
-				hull = RrCSG.intersection(hull,
-						toCSGRecursive(section, level, true));
-			else
-				hull = RrCSG.union(hull, 
-						toCSGRecursive(section, level, true));
-			
-			section = new ArrayList();
-		}
-		
-		section = new ArrayList();	
-		
-		start = nextSection(a, section, 0, level);
-		
-		while(start >= 0)
+		List section = polSection(a, level);
+		while(section != null)
 		{
 			if(level%2 == 1)
 				hull = RrCSG.intersection(hull,
@@ -706,11 +693,20 @@ public class RrPolygonList
 			else
 				hull = RrCSG.union(hull, 
 						toCSGRecursive(section, level, false));
-			
-			section = new ArrayList();
-			start = nextSection(a, section, start, level);
+			section = polSection(a, level);
 		}
 		
+		List completePols = getComplete(a, level);
+		if(completePols != null)
+		{
+			if(level%2 == 1)
+				hull = RrCSG.intersection(hull,
+						toCSGRecursive(completePols, level, true));
+			else
+				hull = RrCSG.union(hull, 
+						toCSGRecursive(completePols, level, true));	
+		}
+
 		return hull;
 	}
 	
