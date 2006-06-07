@@ -73,6 +73,7 @@ class chPair
 		vertex = v;
 	}
 }
+
 /**
  * RrPolygonList: A collection of 2D polygons
  * 
@@ -444,7 +445,7 @@ public class RrPolygonList
 		RrHalfPlane hp;
 		while(inConsideration.size() > 0)
 		{
-			vMax = 0;
+			vMax = 1.0e-6;   // Need this epsilon?
 			corner = -1;
 			after = -1;
 			for(int testPoint = inConsideration.size() - 1; testPoint >= 0; testPoint--)
@@ -538,6 +539,7 @@ public class RrPolygonList
 	 */
 	private List polSection(List a, int level)
 	{
+		System.out.println("polSection() in - " + a.size());
 		int flag, oldi;
 		oldi = a.size() - 1;
 		RrPolygon oldPg = listPolygon(oldi, a);
@@ -558,6 +560,8 @@ public class RrPolygonList
 				break;
 			}
 			oldi = i;
+			oldFlag = flag;
+			oldPg = pg;
 		}
 		if(ptr < 0)
 			return null;
@@ -588,6 +592,7 @@ public class RrPolygonList
 		}
 
 		result.add(a.get(ptr));
+		System.out.println("polSection() out - " + result.size());
 		return result;
 	}
 	
@@ -597,9 +602,10 @@ public class RrPolygonList
 	 * @param level
 	 * @return the polygons (null for none left)
 	 */
-	private List getComplete(List a, int level)
+	private RrPolygonList getComplete(List a, int level)
 	{
-		List result = new ArrayList();
+		System.out.println("getComplete() in - " + a.size());
+		List res = new ArrayList();
 		
 		RrPolygon pg = listPolygon(0, a);
 		int count = 0;
@@ -609,10 +615,7 @@ public class RrPolygonList
 			if(listPolygon(i, a) != pg)
 			{
 				if(count == pg.size() && gotOne)
-				{
-					for(int j = i - count; j < i; j++)
-						result.add(a.get(j));
-				}
+					res.add(pg);
 				count = 0;
 				gotOne = true;
 				pg = listPolygon(i, a);
@@ -623,13 +626,30 @@ public class RrPolygonList
 		}
 		
 		if(count == pg.size() && gotOne)
-		{
-			for(int j = a.size() - count; j < a.size(); j++)
-				result.add(a.get(j));
-		}
+			res.add(pg);
 		
-		if(result.size() > 0)
+		if(res.size() > 0)
+		{
+			RrPolygonList result = new RrPolygonList();
+			for(int i = 0; i < res.size(); i++)
+			{
+				pg = (RrPolygon)res.get(i);
+				double area = pg.area();
+				if(level%2 == 1)
+				{
+					if(area > 0)
+						pg = pg.negate();
+				} else
+				{
+					if(area < 0)
+						pg = pg.negate();
+				}
+				result.add(pg);
+			}
+			System.out.println("getComplete() out - " + result.size());
 			return result;
+
+		}
 		else
 			return null;
 	}
@@ -642,6 +662,7 @@ public class RrPolygonList
 	 */
 	private RrCSG toCSGRecursive(List a, int level, boolean closed)
 	{	
+		System.out.println("toCSGRecursive() - " + a.size());
 		flagSet(a, level);	
 		level++;
 		flagSet(convexHull(a), level);
@@ -649,6 +670,7 @@ public class RrPolygonList
 		int i, oldi, flag, oldFlag, start;
 		RrPolygon pg, oldPg;
 		
+
 		if(closed)
 		{
 			oldi = a.size() - 1;
@@ -665,6 +687,8 @@ public class RrPolygonList
 		else
 			hull = RrCSG.nothing();
 		
+		// Start by set-theoretically combining all the edges on the convex hull
+		
 		for(i = start; i < a.size(); i++)
 		{
 			oldFlag = listFlag(oldi, a);
@@ -680,10 +704,31 @@ public class RrPolygonList
 				else
 					hull = RrCSG.union(hull, new RrCSG(hp));
 			} 
-
+			
 			oldi = i;
 		}
-				
+		
+		// Now deal with all polygons with no points on the hull (i.e. they are
+		// completely inside).
+		
+		if(closed)
+		{
+			RrPolygonList completePols = getComplete(a, level);
+			if(completePols != null)
+			{
+				List all = completePols.allPoints();
+				if(level%2 == 1)
+					hull = RrCSG.intersection(hull,
+							completePols.toCSGRecursive(all, level, true));
+				else
+					hull = RrCSG.union(hull, 
+							completePols.toCSGRecursive(all, level, true));	
+			}
+		}
+		
+		// Finally deal with the sections on polygons that form the hull that
+		// are not themselves on the hull.
+		
 		List section = polSection(a, level);
 		while(section != null)
 		{
@@ -696,29 +741,22 @@ public class RrPolygonList
 			section = polSection(a, level);
 		}
 		
-		List completePols = getComplete(a, level);
-		if(completePols != null)
-		{
-			if(level%2 == 1)
-				hull = RrCSG.intersection(hull,
-						toCSGRecursive(completePols, level, true));
-			else
-				hull = RrCSG.union(hull, 
-						toCSGRecursive(completePols, level, true));	
-		}
-
 		return hull;
 	}
 	
 	/**
 	 * Compute the CSG representation of all the polygons in the list
-	 * using Tony Woo's algorithm.
+	 * using Kai Tang and Tony Woo's algorithm.
 	 * @return CSG representation
 	 */
 	public RrCSGPolygon toCSG()
 	{
-		List all = allPoints();
-		return new RrCSGPolygon(toCSGRecursive(all, 0, true), box.scale(1.1));
+		RrPolygonList pgl = new RrPolygonList(this);
+		List all = pgl.allPoints();
+		pgl.flagSet(all, -1);
+		pgl = pgl.getComplete(all, 0);
+		all = pgl.allPoints();
+		return new RrCSGPolygon(pgl.toCSGRecursive(all, 0, true), pgl.box.scale(1.1));
 	}
 	
 	/**
