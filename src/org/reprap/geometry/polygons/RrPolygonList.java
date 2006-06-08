@@ -386,10 +386,8 @@ public class RrPolygonList
 	
 	/**
 	 * Remove all the points in a list that are within or on the hull
-	 * Maintain a candidate list of points that may be on it
 	 * @param inConsideration
 	 * @param hull
-	 * @param maybeZero
 	 */		
 	private void outsideHull(List inConsideration, RrCSG hull)
 	{
@@ -445,7 +443,7 @@ public class RrPolygonList
 		RrHalfPlane hp;
 		while(inConsideration.size() > 0)
 		{
-			vMax = 1.0e-6;   // Need this epsilon?
+			vMax = 0;   // Need epsilon?
 			corner = -1;
 			after = -1;
 			for(int testPoint = inConsideration.size() - 1; testPoint >= 0; testPoint--)
@@ -570,30 +568,36 @@ public class RrPolygonList
 		result.add(a.get(ptr));
 		ptr++;
 		if(ptr > a.size() - 1)
-			ptr = 0;
-		if(listPolygon(ptr, a) != pg)
-		{
 			ptr = pgStart;
-			if(listFlag(ptr, a) >= level)
-				System.err.println("polSection(): polygon loop failed 1!");
-		}
 		while(listFlag(ptr, a) < level)
 		{
 			result.add(a.get(ptr));
 			ptr++;
 			if(ptr > a.size() - 1)
-				ptr = 0;
-			if(listPolygon(ptr, a) != pg)
-			{
 				ptr = pgStart;
-				if(listFlag(ptr, a) >= level)
-					System.err.println("polSection(): polygon loop failed 2!");
-			}
 		}
 
 		result.add(a.get(ptr));
 		System.out.println("polSection() out - " + result.size());
 		return result;
+	}
+	
+	/**
+	 * Find if the polygon for point i in a is in list res
+	 * @param i
+	 * @param a
+	 * @param res
+	 * @return true if it is
+	 */
+	private boolean inList(int i, List a, List res)
+	{
+		RrPolygon pg = listPolygon(i, a);
+		for(int j = 0; j < res.size(); j++)
+		{
+			if((RrPolygon)res.get(j) == pg)
+				return true;
+		}
+		return false;
 	}
 	
 	/**
@@ -630,6 +634,11 @@ public class RrPolygonList
 		
 		if(res.size() > 0)
 		{
+			for(int i = a.size() - 1; i >= 0; i--)
+			{
+				if(inList(i, a, res))
+					a.remove(i);
+			}
 			RrPolygonList result = new RrPolygonList();
 			for(int i = 0; i < res.size(); i++)
 			{
@@ -667,10 +676,35 @@ public class RrPolygonList
 		level++;
 		flagSet(convexHull(a), level);
 						
+		RrCSG hull;
+		if(level%2 == 1)
+			hull = RrCSG.universe();
+		else
+			hull = RrCSG.nothing();
+		
+		// First deal with all the polygons with no points on the hull 
+		// (i.e. they are completely inside).
+		
+		if(closed)
+		{
+			RrPolygonList completePols = getComplete(a, level);
+			if(completePols != null)
+			{
+				List all = completePols.allPoints();
+				if(level%2 == 1)
+					hull = RrCSG.intersection(hull,
+							completePols.toCSGRecursive(all, level, true));
+				else
+					hull = RrCSG.union(hull, 
+							completePols.toCSGRecursive(all, level, true));	
+			}
+		}
+		
+		// Set-theoretically combine all the real edges on the convex hull
+
 		int i, oldi, flag, oldFlag, start;
 		RrPolygon pg, oldPg;
 		
-
 		if(closed)
 		{
 			oldi = a.size() - 1;
@@ -680,14 +714,6 @@ public class RrPolygonList
 			oldi = 0;
 			start = 1;
 		}
-		
-		RrCSG hull;
-		if(level%2 == 1)
-			hull = RrCSG.universe();
-		else
-			hull = RrCSG.nothing();
-		
-		// Start by set-theoretically combining all the edges on the convex hull
 		
 		for(i = start; i < a.size(); i++)
 		{
@@ -706,24 +732,6 @@ public class RrPolygonList
 			} 
 			
 			oldi = i;
-		}
-		
-		// Now deal with all polygons with no points on the hull (i.e. they are
-		// completely inside).
-		
-		if(closed)
-		{
-			RrPolygonList completePols = getComplete(a, level);
-			if(completePols != null)
-			{
-				List all = completePols.allPoints();
-				if(level%2 == 1)
-					hull = RrCSG.intersection(hull,
-							completePols.toCSGRecursive(all, level, true));
-				else
-					hull = RrCSG.union(hull, 
-							completePols.toCSGRecursive(all, level, true));	
-			}
 		}
 		
 		// Finally deal with the sections on polygons that form the hull that

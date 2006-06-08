@@ -116,12 +116,12 @@ public class TestMain
 		RrPolygonList hp;
 		hp = cp.megList(4, 3);
 		RrPolygonList hpl0 = new RrPolygonList();
-		hpl0.add(hp.polygon(0));
+		//hpl0.add(hp.polygon(0));
 		hpl0.add(hp.polygon(1));
-		//hpl0.add(hp.polygon(2));
+		hpl0.add(hp.polygon(2));
 		RrCSGPolygon restored = hpl0.toCSG();
-		//System.out.println(restored.toString());
 		restored.divide(1.0e-6, 1.0);
+		//System.out.println(restored.toString());
 		RrGraphics g = new RrGraphics(new 
 				RrBox(new Rr2Point(0,0), new Rr2Point(1,1)), true);
 		//g.addPol(hpl0);
