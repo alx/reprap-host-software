@@ -594,15 +594,29 @@ public class RrPolygonList
 	 * @param res
 	 * @return true if it is
 	 */
-	private boolean inList(int i, List a, List res)
+	private boolean inList(int i, List a, RrPolygonList pgl)
 	{
 		RrPolygon pg = listPolygon(i, a);
-		for(int j = 0; j < res.size(); j++)
+		for(int j = 0; j < pgl.size(); j++)
 		{
-			if((RrPolygon)res.get(j) == pg)
+			if(pgl.polygon(j) == pg)
 				return true;
 		}
 		return false;
+	}
+	
+	/**
+	 * Remove all vertices from a list for polygons pgl
+	 * @param a
+	 * @param pgl
+	 */
+	private void removePolygonsVertices(List a, RrPolygonList pgl)
+	{
+		for(int i = a.size() - 1; i >= 0; i--)
+		{
+			if(inList(i, a, pgl))
+				a.remove(i);
+		}
 	}
 	
 	/**
@@ -614,7 +628,7 @@ public class RrPolygonList
 	private RrPolygonList getComplete(List a, int level)
 	{
 		System.out.println("getComplete() in - " + a.size());
-		List res = new ArrayList();
+		RrPolygonList res = new RrPolygonList();
 		
 		RrPolygon pg = listPolygon(0, a);
 		int count = 0;
@@ -639,15 +653,11 @@ public class RrPolygonList
 		
 		if(res.size() > 0)
 		{
-			for(int i = a.size() - 1; i >= 0; i--)
-			{
-				if(inList(i, a, res))
-					a.remove(i);
-			}
+			removePolygonsVertices(a, res);
 			RrPolygonList result = new RrPolygonList();
 			for(int i = 0; i < res.size(); i++)
 			{
-				pg = (RrPolygon)res.get(i);
+				pg = res.polygon(i);
 				double area = pg.area();
 				if(level%2 == 1)
 				{
@@ -706,15 +716,29 @@ public class RrPolygonList
 		if(!onePol)
 		{
 			RrPolygonList op = outerPols(ch);
-			hull = RrCSG.nothing();
+			if(level%2 == 1)
+				hull = RrCSG.nothing();
+			else
+				hull = RrCSG.universe();
 			for(int i = 0; i < op.size(); i++)
 			{
 				RrPolygonList pgl = new RrPolygonList();
 				pgl.add(op.polygon(i));
 				List all = pgl.allPoints();
-				hull = RrCSG.union(hull, pgl.toCSGRecursive(all, level - 1, true));
+				if(level%2 == 1)
+					hull = RrCSG.union(hull, pgl.toCSGRecursive(all, level - 1, true));
+				else
+					hull = RrCSG.intersection(hull, pgl.toCSGRecursive(all, level - 1, true));
 			}
-			// remove polygon from a!!
+			removePolygonsVertices(a, op);
+			if(a.size() > 0)
+			{
+				if(level%2 == 1)
+					return RrCSG.intersection(hull, toCSGRecursive(a, level, true));
+				else
+					return RrCSG.union(hull, toCSGRecursive(a, level, true));
+			} else
+				return hull;
 		}else
 		{
 			if(level%2 == 1)

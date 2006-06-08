@@ -116,7 +116,7 @@ public class TestMain
 		RrPolygonList hp;
 		hp = cp.megList(4, 3);
 		RrPolygonList hpl0 = new RrPolygonList();
-		//hpl0.add(hp.polygon(0));
+		hpl0.add(hp.polygon(0));
 		hpl0.add(hp.polygon(1));
 		hpl0.add(hp.polygon(2));
 		RrCSGPolygon restored = hpl0.toCSG();
