@@ -520,13 +520,18 @@ public class RrPolygonList
 	 * @param a
 	 * @param flag
 	 */
-	private void flagSet(List a, int flag)
+	private boolean flagSet(List a, int flag)
 	{
+		RrPolygon pg = listPolygon(0, a);
+		boolean result = true;
 		for(int i = 0; i < a.size(); i++)
 		{
 			chPair chp = (chPair)a.get(i);
 		    polygon(chp.polygon).flag(chp.vertex, flag);
+		    if(polygon(chp.polygon) != pg)
+		    	result = false;
 		}
+		return result;
 	}
 	
 	/**
@@ -662,7 +667,28 @@ public class RrPolygonList
 		else
 			return null;
 	}
+	
+	/**
+	 * Find all the polygons that form the convex hull
+	 * @param ch
+	 * @return 
+	 */
+	private RrPolygonList outerPols(List ch)
+	{
+		RrPolygonList result = new RrPolygonList();
+		RrPolygon pg = null;
+		for(int i = 0; i < ch.size(); i++)
+		{
+			if(listPolygon(i, ch) != pg)
+			{
+				pg = listPolygon(i, ch);
+				result.add(pg);
+			}
+		}
 		
+		return result;
+	}
+	
 	/**
 	 * Compute the CSG representation of a (sub)list recursively
 	 * @param a
@@ -674,13 +700,27 @@ public class RrPolygonList
 		System.out.println("toCSGRecursive() - " + a.size());
 		flagSet(a, level);	
 		level++;
-		flagSet(convexHull(a), level);
-						
+		List ch = convexHull(a);
+		boolean onePol = flagSet(ch, level);
 		RrCSG hull;
-		if(level%2 == 1)
-			hull = RrCSG.universe();
-		else
+		if(!onePol)
+		{
+			RrPolygonList op = outerPols(ch);
 			hull = RrCSG.nothing();
+			for(int i = 0; i < op.size(); i++)
+			{
+				RrPolygonList pgl = new RrPolygonList();
+				pgl.add(op.polygon(i));
+				List all = pgl.allPoints();
+				hull = RrCSG.union(hull, pgl.toCSGRecursive(all, level - 1, true));
+			}
+		}else
+		{
+			if(level%2 == 1)
+				hull = RrCSG.universe();
+			else
+				hull = RrCSG.nothing();
+		}
 		
 		// First deal with all the polygons with no points on the hull 
 		// (i.e. they are completely inside).
