@@ -714,6 +714,7 @@ public class RrPolygonList
 				List all = pgl.allPoints();
 				hull = RrCSG.union(hull, pgl.toCSGRecursive(all, level - 1, true));
 			}
+			// remove polygon from a!!
 		}else
 		{
 			if(level%2 == 1)
