@@ -514,7 +514,7 @@ public class RrCSGPolygon
             		fin = null;
             	
             	switch(qc.count)
-            	{
+            	{	
             	case 1:
             		if(qc.l1 != null)
             		{
@@ -539,7 +539,7 @@ public class RrCSGPolygon
             		break;
             		
             	default:
-            		System.err.println("meg(): count not 1 or 2!");	
+            		System.err.println("meg(): count not 1 or 2: " + qc.count);	
             	}
             	st = null;
             	loop++;
