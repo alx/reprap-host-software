@@ -84,7 +84,7 @@ public class GenericExtruder extends Device {
 		
 		isCommsAvailable = true;
 		
-		pollThread = new Thread() {
+		/*pollThread = new Thread() {
 			public void run() {
 				Thread.currentThread().setName("Extruder poll");
 				boolean first = true;
@@ -92,10 +92,10 @@ public class GenericExtruder extends Device {
 					try {
 						// Sleep is beforehand to prevent runaway on exception
 						if (!first) Thread.sleep(2000);
+						first = false;
 						RefreshTemperature();
 						RefreshEmptySensor();
 						sensorsInitialised = true;
-						first = false;
 					}
 					catch (InterruptedException ex) {
 						// This is normal when shutting down, so ignore
@@ -107,7 +107,7 @@ public class GenericExtruder extends Device {
 				}
 			}
 		};
-		pollThread.start();
+		pollThread.start();*/
 
 	
 	}
@@ -233,17 +233,18 @@ public class GenericExtruder extends Device {
 	 */
 	public boolean isEmpty() {
 		awaitSensorsInitialised();
+		TEMPpollcheck();
 		return currentMaterialOutSensor;
 	}
 	
 	private void awaitSensorsInitialised() {
 		// Simple minded wait to let sensors become valid
-		while(!sensorsInitialised) {
-			try {
-				Thread.sleep(100);
-			} catch (InterruptedException e) {
-			}
-		}
+		//while(!sensorsInitialised) {
+		//	try {
+		//		Thread.sleep(100);
+		//	} catch (InterruptedException e) {
+		//	}
+		//}
 	}
 	
 	/**
@@ -269,11 +270,9 @@ public class GenericExtruder extends Device {
 		return requestedTemperature;
 	}
 
-	public double getTemperature() {
-		awaitSensorsInitialised();
-		
-		if (System.currentTimeMillis() - lastTemperatureUpdate > 20000) {
-			// Polled updates are having a hard time getting through
+	private void TEMPpollcheck() {
+		if (System.currentTimeMillis() - lastTemperatureUpdate > 10000) {
+			// Polled updates are having a hard time getting through with
 			// the temporary comms locking, so we'll get them through here
 			try {
 				RefreshEmptySensor();
@@ -282,7 +281,11 @@ public class GenericExtruder extends Device {
 				System.out.println("Exception during temperature/material update ignored");
 			}
 		}
-		
+	}
+	
+	public double getTemperature() {
+		awaitSensorsInitialised();
+		TEMPpollcheck();
 		return currentTemperature;
 	}
 	
