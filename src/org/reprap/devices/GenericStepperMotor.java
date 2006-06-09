@@ -151,8 +151,10 @@ public class GenericStepperMotor extends Device {
 			IncomingContext replyContext = sendMessage(new RequestSeekPosition(speed, position));
 			new RequestSeekResponse(replyContext);
 			setNotificationOff();
-		}
-		finally {
+		} catch (Exception e) {
+			// TODO: Nasty error. But WTF do we do about it?
+			e.printStackTrace();
+		} finally {
 			unlock();
 		}
 	}
