@@ -69,7 +69,7 @@ public class LayerProducer {
 		offBorder.divide(resolution, 1);
 		offHatch.divide(resolution, 1);
 				
-		borderPolygons = offBorder.megList(solidMaterial, gapMaterial);
+		borderPolygons = offBorder.megList(solidMaterial, solidMaterial);
 		
 		hatchedPolygons = new RrPolygonList();
 		hatchedPolygons.add(offHatch.hatch_join(hatchDirection, printer.getExtrusionSize(), 
