@@ -86,7 +86,7 @@ public class TestMain
 		ppc = RrCSG.difference(ppc, pc);
 		
 		return new RrCSGPolygon(ppc, new 
-				RrBox(new Rr2Point(0,0), new Rr2Point(1.1,1.1)));
+				RrBox(new Rr2Point(-0.032,-0.0176), new Rr2Point(1.317,1.12)));
 	}
 	
 	public static void rrCSGTest()
@@ -112,15 +112,16 @@ public class TestMain
 	{
 		RrCSGPolygon cp = testPol();
 		
-		cp.divide(1.0e-6, 1.01);
+		cp.divide(1.0e-6, 1);
 		RrPolygonList hp;
 		hp = cp.megList(4, 3);
 		//System.out.println("polygons: " + hp.size());
-		RrPolygonList hpl0 = new RrPolygonList();
+		//RrPolygonList hpl0 = new RrPolygonList();
 		//hpl0.add(hp.polygon(0));
-		hpl0.add(hp.polygon(1));
-		hpl0.add(hp.polygon(2));
-		RrCSGPolygon restored = hpl0.toCSG();
+		//hpl0.add(hp.polygon(1));
+		//hpl0.add(hp.polygon(2));
+		//hpl0.add(hp.polygon(3));
+		RrCSGPolygon restored = hp.toCSG();
 		restored.divide(1.0e-6, 1);
 		//System.out.println(restored.toString());
 		RrGraphics g = new RrGraphics(new 

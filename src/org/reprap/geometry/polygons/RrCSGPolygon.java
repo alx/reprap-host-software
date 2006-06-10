@@ -602,6 +602,12 @@ public class RrCSGPolygon
     	
     	return result;
     }
+    
+    // The next function should work by finding unique
+    // pairwise half-plane intersections then linking them up logically,
+    // not geometrically (though sorted parameter values will have to 
+    // be used along lines with multiple intersections).  To Do!
+    
 	 /**
 	 * Find all the polygons represented by a CSG object
 	 * @param fg

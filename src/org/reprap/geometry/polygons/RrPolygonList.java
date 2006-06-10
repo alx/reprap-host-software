@@ -567,7 +567,10 @@ public class RrPolygonList
 			oldPg = pg;
 		}
 		if(ptr < 0)
+		{
+			System.out.println("polSection() out - null");
 			return null;
+		}
 		
 		List result = new ArrayList();
 		result.add(a.get(ptr));
@@ -675,7 +678,10 @@ public class RrPolygonList
 
 		}
 		else
+		{
+			System.out.println("getComplete() out - null");
 			return null;
+		}
 	}
 	
 	/**
@@ -692,7 +698,17 @@ public class RrPolygonList
 			if(listPolygon(i, ch) != pg)
 			{
 				pg = listPolygon(i, ch);
-				result.add(pg);
+				boolean inAlready = false;
+				for(int j = 0; j < result.size(); j++)
+				{
+					if(pg == result.polygon(j))
+					{
+						inAlready = true;
+						break;
+					}
+				}
+				if(!inAlready)
+					result.add(pg);
 			}
 		}
 		
@@ -716,6 +732,7 @@ public class RrPolygonList
 		if(!onePol)
 		{
 			RrPolygonList op = outerPols(ch);
+			System.out.println("multi-pols - dealing with " + op.size());
 			if(level%2 == 1)
 				hull = RrCSG.nothing();
 			else
@@ -738,7 +755,10 @@ public class RrPolygonList
 				else
 					return RrCSG.union(hull, toCSGRecursive(a, level, true));
 			} else
+			{
+				System.out.println("multi-pols, returning " + op.size());
 				return hull;
+			}
 		}else
 		{
 			if(level%2 == 1)

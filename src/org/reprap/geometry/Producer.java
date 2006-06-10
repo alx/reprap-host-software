@@ -60,14 +60,14 @@ public class Producer {
 	
 	public RrCSGPolygon adriansTestShape()
 	{
-		Rr2Point p = new Rr2Point(10, 15);
-		Rr2Point q = new Rr2Point(20, 85);
-		Rr2Point r = new Rr2Point(97, 89);
-		Rr2Point s = new Rr2Point(95, 3);
+		Rr2Point p = new Rr2Point(3, 5);
+		Rr2Point q = new Rr2Point(7, 27);
+		Rr2Point r = new Rr2Point(32, 30);
+		Rr2Point s = new Rr2Point(31, 1);
 		
-		Rr2Point pp = new Rr2Point(35, 62);
-		Rr2Point qq = new Rr2Point(55, 95);
-		Rr2Point rr = new Rr2Point(45, 50);    
+		Rr2Point pp = new Rr2Point(12, 21);
+		Rr2Point qq = new Rr2Point(18, 32);
+		Rr2Point rr = new Rr2Point(15, 17);    
 		
 		RrHalfPlane ph = new RrHalfPlane(p, q);
 		RrHalfPlane qh = new RrHalfPlane(q, r);
@@ -95,7 +95,7 @@ public class Producer {
 		ppc = RrCSG.intersection(ppc, rrc);
 		ppc = RrCSG.difference(pc, ppc);
 		
-		pc = ppc.offset(-15);
+		pc = ppc.offset(-5);
 		ppc = RrCSG.difference(ppc, pc);
 		
 		RrCSGPolygon result = new RrCSGPolygon(ppc, new 
@@ -161,22 +161,22 @@ public class Producer {
 
 // ************ Simon's example start
 			
-			// Add a square block
-
-			list.add(square());
-	
-			// Add a hex block
-			
-			list.add(hex());
-
-			LayerProducer layer = new LayerProducer(reprap, list,
-					isEvenLayer?evenHatchDirection:oddHatchDirection);
-			
-// ************ Simon's examples end - Adrian's start
-			
-//			LayerProducer layer = new LayerProducer(reprap, adriansTestShape(),
+//			// Add a square block
+//
+//			list.add(square());
+//	
+//			// Add a hex block
+//			
+//			list.add(hex());
+//
+//			LayerProducer layer = new LayerProducer(reprap, list,
 //					isEvenLayer?evenHatchDirection:oddHatchDirection);
 //			
+// ************ Simon's examples end - Adrian's start
+			
+			LayerProducer layer = new LayerProducer(reprap, adriansTestShape(),
+					isEvenLayer?evenHatchDirection:oddHatchDirection);
+			
 // ************ Adrian's example end.
 			
 			layer.plot();
