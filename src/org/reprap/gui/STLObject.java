@@ -350,6 +350,22 @@ public class STLObject
         trans.setTransform(t3d);
     }
     
+    // Get my transform
+    
+    public Transform3D getTransform()
+    {
+    	Transform3D result = new Transform3D();
+        trans.getTransform(result);
+        return result;
+    }
+    
+    // Get the actual object
+    
+    public BranchGroup getSTL()
+    {
+    	return stl;
+    }
+    
     // The mouse calls this to tell us it is controlling us
     
     public void setMouse(MouseObject m)

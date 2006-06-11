@@ -13,11 +13,12 @@ public class Producer {
 	protected Printer reprap;
 	protected RrLine oddHatchDirection;
 	protected RrLine evenHatchDirection;
+	protected RepRapBuild bld;
 	
 	public Producer(PreviewPanel preview, RepRapBuild builder) throws Exception {
 		reprap = MachineFactory.create();
 		reprap.setPreviewer(preview);
-		
+		bld = builder;
 		oddHatchDirection = new RrLine(new Rr2Point(0.0, 0.0), new Rr2Point(1.0, 1.0));
 		evenHatchDirection = new RrLine(new Rr2Point(0.0, 1.0), new Rr2Point(1.0, 0.0));
 	}
@@ -161,22 +162,22 @@ public class Producer {
 
 // ************ Simon's example start
 			
-//			// Add a square block
-//
-//			list.add(square());
-//	
-//			// Add a hex block
-//			
-//			list.add(hex());
-//
-//			LayerProducer layer = new LayerProducer(reprap, list,
-//					isEvenLayer?evenHatchDirection:oddHatchDirection);
-//			
-// ************ Simon's examples end - Adrian's start
+			// Add a square block
+
+			list.add(square());
+	
+			// Add a hex block
 			
-			LayerProducer layer = new LayerProducer(reprap, adriansTestShape(),
+			list.add(hex());
+
+			LayerProducer layer = new LayerProducer(reprap, list,
 					isEvenLayer?evenHatchDirection:oddHatchDirection);
 			
+// ************ Simon's examples end - Adrian's start
+			
+//			LayerProducer layer = new LayerProducer(reprap, adriansTestShape(),
+//					isEvenLayer?evenHatchDirection:oddHatchDirection);
+//			STLSlice stlc = new STLSlice(bld.getSTLs(), z);
 // ************ Adrian's example end.
 			
 			layer.plot();

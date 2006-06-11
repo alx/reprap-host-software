@@ -53,8 +53,11 @@
 
 package org.reprap.geometry.polygons;
 
+import java.util.*;
 import javax.media.j3d.*;
 import javax.vecmath.*;
+import com.sun.j3d.loaders.Scene;
+import org.reprap.gui.STLObject;
 
 public class STLSlice 
 {
@@ -127,14 +130,172 @@ public class STLSlice
 	}
 	
 	/**
+	 * Run through a Shape3D and set edges from it at plane z
+	 * Apply the transform first
+	 * @param shape
+	 * @param trans
+	 * @param z
+	 */
+	private void addAllEdges(Shape3D shape, Transform3D trans, double z)
+    {
+        GeometryArray g = (GeometryArray)shape.getGeometry();
+        Point3d p1 = new Point3d();
+        Point3d p2 = new Point3d();
+        Point3d p3 = new Point3d();
+        Point3d q1 = new Point3d();
+        Point3d q2 = new Point3d();
+        Point3d q3 = new Point3d();
+        if(g != null)
+        {
+            for(int i = 0; i < g.getVertexCount(); i+=3) 
+            {
+                g.getCoordinate(i, p1);
+                g.getCoordinate(i+1, p2);
+                g.getCoordinate(i+2, p3);
+                trans.transform(p1, q1);
+                trans.transform(p2, q2);
+                trans.transform(p3, q3);
+                addEdge(q1, q2, q3, z);
+            }
+        }
+    }
+	
+	/**
+	 * Unpack the Shape3D(s) from value and set edges from them
+	 * @param value
+	 * @param trans
+	 * @param z
+	 */
+	private void recursiveSetEdges(Object value, Transform3D trans, double z) 
+    {
+        if( value instanceof SceneGraphObject != false ) 
+        {
+            // set the user data for the item
+            SceneGraphObject sg = (SceneGraphObject) value;
+            
+            // recursively process group
+            if( sg instanceof Group ) 
+            {
+                Group g = (Group) sg;
+                
+                // recurse on child nodes
+                java.util.Enumeration enumKids = g.getAllChildren( );
+                
+                while( enumKids.hasMoreElements( ) != false )
+                    recursiveSetEdges(enumKids.nextElement( ), trans, z);
+            } else if ( sg instanceof Shape3D ) 
+            {
+                    addAllEdges((Shape3D)sg, trans, z);
+            }
+        }
+    }
+	
+	private STLSlice(RrPolygonList pgl, RrBox b, double res, double fac)
+	{
+		edges = pgl;
+		box = b;
+		prune();
+		q1 = null;
+		q2 = null;
+		q3 = null;
+		q4 = null;
+		resolution_2 = res;
+		sFactor = fac;
+	}
+	
+	/**
+	 * Prune the polygon list to the box so that only segments
+	 * with endpoints in the box are retained.
+	 * @return
+	 */
+	private void prune()
+	{
+		RrPolygonList result = new RrPolygonList();
+		
+		for(int i = 0; i < edges.size(); i++)
+		{
+			if(box.point_relative(edges.polygon(i).point(0)) == 0 || 
+					box.point_relative(edges.polygon(i).point(1)) == 0)
+				result.add(edges.polygon(i));
+		}
+		
+		edges = result;
+	}
+	
+	private void divide()
+	{
+		if(edges.size() > 2)
+		{
+//			 Set up the quad-tree division
+			
+			Rr2Point sw = box.sw();
+			Rr2Point nw = box.nw();
+			Rr2Point ne = box.ne();
+			Rr2Point se = box.se();
+			Rr2Point cen = box.centre();
+			
+//			 Prune the set to the four boxes, and put the results in the children
+			
+			RrBox s = new RrBox(Rr2Point.mul(Rr2Point.add(sw, nw), 0.5), 
+					Rr2Point.mul(Rr2Point.add(nw, ne), 0.5));
+			s = s.scale(sFactor);
+			q1 = new STLSlice(edges, s, resolution_2, sFactor);
+			
+			s = new RrBox(cen, ne);
+			s = s.scale(sFactor);
+			q2 = new STLSlice(edges, s, resolution_2, sFactor);
+			
+			s = new RrBox(Rr2Point.mul(Rr2Point.add(sw, se), 0.5), 
+					Rr2Point.mul(Rr2Point.add(se, ne), 0.5));
+			s = s.scale(sFactor);
+			q3 = new STLSlice(edges, s, resolution_2, sFactor);
+			
+			s = new RrBox(sw, cen);
+			s = s.scale(sFactor);
+			q4 = new STLSlice(edges, s, resolution_2, sFactor);
+			
+			// Recursively divide the children
+			
+			q1.divide();
+			q2.divide();
+			q3.divide();
+			q4.divide();
+		}
+	}
+	
+	/**
 	 * Constructor builds a 2D polygon list of all edges in the plane z
 	 * from all the objects in stls
 	 * @param stls
 	 * @param z
 	 */
-	public STLSlice(BranchGroup stls, double z)
+	public STLSlice(List stls, double z)
 	{
 		edges = new RrPolygonList();
+		q1 = null;
+		q2 = null;
+		q3 = null;
+		q4 = null;
+		STLObject stl;
+		Transform3D trans;
+		BranchGroup bg;
+		Enumeration things;
 		
-	}
+		for(int i = 0; i < stls.size(); i++)
+		{
+			stl = (STLObject)stls.get(i);
+			trans = stl.getTransform();
+			bg = stl.getSTL();
+			things = bg.getAllChildren();
+			while(things.hasMoreElements() != false) 
+			{
+				Object value = things.nextElement();
+				recursiveSetEdges(value, trans, z);
+			}
+		}
+		box = edges.box;
+		//divide();
+		RrGraphics g = new RrGraphics(box.scale(1.5), true);
+		g.addPol(edges);
+	}	
 }

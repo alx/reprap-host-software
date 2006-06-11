@@ -124,6 +124,11 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 	public RepRapBuild() throws Exception {
 		initialise();
 	}
+	
+	public java.util.List getSTLs()
+	{
+		return stls;
+	}
 
 	// Set bg light grey
 	protected Background createBackground() {
