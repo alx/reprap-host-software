@@ -216,7 +216,61 @@ public class RrBox
 		return Rr2Point.d_2(sw(), ne());
 	}
 
-	
+	/**
+	 * Squared distance to a point
+	 * @return
+	 */
+	public double d_2(Rr2Point p)
+	{
+		if(empty)
+			return Double.POSITIVE_INFINITY;
+		byte b = point_relative(p);
+		double d1 = Double.POSITIVE_INFINITY, d2 = Double.POSITIVE_INFINITY;
+		switch(b)
+		{
+		case 0:
+			return 0;
+			
+		case 1:
+			d1 = Rr2Point.d_2(p, nw());
+			d2 = Rr2Point.d_2(p, ne());
+			break;
+			
+		case 2:
+			d1 = Rr2Point.d_2(p, ne());
+			d2 = Rr2Point.d_2(p, se());
+			break;
+			
+		case 3:
+			return Rr2Point.d_2(p, ne());
+			
+		case 4:
+			d1 = Rr2Point.d_2(p, sw());
+			d2 = Rr2Point.d_2(p, se());
+			break;
+			
+		case 6:
+			return Rr2Point.d_2(p, se());
+			
+		case 8:
+			d1 = Rr2Point.d_2(p, sw());
+			d2 = Rr2Point.d_2(p, nw());
+			break;
+			
+		case 9:
+			return Rr2Point.d_2(p, nw());
+			
+		case 12:
+			return Rr2Point.d_2(p, sw());
+			
+		default:
+			System.err.println("RrBox.d_2(): dud value from point_relative()!");	
+		}
+		if(d2 < d1)
+			return d2;
+		else
+			return d1;
+	}
 	
 
 	/**
@@ -256,11 +310,11 @@ public class RrBox
 	public byte point_relative(Rr2Point p)
 	{
 		byte result = 0;
-		if(p.x() > x.high())
+		if(p.x() >= x.high())
 			result |= rr_E;
 		if(p.x() < x.low())
 			result |= rr_W;
-		if(p.y() > y.high())
+		if(p.y() >= y.high())
 			result |= rr_N;
 		if(p.y() < y.low())
 			result |= rr_S;        

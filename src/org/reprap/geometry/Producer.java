@@ -148,7 +148,9 @@ public class Producer {
 		// we just construct a simple test layer and produce that.
 
 		boolean isEvenLayer = true;
-		for(double z = 0.0; z < 5.0; z += reprap.getExtrusionHeight()) {
+		STLSlice stlc = new STLSlice(bld.getSTLs());
+		for(double z = 0; z < 5.0; z += reprap.getExtrusionHeight()) {
+
 			if (reprap.isCancelled())
 				break;
 			System.out.println("Commencing layer at " + z);
@@ -175,9 +177,8 @@ public class Producer {
 			
 // ************ Simon's examples end - Adrian's start
 			
-//			LayerProducer layer = new LayerProducer(reprap, adriansTestShape(),
+//			LayerProducer layer = new LayerProducer(reprap, stlc.slice(z+0.01),
 //					isEvenLayer?evenHatchDirection:oddHatchDirection);
-//			STLSlice stlc = new STLSlice(bld.getSTLs(), z);
 // ************ Adrian's example end.
 			
 			layer.plot();

@@ -139,7 +139,6 @@ public class RrPolygonList
 	 */
 	public void add(RrPolygon p)
 	{
-		//add(p.no_cross());
 		polygons.add(p);
 		box.expand(p.box);
 	}

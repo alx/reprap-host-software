@@ -66,6 +66,7 @@ public class RrGraphics
 	private int frameHeight;
 	private RrPolygonList p_list;
 	private RrCSGPolygon csg_p;
+	private STLSlice stlc;
 	private double scale;
 	private Rr2Point p_0;
 	private Rr2Point pos;
@@ -120,6 +121,7 @@ public class RrGraphics
 		
 		p_list = pl;
 		csg_p = null;
+		stlc = null;
 		plot_box = pb;
 		
 		setScales(pl.box);
@@ -131,10 +133,24 @@ public class RrGraphics
 	{
 		p_list = null;
 		csg_p = cp;
+		stlc = null;
 		plot_box = pb;
 		
 		setScales(csg_p.box());
 	}
+	
+// Constructor for STL polygons
+	
+	public RrGraphics(STLSlice s, boolean pb) 
+	{
+		p_list = null;
+		csg_p = null;
+		stlc = s;
+		plot_box = pb;
+		
+		setScales(stlc.box());
+	}
+	
 	
 	// Constructor for just a box - add stuff later
 	
@@ -142,6 +158,7 @@ public class RrGraphics
 	{
 		p_list = null;
 		csg_p = null;
+		stlc = null;
 		plot_box = pb;
 		
 		setScales(b);
@@ -155,6 +172,11 @@ public class RrGraphics
 	public void addCSG(RrCSGPolygon cp)
 	{
 		csg_p = cp;
+	}
+	
+	public void addSTL(STLSlice s)
+	{
+		stlc = s;
 	}
 	
 	// Real-world coordinates to pixels
@@ -302,6 +324,23 @@ public class RrGraphics
 		}
 	}
 	
+// Plot a divided STL recursively
+	
+	private void plot(STLSlice s)
+	{
+		if(s.c_1() == null)
+		{
+			colour(4);
+			plot(s.box());
+		} else
+		{
+			plot(s.c_1());
+			plot(s.c_2());
+			plot(s.c_3());
+			plot(s.c_4());
+		}
+	}
+	
 	
 	// Master plot function - draw everything
 	
@@ -314,6 +353,16 @@ public class RrGraphics
 			int leng = p_list.size();
 			for(int i = 0; i < leng; i++)
 				plot(p_list.polygon(i));
+		}
+		if(stlc != null)
+		{
+			if(plot_box)
+				plot(stlc);
+			boolean b = plot_box;
+			plot_box = false;
+			for(int i = 0; i < stlc.edges().size(); i++)
+				plot(stlc.edges().polygon(i));
+			plot_box = b;
 		}
 	}
 	

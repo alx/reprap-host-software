@@ -61,6 +61,8 @@ import org.reprap.gui.STLObject;
 
 public class STLSlice 
 {
+	private static final int grid = 100;
+	List stls;
 	private RrPolygonList edges;  // List of the edges with points in this one
 	private RrBox box;            ///< Its enclosing box
 	private STLSlice q1,      ///< Quad tree division - NW
@@ -69,8 +71,42 @@ public class STLSlice
 	q4;           ///< SW
 	private double resolution_2;  ///< Squared diagonal of the smallest box to go to
 	private double sFactor;       /// Swell factor for division
+	boolean visited;
+	
+	public RrBox box()
+	{
+		return box;
+	}
+	
+	public RrPolygonList edges()
+	{
+		return edges;
+	}
+	
+	public STLSlice c_1()
+	{
+		return q1;
+	}
+	public STLSlice c_2()
+	{
+		return q2;
+	}
+	public STLSlice c_3()
+	{
+		return q3;
+	}
+	public STLSlice c_4()
+	{
+		return q4;
+	}
 	
 	// Need to deal with points in the plane.
+	
+	private double toGrid(double x)
+	{
+		return (double)((int)(x*grid + 0.5))/(double)grid;
+	}
+	
 	/**
 	 * Add the edge where the plane z cuts a triangle (if it does)
 	 * @param p
@@ -119,14 +155,20 @@ public class STLSlice
 		
 		even1.sub((Tuple3d)odd);
 		even2.sub((Tuple3d)odd);
-		double t = (z - odd.z)/even1.z;
-		Rr2Point e1 = new Rr2Point(odd.x + t*even1.x, odd.y + t*even1.y);
+		double t = (z - odd.z)/even1.z;	
+		Rr2Point e1 = new Rr2Point(toGrid(odd.x + t*even1.x), 
+				toGrid(odd.y + t*even1.y));
 		t = (z - odd.z)/even2.z;
-		Rr2Point e2 = new Rr2Point(odd.x + t*even2.x, odd.y + t*even2.y);
-		RrPolygon pg = new RrPolygon();
-		pg.add(e1, 1);
-		pg.add(e2, 1);
-		edges.add(pg);
+		Rr2Point e2 = new Rr2Point(toGrid(odd.x + t*even2.x), 
+				toGrid(odd.y + t*even2.y));
+		
+		if(!Rr2Point.same(e1, e2, 1.0e-4))
+		{
+			RrPolygon pg = new RrPolygon();
+			pg.add(e1, 1);
+			pg.add(e2, 1);
+			edges.add(pg);
+		}
 	}
 	
 	/**
@@ -201,6 +243,7 @@ public class STLSlice
 		q4 = null;
 		resolution_2 = res;
 		sFactor = fac;
+		visited = false;
 	}
 	
 	/**
@@ -222,8 +265,17 @@ public class STLSlice
 		edges = result;
 	}
 	
+	/**
+	 * Quad tree division to end up with two (or no) ends in each box.
+	 */
 	private void divide()
 	{
+		if(box.d_2() < resolution_2)
+		{
+			System.err.println("STLSlice.divide(): hit resolution limit!");
+			return;
+		}
+		
 		if(edges.size() > 2)
 		{
 //			 Set up the quad-tree division
@@ -263,19 +315,251 @@ public class STLSlice
 		}
 	}
 	
+	
 	/**
-	 * Constructor builds a 2D polygon list of all edges in the plane z
-	 * from all the objects in stls
-	 * @param stls
-	 * @param z
+	 * Find the quad containing a point
+	 * @param p
+	 * @return
 	 */
-	public STLSlice(List stls, double z)
+	public STLSlice quad(Rr2Point p)
 	{
-		edges = new RrPolygonList();
+		if(q1 == null)
+		{
+			if(box.point_relative(p) != 0)
+				System.err.println("find_quad(): point not in the box.");
+		} else
+		{
+			Rr2Point cen = box.centre();
+			if(p.x() >= cen.x())
+			{
+				if(p.y() >= cen.y())
+					return(q2.quad(p));
+				else
+					return(q3.quad(p));
+			} else
+			{
+				if(p.y() >= cen.y())
+					return(q1.quad(p));
+				else
+					return(q4.quad(p));               
+			}
+		}
+		
+		return this;
+	}
+	
+	/**
+	 * Walk the tree to find the polygon with an end nearest a point
+	 * @param pg
+	 * @param end
+	 * @param ignoreVisited
+	 * @result
+     */
+//	private double findEnd(RrPolygon pg, int end, boolean visitVisited,
+//			double dClose, RrPolygon result)
+//	{
+//		Rr2Point p = pg.point(end);
+//		
+//		RrPolygon pgTest;
+//
+//		double d[] = new double[4];
+//		STLSlice q[] = new STLSlice[4];
+//		double dd;
+//		STLSlice qq;
+//		boolean gotAnswer = false;
+//		
+//		if(q1 != null)
+//		{
+//			d[0] = q1.box.d_2(p);
+//			d[1] = q2.box.d_2(p);
+//			d[2] = q3.box.d_2(p);
+//			d[3] = q4.box.d_2(p);
+//			q[0] = q1;
+//			q[1] = q2;
+//			q[2] = q3;
+//			q[3] = q4;
+//			
+//			for(int i = 0; i < 3; i++)
+//			{
+//				for(int j = i+1; j < 4; j++)
+//					if(d[i] > d[j])
+//					{
+//						dd = d[i];
+//						d[i] = d[j];
+//						d[j] = dd;
+//						qq = q[i];
+//						q[i] = q[j];
+//						q[j] = qq;
+//					}
+//			}
+//			
+//			for(int i = 0; i < 4; i++)
+//			{
+//				if((!q[i].visited || visitVisited) && d[i] < dClose)
+//				{
+//					RrPolygon candidate = new RrPolygon();
+//					dd = q[i].findEnd(pg, end, visitVisited, dClose, candidate);
+//					if(dd < dClose)
+//					{
+//						dClose = dd;
+//						result.set(candidate);
+//					}
+//				}	
+//			}
+//			return dClose;
+//		} else
+//		
+//		while(!gotAnswer)
+//		{
+//			for(int i = 0; i < q.edges.size(); i++)
+//			{
+//				pgTest = q.edges.polygon(i);
+//				if(pgTest != pg)
+//				{
+//					d1 = Rr2Point.d_2(p, pg.point(0));
+//					d2 = Rr2Point.d_2(p, pg.point(1));
+//					if(d2 < d1)
+//						d1 = d2;
+//					if(d1 < dClose)
+//					{
+//						result = pgTest;
+//						dClose = d1;
+//					}
+//				}
+//			}
+//			if(q1 != null)
+//			{
+//				d1 = q1.box.d_2(p);
+//				d2 = q2.box.d_2(p);
+//				d3 = q3.box.d_2(p);
+//				d4 = q4.box.d_2(p);
+//				
+//			}
+//		}
+//		
+//	}
+	
+	 /**
+	 * Walk the tree to find an unvisited corner
+     */
+    private STLSlice findCorner()
+    {
+    	STLSlice result = null;
+    	
+    	if(edges.size() == 2 && !visited)
+    	{
+    		return this;
+    	}
+ 
+    	if(q1 != null)
+    	{
+    		result = q1.findCorner();
+    		if(result != null)
+    			return result;
+       		result = q2.findCorner();
+    		if(result != null)
+    			return result; 
+      		result = q3.findCorner();
+    		if(result != null)
+    			return result; 
+     		result = q4.findCorner();
+    		if(result != null)
+    			return result;   		
+    	} else
+    	{
+    		if(edges.size() != 0  && !visited)
+    			System.err.println("STLSlice: quad edges: " + edges.size());
+    	}
+    	
+    	return result;
+    }
+    
+	/**
+	 * Stitch up the ends in the quad tree.
+	 */
+	private void conquer()
+	{
+		RrPolygonList pgl = new RrPolygonList();
+		RrPolygon pg, pg0;
+		Rr2Point p0, p1;
+		STLSlice corner;
+		RrPolygon oldPg;
+		
+		STLSlice startCorner = findCorner();
+		while(startCorner != null)
+		{
+			corner = startCorner;
+			pg = new RrPolygon();
+			oldPg = null;
+			do
+			{
+				if(corner.visited)
+				{
+					System.err.println("conquer(): revisiting quad!");
+					break;
+				}
+				corner.visited = true;
+				
+				if(corner.edges.size() != 2)
+				{
+					System.err.println("conquer(): dud quad contents:" +
+							corner.edges.size());
+					break;
+				}
+				
+				pg0 = corner.edges.polygon(0);
+				if(pg0 == oldPg)
+					pg0 = corner.edges.polygon(1);
+				p0 = pg0.point(0);
+				p1 = pg0.point(1);
+				if(corner.box.point_relative(p0) != 0)
+				{
+					p1 = p0;
+					p0 = pg0.point(1);
+				}
+				pg.add(p0, 1);
+				oldPg = pg0;
+				corner = quad(p1);
+			} while (corner != startCorner);
+			if(pg.size() > 2)
+			{
+				pg.flag(pg.size() - 1, 3);
+				pgl.add(pg);
+			}
+			startCorner = findCorner();
+		}
+		edges = pgl;
 		q1 = null;
 		q2 = null;
 		q3 = null;
 		q4 = null;
+	}
+	
+	/**
+	 * Constructor just records the list of STL objects
+	 * @param s
+	 */
+	public STLSlice(List s)
+	{
+		edges = null;
+		q1 = null;
+		q2 = null;
+		q3 = null;
+		q4 = null;
+		visited = false;
+		stls = s;
+	}
+	
+	/**
+	 * 
+	 * build a 2D polygon list of all edges in the plane z
+	 * from all the objects in stls then turn it to CSG.
+	 * @param z
+	 * @return
+	 */
+	public RrCSGPolygon slice(double z)
+	{
+		edges = new RrPolygonList();
 		STLObject stl;
 		Transform3D trans;
 		BranchGroup bg;
@@ -287,15 +571,21 @@ public class STLSlice
 			trans = stl.getTransform();
 			bg = stl.getSTL();
 			things = bg.getAllChildren();
-			while(things.hasMoreElements() != false) 
+			while(things.hasMoreElements()) 
 			{
 				Object value = things.nextElement();
 				recursiveSetEdges(value, trans, z);
 			}
 		}
-		box = edges.box;
-		//divide();
-		RrGraphics g = new RrGraphics(box.scale(1.5), true);
-		g.addPol(edges);
-	}	
+		box = edges.box.scale(1.1);
+		//RrGraphics g = new RrGraphics(box.scale(1.5), true);		
+		sFactor = 1;
+		resolution_2 = box.d_2()*1.0e-8;
+		//g.addPol(edges);
+		divide();
+		conquer();
+		edges.simplify(1.0e-2);
+		//g.addSTL(this);	
+		return edges.toCSG();
+	}
 }

@@ -197,7 +197,10 @@ public class RrCSGPolygon
 		// Too small a box?
 		
 		if(box.d_2() < resolution_2)
+		{
+			System.err.println("RrCSGPolygon.divide(): hit resolution limit!");
 			return;
+		}
 		
 		// For comlexities of 4 or less, check if regularization throws
 		// some away.
