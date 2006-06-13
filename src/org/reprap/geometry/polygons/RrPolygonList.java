@@ -412,6 +412,12 @@ public class RrPolygonList
 	 */
 	private List convexHull(List points)
 	{	
+		if(points.size() < 3)
+		{
+			System.err.println("convexHull(): attempt to compute hull for " + points.size() + " points!");
+			return new ArrayList();
+		}
+		
 		List inConsideration = new ArrayList(points);
 		
 		int i;
@@ -516,8 +522,10 @@ public class RrPolygonList
 		
 	/**
 	 * Set the polygon flag values for the points in a list
+	 * Also checks for a single polygon (true) or multiple (false).
 	 * @param a
 	 * @param flag
+	 * @return
 	 */
 	private boolean flagSet(List a, int flag)
 	{
@@ -541,7 +549,7 @@ public class RrPolygonList
 	 */
 	private List polSection(List a, int level)
 	{
-		System.out.println("polSection() in - " + a.size());
+		//System.out.println("polSection() in - " + a.size());
 		int flag, oldi;
 		oldi = a.size() - 1;
 		RrPolygon oldPg = listPolygon(oldi, a);
@@ -567,7 +575,7 @@ public class RrPolygonList
 		}
 		if(ptr < 0)
 		{
-			System.out.println("polSection() out - null");
+			//System.out.println("polSection() out - null");
 			return null;
 		}
 		
@@ -585,7 +593,7 @@ public class RrPolygonList
 		}
 
 		result.add(a.get(ptr));
-		System.out.println("polSection() out - " + result.size());
+		//System.out.println("polSection() out - " + result.size());
 		return result;
 	}
 	
@@ -629,7 +637,7 @@ public class RrPolygonList
 	 */
 	private RrPolygonList getComplete(List a, int level)
 	{
-		System.out.println("getComplete() in - " + a.size());
+		//System.out.println("getComplete() in - " + a.size());
 		RrPolygonList res = new RrPolygonList();
 		
 		RrPolygon pg = listPolygon(0, a);
@@ -672,13 +680,13 @@ public class RrPolygonList
 				}
 				result.add(pg);
 			}
-			System.out.println("getComplete() out - " + result.size());
+			//System.out.println("getComplete() out - " + result.size());
 			return result;
 
 		}
 		else
 		{
-			System.out.println("getComplete() out - null");
+			//System.out.println("getComplete() out - null");
 			return null;
 		}
 	}
@@ -722,7 +730,7 @@ public class RrPolygonList
 	 */
 	private RrCSG toCSGRecursive(List a, int level, boolean closed)
 	{	
-		System.out.println("toCSGRecursive() - " + a.size());
+		//System.out.println("toCSGRecursive() - " + a.size());
 		flagSet(a, level);	
 		level++;
 		List ch = convexHull(a);
@@ -731,7 +739,7 @@ public class RrPolygonList
 		if(!onePol)
 		{
 			RrPolygonList op = outerPols(ch);
-			System.out.println("multi-pols - dealing with " + op.size());
+			//System.out.println("multi-pols - dealing with " + op.size());
 			if(level%2 == 1)
 				hull = RrCSG.nothing();
 			else
@@ -755,7 +763,7 @@ public class RrPolygonList
 					return RrCSG.union(hull, toCSGRecursive(a, level, true));
 			} else
 			{
-				System.out.println("multi-pols, returning " + op.size());
+				//System.out.println("multi-pols, returning " + op.size());
 				return hull;
 			}
 		}else
@@ -888,71 +896,71 @@ public class RrPolygonList
 //	}
 	
 	
-	/**
-	 * Hatch a polygon list parallel to line l0 with index gap
-	 * Returning a polygon as the result with flag values f
-	 * @param l0
-	 * @param gap The size of the gap between hatching strokes
-	 * @param fg
-	 * @param fs
-	 * @return
-	 */
-	public RrPolygon hatch(RrLine l0, double gap, int fg, int fs)
-	{
-		RrBox big = box.scale(1.1);
-		double d = Math.sqrt(big.d_2());
-		RrPolygon r = new RrPolygon();
-		Rr2Point orth = new Rr2Point(-l0.direction().y(), l0.direction().x());
-		orth.norm();
-		
-		int quad = (int)(2*Math.atan2(orth.y(), orth.x())/Math.PI);
-		
-		Rr2Point org;
-		
-		switch(quad)
-		{
-		case 0:
-			org = big.sw();
-			break;
-			
-		case 1:
-			org = big.se();
-			break;
-			
-		case 2:
-			org = big.ne();  
-			break;
-			
-		case 3:
-			org = big.nw();
-			break;
-			
-		default:
-			System.err.println("RrPolygon hatch(): The atan2 function doesn't seem to work...");
-		    org = big.sw();
-		}
-		
-		double g = 0;
-
-		orth = Rr2Point.mul(orth, gap);
-		
-		RrLine hatcher = new RrLine(org, Rr2Point.add(org, l0.direction()));
-		
-		while (g < d)
-		{
-			hatcher = hatcher.neg();
-			List t_vals = pl_intersect(hatcher);
-			if (t_vals.size() > 0)
-			{
-				java.util.Collections.sort(t_vals);
-				r.add(RrPolygon.rr_t_polygon(t_vals, hatcher, fg, fs));
-			}
-			hatcher = hatcher.add(orth);
-			g = g + gap;
-		}
-		r.flags.set(0, new Integer(0));
-		return r;
-	}
-	
+//	/**
+//	 * Hatch a polygon list parallel to line l0 with index gap
+//	 * Returning a polygon as the result with flag values f
+//	 * @param l0
+//	 * @param gap The size of the gap between hatching strokes
+//	 * @param fg
+//	 * @param fs
+//	 * @return
+//	 */
+//	public RrPolygon hatch(RrLine l0, double gap, int fg, int fs)
+//	{
+//		RrBox big = box.scale(1.1);
+//		double d = Math.sqrt(big.d_2());
+//		RrPolygon r = new RrPolygon();
+//		Rr2Point orth = new Rr2Point(-l0.direction().y(), l0.direction().x());
+//		orth.norm();
+//		
+//		int quad = (int)(2*Math.atan2(orth.y(), orth.x())/Math.PI);
+//		
+//		Rr2Point org;
+//		
+//		switch(quad)
+//		{
+//		case 0:
+//			org = big.sw();
+//			break;
+//			
+//		case 1:
+//			org = big.se();
+//			break;
+//			
+//		case 2:
+//			org = big.ne();  
+//			break;
+//			
+//		case 3:
+//			org = big.nw();
+//			break;
+//			
+//		default:
+//			System.err.println("RrPolygon hatch(): The atan2 function doesn't seem to work...");
+//		    org = big.sw();
+//		}
+//		
+//		double g = 0;
+//
+//		orth = Rr2Point.mul(orth, gap);
+//		
+//		RrLine hatcher = new RrLine(org, Rr2Point.add(org, l0.direction()));
+//		
+//		while (g < d)
+//		{
+//			hatcher = hatcher.neg();
+//			List t_vals = pl_intersect(hatcher);
+//			if (t_vals.size() > 0)
+//			{
+//				java.util.Collections.sort(t_vals);
+//				r.add(RrPolygon.rr_t_polygon(t_vals, hatcher, fg, fs));
+//			}
+//			hatcher = hatcher.add(orth);
+//			g = g + gap;
+//		}
+//		r.flags.set(0, new Integer(0));
+//		return r;
+//	}
+//	
 
 }

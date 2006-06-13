@@ -37,26 +37,26 @@ public class Producer {
 		return a;
 	}
 	
-	public RrPolygon hex()
+	public RrCSGPolygon hex()
 	{
-		RrPolygon b = new RrPolygon();
 		double hexSize = 10;
-		double hexLongSize = Math.cos(Math.PI * 30. / 180.0);
-		double hexShortSize = Math.sin(Math.PI * 30. / 180.0);
 		double hexX = 35, hexY = 15;
-		Rr2Point h1 = new Rr2Point(hexX - hexSize / 2.0, hexY - hexSize * hexLongSize);
-		Rr2Point h2 = new Rr2Point(hexX - hexSize / 2.0 - hexSize * hexShortSize, hexY);
-		Rr2Point h3 = new Rr2Point(hexX - hexSize / 2.0, hexY + hexSize * hexLongSize);
-		Rr2Point h4 = new Rr2Point(hexX + hexSize / 2.0, hexY + hexSize * hexLongSize);
-		Rr2Point h5 = new Rr2Point(hexX + hexSize / 2.0 + hexSize * hexShortSize, hexY);
-		Rr2Point h6 = new Rr2Point(hexX + hexSize / 2.0, hexY - hexSize * hexLongSize);
-		b.add(h1, 1);
-		b.add(h2, 1);
-		b.add(h3, 1);
-		b.add(h4, 1);
-		b.add(h5, 1);
-		b.add(h6, 1);
-		return b;
+		
+		RrCSG r = RrCSG.universe();
+		Rr2Point pold = new Rr2Point(hexX + hexSize/2, hexY);
+		Rr2Point p;
+		double theta = 0; 
+		for(int i = 0; i < 6; i++)
+		{
+			theta += Math.PI * 60. / 180.0;
+			p = new Rr2Point(hexX + Math.cos(theta)*hexSize/2, hexY + Math.sin(theta)*hexSize/2);
+			r = RrCSG.intersection(r, new RrCSG(new RrHalfPlane(p, pold)));
+			pold = p;
+		}
+		
+		// Horrid hacks in multipliers next...
+		return new RrCSGPolygon(r, new RrBox(new Rr2Point(hexX - hexSize*0.57, hexY - hexSize*0.61), 
+				new Rr2Point(hexX + hexSize*0.537, hexY + hexSize*0.623)));
 	}
 	
 	public RrCSGPolygon adriansTestShape()
@@ -149,8 +149,8 @@ public class Producer {
 
 		boolean isEvenLayer = true;
 		STLSlice stlc = new STLSlice(bld.getSTLs());
-		for(double z = 0; z < 5.0; z += reprap.getExtrusionHeight()) {
-
+		//for(double z = 0; z < stlc.maxZ(); z += reprap.getExtrusionHeight()) {
+		for(double z = 0; z < 5; z += reprap.getExtrusionHeight()) {
 			if (reprap.isCancelled())
 				break;
 			System.out.println("Commencing layer at " + z);
@@ -164,21 +164,27 @@ public class Producer {
 
 // ************ Simon's example start
 			
-			// Add a square block
-
-			list.add(square());
-	
-			// Add a hex block
-			
-			list.add(hex());
-
-			LayerProducer layer = new LayerProducer(reprap, list,
-					isEvenLayer?evenHatchDirection:oddHatchDirection);
+//			// Add a square block
+//
+//			list.add(square());
+//	
+//			// Add a hex block
+//			
+//			list.add(hex());
+//
+//			LayerProducer layer = new LayerProducer(reprap, list,
+//					isEvenLayer?evenHatchDirection:oddHatchDirection);
 			
 // ************ Simon's examples end - Adrian's start
 			
-//			LayerProducer layer = new LayerProducer(reprap, stlc.slice(z+0.01),
+			LayerProducer layer = new LayerProducer(reprap, hex(),
+					isEvenLayer?evenHatchDirection:oddHatchDirection);
+//			RrCSGPolygon slice = stlc.slice(z+0.01);
+//			LayerProducer layer = new LayerProducer(reprap, slice,
 //					isEvenLayer?evenHatchDirection:oddHatchDirection);
+//			slice.divide(1.0e-2, 1);
+//			new RrGraphics(slice, true);
+
 // ************ Adrian's example end.
 			
 			layer.plot();

@@ -28,31 +28,31 @@ public class LayerProducer {
 	private Rr2Point pos;
 	
 	
-	/**
-	 * @param reprap
-	 * @param list
-	 * @param hatchDirection
-	 */
-	public LayerProducer(Printer printer, RrPolygonList list, RrLine hatchDirection) {
-		this.printer = printer;
-
-		borderPolygons = list;
-		
-		RrPolygon hatched = list.hatch(hatchDirection, printer.getExtrusionSize(),
-				gapMaterial, solidMaterial);
-
-		hatchedPolygons = new RrPolygonList();
-		hatchedPolygons.add(hatched);
-		
-		//new RrGraphics(p_list, false);
-		
-		csg_p = null;
-		
-		RrBox big = hatchedPolygons.box.scale(1.1);
-		
-		double width = big.x().length();
-		double height = big.y().length();
-	}
+//	/**
+//	 * @param reprap
+//	 * @param list
+//	 * @param hatchDirection
+//	 */
+//	public LayerProducer(Printer printer, RrPolygonList list, RrLine hatchDirection) {
+//		this.printer = printer;
+//
+//		borderPolygons = list;
+//		
+//		RrPolygon hatched = list.hatch(hatchDirection, printer.getExtrusionSize(),
+//				gapMaterial, solidMaterial);
+//
+//		hatchedPolygons = new RrPolygonList();
+//		hatchedPolygons.add(hatched);
+//		
+//		//new RrGraphics(p_list, false);
+//		
+//		csg_p = null;
+//		
+//		RrBox big = hatchedPolygons.box.scale(1.1);
+//		
+//		double width = big.x().length();
+//		double height = big.y().length();
+//	}
 	
 	/**
 	 * @param reprap
@@ -75,7 +75,7 @@ public class LayerProducer {
 		hatchedPolygons.add(offHatch.hatch_join(hatchDirection, printer.getExtrusionSize(), 
 				solidMaterial, gapMaterial));
 		
-		//new RrGraphics(p_list, false);
+		//new RrGraphics(hatchedPolygons, true);
 		
 		csg_p = null;
 		

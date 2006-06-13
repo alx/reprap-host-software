@@ -36,13 +36,34 @@ public class TestMain
 		
 		//RrPolygonList d = c.offset(0.03);
 		
-		RrPolygon  e = c.hatch(x, 0.03, 3, 4);
+		//RrPolygon  e = c.hatch(x, 0.03, 3, 4);
 		//d = d.offset(0.003);
 		//e = e.join_up(d);
 		//c.add(d); 
-		c.add(e);
+		//c.add(e);
 		
 		new RrGraphics(c, false);
+	}
+	
+	public static RrCSGPolygon hex()
+	{
+		double hexSize = 10;
+		double hexX = 35, hexY = 15;
+		
+		RrCSG r = RrCSG.universe();
+		Rr2Point pold = new Rr2Point(hexX + hexSize/2, hexY);
+		Rr2Point p;
+		double theta = 0; 
+		for(int i = 0; i < 6; i++)
+		{
+			theta += Math.PI * 60. / 180.0;
+			p = new Rr2Point(hexX + Math.cos(theta)*hexSize/2, hexY + Math.sin(theta)*hexSize/2);
+			r = RrCSG.intersection(r, new RrCSG(new RrHalfPlane(p, pold)));
+			pold = p;
+		}
+		
+		return new RrCSGPolygon(r, new RrBox(new Rr2Point(hexX - hexSize, hexY - hexSize), 
+				new Rr2Point(hexX + hexSize, hexY + hexSize)));
 	}
 	
 	public static RrCSGPolygon testPol()
@@ -91,21 +112,20 @@ public class TestMain
 	
 	public static void rrCSGTest()
 	{
-		RrCSGPolygon cp = testPol();
-		
+		//RrCSGPolygon cp = testPol();
+		RrCSGPolygon cp = hex();
 		cp.divide(1.0e-6, 1.0);
-		//System.out.println(cp.toString());
-		RrGraphics g = new RrGraphics(new 
-				RrBox(new Rr2Point(0,0), new Rr2Point(1,1)), true);
+		System.out.println(cp.toString());
+		RrGraphics g = new RrGraphics(cp.box().scale(1.1), true);
 		
-		//g.addCSG(cp);
+		g.addCSG(cp);
 		
-		RrLine x = new RrLine(new Rr2Point(-1, -1), new Rr2Point(1, 1));
-		RrPolygon  h = cp.hatch_join(x, 0.005, 1, 3);
-		RrPolygonList hp;
-		hp = cp.megList(1, 0);
-		hp.add(h);
-		g.addPol(hp);  
+//		RrLine x = new RrLine(new Rr2Point(-1, -1), new Rr2Point(1, 1));
+//		RrPolygon  h = cp.hatch_join(x, 0.005, 1, 3);
+//		RrPolygonList hp;
+//		hp = cp.megList(1, 0);
+//		hp.add(h);
+//		g.addPol(hp);  
 	}
 	
 	public static void rrCHTest()
@@ -138,8 +158,8 @@ public class TestMain
 	
 	public static void main(String args[])
 	{
-		//rrCSGTest();
-		rrCHTest();
+		rrCSGTest();
+		//rrCHTest();
 		//rrpTest();
 	}
 }

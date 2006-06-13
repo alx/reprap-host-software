@@ -104,7 +104,8 @@ public class STLSlice
 	
 	private double toGrid(double x)
 	{
-		return (double)((int)(x*grid + 0.5))/(double)grid;
+		return x;
+		//return (double)((int)(x*grid + 0.5))/(double)grid;
 	}
 	
 	/**
@@ -348,96 +349,7 @@ public class STLSlice
 		return this;
 	}
 	
-	/**
-	 * Walk the tree to find the polygon with an end nearest a point
-	 * @param pg
-	 * @param end
-	 * @param ignoreVisited
-	 * @result
-     */
-//	private double findEnd(RrPolygon pg, int end, boolean visitVisited,
-//			double dClose, RrPolygon result)
-//	{
-//		Rr2Point p = pg.point(end);
-//		
-//		RrPolygon pgTest;
-//
-//		double d[] = new double[4];
-//		STLSlice q[] = new STLSlice[4];
-//		double dd;
-//		STLSlice qq;
-//		boolean gotAnswer = false;
-//		
-//		if(q1 != null)
-//		{
-//			d[0] = q1.box.d_2(p);
-//			d[1] = q2.box.d_2(p);
-//			d[2] = q3.box.d_2(p);
-//			d[3] = q4.box.d_2(p);
-//			q[0] = q1;
-//			q[1] = q2;
-//			q[2] = q3;
-//			q[3] = q4;
-//			
-//			for(int i = 0; i < 3; i++)
-//			{
-//				for(int j = i+1; j < 4; j++)
-//					if(d[i] > d[j])
-//					{
-//						dd = d[i];
-//						d[i] = d[j];
-//						d[j] = dd;
-//						qq = q[i];
-//						q[i] = q[j];
-//						q[j] = qq;
-//					}
-//			}
-//			
-//			for(int i = 0; i < 4; i++)
-//			{
-//				if((!q[i].visited || visitVisited) && d[i] < dClose)
-//				{
-//					RrPolygon candidate = new RrPolygon();
-//					dd = q[i].findEnd(pg, end, visitVisited, dClose, candidate);
-//					if(dd < dClose)
-//					{
-//						dClose = dd;
-//						result.set(candidate);
-//					}
-//				}	
-//			}
-//			return dClose;
-//		} else
-//		
-//		while(!gotAnswer)
-//		{
-//			for(int i = 0; i < q.edges.size(); i++)
-//			{
-//				pgTest = q.edges.polygon(i);
-//				if(pgTest != pg)
-//				{
-//					d1 = Rr2Point.d_2(p, pg.point(0));
-//					d2 = Rr2Point.d_2(p, pg.point(1));
-//					if(d2 < d1)
-//						d1 = d2;
-//					if(d1 < dClose)
-//					{
-//						result = pgTest;
-//						dClose = d1;
-//					}
-//				}
-//			}
-//			if(q1 != null)
-//			{
-//				d1 = q1.box.d_2(p);
-//				d2 = q2.box.d_2(p);
-//				d3 = q3.box.d_2(p);
-//				d4 = q4.box.d_2(p);
-//				
-//			}
-//		}
-//		
-//	}
+
 	
 	 /**
 	 * Walk the tree to find an unvisited corner
@@ -548,6 +460,22 @@ public class STLSlice
 		q4 = null;
 		visited = false;
 		stls = s;
+		sFactor = 1;
+		resolution_2 = 1.0e-8; // Default - set properly
+	}
+	
+	public double maxZ()
+	{
+		STLObject stl;
+		double result = Double.NEGATIVE_INFINITY;
+		
+		for(int i = 0; i < stls.size(); i++)
+		{
+			stl = (STLObject)stls.get(i);
+			if(stl.size.z > result)
+				result = stl.size.z;
+		}
+		return result;
 	}
 	
 	/**
@@ -584,8 +512,13 @@ public class STLSlice
 		//g.addPol(edges);
 		divide();
 		conquer();
-		edges.simplify(1.0e-2);
-		//g.addSTL(this);	
-		return edges.toCSG();
+		edges = edges.simplify(1.0e-2);
+		//g.addSTL(this);
+		if(edges.size() < 1)
+		{
+			System.err.println("slice(): nothing there!");
+			return new RrCSGPolygon(RrCSG.nothing(), new RrBox());
+		} else
+			return edges.toCSG();
 	}
 }
