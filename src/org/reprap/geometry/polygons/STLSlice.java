@@ -264,7 +264,7 @@ public class STLSlice
 					box.point_relative(edges.polygon(i).point(1)) == 0)
 				result.add(edges.polygon(i));
 		}
-		
+				
 		edges = result;
 	}
 	
@@ -388,6 +388,36 @@ public class STLSlice
     	return result;
     }
     
+	 /**
+	 * Walk the tree to set all instances of a corner visited
+     */
+    private void setVisited(RrPolygon p0, RrPolygon p1)
+    {
+    	if(visited)
+    		return;
+ 
+    	if(q1 != null)
+    	{
+    		q1.setVisited(p0, p1);
+    		q2.setVisited(p0, p1);
+    		q3.setVisited(p0, p1);
+    		q4.setVisited(p0, p1);   		
+    	} else
+    	{
+    		if(edges.size() != 2)
+    			return;
+    		int tot = 0;
+    		for(int i = 0; i < 2; i++)
+    		{
+    			if(edges.polygon(i) == p0 || edges.polygon(i) == p1)
+    				tot++;
+    		}
+    		if(tot == 2)
+    			visited = true;
+    	}
+    }
+    
+    
 	/**
 	 * Stitch up the ends in the quad tree.
 	 */
@@ -424,6 +454,7 @@ public class STLSlice
 				pg0 = corner.edges.polygon(0);
 				if(pg0 == oldPg)
 					pg0 = corner.edges.polygon(1);
+				setVisited(corner.edges.polygon(0), corner.edges.polygon(1));
 				p0 = pg0.point(0);
 				p1 = pg0.point(1);
 				if(corner.box.point_relative(p0) != 0)
@@ -443,10 +474,10 @@ public class STLSlice
 			startCorner = findCorner();
 		}
 		edges = pgl;
-		q1 = null;
-		q2 = null;
-		q3 = null;
-		q4 = null;
+//		q1 = null;
+//		q2 = null;
+//		q3 = null;
+//		q4 = null;
 	}
 	
 	/**
@@ -509,17 +540,24 @@ public class STLSlice
 		}
 		box = edges.box.scale(1.1);
 		//RrGraphics g = new RrGraphics(box.scale(1.5), true);		
-		sFactor = 1;
+		sFactor = 1.03;
 		resolution_2 = box.d_2()*tiny;
 		//g.addPol(edges);
+		
+		
 		divide();
 		conquer();
+		
+		
 		//g.addPol(edges);
 		edges = edges.simplify(gridRes*1.5);
 		//RrGraphics g1 = new RrGraphics(box.scale(1.5), true);
 		//g1.addPol(edges);
-		//g.addSTL(this);
+		//g1.addSTL(this);
 		//System.out.println(edges.toString());
+		
+
+		
 		if(edges.size() < 1)
 		{
 			System.err.println("slice(): nothing there!");

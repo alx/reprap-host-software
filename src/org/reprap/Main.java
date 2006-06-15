@@ -419,7 +419,7 @@ public class Main {
 					String usage = getResourceMessage(producer);
 					producer.dispose();
 			        cancelMenuItem.setEnabled(false);
-			        produceProduceT.setEnabled(true);
+			        produceProduceB.setEnabled(true);
 					JOptionPane.showMessageDialog(mainFrame, "Production complete.  " +
 							usage);
 				}
