@@ -103,6 +103,18 @@ public class RrPolygon
 	}
 	
 	/**
+	 * As a string
+	 * @return
+	 */
+	public String toString()
+	{
+		String result = " Polygon -  vertices: ";
+		result += size() + ", enclosing box: ";
+		result += box.toString();
+		return result;
+	}
+	
+	/**
 	 * Change a flag value
 	 * @param i
 	 * @param f

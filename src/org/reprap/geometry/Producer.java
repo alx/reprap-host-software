@@ -151,6 +151,7 @@ public class Producer {
 		STLSlice stlc = new STLSlice(bld.getSTLs());
 		//for(double z = 0; z < stlc.maxZ(); z += reprap.getExtrusionHeight()) {
 		for(double z = 0; z < 5; z += reprap.getExtrusionHeight()) {
+			
 			if (reprap.isCancelled())
 				break;
 			System.out.println("Commencing layer at " + z);
@@ -179,7 +180,7 @@ public class Producer {
 			
 			LayerProducer layer = new LayerProducer(reprap, hex(),
 					isEvenLayer?evenHatchDirection:oddHatchDirection);
-//			RrCSGPolygon slice = stlc.slice(z+0.01);
+//			RrCSGPolygon slice = stlc.slice(z+reprap.getExtrusionHeight()*0.5);
 //			LayerProducer layer = new LayerProducer(reprap, slice,
 //					isEvenLayer?evenHatchDirection:oddHatchDirection);
 //			slice.divide(1.0e-2, 1);

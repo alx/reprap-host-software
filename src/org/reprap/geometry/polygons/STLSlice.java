@@ -56,7 +56,6 @@ package org.reprap.geometry.polygons;
 import java.util.*;
 import javax.media.j3d.*;
 import javax.vecmath.*;
-import com.sun.j3d.loaders.Scene;
 import org.reprap.gui.STLObject;
 
 public class STLSlice 
@@ -104,8 +103,8 @@ public class STLSlice
 	
 	private double toGrid(double x)
 	{
-		return x;
-		//return (double)((int)(x*grid + 0.5))/(double)grid;
+		//return x;
+		return (double)((int)(x*grid + 0.5))/(double)grid;
 	}
 	
 	/**
@@ -506,14 +505,16 @@ public class STLSlice
 			}
 		}
 		box = edges.box.scale(1.1);
-		//RrGraphics g = new RrGraphics(box.scale(1.5), true);		
+		RrGraphics g = new RrGraphics(box.scale(1.5), true);		
 		sFactor = 1;
 		resolution_2 = box.d_2()*1.0e-8;
 		//g.addPol(edges);
 		divide();
 		conquer();
 		edges = edges.simplify(1.0e-2);
+		g.addPol(edges);
 		//g.addSTL(this);
+		System.out.println(edges.toString());
 		if(edges.size() < 1)
 		{
 			System.err.println("slice(): nothing there!");

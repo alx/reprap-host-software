@@ -161,6 +161,20 @@ public class RrPolygonList
 	}
 	
 	/**
+	 * As a string
+	 * @return
+	 */
+	public String toString()
+	{
+		String result = "Polygon List - polygons: ";
+		result += size() + ", enclosing box: ";
+		result += box.toString();
+		for(int i = 0; i < size(); i++)
+			result += "\n" + polygon(i).toString();
+		return result;
+	}
+	
+	/**
 	 * Write as an SVG xml to file opf
 	 * @param opf
 	 */
