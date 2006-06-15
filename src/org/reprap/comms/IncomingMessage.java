@@ -38,7 +38,7 @@ public abstract class IncomingMessage {
 	 */
 	public IncomingMessage(Device device, OutgoingMessage message, long timeout) throws IOException {
 		Communicator comm = device.getCommunicator();
-		for(;;) {
+		for(int i=0;i<3;i++) {	// Allow 3 retries.
 			incomingContext = comm.sendMessage(device, message);
 			try {
 				comm.receiveMessage(this, timeout);
@@ -54,6 +54,8 @@ public abstract class IncomingMessage {
 			}
 			return;
 		}
+		// If it's not going to respond, try to continue regardless.
+		System.out.println("Resend limit exceeded. Failing without reported error.");
 	}
 
 	

@@ -289,19 +289,26 @@ public class Reprap implements CartesianPrinter {
 	}
 	
 	private void EnsureHot() throws ReprapException, IOException {
-		double threshold = extruder.getTemperatureTarget() * 0.95;
+		double threshold = extruder.getTemperatureTarget() * 0.9;	// Changed from 0.95 by Vik.
 		
 		if (extruder.getTemperature() >= threshold)
 			return;
 
 		double x = currentX;
 		double y = currentY;
+		int tempReminder=0;
+		temperatureReminder();
 		System.out.println("Moving to heating zone");
 		moveToHeatingZone();
 		while(extruder.getTemperature() < threshold && !isCancelled()) {
 			if (previewer != null) previewer.setMessage("Waiting for extruder to reach working temperature (" + Math.round(extruder.getTemperature()) + ")");
 			try {
 				Thread.sleep(1000);
+				// If it starys cold for 10s, remind it of its purpose.
+				if (tempReminder++ >10) {
+					tempReminder=0;
+					temperatureReminder();
+				}
 			} catch (InterruptedException e) {
 			}
 		}
@@ -311,6 +318,20 @@ public class Reprap implements CartesianPrinter {
 		
 	}
 
+	/** A bodge to fix the extruder's current tendency to forget what temperature
+	 * it is supposed to be reaching.
+	 * 
+	 * Vik
+	 */
+	private void temperatureReminder() {
+		System.out.println("Reminding it of the temperature");
+		try {
+			setTemperature(Preferences.loadGlobalInt("ExtrusionTemp"));
+		} catch (Exception e) {
+			System.out.println("Error resetting temperature.");
+		}
+	}
+	
 	/**
 	 * Moves the head to the predefined heating area
 	 * @throws IOException
