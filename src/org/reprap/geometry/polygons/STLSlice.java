@@ -508,18 +508,18 @@ public class STLSlice
 			}
 		}
 		box = edges.box.scale(1.1);
-		RrGraphics g = new RrGraphics(box.scale(1.5), true);		
+		//RrGraphics g = new RrGraphics(box.scale(1.5), true);		
 		sFactor = 1;
 		resolution_2 = box.d_2()*tiny;
-		g.addPol(edges);
+		//g.addPol(edges);
 		divide();
 		conquer();
 		//g.addPol(edges);
 		edges = edges.simplify(gridRes*1.5);
-		RrGraphics g1 = new RrGraphics(box.scale(1.5), true);
-		g1.addPol(edges);
+		//RrGraphics g1 = new RrGraphics(box.scale(1.5), true);
+		//g1.addPol(edges);
 		//g.addSTL(this);
-		System.out.println(edges.toString());
+		//System.out.println(edges.toString());
 		if(edges.size() < 1)
 		{
 			System.err.println("slice(): nothing there!");
