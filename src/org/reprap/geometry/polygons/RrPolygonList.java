@@ -748,6 +748,12 @@ public class RrPolygonList
 		flagSet(a, level);	
 		level++;
 		List ch = convexHull(a);
+		if(ch.size() < 3)
+		{
+			System.err.println("toCSGRecursive() - null convex hull!");
+			return RrCSG.nothing();
+		}
+		
 		boolean onePol = flagSet(ch, level);
 		RrCSG hull;
 		if(!onePol)

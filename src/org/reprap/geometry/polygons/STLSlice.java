@@ -61,6 +61,9 @@ import org.reprap.gui.STLObject;
 public class STLSlice 
 {
 	private static final int grid = 100;
+	private static final double gridRes = 1.0/grid;
+	private static final double lessGridSquare = gridRes*gridRes*0.1;
+	private static final double tiny = 1.0e-8;
 	List stls;
 	private RrPolygonList edges;  // List of the edges with points in this one
 	private RrBox box;            ///< Its enclosing box
@@ -162,7 +165,7 @@ public class STLSlice
 		Rr2Point e2 = new Rr2Point(toGrid(odd.x + t*even2.x), 
 				toGrid(odd.y + t*even2.y));
 		
-		if(!Rr2Point.same(e1, e2, 1.0e-4))
+		if(!Rr2Point.same(e1, e2, lessGridSquare))
 		{
 			RrPolygon pg = new RrPolygon();
 			pg.add(e1, 1);
@@ -507,12 +510,14 @@ public class STLSlice
 		box = edges.box.scale(1.1);
 		RrGraphics g = new RrGraphics(box.scale(1.5), true);		
 		sFactor = 1;
-		resolution_2 = box.d_2()*1.0e-8;
-		//g.addPol(edges);
+		resolution_2 = box.d_2()*tiny;
+		g.addPol(edges);
 		divide();
 		conquer();
-		edges = edges.simplify(1.0e-2);
-		g.addPol(edges);
+		//g.addPol(edges);
+		edges = edges.simplify(gridRes*1.5);
+		RrGraphics g1 = new RrGraphics(box.scale(1.5), true);
+		g1.addPol(edges);
 		//g.addSTL(this);
 		System.out.println(edges.toString());
 		if(edges.size() < 1)

@@ -179,6 +179,8 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 		mouse = new MouseObject(getApplicationBounds(), mouse_tf, mouse_zf);
 
 		wv_and_stls.setCapability(Group.ALLOW_CHILDREN_EXTEND);
+		wv_and_stls.setCapability(Group.ALLOW_CHILDREN_WRITE);
+		wv_and_stls.setCapability(Group.ALLOW_CHILDREN_READ);
 
 		// Load the STL file for the working volume
 
@@ -224,14 +226,18 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 						lastPicked = picked; // Remember it
 					}
 				} else { // Picked the working volume - deselect all and...
-					if (lastPicked != null)
-						lastPicked.setAppearance(default_app);
-					mouse.move(world, false); // ...switch the mouse to moving
-					// the world
-					lastPicked = null;
+					mouseToWorld();
 				}
 			}
 		}
+	}
+	
+	public void mouseToWorld()
+	{
+		if (lastPicked != null)
+			lastPicked.setAppearance(default_app);
+		mouse.move(world, false); // ...switch the mouse to moving the world
+		lastPicked = null;
 	}
 
 	// Find the stl object in the scene with the given name
@@ -307,6 +313,27 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 	public void zRotate() {
 		if (lastPicked != null)
 			lastPicked.zClick();
+	}
+	
+	public void deleteSTL()
+	{
+		if (lastPicked == null)
+			return;
+		int index = -1;
+		for(int i = 0; i < stls.size(); i++)
+		{
+			if((STLObject)stls.get(i) == lastPicked)
+			{
+				index = i;
+				break;
+			}
+		}
+		if (index >= 0) 
+		{
+			stls.remove(index);
+			index = wv_and_stls.indexOfChild(lastPicked.top);
+			wv_and_stls.removeChild(index);
+		}
 	}
 
 }

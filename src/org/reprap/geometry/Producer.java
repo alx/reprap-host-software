@@ -106,7 +106,7 @@ public class Producer {
 		return result;
 	}
 	
-	public void produce() throws Exception {
+	public void produce(boolean testPiece) throws Exception {
 
         // Fallback defaults
 		int extrusionSpeed = 200;
@@ -148,9 +148,22 @@ public class Producer {
 		// we just construct a simple test layer and produce that.
 
 		boolean isEvenLayer = true;
-		STLSlice stlc = new STLSlice(bld.getSTLs());
-		//for(double z = 0; z < stlc.maxZ(); z += reprap.getExtrusionHeight()) {
-		for(double z = 0; z < 5; z += reprap.getExtrusionHeight()) {
+		STLSlice stlc;
+		double zMax;
+		if(testPiece)
+		{
+			stlc = null;
+			zMax = 5;
+		} else
+		{
+			bld.mouseToWorld();
+			stlc = new STLSlice(bld.getSTLs());
+			//zMax = stlc.maxZ();
+			zMax = 1.5;
+		}
+		
+		
+		for(double z = 0; z < zMax; z += reprap.getExtrusionHeight()) {
 			
 			if (reprap.isCancelled())
 				break;
@@ -177,14 +190,19 @@ public class Producer {
 //					isEvenLayer?evenHatchDirection:oddHatchDirection);
 			
 // ************ Simon's examples end - Adrian's start
-			
-			LayerProducer layer = new LayerProducer(reprap, hex(),
-					isEvenLayer?evenHatchDirection:oddHatchDirection);
-//			RrCSGPolygon slice = stlc.slice(z+reprap.getExtrusionHeight()*0.5);
-//			LayerProducer layer = new LayerProducer(reprap, slice,
-//					isEvenLayer?evenHatchDirection:oddHatchDirection);
-//			slice.divide(1.0e-2, 1);
-//			new RrGraphics(slice, true);
+			LayerProducer layer;
+			if(testPiece)
+			{
+				layer = new LayerProducer(reprap, hex(),
+						isEvenLayer?evenHatchDirection:oddHatchDirection);
+			} else
+			{
+				RrCSGPolygon slice = stlc.slice(z+reprap.getExtrusionHeight()*0.5);
+				layer = new LayerProducer(reprap, slice,
+						isEvenLayer?evenHatchDirection:oddHatchDirection);
+//				slice.divide(1.0e-2, 1);
+//				new RrGraphics(slice, true);
+			}
 
 // ************ Adrian's example end.
 			

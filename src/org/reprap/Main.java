@@ -55,7 +55,7 @@ public class Main {
     private JCheckBoxMenuItem layerPause;
     
     private JMenuItem cancelMenuItem;
-    private JMenuItem produceProduce;
+    private JMenuItem produceProduceT, produceProduceB;
 	
     private JSplitPane panel;
 	
@@ -171,18 +171,34 @@ public class Main {
 				onRotateZ();
 			}});
         manipMenu.add(manipZ);
+        
+        JMenuItem deleteSTL = new JMenuItem("Delete selected object", KeyEvent.VK_W);
+        deleteSTL.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, ActionEvent.CTRL_MASK));
+        deleteSTL.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				onDelete();
+			}});
+        manipMenu.add(deleteSTL);
 
         JMenu produceMenu = new JMenu("Produce");
         produceMenu.setMnemonic(KeyEvent.VK_P);
         menubar.add(produceMenu);
 
-        produceProduce = new JMenuItem("Produce...", KeyEvent.VK_P);
-        produceProduce.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_P, ActionEvent.CTRL_MASK));
-        produceProduce.addActionListener(new ActionListener() {
+        produceProduceT = new JMenuItem("Produce test piece...", KeyEvent.VK_T);
+        produceProduceT.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.CTRL_MASK));
+        produceProduceT.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				onProduce();
+				onProduceT();
 			}});
-        produceMenu.add(produceProduce);
+        produceMenu.add(produceProduceT);
+        
+        produceProduceB = new JMenuItem("Produce build...", KeyEvent.VK_B);
+        produceProduceB.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, ActionEvent.CTRL_MASK));
+        produceProduceB.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				onProduceB();
+			}});
+        produceMenu.add(produceProduceB);
 
         cancelMenuItem = new JMenuItem("Cancel", KeyEvent.VK_P);
         cancelMenuItem.setEnabled(false);
@@ -202,12 +218,19 @@ public class Main {
 
         produceMenu.addSeparator();
 
-        JMenuItem estimateMenuItem = new JMenuItem("Estimate resources...", KeyEvent.VK_E);
-        estimateMenuItem.addActionListener(new ActionListener() {
+        JMenuItem estimateMenuItemT = new JMenuItem("Estimate test-piece resources...", KeyEvent.VK_E);
+        estimateMenuItemT.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				estimateResources();
+				estimateResourcesT();
 			}});
-        produceMenu.add(estimateMenuItem);
+        produceMenu.add(estimateMenuItemT);
+        
+        JMenuItem estimateMenuItemB = new JMenuItem("Estimate build resources...", KeyEvent.VK_E);
+        estimateMenuItemB.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				estimateResourcesB();
+			}});
+        produceMenu.add(estimateMenuItemB);
                 
         JMenu toolsMenu = new JMenu("Tools");
         toolsMenu.setMnemonic(KeyEvent.VK_T);
@@ -339,9 +362,9 @@ public class Main {
 		return pane;
 	}
 	
-	private void onProduce() {
+	private void onProduceT() {
         cancelMenuItem.setEnabled(true);
-        produceProduce.setEnabled(false);
+        produceProduceT.setEnabled(false);
 		Thread t = new Thread() {
 			public void run() {
 				Thread.currentThread().setName("Producer");
@@ -357,11 +380,46 @@ public class Main {
 					preview.setLayerPause(layerPause);
 					
 					Producer producer = new Producer(preview, builder);
-					producer.produce();
+					producer.produce(true);
 					String usage = getResourceMessage(producer);
 					producer.dispose();
 			        cancelMenuItem.setEnabled(false);
-			        produceProduce.setEnabled(true);
+			        produceProduceT.setEnabled(true);
+					JOptionPane.showMessageDialog(mainFrame, "Production complete.  " +
+							usage);
+				}
+				catch (Exception ex) {
+					JOptionPane.showMessageDialog(mainFrame, "Production exception: " + ex);
+					ex.printStackTrace();
+				}
+			}
+		};
+		t.start();
+	}
+	
+	private void onProduceB() {
+        cancelMenuItem.setEnabled(true);
+        produceProduceB.setEnabled(false);
+		Thread t = new Thread() {
+			public void run() {
+				Thread.currentThread().setName("Producer");
+				try {
+					// TODO Some kind of progress indicator would be good
+					
+					if (!viewPreview.isSelected()) {
+						viewPreview.setSelected(true);
+						updateView();
+					}
+
+					preview.setSegmentPause(segmentPause);
+					preview.setLayerPause(layerPause);
+					
+					Producer producer = new Producer(preview, builder);
+					producer.produce(false);
+					String usage = getResourceMessage(producer);
+					producer.dispose();
+			        cancelMenuItem.setEnabled(false);
+			        produceProduceT.setEnabled(true);
 					JOptionPane.showMessageDialog(mainFrame, "Production complete.  " +
 							usage);
 				}
@@ -398,6 +456,10 @@ public class Main {
     private void onRotateZ() {
   	  builder.zRotate();
     }
+    
+    private void onDelete() {
+    	  builder.deleteSTL();
+      }
 
     private void onViewBuilder() {
     		if (!viewBuilder.isSelected() && !viewPreview.isSelected())
@@ -431,11 +493,11 @@ public class Main {
     	    	  panel.setDividerLocation(0.0);
     }
     
-    private void estimateResources() {
+    private void estimateResourcesT() {
 	    	EstimationProducer producer = null;
 	    	try {
 	    		producer = new EstimationProducer(builder);
-	    		producer.produce();
+	    		producer.produce(true);
 	    		JOptionPane.showMessageDialog(mainFrame,
 	    				"Expected " + getResourceMessage(producer));
 	    		
@@ -446,6 +508,22 @@ public class Main {
 	    			producer.dispose();
 	    	}
     }
+    
+    private void estimateResourcesB() {
+    	EstimationProducer producer = null;
+    	try {
+    		producer = new EstimationProducer(builder);
+    		producer.produce(false);
+    		JOptionPane.showMessageDialog(mainFrame,
+    				"Expected " + getResourceMessage(producer));
+    		
+    	} catch (Exception ex) {
+    		JOptionPane.showMessageDialog(null, "Exception during estimation: " + ex);    
+    	} finally {
+    		if (producer != null)
+    			producer.dispose();
+    	}
+}
     
 	private String getResourceMessage(Producer producer) {
 		double moved = Math.round(producer.getTotalDistanceMoved() * 10.0) / 10.0;

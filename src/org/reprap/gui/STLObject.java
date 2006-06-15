@@ -196,15 +196,18 @@ public class STLObject
             top.setCapability(BranchGroup.ALLOW_DETACH);
             top.setCapability(Group.ALLOW_CHILDREN_EXTEND);
             top.setCapability(Group.ALLOW_CHILDREN_WRITE);
+            top.setCapability(Group.ALLOW_CHILDREN_READ);
             top.setCapability(Node.ALLOW_AUTO_COMPUTE_BOUNDS_READ);
             top.setCapability(Node.ALLOW_BOUNDS_READ);
             
             handle.setCapability(BranchGroup.ALLOW_DETACH);
             handle.setCapability(Group.ALLOW_CHILDREN_EXTEND);
             handle.setCapability(Group.ALLOW_CHILDREN_WRITE);
+            handle.setCapability(Group.ALLOW_CHILDREN_READ);
             
             trans.setCapability(Group.ALLOW_CHILDREN_EXTEND);
             trans.setCapability(Group.ALLOW_CHILDREN_WRITE);
+            trans.setCapability(Group.ALLOW_CHILDREN_READ);
             trans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
             trans.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
             
@@ -319,15 +322,18 @@ public class STLObject
         top.setCapability(BranchGroup.ALLOW_DETACH);
         top.setCapability(Group.ALLOW_CHILDREN_EXTEND);
         top.setCapability(Group.ALLOW_CHILDREN_WRITE);
+        top.setCapability(Group.ALLOW_CHILDREN_READ);
         top.setCapability(Node.ALLOW_AUTO_COMPUTE_BOUNDS_READ);
         top.setCapability(Node.ALLOW_BOUNDS_READ);
         
         handle.setCapability(BranchGroup.ALLOW_DETACH);
         handle.setCapability(Group.ALLOW_CHILDREN_EXTEND);
         handle.setCapability(Group.ALLOW_CHILDREN_WRITE);
+        handle.setCapability(Group.ALLOW_CHILDREN_READ);
         
         trans.setCapability(Group.ALLOW_CHILDREN_EXTEND);
         trans.setCapability(Group.ALLOW_CHILDREN_WRITE);
+        trans.setCapability(Group.ALLOW_CHILDREN_READ);
         trans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
         trans.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
         
