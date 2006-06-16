@@ -39,8 +39,8 @@ public class Producer {
 	
 	public RrCSGPolygon hex()
 	{
-		double hexSize = 10;
-		double hexX = 35, hexY = 15;
+		double hexSize = 20;
+		double hexX = 15, hexY = 15;
 		
 		RrCSG r = RrCSG.universe();
 		Rr2Point pold = new Rr2Point(hexX + hexSize/2, hexY);

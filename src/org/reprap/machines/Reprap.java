@@ -289,7 +289,7 @@ public class Reprap implements CartesianPrinter {
 	}
 	
 	private void EnsureHot() throws ReprapException, IOException {
-		double threshold = extruder.getTemperatureTarget() * 0.9;	// Changed from 0.95 by Vik.
+		double threshold = extruder.getTemperatureTarget() * 0.88;	// Changed from 0.95 by Vik.
 		
 		if (extruder.getTemperature() >= threshold)
 			return;
@@ -304,7 +304,7 @@ public class Reprap implements CartesianPrinter {
 			if (previewer != null) previewer.setMessage("Waiting for extruder to reach working temperature (" + Math.round(extruder.getTemperature()) + ")");
 			try {
 				Thread.sleep(1000);
-				// If it starys cold for 10s, remind it of its purpose.
+				// If it stays cold for 10s, remind it of its purpose.
 				if (tempReminder++ >10) {
 					tempReminder=0;
 					temperatureReminder();
