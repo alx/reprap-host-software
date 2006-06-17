@@ -155,31 +155,47 @@ public class GenericExtruder extends Device {
 	public void setTemperature(double temperature) throws Exception {
 		requestedTemperature = temperature;
 		
-		double temperatureMax = temperature * 1.1; // 10% margin
+		// Aim for 10% above our target to ensure we reach it.  It doesn't matter
+		// if we go over because the power will be adjusted when we get there.  At
+		// the same time, if we aim too high, we'll overshoot a bit before we
+		// can react.
+		double temperature0 = temperature * 1.1;
 		
-		// Calculate power from hm, hb.  In general, the temperature
+		// A safety cutoff will be set at 20% above requested setting
+		double temperatureSafety = temperature * 1.2;
+		
+		// Calculate power output from hm, hb.  In general, the temperature
 		// we achieve is power * hm + hb.  So to achieve a given temperature
 		// we need a power of (temperature - hb) / hm
 		
-		int power = (int)Math.round((temperatureMax - hb) / hm);
-		if (power < 0) power = 0;
-		if (power > 255) power = 255;
-		
-		// Now convert safety level to equivalent raw PIC temperature value
-		double safetyResistance = calculateResistanceForTemperature(temperature);
+		// If we reach our temperature, rather than switching completely off
+		// go to a reduced power level.
+		int power0 = (int)Math.round(((0.9 * temperature0) - hb) / hm);
+		if (power0 < 0) power0 = 0;
+		if (power0 > 255) power0 = 255;
+
+		// Otherwise, this is the normal power level we will maintain
+		int power1 = (int)Math.round((temperature0 - hb) / hm);
+		if (power1 < 0) power1 = 0;
+		if (power1 > 255) power1 = 255;
+
+		// Now convert temperatures to equivalent raw PIC temperature resistance value
+		// Here we use the original specified temperature, not the slight overshoot
+		double resistance0 = calculateResistanceForTemperature(temperature);
+		double resistanceSafety = calculateResistanceForTemperature(temperatureSafety);
+
 		// Determine equivalent raw value
-		int safetyPICTemp = calculatePicTempForResistance(safetyResistance);
-		if (safetyPICTemp < 0) safetyPICTemp = 0;
-		if (safetyPICTemp > 255) safetyPICTemp = 255;
+		int t0 = calculatePicTempForResistance(resistance0);
+		if (t0 < 0) t0 = 0;
+		if (t0 > 255) t0 = 255;
+		int t1 = calculatePicTempForResistance(resistanceSafety);
+		if (t1 < 0) t1 = 0;
+		if (t1 > 255) t1 = 255;
 		
 		if (temperature == 0)
 			setHeater(0, 0);
 		else {
-			// Increase power by 10% as I'm an impatient person.
-			power+=power/10;
-			if (power>255)
-				power=255;
-			setHeater(power, safetyPICTemp);
+			setHeater(power0, power1, t0, t1);
 		}
 	}
 	
@@ -221,6 +237,31 @@ public class GenericExtruder extends Device {
 		lock();
 		try {
 			sendMessage(new RequestSetHeat((byte)heat, (byte)safetyCutoff));
+		}
+		finally {
+			unlock();
+		}
+	}
+
+	/**
+	 * Similar to setHeater(int, int) except this provides two different
+	 * heating zones.  Below t0, it heats at h1.  From t0 to t1 it heats at h0
+	 * and above t1 it shuts off.  This has the effect of still providing some
+	 * power when the desired temperature is reached so it cools less quickly.   
+	 * @param heat0
+	 * @param heat1
+	 * @param t0
+	 * @param t1
+	 * @throws IOException
+	 */
+	private void setHeater(int heat0, int heat1, int t0, int t1) throws IOException {
+		System.out.println("Set heater to " + heat0 + "/" + heat1 + " limit " + t0 + "/" + t1);
+		lock();
+		try {
+			sendMessage(new RequestSetHeat((byte)heat0,
+										   (byte)heat1,
+										   (byte)t0,
+										   (byte)t1));
 		}
 		finally {
 			unlock();
@@ -270,6 +311,9 @@ public class GenericExtruder extends Device {
 		return requestedTemperature;
 	}
 
+	/**
+	 * TEMPORARY WORKAROUND FUNCTION
+	 */
 	private void TEMPpollcheck() {
 		if (System.currentTimeMillis() - lastTemperatureUpdate > 10000) {
 			// Polled updates are having a hard time getting through with
@@ -441,7 +485,11 @@ public class GenericExtruder extends Device {
 		byte [] message;
 		
 		RequestSetHeat(byte heat, byte cutoff) {
-			message = new byte [] { MSG_SetHeat, heat, cutoff }; 
+			message = new byte [] { MSG_SetHeat, heat, heat, cutoff, cutoff }; 
+		}
+
+		RequestSetHeat(byte heat0, byte heat1, byte t0, byte t1) {
+			message = new byte [] { MSG_SetHeat, heat0, heat1, t0, t1}; 
 		}
 		
 		public byte[] getBinary() {
