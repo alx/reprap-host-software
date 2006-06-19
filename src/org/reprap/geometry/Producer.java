@@ -144,9 +144,8 @@ public class Producer {
 		reprap.printTo(2, 5, 0);
 		
 		// This should now split off layers one at a time
-		// and pass them to the LayerProducer.  At the moment,
-		// we just construct a simple test layer and produce that.
-
+		// and pass them to the LayerProducer.  
+		
 		boolean isEvenLayer = true;
 		STLSlice stlc;
 		double zMax;

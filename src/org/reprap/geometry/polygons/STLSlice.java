@@ -62,9 +62,12 @@ public class STLSlice
 {
 	private static final int grid = 100;
 	private static final double gridRes = 1.0/grid;
-	private static final double lessGridSquare = gridRes*gridRes*0.1;
+	private static final double lessGridSquare = gridRes*gridRes*0.01;
 	private static final double tiny = 1.0e-8;
-	List stls;
+	private static List onlyOne;
+	private static List triangles;
+	
+	private List stls;
 	private RrPolygonList edges;  // List of the edges with points in this one
 	private RrBox box;            ///< Its enclosing box
 	private STLSlice q1,      ///< Quad tree division - NW
@@ -73,7 +76,29 @@ public class STLSlice
 	q4;           ///< SW
 	private double resolution_2;  ///< Squared diagonal of the smallest box to go to
 	private double sFactor;       /// Swell factor for division
-	boolean visited;
+	private boolean visited;
+	private Shape3D oldBelow, below;
+
+	
+	/**
+	 * Constructor just records the list of STL objects
+	 * @param s
+	 */
+	public STLSlice(List s)
+	{
+		edges = null;
+		q1 = null;
+		q2 = null;
+		q3 = null;
+		q4 = null;
+		visited = false;
+		stls = s;
+		sFactor = 1;
+		resolution_2 = 1.0e-8; // Default - set properly
+		oldBelow = null;
+		below = null;
+	}
+	
 	
 	public RrBox box()
 	{
@@ -110,6 +135,14 @@ public class STLSlice
 		return (double)((int)(x*grid + 0.5))/(double)grid;
 	}
 	
+	private Shape3D getShape3D(boolean old)
+	{
+		if(old)
+			return oldBelow;
+		else
+			return below;
+	}
+	
 	/**
 	 * Add the edge where the plane z cuts a triangle (if it does)
 	 * @param p
@@ -121,6 +154,7 @@ public class STLSlice
 	{
 		Point3d odd = null, even1 = null, even2 = null;
 		int pat = 0;
+		boolean twoBelow = false;
 		
 		if(p.z < z)
 			pat = pat | 1;
@@ -132,21 +166,28 @@ public class STLSlice
 		switch(pat)
 		{
 		case 0:
-		case 7:
 			return;
-		case 1:
+		case 7:
+			triangles.add(p);
+			triangles.add(q);
+			triangles.add(r);
+			return;
 		case 6:
+			twoBelow = true;
+		case 1:
 			odd = p;
 			even1 = q;
 			even2 = r;
 			break;
-		case 2:
 		case 5:
+			twoBelow = true;
+		case 2:
 			odd = q;
 			even1 = p;
 			even2 = r;
 			break;
 		case 3:
+			twoBelow = true;
 		case 4:
 			odd = r;
 			even1 = p;
@@ -159,18 +200,35 @@ public class STLSlice
 		even1.sub((Tuple3d)odd);
 		even2.sub((Tuple3d)odd);
 		double t = (z - odd.z)/even1.z;	
-		Rr2Point e1 = new Rr2Point(toGrid(odd.x + t*even1.x), 
-				toGrid(odd.y + t*even1.y));
+		Rr2Point e1 = new Rr2Point(odd.x + t*even1.x, odd.y + t*even1.y);
+		Point3d e3_1 = new Point3d(e1.x(), e1.y(), z);
+		e1 = new Rr2Point(toGrid(e1.x()), toGrid(e1.y()));
 		t = (z - odd.z)/even2.z;
-		Rr2Point e2 = new Rr2Point(toGrid(odd.x + t*even2.x), 
-				toGrid(odd.y + t*even2.y));
+		Rr2Point e2 = new Rr2Point(odd.x + t*even2.x, odd.y + t*even2.y);
+		Point3d e3_2 = new Point3d(e2.x(), e2.y(), z);
+		e2 = new Rr2Point(toGrid(e2.x()), toGrid(e2.y()));
 		
 		if(!Rr2Point.same(e1, e2, lessGridSquare))
 		{
 			RrPolygon pg = new RrPolygon();
 			pg.add(e1, 1);
-			pg.add(e2, 1);
+			pg.add(e2, 0);
 			edges.add(pg);
+		}
+		
+		if(twoBelow)
+		{
+			triangles.add(even1);
+			triangles.add(even2);
+			triangles.add(e3_1);
+			triangles.add(e3_2);
+			triangles.add(e3_1);
+			triangles.add(even2);
+		} else
+		{
+			triangles.add(odd);
+			triangles.add(e3_1);
+			triangles.add(e3_2);
 		}
 	}
 	
@@ -190,6 +248,10 @@ public class STLSlice
         Point3d q1 = new Point3d();
         Point3d q2 = new Point3d();
         Point3d q3 = new Point3d();
+        if(g.getVertexCount()%3 != 0)
+        {
+        	System.err.println("addAllEdges(): shape3D with vertices not a multiple of 3!");
+        }
         if(g != null)
         {
             for(int i = 0; i < g.getVertexCount(); i+=3) 
@@ -213,24 +275,18 @@ public class STLSlice
 	 */
 	private void recursiveSetEdges(Object value, Transform3D trans, double z) 
     {
-        if( value instanceof SceneGraphObject != false ) 
+        if(value instanceof SceneGraphObject) 
         {
-            // set the user data for the item
-            SceneGraphObject sg = (SceneGraphObject) value;
-            
-            // recursively process group
-            if( sg instanceof Group ) 
+            SceneGraphObject sg = (SceneGraphObject)value;
+            if(sg instanceof Group) 
             {
-                Group g = (Group) sg;
-                
-                // recurse on child nodes
+                Group g = (Group)sg;
                 java.util.Enumeration enumKids = g.getAllChildren( );
-                
-                while( enumKids.hasMoreElements( ) != false )
-                    recursiveSetEdges(enumKids.nextElement( ), trans, z);
-            } else if ( sg instanceof Shape3D ) 
+                while(enumKids.hasMoreElements())
+                    recursiveSetEdges(enumKids.nextElement(), trans, z);
+            } else if (sg instanceof Shape3D) 
             {
-                    addAllEdges((Shape3D)sg, trans, z);
+                addAllEdges((Shape3D)sg, trans, z);
             }
         }
     }
@@ -260,12 +316,46 @@ public class STLSlice
 		
 		for(int i = 0; i < edges.size(); i++)
 		{
-			if(box.point_relative(edges.polygon(i).point(0)) == 0 || 
+			if(box.point_relative(edges.polygon(i).point(0)) == 0 ||
 					box.point_relative(edges.polygon(i).point(1)) == 0)
 				result.add(edges.polygon(i));
 		}
 				
 		edges = result;
+	}
+	
+	/**
+	 * Quad tree division - make the 4 sub quads.
+	 */
+	private void makeQuads()
+	{
+//		 Set up the quad-tree division
+		
+		Rr2Point sw = box.sw();
+		Rr2Point nw = box.nw();
+		Rr2Point ne = box.ne();
+		Rr2Point se = box.se();
+		Rr2Point cen = box.centre();
+		
+//		 Prune the set to the four boxes, and put the results in the children
+		
+		RrBox s = new RrBox(Rr2Point.mul(Rr2Point.add(sw, nw), 0.5), 
+				Rr2Point.mul(Rr2Point.add(nw, ne), 0.5));
+		s = s.scale(sFactor);
+		q1 = new STLSlice(edges, s, resolution_2, sFactor);
+		
+		s = new RrBox(cen, ne);
+		s = s.scale(sFactor);
+		q2 = new STLSlice(edges, s, resolution_2, sFactor);
+		
+		s = new RrBox(Rr2Point.mul(Rr2Point.add(sw, se), 0.5), 
+				Rr2Point.mul(Rr2Point.add(se, ne), 0.5));
+		s = s.scale(sFactor);
+		q3 = new STLSlice(edges, s, resolution_2, sFactor);
+		
+		s = new RrBox(sw, cen);
+		s = s.scale(sFactor);
+		q4 = new STLSlice(edges, s, resolution_2, sFactor);		
 	}
 	
 	/**
@@ -281,43 +371,110 @@ public class STLSlice
 		
 		if(edges.size() > 2)
 		{
-//			 Set up the quad-tree division
-			
-			Rr2Point sw = box.sw();
-			Rr2Point nw = box.nw();
-			Rr2Point ne = box.ne();
-			Rr2Point se = box.se();
-			Rr2Point cen = box.centre();
-			
-//			 Prune the set to the four boxes, and put the results in the children
-			
-			RrBox s = new RrBox(Rr2Point.mul(Rr2Point.add(sw, nw), 0.5), 
-					Rr2Point.mul(Rr2Point.add(nw, ne), 0.5));
-			s = s.scale(sFactor);
-			q1 = new STLSlice(edges, s, resolution_2, sFactor);
-			
-			s = new RrBox(cen, ne);
-			s = s.scale(sFactor);
-			q2 = new STLSlice(edges, s, resolution_2, sFactor);
-			
-			s = new RrBox(Rr2Point.mul(Rr2Point.add(sw, se), 0.5), 
-					Rr2Point.mul(Rr2Point.add(se, ne), 0.5));
-			s = s.scale(sFactor);
-			q3 = new STLSlice(edges, s, resolution_2, sFactor);
-			
-			s = new RrBox(sw, cen);
-			s = s.scale(sFactor);
-			q4 = new STLSlice(edges, s, resolution_2, sFactor);
-			
-			// Recursively divide the children
-			
+			makeQuads();
 			q1.divide();
 			q2.divide();
 			q3.divide();
 			q4.divide();
+		} else
+		{
+			boolean divideFurther = false;
+	   		for(int i = 0; i < edges.size(); i++)
+    		{
+    			RrPolygon pg = edges.polygon(i);
+    			if(box.point_relative(pg.point(0)) == 0 &&  
+    					box.point_relative(pg.point(1)) == 0)
+    			{
+    				divideFurther = true;
+    				break;
+    			}
+    				
+    		}
+	   		if(divideFurther)
+	   		{
+	   			makeQuads();
+				q1.divide();
+				q2.divide();
+				q3.divide();
+				q4.divide();
+	   		} else if(edges.size() == 1)
+				onlyOne.add(this);
 		}
 	}
 	
+	/**
+	 * Find (we hope rare) quads with only one end in and pair them up.
+	 */
+	private void fixSingletons()
+	{
+		if(onlyOne.size() <= 0)
+			return;
+		
+		// Remove duplicates
+		int i, j;
+		RrPolygon pgi, pgj;
+		i = onlyOne.size() - 2;
+		while(i >= 0)
+		{
+			j = onlyOne.size() - 1;
+			pgi = ((STLSlice)onlyOne.get(i)).edges.polygon(0);
+			while(j > i)
+			{
+				pgj = ((STLSlice)onlyOne.get(j)).edges.polygon(0);
+				if (pgi == pgj)
+				{
+					((STLSlice)onlyOne.get(j)).edges = new RrPolygonList();
+					onlyOne.remove(j);
+				}
+				j--;
+			}
+			i--;
+		}
+		
+		// Find nearest pairs
+		i = 0;
+		while(i < onlyOne.size() - 1)
+		{
+			double dmin = Double.POSITIVE_INFINITY;
+			double d;
+			int jNear = -1, endNear = -1;
+			STLSlice stli = (STLSlice)onlyOne.get(i);
+			pgi = stli.edges.polygon(0);
+			Rr2Point pi = pgi.point(0);
+			if(stli.box.point_relative(pi) != 0)
+				pi = pgi.point(1);
+			j = i + 1;
+			while(j < onlyOne.size())
+			{
+				pgj = ((STLSlice)onlyOne.get(j)).edges.polygon(0);
+				d = Rr2Point.d_2(pgi.point(0), pgj.point(0));
+				if(d < dmin)
+				{
+					dmin = d;
+					jNear = j;
+					endNear = 0;
+				}
+				d = Rr2Point.d_2(pgi.point(0), pgj.point(1));
+				if(d < dmin)
+				{
+					dmin = d;
+					jNear = j;
+					endNear = 1;
+				}
+				j++;
+			}
+			STLSlice stlj = (STLSlice)onlyOne.get(jNear);
+			stlj.edges.polygon(0).point(endNear).set(pi);
+			stli.edges.add(stlj.edges.polygon(0));
+			stlj.edges = new RrPolygonList();
+			onlyOne.remove(jNear);
+			i++;
+		}
+
+
+		
+		System.out.println("fixSingletons(): " + onlyOne.size() + " ends.");
+	}
 	
 	/**
 	 * Find the quad containing a point
@@ -359,11 +516,6 @@ public class STLSlice
     private STLSlice findCorner()
     {
     	STLSlice result = null;
-    	
-    	if(edges.size() == 2 && !visited)
-    	{
-    		return this;
-    	}
  
     	if(q1 != null)
     	{
@@ -381,7 +533,10 @@ public class STLSlice
     			return result;   		
     	} else
     	{
-    		if(edges.size() != 0  && !visited)
+    		if(edges.size() == 2 && !visited)
+    		{
+    			return this;
+    		} else if(edges.size() != 0  && !visited)
     			System.err.println("STLSlice: quad edges: " + edges.size());
     	}
     	
@@ -414,6 +569,35 @@ public class STLSlice
     		}
     		if(tot == 2)
     			visited = true;
+    	}
+    }
+    
+    /**
+	 * Walk the tree to reset all visited flags and check contents
+     */
+    private void sanityCheck()
+    {
+    	visited = false;
+ 
+    	if(q1 != null)
+    	{
+    		q1.sanityCheck();
+       		q2.sanityCheck();
+       		q3.sanityCheck();
+       		q4.sanityCheck();
+    	} else
+    	{
+    		for(int i = 0; i < edges.size(); i++)
+    		{
+    			RrPolygon pg = edges.polygon(i);
+    			if(box.point_relative(pg.point(0)) == 0 &&  
+    					box.point_relative(pg.point(1)) == 0)
+    				System.err.println("sanityCheck(): polygon with both ends in one box!");
+    		}
+    		if(edges.size() == 2 || edges.size() == 0)
+    			return;
+    		System.err.println("sanityCheck(): quad found with " + edges.size() + " edges.");
+    		edges = new RrPolygonList();
     	}
     }
     
@@ -462,6 +646,11 @@ public class STLSlice
 					p1 = p0;
 					p0 = pg0.point(1);
 				}
+				if(corner.box.point_relative(p0) != 0)
+				{
+					System.err.println("conquer(): neither end of segment in box!");
+					break;
+				}
 				pg.add(p0, 1);
 				oldPg = pg0;
 				corner = quad(p1);
@@ -480,23 +669,7 @@ public class STLSlice
 //		q4 = null;
 	}
 	
-	/**
-	 * Constructor just records the list of STL objects
-	 * @param s
-	 */
-	public STLSlice(List s)
-	{
-		edges = null;
-		q1 = null;
-		q2 = null;
-		q3 = null;
-		q4 = null;
-		visited = false;
-		stls = s;
-		sFactor = 1;
-		resolution_2 = 1.0e-8; // Default - set properly
-	}
-	
+
 	public double maxZ()
 	{
 		STLObject stl;
@@ -520,12 +693,22 @@ public class STLSlice
 	 */
 	public RrCSGPolygon slice(double z)
 	{
+		edges = null;
+		q1 = null;
+		q2 = null;
+		q3 = null;
+		q4 = null;
+		visited = false;
+		sFactor = 1;
+		resolution_2 = 1.0e-8; // Default - set properly
+		
 		edges = new RrPolygonList();
 		STLObject stl;
 		Transform3D trans;
 		BranchGroup bg;
 		Enumeration things;
 		
+		triangles = new ArrayList();
 		for(int i = 0; i < stls.size(); i++)
 		{
 			stl = (STLObject)stls.get(i);
@@ -538,21 +721,31 @@ public class STLSlice
 				recursiveSetEdges(value, trans, z);
 			}
 		}
+		
+		if(triangles.size() > 0)
+		{
+			TriangleArray t = new TriangleArray(triangles.size(), GeometryArray.COORDINATES);
+			for(int i = 0; i < triangles.size(); i++)
+				t.setCoordinate(i, (Point3d)triangles.get(i));
+			oldBelow = below;
+			below = new Shape3D(t);
+			triangles = new ArrayList();
+		}
+		
 		box = edges.box.scale(1.1);
 		//RrGraphics g = new RrGraphics(box.scale(1.5), true);		
 		sFactor = 1.03;
 		resolution_2 = box.d_2()*tiny;
+		
+		onlyOne = new ArrayList();
 		//g.addPol(edges);
-		
-		
 		divide();
+		//RrGraphics g1 = new RrGraphics(box.scale(1.5), false);
+		//g1.addSTL(this);
+		fixSingletons();
+		sanityCheck();
 		conquer();
-		
-		
-		//g.addPol(edges);
 		edges = edges.simplify(gridRes*1.5);
-		//RrGraphics g1 = new RrGraphics(box.scale(1.5), true);
-		//g1.addPol(edges);
 		//g1.addSTL(this);
 		//System.out.println(edges.toString());
 		
