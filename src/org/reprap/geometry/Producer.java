@@ -158,7 +158,7 @@ public class Producer {
 			bld.mouseToWorld();
 			stlc = new STLSlice(bld.getSTLs());
 			zMax = stlc.maxZ();
-			//zMax = 1.5;
+			//zMax = 1.6;
 		}
 		
 		

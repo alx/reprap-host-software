@@ -64,10 +64,7 @@ public class STLSlice
 	private static final double gridRes = 1.0/grid;
 	private static final double lessGridSquare = gridRes*gridRes*0.01;
 	private static final double tiny = 1.0e-8;
-	private static List onlyOne;
-	private static List triangles;
-	
-	private List stls;
+	List stls;
 	private RrPolygonList edges;  // List of the edges with points in this one
 	private RrBox box;            ///< Its enclosing box
 	private STLSlice q1,      ///< Quad tree division - NW
@@ -77,8 +74,7 @@ public class STLSlice
 	private double resolution_2;  ///< Squared diagonal of the smallest box to go to
 	private double sFactor;       /// Swell factor for division
 	private boolean visited;
-	private Shape3D oldBelow, below;
-
+	private static List onlyOne;
 	
 	/**
 	 * Constructor just records the list of STL objects
@@ -95,8 +91,6 @@ public class STLSlice
 		stls = s;
 		sFactor = 1;
 		resolution_2 = 1.0e-8; // Default - set properly
-		oldBelow = null;
-		below = null;
 	}
 	
 	
@@ -135,14 +129,6 @@ public class STLSlice
 		return (double)((int)(x*grid + 0.5))/(double)grid;
 	}
 	
-	private Shape3D getShape3D(boolean old)
-	{
-		if(old)
-			return oldBelow;
-		else
-			return below;
-	}
-	
 	/**
 	 * Add the edge where the plane z cuts a triangle (if it does)
 	 * @param p
@@ -154,7 +140,6 @@ public class STLSlice
 	{
 		Point3d odd = null, even1 = null, even2 = null;
 		int pat = 0;
-		boolean twoBelow = false;
 		
 		if(p.z < z)
 			pat = pat | 1;
@@ -166,28 +151,21 @@ public class STLSlice
 		switch(pat)
 		{
 		case 0:
-			return;
 		case 7:
-			triangles.add(p);
-			triangles.add(q);
-			triangles.add(r);
 			return;
-		case 6:
-			twoBelow = true;
 		case 1:
+		case 6:
 			odd = p;
 			even1 = q;
 			even2 = r;
 			break;
-		case 5:
-			twoBelow = true;
 		case 2:
+		case 5:
 			odd = q;
 			even1 = p;
 			even2 = r;
 			break;
 		case 3:
-			twoBelow = true;
 		case 4:
 			odd = r;
 			even1 = p;
@@ -200,13 +178,11 @@ public class STLSlice
 		even1.sub((Tuple3d)odd);
 		even2.sub((Tuple3d)odd);
 		double t = (z - odd.z)/even1.z;	
-		Rr2Point e1 = new Rr2Point(odd.x + t*even1.x, odd.y + t*even1.y);
-		Point3d e3_1 = new Point3d(e1.x(), e1.y(), z);
-		e1 = new Rr2Point(toGrid(e1.x()), toGrid(e1.y()));
+		Rr2Point e1 = new Rr2Point(toGrid(odd.x + t*even1.x), 
+				toGrid(odd.y + t*even1.y));
 		t = (z - odd.z)/even2.z;
-		Rr2Point e2 = new Rr2Point(odd.x + t*even2.x, odd.y + t*even2.y);
-		Point3d e3_2 = new Point3d(e2.x(), e2.y(), z);
-		e2 = new Rr2Point(toGrid(e2.x()), toGrid(e2.y()));
+		Rr2Point e2 = new Rr2Point(toGrid(odd.x + t*even2.x), 
+				toGrid(odd.y + t*even2.y));
 		
 		if(!Rr2Point.same(e1, e2, lessGridSquare))
 		{
@@ -214,21 +190,6 @@ public class STLSlice
 			pg.add(e1, 1);
 			pg.add(e2, 0);
 			edges.add(pg);
-		}
-		
-		if(twoBelow)
-		{
-			triangles.add(even1);
-			triangles.add(even2);
-			triangles.add(e3_1);
-			triangles.add(e3_2);
-			triangles.add(e3_1);
-			triangles.add(even2);
-		} else
-		{
-			triangles.add(odd);
-			triangles.add(e3_1);
-			triangles.add(e3_2);
 		}
 	}
 	
@@ -708,7 +669,6 @@ public class STLSlice
 		BranchGroup bg;
 		Enumeration things;
 		
-		triangles = new ArrayList();
 		for(int i = 0; i < stls.size(); i++)
 		{
 			stl = (STLObject)stls.get(i);
@@ -721,17 +681,6 @@ public class STLSlice
 				recursiveSetEdges(value, trans, z);
 			}
 		}
-		
-		if(triangles.size() > 0)
-		{
-			TriangleArray t = new TriangleArray(triangles.size(), GeometryArray.COORDINATES);
-			for(int i = 0; i < triangles.size(); i++)
-				t.setCoordinate(i, (Point3d)triangles.get(i));
-			oldBelow = below;
-			below = new Shape3D(t);
-			triangles = new ArrayList();
-		}
-		
 		box = edges.box.scale(1.1);
 		//RrGraphics g = new RrGraphics(box.scale(1.5), true);		
 		sFactor = 1.03;
@@ -747,7 +696,7 @@ public class STLSlice
 		conquer();
 		edges = edges.simplify(gridRes*1.5);
 		//g1.addSTL(this);
-		//System.out.println(edges.toString());
+		System.out.println(edges.toString());
 		
 
 		
