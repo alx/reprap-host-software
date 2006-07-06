@@ -114,6 +114,8 @@ public class Producer {
 		int movementSpeedXY = 230;
 		int movementSpeedZ = 230;
 		
+		int coolingPeriod = Preferences.loadGlobalInt("CoolingPeriod"); 
+		
 		try {
 			extrusionSpeed = Preferences.loadGlobalInt("ExtrusionSpeed");
 			extrusionTemp = Preferences.loadGlobalInt("ExtrusionTemp");
@@ -206,6 +208,15 @@ public class Producer {
 // ************ Adrian's example end.
 			
 			layer.plot();
+		
+			// Layer cooling phase
+			if (coolingPeriod > 0) {
+				System.out.println("Starting a cooling period");
+				reprap.setCooling(true);
+				Thread.sleep(1000 * coolingPeriod);
+				reprap.setCooling(false);
+				System.out.println("End of cooling period");
+			}
 			
 			isEvenLayer = !isEvenLayer;
 		}

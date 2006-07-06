@@ -1,6 +1,7 @@
 package org.reprap.gui.extrudertest;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+
 import javax.swing.JButton;
 
 import javax.swing.JCheckBox;
@@ -38,6 +39,7 @@ public class Main extends javax.swing.JDialog {
 	private JLabel jLabel1;
 	private JLabel jLabel2;
 	private JLabel jLabel4;
+	private JCheckBox coolerActive;
 	private JCheckBox materialEmpty;
 	private JButton extrudeButton;
 	private JLabel jLabel5;
@@ -94,6 +96,7 @@ public class Main extends javax.swing.JDialog {
 			desiredTemperature.setEnabled(false);
 			heaterActive.setEnabled(false);
 			materialEmpty.setEnabled(false);
+			coolerActive.setEnabled(false);
 			return;
 		}
 
@@ -143,20 +146,20 @@ public class Main extends javax.swing.JDialog {
 				getContentPane().add(jLabel3);
 				jLabel3.setText("Desired temperature");
 				jLabel3.setHorizontalAlignment(SwingConstants.RIGHT);
-				jLabel3.setBounds(35, 98, 140, 28);
+				jLabel3.setBounds(35, 133, 140, 28);
 			}
 			{
 				jLabel1 = new JLabel();
 				getContentPane().add(jLabel1);
 				jLabel1.setText("Current temperature");
-				jLabel1.setBounds(35, 63, 140, 28);
+				jLabel1.setBounds(35, 98, 140, 28);
 				jLabel1.setHorizontalAlignment(SwingConstants.RIGHT);
 			}
 			{
 				desiredTemperature = new JTextField();
 				getContentPane().add(desiredTemperature);
 				desiredTemperature.setText("0");
-				desiredTemperature.setBounds(182, 98, 63, 28);
+				desiredTemperature.setBounds(182, 133, 63, 28);
 				desiredTemperature.setHorizontalAlignment(SwingConstants.RIGHT);
 				desiredTemperature.setEnabled(false);
 				desiredTemperature.addActionListener(new ActionListener() {
@@ -169,7 +172,7 @@ public class Main extends javax.swing.JDialog {
 				jLabel2 = new JLabel();
 				getContentPane().add(jLabel2);
 				jLabel2.setText("deg C");
-				jLabel2.setBounds(252, 98, 63, 28);
+				jLabel2.setBounds(252, 133, 63, 28);
 			}
 			{
 				currentTemperature = new JTextField();
@@ -177,13 +180,13 @@ public class Main extends javax.swing.JDialog {
 				currentTemperature.setHorizontalAlignment(SwingConstants.RIGHT);
 				currentTemperature.setText("");
 				currentTemperature.setEditable(false);
-				currentTemperature.setBounds(182, 63, 63, 28);
+				currentTemperature.setBounds(182, 98, 63, 28);
 			}
 			{
 				jLabel4 = new JLabel();
 				getContentPane().add(jLabel4);
 				jLabel4.setText("deg C");
-				jLabel4.setBounds(252, 63, 63, 28);
+				jLabel4.setBounds(252, 98, 63, 28);
 			}
 			{
 				heaterActive = new JCheckBox();
@@ -199,7 +202,7 @@ public class Main extends javax.swing.JDialog {
 			{
 				extruderSpeed = new JSlider();
 				getContentPane().add(extruderSpeed);
-				extruderSpeed.setBounds(147, 154, 238, 28);
+				extruderSpeed.setBounds(147, 168, 238, 28);
 				extruderSpeed.setPaintTicks(true);
 				extruderSpeed.addChangeListener(new ChangeListener() {
 					public void stateChanged(ChangeEvent evt) {
@@ -208,17 +211,28 @@ public class Main extends javax.swing.JDialog {
 				});
 			}
 			{
+				coolerActive = new JCheckBox();
+				getContentPane().add(coolerActive);
+				coolerActive.setText("Cooler Active");
+				coolerActive.setBounds(182, 56, 126, 21);
+				coolerActive.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent evt) {
+						coolerActiveActionPerformed(evt);
+					}
+				});
+			}
+			{
 				jLabel5 = new JLabel();
 				getContentPane().add(jLabel5);
 				jLabel5.setText("Extruder speed");
-				jLabel5.setBounds(7, 154, 140, 28);
+				jLabel5.setBounds(7, 168, 140, 28);
 				jLabel5.setHorizontalAlignment(SwingConstants.RIGHT);
 			}
 			{
 				extrudeButton = new JButton();
 				getContentPane().add(extrudeButton);
 				extrudeButton.setText("Extrude");
-				extrudeButton.setBounds(154, 189, 105, 28);
+				extrudeButton.setBounds(154, 203, 105, 28);
 				extrudeButton.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent evt) {
 						extrudeButtonActionPerformed(evt);
@@ -244,6 +258,16 @@ public class Main extends javax.swing.JDialog {
 
 	}
 	
+	protected void coolerActiveActionPerformed(ActionEvent evt) {
+		try {
+			extruder.setCooler(coolerActive.isSelected());
+		}
+		catch (Exception ex) {
+			JOptionPane.showMessageDialog(null, "Exception setting cooler: " + ex);
+			ex.printStackTrace();
+		}
+	}
+
 	private void desiredTemperatureActionPerformed(ActionEvent evt) {
 		setTemperature();
 	}

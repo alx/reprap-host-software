@@ -66,4 +66,10 @@ public interface Printer {
 	 * @return a double representing the distance travelled (mm)
 	 */
 	public double getTotalDistanceExtruded();
+	
+	/**
+	 * Turn on or off the layer cooling system
+	 * @param enable
+	 */
+	public void setCooling(boolean enable) throws IOException;
 }

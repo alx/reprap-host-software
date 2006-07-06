@@ -18,6 +18,7 @@ public class GenericExtruder extends Device {
 	public static final byte MSG_IsEmpty = 8;
 	public static final byte MSG_SetHeat = 9;
 	public static final byte MSG_GetTemp = 10;
+	public static final byte MSG_SetCooler = 11;
 	public static final byte MSG_SetVRef = 52;
 	public static final byte MSG_SetTempScaler = 53;
 	
@@ -331,6 +332,18 @@ public class GenericExtruder extends Device {
 		awaitSensorsInitialised();
 		TEMPpollcheck();
 		return currentTemperature;
+	}
+	
+	public void setCooler(boolean f) throws IOException {
+		lock();
+		try {
+			OutgoingMessage request =
+				new OutgoingByteMessage(MSG_SetCooler, f?(byte)1:(byte)0);
+			sendMessage(request);
+		}
+		finally {
+			unlock();
+		}
 	}
 	
 	private void RefreshTemperature() throws Exception {

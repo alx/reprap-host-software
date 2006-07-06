@@ -392,6 +392,10 @@ public class Reprap implements CartesianPrinter {
 	public double getExtrusionHeight() {
 		return extrusionHeight;
 	}
+	
+	public void setCooling(boolean enable) throws IOException {
+		extruder.setCooler(enable);
+	}
 }
 
 

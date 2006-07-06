@@ -45,6 +45,8 @@ public class Preferences extends javax.swing.JDialog {
 	private JLabel jLabel19;
 	private JTextField extrusionSize;
 	private JTextField extruderMaxSpeed1;
+	private JTextField coolingPeriod;
+	private JLabel jLabel5;
 	private JTextField extrudert01;
 	private JLabel jLabel31;
 	private JLabel jLabel30;
@@ -152,6 +154,8 @@ public class Preferences extends javax.swing.JDialog {
 			movementSpeedXY.setText(loadString("MovementSpeed"));
 			movementSpeedZ.setText(loadString("MovementSpeedZ"));
 			
+			coolingPeriod.setText(loadString("CoolingPeriod"));
+			
 			String geometryName = loadString("Geometry");
 			for(int i = 0; i < geometries.length; i++)
 				if (geometries[i][0].compareToIgnoreCase(geometryName) == 0)
@@ -197,6 +201,8 @@ public class Preferences extends javax.swing.JDialog {
 			saveString("MovementSpeed", movementSpeedXY.getText());
 			saveString("MovementSpeedZ", movementSpeedZ.getText());
 
+			saveString("CoolingPeriod", coolingPeriod.getText());
+			
 			org.reprap.Preferences.saveGlobal();
 		} catch (Exception ex) {
 			JOptionPane.showMessageDialog(null, "Saving preferences: " + ex);
@@ -612,6 +618,18 @@ public class Preferences extends javax.swing.JDialog {
 					jPanelProduction = new JPanel();
 					jTabbedPane1.addTab("Production", null, jPanelProduction, null);
 					jPanelProduction.setLayout(null);
+					{
+						jLabel5 = new JLabel();
+						jPanelProduction.add(jLabel5);
+						jLabel5.setText("Cooling period");
+						jLabel5.setBounds(14, 35, 98, 28);
+						jLabel5.setHorizontalAlignment(SwingConstants.RIGHT);
+					}
+					{
+						coolingPeriod = new JTextField();
+						jPanelProduction.add(coolingPeriod);
+						coolingPeriod.setBounds(126, 35, 63, 28);
+					}
 				}
 			}
 			{

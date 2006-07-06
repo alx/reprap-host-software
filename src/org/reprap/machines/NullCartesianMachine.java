@@ -161,4 +161,10 @@ public class NullCartesianMachine implements CartesianPrinter {
 		return extrusionHeight;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#setCooling(boolean)
+	 */
+	public void setCooling(boolean enable) {
+	}
+
 }
