@@ -85,3 +85,6 @@ Extruder1hb=20
 Extruder1OffsetX=0
 Extruder1OffsetY=0
 Extruder1OffsetZ=500
+
+# Period between layers to drive cooling system (in seconds)
+CoolingPeriod=0
