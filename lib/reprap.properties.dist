@@ -75,7 +75,8 @@ Extruder1Rz=500000
 # between power input and heater temperature:
 # temperature = power * hm + hb
 # Where power is the heater output setting (0 to 255).
-# It can be determined by using the Extruder Heater Profiler tool.
+# It can be determined by using the Extruder Heater Profiler tool
+# and linear regression.
 Extruder1hm=1.1
 Extruder1hb=20
 
