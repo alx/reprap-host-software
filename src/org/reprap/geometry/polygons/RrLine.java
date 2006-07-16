@@ -104,12 +104,14 @@ public class RrLine
 	 * Make fron an implicit half-plane
 	 * @param p
 	 */
-	public RrLine(RrHalfPlane p)
-	{
-		origin = new Rr2Point(-p.normal().x()*p.offset(), 
-				-p.normal().y()*p.offset());
-		direction = new Rr2Point(p.normal().y(), -p.normal().x());
-	}
+//	public RrLine(RrHalfPlane p)
+//	{
+//		origin = new Rr2Point(p.pLine().origin);
+//		direction = new Rr2Point(p.pLine().direction);		
+////		origin = new Rr2Point(-p.normal().x()*p.offset(), 
+////				-p.normal().y()*p.offset());
+////		direction = new Rr2Point(p.normal().y(), -p.normal().x());
+//	}
 	
 	// Convert to a string
 	public String toString()
@@ -173,16 +175,28 @@ public class RrLine
 	}
 	
 	/**
+	 * Offset by a distance
+	 * @param d
+	 * @return
+	 */
+	public RrLine offset(double d)
+	{
+		RrLine result = new RrLine(this);
+		Rr2Point n = Rr2Point.mul(-d, direction.norm().orthogonal());
+		result.origin = Rr2Point.add(origin, n);
+		return result;
+	}
+	/**
 	 * The parameter value where another line crosses
 	 * @param a
 	 * @return
 	 * @throws rr_ParallelLineException
 	 */
-	public double cross_t(RrLine a) throws rr_ParallelLineException 
+	public double cross_t(RrLine a) throws RrParallelLineException 
 	{
 		double det = Rr2Point.op(a.direction, direction);
 		if (det == 0)
-			throw new rr_ParallelLineException("cross_t: parallel lines.");  
+			throw new RrParallelLineException("cross_t: parallel lines.");  
 		Rr2Point d = Rr2Point.sub(a.origin, origin);
 		return Rr2Point.op(a.direction, d)/det;
 	}
@@ -194,7 +208,7 @@ public class RrLine
 	 * @return
 	 * @throws rr_ParallelLineException
 	 */
-	public Rr2Point cross_point(RrLine a) throws rr_ParallelLineException
+	public Rr2Point cross_point(RrLine a) throws RrParallelLineException
 	{
 		return point(cross_t(a));
 	}

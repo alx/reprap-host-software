@@ -322,13 +322,13 @@ public class RrPolygon
 						t.add(new Double(s));
 						it++;
 					}					
-					catch(rr_ParallelLineException ple)
+					catch(RrParallelLineException ple)
 					{
 						System.err.println("pl_intersect: A crosses B, but B does not cross A!");
 					}
 				}
 			}
-			catch (rr_ParallelLineException ple)
+			catch (RrParallelLineException ple)
 			{}
 		}	
 		return t;

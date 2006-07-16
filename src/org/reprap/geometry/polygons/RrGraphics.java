@@ -300,12 +300,13 @@ public class RrGraphics
 		
 		colour(2);
 		
-		RrQContents qc = new RrQContents(q);
-		
-		if(qc.l1 != null)
-			plot(qc.l1, qc.i1);
-		if(qc.l2 != null)
-			plot(qc.l2, qc.i2);
+		if(q.csg().complexity() == 1)
+			plot(q.csg().plane().pLine(), q.interval1());
+		else if (q.csg().complexity() == 2)
+		{
+			plot(q.csg().c_1().plane().pLine(), q.interval1());
+			plot(q.csg().c_2().plane().pLine(), q.interval2());
+		}
 	}
 	
 	// Plot a divided CSG polygon recursively
@@ -330,8 +331,17 @@ public class RrGraphics
 	{
 		if(s.c_1() == null)
 		{
-			colour(4);
-			plot(s.box());
+			if(plot_box)
+			{
+				colour(4);
+				plot(s.box());
+			}
+			colour(1);
+			for(int i = 0; i < s.edges().size(); i++)
+			{
+				move(s.segment(i).a);
+				plot(s.segment(i).b);
+			}
 		} else
 		{
 			plot(s.c_1());
@@ -356,13 +366,7 @@ public class RrGraphics
 		}
 		if(stlc != null)
 		{
-			if(plot_box)
-				plot(stlc);
-			boolean b = plot_box;
-			plot_box = false;
-			for(int i = 0; i < stlc.edges().size(); i++)
-				plot(stlc.edges().polygon(i));
-			plot_box = b;
+			plot(stlc);
 		}
 	}
 	

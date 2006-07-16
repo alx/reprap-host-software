@@ -13,7 +13,7 @@ import org.reprap.ReprapException;
 import org.reprap.geometry.polygons.*;
 
 public class LayerProducer {
-	private static final double resolution = 1.0e-6; // How close (in mm^2) are two points before they're the same?
+	private static final double resolution = 1.0e-8; // How close (in mm^2) are two points before they're the same?
 	private static int gapMaterial = 0;
 	private static int solidMaterial = 1;
 	
@@ -26,34 +26,7 @@ public class LayerProducer {
 	private double scale;
 	private Rr2Point p_0;
 	private Rr2Point pos;
-	
-	
-//	/**
-//	 * @param reprap
-//	 * @param list
-//	 * @param hatchDirection
-//	 */
-//	public LayerProducer(Printer printer, RrPolygonList list, RrLine hatchDirection) {
-//		this.printer = printer;
-//
-//		borderPolygons = list;
-//		
-//		RrPolygon hatched = list.hatch(hatchDirection, printer.getExtrusionSize(),
-//				gapMaterial, solidMaterial);
-//
-//		hatchedPolygons = new RrPolygonList();
-//		hatchedPolygons.add(hatched);
-//		
-//		//new RrGraphics(p_list, false);
-//		
-//		csg_p = null;
-//		
-//		RrBox big = hatchedPolygons.box.scale(1.1);
-//		
-//		double width = big.x().length();
-//		double height = big.y().length();
-//	}
-	
+		
 	/**
 	 * @param reprap
 	 * @param list
@@ -143,17 +116,18 @@ public class LayerProducer {
 	 * @throws IOException
 	 * @throws ReprapException
 	 */
-	private void plotLeaf(RrCSGPolygon p) throws ReprapException, IOException
+	private void plotLeaf(RrCSGPolygon q) throws ReprapException, IOException
 	{
-		RrQContents qc = new RrQContents(p);
 		
 		if (printer.isCancelled()) return;		
-		if(qc.l1 != null)
-			plot(qc.l1, qc.i1);
 		
-		if (printer.isCancelled()) return;
-		if(qc.l2 != null)
-			plot(qc.l2, qc.i2);
+		if(q.csg().complexity() == 1)
+			plot(q.csg().plane().pLine(), q.interval1());
+		else if (q.csg().complexity() == 2)
+		{
+			plot(q.csg().c_1().plane().pLine(), q.interval1());
+			plot(q.csg().c_2().plane().pLine(), q.interval2());
+		}
 
 	}
 	

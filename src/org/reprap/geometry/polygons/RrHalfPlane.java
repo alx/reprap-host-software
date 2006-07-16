@@ -55,14 +55,84 @@
 
 package org.reprap.geometry.polygons;
 
+import java.util.*;
+
+
 /**
- * Exception for when trying to intersect parallel lines
+ * Class to hold line intersections as represented by quad-tree leaves
  */
-class rr_ParallelLineException extends Exception
+class RrLineCrossings 
 {
-	public rr_ParallelLineException(String s)
+	private List quads;
+	private List t;
+	
+	public RrLineCrossings()
 	{
-		super(s);
+		quads = new ArrayList();
+		t = new ArrayList();
+	}
+	
+	public RrLineCrossings(RrLineCrossings lx)
+	{
+		quads = new ArrayList();
+		t = new ArrayList();
+		for(int i = 0; i < lx.size(); i ++)
+		{
+			this.add(lx.quad(i), lx.param(i)); // NB - does not deep copy quads
+		}
+	}
+	
+	public void add(RrCSGPolygon q, double param)
+	{
+		quads.add(q);
+		t.add(new Double(param));
+	}
+	
+	public RrCSGPolygon quad(int i)
+	{
+		return (RrCSGPolygon)quads.get(i);
+	}
+	
+	public double param(int i)
+	{
+		return ((Double)t.get(i)).doubleValue();
+	}
+	
+	public int size()
+	{
+		return quads.size();
+	}
+	
+	private void swap(int i, int j)
+	{
+		Object temp = t.get(i);
+		t.set(i, t.get(j));
+		t.set(j, temp);
+		temp = quads.get(i);
+		quads.set(i, quads.get(j));
+		quads.set(j, temp);
+	}
+	
+	public void sort(boolean up)
+	{
+		if(size()%2 != 0)
+			System.err.println("RrLineCrossings.sort(): odd number of crossings!");
+
+		// Lists will always be short, so N^2 sort is OK.
+		
+		for(int i = 0; i < size() - 1; i++)
+			for(int j = i + 1; j < size(); j++)
+			{
+				if(up)
+				{
+					if(param(i) > param(j))
+						swap(i, j);
+				} else
+				{
+					if(param(i) < param(j))
+						swap(i, j);
+				}
+			}
 	}
 }
 
@@ -78,7 +148,8 @@ public class RrHalfPlane
 	
 	private Rr2Point normal; 
 	private double offset;
-	
+	private RrLine p;  // Keep the parametric equivalent to save computing it
+	private RrLineCrossings crossings;  // List of intersections with others
 	
 	/**
 	 * Convert a parametric line
@@ -86,9 +157,12 @@ public class RrHalfPlane
 	 */
 	public RrHalfPlane(RrLine l)
 	{
+		p = new RrLine(l);
+		p.norm();
 		double r = 1/l.direction().mod();
 		normal = new Rr2Point(-l.direction().y()*r, l.direction().x()*r);
 		offset = -Rr2Point.mul(l.origin(), normal());
+		crossings = new RrLineCrossings();
 	}
 	
 	
@@ -110,9 +184,104 @@ public class RrHalfPlane
 	{
 		normal = new Rr2Point(a.normal);
 		offset = a.offset;
+		p = new RrLine(a.p);
+		crossings = new RrLineCrossings(a.crossings);
 	}
 	
+	/**
+	 * Get the parametric equivalent
+	 * @return
+	 */
+	public RrLine pLine()
+	{
+		return p;
+	}
 	
+	/**
+	 * Add a crossing
+	 * @param a
+	 * @param t
+	 */
+	private boolean add(RrCSGPolygon q, double t)
+	{
+		// Ensure no duplicates
+		
+		RrHalfPlane newhp = q.csg().c_1().plane();
+		if(newhp == this)
+			newhp = q.csg().c_2().plane();
+		RrHalfPlane test;
+		for(int i = 0; i < crossings.size(); i++)
+		{
+			test = crossings.quad(i).csg().c_1().plane();
+			if(test == this)
+				test = crossings.quad(i).csg().c_2().plane();
+			if(test == newhp)
+				return false;
+		}
+		crossings.add(q, t);
+		return true;
+	}
+	
+	/**
+	 * Find a crossing
+	 * @param q
+	 * @return the index of the quad
+	 */
+	public int find(RrCSGPolygon q)
+	{	
+		for(int i = 0; i < crossings.size(); i++)
+		{
+			if(crossings.quad(i) == q)
+				return i;
+		}
+		System.err.println("RrHalfPlane.find(): quad not found!");
+		return 0;
+	}
+	
+	/**
+	 * Remove all crossings
+	 * @param a
+	 * @param t
+	 */
+	public void removeCrossings()
+	{
+		crossings = new RrLineCrossings();
+	}
+	
+	/**
+	 * Sort crossings
+	 * @param a
+	 * @param t
+	 */
+	public void sortCrossings(boolean up)
+	{
+		crossings.sort(up);
+	}
+	
+	/**
+	 * Return crossing quad
+	 * @param i
+	 * @return
+	 */
+	public RrCSGPolygon quad(int i)
+	{
+		return crossings.quad(i);
+	}
+	
+	/**
+	 * Return crossing parameter
+	 * @param i
+	 * @return
+	 */
+	public double param(int i)
+	{
+		return crossings.param(i);
+	}
+	
+	/**
+	 * Return the plane as a string
+	 * @return
+	 */
 	public String toString()
 	{
 		return "|" + normal.toString() + ", " + Double.toString(offset) + "|";
@@ -153,6 +322,7 @@ public class RrHalfPlane
 		RrHalfPlane r = new RrHalfPlane(this);
 		r.normal = r.normal.neg();
 		r.offset = -r.offset;
+		r.p = r.p.neg();
 		return r;
 	}
 	
@@ -165,6 +335,7 @@ public class RrHalfPlane
 	{
 		RrHalfPlane r = new RrHalfPlane(this);
 		r.offset = r.offset - d;
+		r.p = p.offset(d);
 		return r;
 	}
 	
@@ -191,18 +362,59 @@ public class RrHalfPlane
 				(RrInterval.mul(b.y(), normal.y()))), offset);
 	}
 	
+	/**
+	 * Add a crossing
+	 * @param a
+	 * @param b
+	 */
+	public static boolean cross(RrCSGPolygon qc)
+	{
+		double t;
+		
+		if(qc.corner())
+		{
+			try
+			{
+				t = qc.csg().c_2().plane().cross_t(
+						qc.csg().c_1().plane().pLine());
+				if(!qc.csg().c_1().plane().add(qc, t))
+					return false;
+			} catch (RrParallelLineException ple)
+			{
+				System.err.println("RrHalfPlane.cross(): parallel lines 1!");
+				return false;
+			}
+			
+			try
+			{
+				t = qc.csg().c_1().plane().cross_t(
+						qc.csg().c_2().plane().pLine());
+				if(!qc.csg().c_2().plane().add(qc, t))
+				{
+					System.err.println("RrHalfPlane.cross(): not symmetric!");
+					return false;
+				}
+			} catch (RrParallelLineException ple)
+			{
+				System.err.println("RrHalfPlane.cross(): parallel lines 2!");
+				return false;
+			}
+		} else
+			System.err.println("RrHalfPlane.cross(): called for non-corner!");
+		return true;
+	}
 	
 	/**
 	 * The point where another line crosses
 	 * @param a
 	 * @return
-	 * @throws rr_ParallelLineException
+	 * @throws RrParallelLineException
 	 */
-	public Rr2Point cross_point(RrHalfPlane a) throws rr_ParallelLineException
+	public Rr2Point cross_point(RrHalfPlane a) throws RrParallelLineException
 	{
 		double det = Rr2Point.op(normal, a.normal);
 		if(det == 0)
-			throw new rr_ParallelLineException("cross_point: parallel lines.");
+			throw new RrParallelLineException("cross_point: parallel lines.");
 		det = 1/det;
 		double x = normal.y()*a.offset - a.normal.y()*offset;
 		double y = a.normal.x()*offset - normal.x()*a.offset;
@@ -213,13 +425,13 @@ public class RrHalfPlane
 	 * Parameter value where a line crosses
 	 * @param a
 	 * @return
-	 * @throws rr_ParallelLineException
+	 * @throws RrParallelLineException
 	 */
-	public double cross_t(RrLine a) throws rr_ParallelLineException 
+	public double cross_t(RrLine a) throws RrParallelLineException 
 	{
 		double det = Rr2Point.mul(a.direction(), normal);
 		if (det == 0)
-			throw new rr_ParallelLineException("cross_t: parallel lines.");  
+			throw new RrParallelLineException("cross_t: parallel lines.");  
 		return -value(a.origin())/det;
 	}
 	
@@ -227,9 +439,9 @@ public class RrHalfPlane
 	 * Point where a parametric line crosses
 	 * @param a
 	 * @return
-	 * @throws rr_ParallelLineException
+	 * @throws RrParallelLineException
 	 */
-	public Rr2Point cross_point(RrLine a) throws rr_ParallelLineException
+	public Rr2Point cross_point(RrLine a) throws RrParallelLineException
 	{
 		return a.point(cross_t(a));
 	}
@@ -274,7 +486,7 @@ public class RrHalfPlane
 				else
 					return new RrInterval(t, range.high());                 
 			}
-		} catch (rr_ParallelLineException ple)
+		} catch (RrParallelLineException ple)
 		{
 			t = value(a.origin());
 			if(t <= 0)

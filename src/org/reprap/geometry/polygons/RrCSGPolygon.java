@@ -78,15 +78,20 @@ class RrHSearch
  */
 public class RrCSGPolygon
 {
-	private RrCSG csg;            ///< The polygon
-	private RrBox box;            ///< Its enclosing box
-	private RrCSGPolygon q1,      ///< Quad tree division - NW
-	q2,           ///< NE 
-	q3,           ///< SE
-	q4;           ///< SW
-	private double resolution_2;  ///< Squared diagonal of the smallest box to go to
-	private boolean visit1, visit2; /// Used by the edge-generation software.
-	private double sFactor;       /// Swell factor for division
+	private RrCSG csg;              ///< The polygon
+	private RrBox box;              ///< Its enclosing box
+	private RrCSGPolygon q1,        ///< Quad tree division - NW
+	q2,                             ///< NE 
+	q3,                             ///< SE
+	q4;                             ///< SW
+	private double resolution_2;    ///< Squared diagonal of the smallest box to go to
+	private boolean visit1, visit2; ///< Used by the edge-generation software.
+	private double sFactor;         ///< Swell factor for division
+	private int edgeCount;          ///< Number of edges in the box
+	private boolean corner;         ///< Is this box a vertex?
+	private RrInterval i1, i2;      ///< Edge parametric intervals
+	private Rr2Point vertex;        ///< The vertex, if it exists
+	
 	/**
 	 * Set one up
 	 * @param p
@@ -104,6 +109,11 @@ public class RrCSGPolygon
 		visit1 = false;
 		visit2 = false;
 		sFactor = 1;
+		edgeCount = 0;
+		corner = false;
+		vertex = null;
+		i1 = new RrInterval();
+		i2 = new RrInterval();
 	}
 	
 	/**
@@ -133,6 +143,9 @@ public class RrCSGPolygon
 		visit1 = p.visit1;
 		visit2 = p.visit2;
 		sFactor = p.sFactor;
+		edgeCount = p.edgeCount;
+		corner = p.corner;
+		vertex = new Rr2Point(p.vertex);
 	}
 	
 	// get children etc
@@ -145,6 +158,11 @@ public class RrCSGPolygon
 	public RrBox box() { return box; }
 	public double resolution() { return resolution_2; }
 	public double swell() { return sFactor; }
+	public int edges() { return edgeCount; }
+	public boolean corner() { return corner; }
+	public Rr2Point vertex() { return vertex; }
+	public RrInterval interval1() { return i1; } 
+	public RrInterval interval2() { return i2; } 
 	
 	
 	/**
@@ -189,16 +207,20 @@ public class RrCSGPolygon
 		resolution_2 = res_2;
 		sFactor = swell;
 		
-		// Anything as simple as a single corner, do nothing
+		// Anything as simple as a single corner, evaluate and go home
 		
-		if(csg.complexity() < 3) 
+		if(csg.complexity() < 3)
+		{
+			evaluate();
 			return;
+		}
 		
 		// Too small a box?
 		
 		if(box.d_2() < resolution_2)
 		{
 			System.err.println("RrCSGPolygon.divide(): hit resolution limit!");
+			csg = RrCSG.nothing();  // Throw it away!  (It is small...)
 			return;
 		}
 		
@@ -209,7 +231,10 @@ public class RrCSGPolygon
 		{
 			csg = csg.regularise();
 			if(csg.complexity() < 3)
+			{
+				evaluate();
 				return;
+			}
 		}
 		
 		// Set up the quad-tree division
@@ -247,6 +272,81 @@ public class RrCSGPolygon
 		q3.divide(resolution_2, sFactor);
 		q4.divide(resolution_2, sFactor);
 	}
+	
+	/**
+	 * Generate the edges (if any) in a leaf quad
+	 */
+	public void evaluate()
+	{
+		edgeCount = 0;
+		corner = false;
+		vertex = null;
+		
+		switch(csg.complexity())
+		{
+		case 0:
+			return;
+			
+			// One half-plane in the box:
+			
+		case 1:
+			i1 = RrInterval.big_interval();
+			i1 = box.wipe(csg.plane().pLine(), i1);
+			if(i1.empty()) 
+				return;
+			edgeCount = 1;
+			return;
+			
+			// Two - maybe a corner, or they may not intersect
+			
+		case 2:
+			i1 = RrInterval.big_interval();
+			i1 = box.wipe(csg.c_1().plane().pLine(), i1);
+			
+			i2 = RrInterval.big_interval();
+			i2 = box.wipe(csg.c_2().plane().pLine(), i2);
+			
+			if(csg.operator() == RrCSGOp.INTERSECTION)
+			{
+				i2 = csg.c_1().plane().wipe(csg.c_2().plane().pLine(), i2);
+				i1 = csg.c_2().plane().wipe(csg.c_1().plane().pLine(), i1);
+			} else
+			{
+				i2 = csg.c_1().plane().complement().wipe(
+						csg.c_2().plane().pLine(), i2);
+				i1 = csg.c_2().plane().complement().wipe(
+						csg.c_1().plane().pLine(), i1);                    
+			}
+			
+			if(!i1.empty())
+				edgeCount++;
+			if(!i2.empty())
+				edgeCount++;
+			
+			try
+			{
+				vertex = csg.c_1().plane().cross_point(csg.c_2().plane());
+				if(box.point_relative(vertex) == 0)
+				{
+					corner = true;
+				} else
+				{
+					corner = false;
+					vertex = null;
+				}
+			} catch (RrParallelLineException ple)
+			{
+				corner = false;
+				vertex = null;
+			}
+			return;
+			
+		default:
+			System.err.println("RrCSGPolygon.evaluate(): complexity > 2.");
+		}
+	}
+	
+	
 	
 	/**
 	 * Find the quad containing a point
@@ -327,291 +427,141 @@ public class RrCSGPolygon
 			result.divide(resolution_2, sFactor);
 		return result;
 	}
-	
-    
+	  
 	 /**
-	 * Deal with the case where a quad contains a single edge
-     * @param l
-     * @param i
-     * @param r
-     * @param here
-     * @param d
-     * @param st
-     * @param fin
-     * @param flag
-     */   
-    private void oneLine(RrLine l, RrInterval i, RrPolygon r, 
-    		Rr2Point here, Rr2Point d, Rr2Point st, Rr2Point fin, int flag)
-    {
-    	if(st != null)
-    		r.add(st, 0);
-    	
-    	if(Rr2Point.mul(d, l.direction()) < 0)
-    	{
-    		l = l.neg();
-    		i = RrInterval.sub(0, i);
-    	}
-    	d.set(l.direction());
-    	
-    	if(fin != null)
-    	{
-    		r.add(fin, flag);
-    		here.set(fin);
-    	} else
-    		here.set(l.point(i.high() + Math.sqrt(resolution_2)));
-    }
-    
-    /**
-	 * Deal with the case where a quad contains two edges
-     * @param qc
-     * @param r
-     * @param here
-     * @param d
-     * @param st
-     * @param fin
-     * @param flag
-     */   
-    private void twoLine(RrQContents qc, RrPolygon r, 
-    		Rr2Point here, Rr2Point d, Rr2Point st, Rr2Point fin, int flag)
-    {
-    	Rr2Point d1 = qc.l1.d_2(here);
-    	Rr2Point d2 = qc.l2.d_2(here);
-    	
-    	// If there's no corner in the quad, find the line we're 
-    	// on and go along it
-    	
-    	if(!qc.corner)
-    	{
-    		if(d1.x() <= d2.x())
-    		{
-    			oneLine(qc.l1, qc.i1, r, here, d, st, fin, flag);
-    			visit1 = true;
-    		} else
-    		{
-    			oneLine(qc.l2, qc.i2, r, here, d, st, fin, flag);
-    			visit2 = true;
-    		}
-    		return;
-    	}
-    	
-       	RrLine l1, l2;
-    	RrInterval i1, i2;
-    	
-    	if(d1.x() <= d2.x())
-    	{
-    		l1 = qc.l1;
-    		i1 = qc.i1;
-    		l2 = qc.l2;
-    		i2 = qc.i2;
-    	} else
-    	{
-    		l1 = qc.l2;
-    		i1 = qc.i2;
-    		l2 = qc.l1;
-    		i2 = qc.i1;
-    	}
-    	
-    	if(Rr2Point.mul(l1.direction(), d) < 0)
-    	{
-    		l1 = l1.neg();
-    		i1 = RrInterval.sub(0, i1);
-    	}
-    	
-    	boolean before = true;
-    	
-    	if(st != null)
-    	{
-    		if(!Rr2Point.same(qc.vertex, st, resolution_2))
-    		{
-    			r.add(st, 0);
-    			before = Rr2Point.same(qc.vertex, l1.point(i1.high()), 
-    					resolution_2);
-    		}
-    	}
-    	
-    	
-    	if(before)
-    	{
-   			r.add(qc.vertex, flag);
- 
-    		if(Rr2Point.same(qc.vertex, l2.point(i2.high()), resolution_2))
-    		{
-    			l2 = l2.neg();
-    			i2 = RrInterval.sub(0, i2);
-    		}
-    		d.set(l2.direction());
-    		here.set(l2.point(i2.high() + Math.sqrt(resolution_2)));
-    		visit1 = true;
-    		visit2 = true;
-    	} else
-    	{
-    		if(d1.x() <= d2.x())
-    			visit1 = true;
-    		else
-    			visit2 = true;
-    		d.set(l1.direction());
-    		here.set(l1.point(i1.high() + Math.sqrt(resolution_2)));
-    	}
-    	
-    	if(fin != null)
-    	{
-    		if(!Rr2Point.same(qc.vertex, fin, resolution_2))
-    			r.add(fin, flag);
-    		here.set(fin);
-    	}
-    		
-    }
-    
-	 /**
-	 * Walk round the edges of a polygon from here to there, trying
-     * to start roughly in direction.
-     * If here and there coincide, then a full circuit is returned.
-     * The MEG algorithm is due to my old chum John Woodwark.
-     * @param here
-     * @param there
-     * @param direction
-     * @param flag
-     * @return a polygon as the result
+	 * Walk the tree setting visited flags false
      */
-    public RrPolygon meg(Rr2Point here, Rr2Point there, 
-    		Rr2Point direction, int flag)
+    private void clearVisited(boolean v1, boolean v2)
     {
-            if(q1 == null)
-            {
-                    System.err.println("meg(): edge finding in an undivided polygon!  Making it up...");
-                    double r2 = box.d_2()*1.0e-8;
-                    divide(r2, 1);
-            }
-            
-            RrCSGPolygon qh;
-            RrCSGPolygon qt = quad(there);
-            
-            RrPolygon r = new RrPolygon();
-            Rr2Point h = new Rr2Point(here);
-            
-            Rr2Point d;
-            if(direction != null)
-            	d = new Rr2Point(direction);
-            else
-            	d = null;
-            
-            Rr2Point fin, st;
-            
-            RrQContents qc;
-
-            st = here;
-            int loop = 0;
-            boolean rightRound = Rr2Point.same(here, there, resolution_2);
-            if(rightRound)
-            	loop = -1;
-            qh = quad(h);
-            
-            do
-            {
-            	qh = quad(h);
-            	qc = new RrQContents(qh);
-            	
-            	if(qh == qt && loop >= 0)
-            		fin = there;
-            	else
-            		fin = null;
-            	
-            	switch(qc.count)
-            	{	
-            	case 1:
-            		if(qc.l1 != null)
-            		{
-            			if(d == null)
-            				d = new Rr2Point(qc.l1.direction());
-            			qh.oneLine(qc.l1, qc.i1, r, h, d, st, fin, flag);
-            			qh.visit1 = true;
-            		} else if (qc.l2 != null)
-            		{
-            			if(d == null)
-            				d = new Rr2Point(qc.l2.direction());
-            			qh.oneLine(qc.l2, qc.i2, r, h, d, st, fin, flag);
-            			qh.visit2 = true;
-            		} else
-            			System.err.println("meg(): both segments null!");
-            		break;
-            		
-            	case 2:
-            		if(d == null)
-        				d = new Rr2Point(qc.l1.direction());
-            		qh.twoLine(qc, r, h, d, st, fin, flag);
-            		break;
-            		
-            	default:
-            		System.err.println("meg(): count not 1 or 2: " + qc.count);	
-            	}
-            	st = null;
-            	loop++;
-            } while (qh != qt || loop == 0);
-            
-            // If looping right round, the first and last
-            // points coincide.  Remove the last.
-            
-            if(rightRound)
-            	r.remove(r.size()-1);
-            
-            return r;
-    }
-    
-	 /**
-	 * Walk the tree setting all visited flags false
-     */
-    private void clearVisted()
-    {
-    	visit1 = false;
-    	visit2 = false;
+    	if(v1)
+    		visit1 = false;
+    	if(v2)
+    		visit2 = false;
+    	
     	if(q1 != null)
     	{
-    		q1.clearVisted();
-    		q2.clearVisted();
-    		q3.clearVisted();
-    		q4.clearVisted();    		
+    		q1.clearVisited(v1, v2);
+    		q2.clearVisited(v1, v2);
+    		q3.clearVisited(v1, v2);
+    		q4.clearVisited(v1, v2);    		
     	}
     }
- 
+    
 	 /**
 	 * Walk the tree to find an unvisited corner
      */
-    private Rr2Point findCorner()
+    private RrCSGPolygon findCorner(boolean v1, boolean v2)
     {
-    	Rr2Point result = null;
+    	RrCSGPolygon result = null;
     	
-    	if(csg.complexity() == 2 && !visit1 && !visit2)
-    	{
-    		RrQContents qc = new RrQContents(this);
-    		if(qc.corner)
-    			return qc.vertex;
-    	}
+    	if(corner && !(visit1 && v1) && !(visit2 && v2))
+    		return this;
  
     	if(q1 != null)
     	{
-    		result = q1.findCorner();
+    		result = q1.findCorner(v1, v2);
     		if(result != null)
     			return result;
-       		result = q2.findCorner();
+       		result = q2.findCorner(v1, v2);
     		if(result != null)
     			return result; 
-      		result = q3.findCorner();
+      		result = q3.findCorner(v1, v2);
     		if(result != null)
     			return result; 
-     		result = q4.findCorner();
+     		result = q4.findCorner(v1, v2);
     		if(result != null)
     			return result;   		
     	}
     	
     	return result;
     }
+        
+    /**
+	 * Find the polygon starting at...
+	 * @param corner
+	 * @param flag
+     * @return the polygon 
+     */
+    public RrPolygon meg(int flag)
+    {
+    	RrPolygon result = new RrPolygon();
+    	
+    	RrCSGPolygon c = this;
+    	RrHalfPlane now, next;
+    	now = csg.c_1().plane();
+    	if(now.find(c)%2 == 1)  // Subtle, or what?
+    		now = csg.c_2().plane();
+    	int nextIndex;
+    	do
+    	{
+    		if(!c.corner)
+    			System.err.println("RrCSGPolygon.meg(): visiting non-corner quad!");
+    		result.add(c.vertex, flag);
+    		c.visit2 = true;
+    		nextIndex = now.find(c) + 1;
+    		c = now.quad(nextIndex);
+    		next = c.csg.c_1().plane();
+    		if(next == now)
+    			next = c.csg.c_2().plane();
+    		now = next;
+    	} while (c != this);
+    	
+    	return result;
+    }
     
-    // The next function should work by finding unique
-    // pairwise half-plane intersections then linking them up logically,
-    // not geometrically (though sorted parameter values will have to 
-    // be used along lines with multiple intersections).  To Do!
+    /**
+	 * For each half plane remove any existing crossing list.
+     */
+    private static void clearCrossings(RrCSG c)
+    {
+    	if(c.complexity() > 1)
+    	{
+    		clearCrossings(c.c_1());
+    		clearCrossings(c.c_2());
+    	} else
+    	{
+    		if(c.operator() == RrCSGOp.LEAF)
+    			c.plane().removeCrossings();
+    	}
+    }
     
-	 /**
+    
+    /**
+	 * For each half plane sort the crossing list.
+     */
+    private static void sortCrossings(RrCSG c)
+    {
+    	if(c.complexity() > 1)
+    	{
+    		sortCrossings(c.c_1());
+    		sortCrossings(c.c_2());
+    	} else
+    	{
+    		if(c.operator() == RrCSGOp.LEAF)
+    			c.plane().sortCrossings(true);
+    	}	
+    }
+    
+    /**
+	 * For each half plane record all the others that form
+	 * a corner with it.
+     */
+    private void setCrossingLists()
+    {
+    	clearCrossings(csg);
+    	RrCSGPolygon vtx = findCorner(true, true);
+    	while(vtx != null)
+    	{
+    		if(!RrHalfPlane.cross(vtx))
+    			vtx.visit1 = true;
+    		vtx.visit2 = true;
+    		vtx = findCorner(true, true);
+    	}
+    	clearVisited(false, true);
+    	sortCrossings(csg);
+    }
+    
+    /**
 	 * Find all the polygons represented by a CSG object
 	 * @param fg
 	 * @param fs
@@ -619,14 +569,15 @@ public class RrCSGPolygon
      */
     public RrPolygonList megList(int fg, int fs)
     {
-    	clearVisted();
+    	clearVisited(true, true);
+    	setCrossingLists();
     	RrPolygonList result = new RrPolygonList();
     	RrPolygon m;
     	
-    	Rr2Point vertex = findCorner();
-    	while(vertex != null)
+    	RrCSGPolygon vtx = findCorner(true, true);
+    	while(vtx != null)
     	{
-    		m = meg(vertex, vertex, null, fg);
+    		m = vtx.meg(fg);
     		if(m.size() > 0)
     		{
     			m.flag(0, fs);
@@ -635,7 +586,7 @@ public class RrCSGPolygon
     			else
     				System.err.println("megList(): polygon with < 3 sides!");
     		}
-    		vertex = findCorner();
+    		vtx = findCorner(true, true);
     	}
     	
     	return result;
@@ -683,7 +634,7 @@ public class RrCSGPolygon
 					tx = csg.plane().cross_t(l0);
 					if (range.in(tx))
 						t.add(new Double(tx));
-				}catch (rr_ParallelLineException ple)
+				}catch (RrParallelLineException ple)
 				{}
 				break;
 				
@@ -698,7 +649,7 @@ public class RrCSGPolygon
 						if(v*v < resolution_2)
 							t.add(new Double(tx));
 					}
-				}catch (rr_ParallelLineException ple)
+				}catch (RrParallelLineException ple)
 				{}
 				
 				try
@@ -711,7 +662,7 @@ public class RrCSGPolygon
 						if(v*v < resolution_2)
 							t.add(new Double(tx));
 					}
-				}catch (rr_ParallelLineException ple)
+				}catch (RrParallelLineException ple)
 				{}
 				break;
 				

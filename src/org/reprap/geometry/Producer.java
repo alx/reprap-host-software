@@ -160,7 +160,7 @@ public class Producer {
 			bld.mouseToWorld();
 			stlc = new STLSlice(bld.getSTLs());
 			zMax = stlc.maxZ();
-			//zMax = 1.6;
+			// zMax = 1.6;  // For testing.
 		}
 		
 		
@@ -175,10 +175,10 @@ public class Producer {
 			
 			if (reprap.isCancelled())
 				break;
-			RrPolygonList list = new RrPolygonList();
+			
 
 // ************ Simon's example start
-			
+//			RrPolygonList list = new RrPolygonList();
 //			// Add a square block
 //
 //			list.add(square());
@@ -199,15 +199,18 @@ public class Producer {
 			} else
 			{
 				RrCSGPolygon slice = stlc.slice(z+reprap.getExtrusionHeight()*0.5);
-				layer = new LayerProducer(reprap, slice,
+				if(slice != null)
+					layer = new LayerProducer(reprap, slice,
 						isEvenLayer?evenHatchDirection:oddHatchDirection);
-//				slice.divide(1.0e-2, 1);
-//				new RrGraphics(slice, true);
+				else
+					layer = null;
+
 			}
 
 // ************ Adrian's example end.
 			
-			layer.plot();
+			if(layer != null)
+				layer.plot();
 		
 			// Layer cooling phase
 			if (coolingPeriod > 0) {
