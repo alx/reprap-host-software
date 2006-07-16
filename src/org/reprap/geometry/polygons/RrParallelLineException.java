@@ -59,7 +59,7 @@ import java.util.*;
 /**
 * Exception for when trying to intersect parallel lines
 */
-class RrParallelLineException extends Exception
+public class RrParallelLineException extends Exception
 {
 	public RrParallelLineException(String s)
 	{
