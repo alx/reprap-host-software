@@ -1068,6 +1068,28 @@ public class RrCSGPolygon
 	private static double lEntry(List tList, int i)
 	{
 		return ((Double)(tList.get(i))).doubleValue();
+	
+	}
+	
+	private RrPolygon antiWiggle(RrPolygon cand)
+	{
+		if(cand.size() <= 1)
+			return null;
+		
+		RrPolygon result = new RrPolygon();
+		int flag = cand.flag(1);
+		for(int i = 0; i < cand.size(); i += 2)
+		{
+			if(i != 0)
+			{
+				if(!all_inside(cand.point(i+1), result.point(i-1)))
+					return null;
+			}
+			result.add(cand.point(i+1), flag);
+			result.add(cand.point(i), flag);
+		}
+		System.out.println("wiggle successful.");
+		return result;
 	}
 	
 	/**
@@ -1084,7 +1106,7 @@ public class RrCSGPolygon
 		double d = Math.sqrt(big.d_2());
 		
 		Rr2Point orth = new Rr2Point(-l0.direction().y(), l0.direction().x());
-		orth.norm();
+		orth = orth.norm();
 		
 		int quad = (int)(2*Math.atan2(orth.y(), orth.x())/Math.PI);
 		
@@ -1119,29 +1141,19 @@ public class RrCSGPolygon
 		
 		RrLine hatcher = new RrLine(org, Rr2Point.add(org, l0.direction()));
 
-		
-		List hatchTs = new ArrayList();
-		List hatchLs = new ArrayList();
+		RrPolygonList snakes = new RrPolygonList();
+		RrPolygon s;
+		List tList;
+		double jumpTooBig = gap*gap*4;
+		double d1, d2;
 		
 		while (g < d)
 		{
-			hatchLs.add(hatcher);
-			hatchTs.add(pl_intersect(hatcher, true));
-			hatcher = hatcher.add(orth);
-			g = g + gap;
-		}
-
-		RrPolygonList snakes = new RrPolygonList();
-		RrPolygon s;
-		
-		for(int i = 0; i < hatchLs.size(); i++)
-		{
-			RrLine l = (RrLine)hatchLs.get(i);
-			List tList = (List)hatchTs.get(i);
+			tList = pl_intersect(hatcher, true);
 			if(tList.size() > 0)
 			{
 				if(snakes.size() <= 0)
-					snakes.add(remainder(tList, l, fg));
+					snakes.add(remainder(tList, hatcher, fg));
 				else
 				{
 					for(int j = 0; j < snakes.size(); j++)
@@ -1149,12 +1161,11 @@ public class RrCSGPolygon
 						s = snakes.polygon(j);
 						Rr2Point end1 = s.point(s.size() - 1);
 						int newSeg = -1;
-						double d1 = Double.POSITIVE_INFINITY;
-						double d2;
+						d1 = Double.POSITIVE_INFINITY;
 						Rr2Point end2;
 						for(int k = 0; k < tList.size(); k++)
 						{
-							end2 = l.point(lEntry(tList, k));
+							end2 = hatcher.point(lEntry(tList, k));
 							if(all_inside(end1, end2))
 							{
 								d2 = Rr2Point.d_2(end1, end2);
@@ -1165,32 +1176,71 @@ public class RrCSGPolygon
 								}
 							}
 						}
-						if(newSeg >= 0)
+						
+						if(newSeg >= 0 && d1 < jumpTooBig)
 						{
 							if(newSeg%2 == 0)
 							{
-								s.add(l.point(lEntry(tList, newSeg)), fg);
-								s.add(l.point(lEntry(tList, newSeg + 1)), fg);
+								s.add(hatcher.point(lEntry(tList, newSeg)), fg);
+								s.add(hatcher.point(lEntry(tList, newSeg + 1)), fg);
 								tList.remove(newSeg+1);
 								tList.remove(newSeg);
 							} else
 							{
-								s.add(l.point(lEntry(tList, newSeg)), fg);
-								s.add(l.point(lEntry(tList, newSeg - 1)), fg);
+								s.add(hatcher.point(lEntry(tList, newSeg)), fg);
+								s.add(hatcher.point(lEntry(tList, newSeg - 1)), fg);
 								tList.remove(newSeg);
 								tList.remove(newSeg - 1);
 							}
 						}
 					}
-					snakes.add(remainder(tList, l, fg));
+					snakes.add(remainder(tList, hatcher, fg));
+				}
+			}
+			hatcher = hatcher.add(orth);
+			g += gap;
+		}
+		
+		for(int j = snakes.size() - 2; j >= 0; j--)
+		{
+			s = snakes.polygon(j);
+			for(int k = snakes.size() - 1; k > j; k--)
+			{
+				RrPolygon t = snakes.polygon(k);
+				d1 = Double.POSITIVE_INFINITY;
+				int is = -1, it;
+				for(int l = 0; l < 2; l++)
+					for(int m = 0; m < 2; m++)
+					{
+						d2 = Rr2Point.d_2(s.point(l), t.point(m));
+						if(d2 < d1)
+						{
+							d1 = d2;
+							is = l;
+							it = m;
+						}
+						d2 = Rr2Point.d_2(s.point(s.size() - l), 
+								t.point(t.size() - m));
+						if(d2 < d1)
+						{
+							d1 = d2;
+							is = s.size() - l;
+							it = t.size() - m;
+						}
+					}
+				if(is >= 0)
+				{
+					
 				}
 			}
 		}
+		
 		for(int j = 0; j < snakes.size(); j++)
 		{
 			s = snakes.polygon(j);
 			s.flag(0, fs);
 		}
+		
 		return snakes;
 	}
 }

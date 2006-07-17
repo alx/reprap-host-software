@@ -51,6 +51,8 @@ public class LayerProducer {
 //				solidMaterial, gapMaterial));		
 		csg_p = null;
 		
+		//RrGraphics g = new RrGraphics(hatchedPolygons, false);
+		
 		RrBox big = csgPol.box().scale(1.1);
 		
 		double width = big.x().length();
