@@ -47,9 +47,8 @@ public class LayerProducer {
 		hatchedPolygons = new RrPolygonList();
 		hatchedPolygons.add(offHatch.hatch_join(hatchDirection, printer.getExtrusionSize(), 
 				solidMaterial, gapMaterial));
-		
-		//new RrGraphics(hatchedPolygons, true);
-		
+//		hatchedPolygons.add(offHatch.newHatch(hatchDirection, printer.getExtrusionSize(), 
+//				solidMaterial, gapMaterial));		
 		csg_p = null;
 		
 		RrBox big = csgPol.box().scale(1.1);
@@ -87,7 +86,7 @@ public class LayerProducer {
 		{
 			int i = j%leng;
 			int f = p.flag(i);
-			if(f != 0 && j != 0)
+			if(f != gapMaterial && j != 0)
 			{
 				if (printer.isCancelled()) return;
 				plot(p.point(i));

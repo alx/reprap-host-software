@@ -57,7 +57,7 @@ import java.util.*;
 import javax.media.j3d.*;
 import javax.vecmath.*;
 import org.reprap.gui.STLObject;
-import java.io.*;
+
 
 // Small class to hold line segments and the quads in which their ends lie
 
@@ -134,11 +134,9 @@ public class STLSlice
 	//private static List onlyOne;
 	
 	/**
-	 * Constructor just records the list of STL objects and 
-	 * initialises a few things.
-	 * @param s
+	 * Null constructor just initialises a few things.
 	 */
-	public STLSlice(List s)
+	public STLSlice()
 	{
 		edges = new ArrayList();
 		q1 = null;
@@ -147,9 +145,38 @@ public class STLSlice
 		q4 = null;
 		box = new RrBox();
 		visited = false;
-		stls = s;
+		stls = null;
 		sFactor = 1;
 		resolution_2 = 1.0e-8; // Default - set properly
+	}
+	
+	/**
+	 * This constructor records the list of STL objects. 
+	 * @param s
+	 */
+	public STLSlice(List s)
+	{
+		this();
+		stls = s;
+	}
+	
+	/**
+	 * Add a new line segment to the list.
+	 * @param p
+	 * @param q
+	 */
+	public void add(Rr2Point p, Rr2Point q)
+	{
+		edges.add(new LineSegment(p, q));
+	}
+	
+	/**
+	 * Set the resolution to the square of a length.
+	 * @param r
+	 */
+	public void setResolution(double r)
+	{
+		resolution_2 = r*r;
 	}
 	
 	// Return the contents
@@ -256,7 +283,7 @@ public class STLSlice
 		
 		if(!Rr2Point.same(e1, e2, lessGridSquare))
 		{
-			edges.add(new LineSegment(e1, e2));
+			add(e1, e2);
 			box.expand(e1);
 			box.expand(e2);
 		}
@@ -397,7 +424,7 @@ public class STLSlice
 	/**
 	 * Quad tree division to end up with two (or no) ends in each box.
 	 */
-	private void divide()
+	public void divide()
 	{
 		if(box.d_2() < resolution_2)
 		{
@@ -480,6 +507,26 @@ public class STLSlice
 //			System.err.print("Uh?");
 //		}
 //		g = null;
+//    }
+//    
+//    
+//    public void reportStats()
+//    {
+//    	int single = 0;
+//    	int twin = 0;
+//    	for(int i = 0; i < edges.size(); i++)
+//    	{
+//    		LineSegment s = segment(i);
+//    		if(s.qa == null)
+//    			single++;
+//    		if(s.qb == null)
+//    			single++;
+//    		if(s.qa != null && s.qb != null)
+//    			twin++;
+//    	}
+//    	System.out.println("STLSlice.reportStats() - lines: " + edges.size()
+//    			+ " double-ended quads: " + twin +
+//    			" single ends: " + single);
 //    }
     
 	/**
@@ -576,6 +623,12 @@ public class STLSlice
 	 */
 	public RrCSGPolygon slice(double z)
 	{
+		if(stls == null)
+		{
+			System.err.println("slice(): no STL list loaded!");
+			return null;
+		}
+			
 		// Clear out any residues from last z value
 		
 		q1 = null;

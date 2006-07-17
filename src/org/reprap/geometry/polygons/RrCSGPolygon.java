@@ -733,74 +733,7 @@ public class RrCSGPolygon
 	}
 	
 	
-	/**
-	 * Hatch a csg polygon parallel to line l0 with index gap
-	 * @param l0
-	 * @param gap
-	 * @param fg
-	 * @param fs
-	 * @return a polygon list as the result with flag values f
-	 */
-	public RrPolygonList hatch(RrLine l0, double gap, int fg, int fs)
-	{
-		RrBox big = box.scale(1.1);
-		double d = Math.sqrt(big.d_2());
-		RrPolygonList result = new RrPolygonList();
-		Rr2Point orth = new Rr2Point(-l0.direction().y(), l0.direction().x());
-		orth.norm();
-		
-		int quad = (int)(2*Math.atan2(orth.y(), orth.x())/Math.PI);
-		
-		Rr2Point org;
-		
-		switch(quad)
-		{
-		case 0:
-			org = big.sw();
-			break;
-			
-		case 1:
-			org = big.se();
-			break;
-			
-		case 2:
-			org = big.ne(); 
-			break;
-			
-		case 3:
-			org = big.nw();
-			break;
-			
-		default:
-			System.err.println("RrPolygon hatch(): The atan2 function doesn't seem to work...");
-			org = big.sw();
-		}
-		
-		double g = 0;
-		
-		//double proj = (Rr2Point.mul(orth, org) - Rr2Point.mul(orth, l0.origin()))/gap;
-		//proj = (double)((int)proj + 1) - proj;
-		//org = Rr2Point.add(org, Rr2Point.mul(orth, proj));
-		
-		orth = Rr2Point.mul(orth, gap);
-		
-		RrLine hatcher = new RrLine(org, Rr2Point.add(org, l0.direction()));
-		RrPolygon r;
-		
-		while (g < d)
-		{
-			hatcher = hatcher.neg();
-			List t_vals = pl_intersect(hatcher, true);
-			if (t_vals.size() > 0)
-			{
-				r = RrPolygon.rr_t_polygon(t_vals, hatcher, fg, fs);
-				result.add(r);
-			}
-			hatcher = hatcher.add(orth);
-			g = g + gap;
-		}
-		return result;
-	}
+
 	
 	/**
 	 * Is the line between two points wholely within the polygon?
@@ -1049,4 +982,215 @@ public class RrCSGPolygon
 		return p1;
 	}
 	
+	/**
+	 * Hatch a csg polygon parallel to line l0 with index gap
+	 * @param l0
+	 * @param gap
+	 * @param fg
+	 * @param fs
+	 * @return a polygon list as the result with flag values f
+	 */
+	public RrPolygonList hatch(RrLine l0, double gap, int fg, int fs)
+	{
+		RrBox big = box.scale(1.1);
+		double d = Math.sqrt(big.d_2());
+		RrPolygonList result = new RrPolygonList();
+		Rr2Point orth = new Rr2Point(-l0.direction().y(), l0.direction().x());
+		orth.norm();
+		
+		int quad = (int)(2*Math.atan2(orth.y(), orth.x())/Math.PI);
+		
+		Rr2Point org;
+		
+		switch(quad)
+		{
+		case 0:
+			org = big.sw();
+			break;
+			
+		case 1:
+			org = big.se();
+			break;
+			
+		case 2:
+			org = big.ne(); 
+			break;
+			
+		case 3:
+			org = big.nw();
+			break;
+			
+		default:
+			System.err.println("RrPolygon hatch(): The atan2 function doesn't seem to work...");
+			org = big.sw();
+		}
+		
+		double g = 0;
+		
+		//double proj = (Rr2Point.mul(orth, org) - Rr2Point.mul(orth, l0.origin()))/gap;
+		//proj = (double)((int)proj + 1) - proj;
+		//org = Rr2Point.add(org, Rr2Point.mul(orth, proj));
+		
+		orth = Rr2Point.mul(orth, gap);
+		
+		RrLine hatcher = new RrLine(org, Rr2Point.add(org, l0.direction()));
+		RrPolygon r;
+		
+		while (g < d)
+		{
+			hatcher = hatcher.neg();
+			List t_vals = pl_intersect(hatcher, true);
+			if (t_vals.size() > 0)
+			{
+				r = RrPolygon.rr_t_polygon(t_vals, hatcher, fg, fs);
+				result.add(r);
+			}
+			hatcher = hatcher.add(orth);
+			g = g + gap;
+		}
+		return result;
+	}
+	
+	private RrPolygonList remainder(List tList, RrLine l, int fg)
+	{
+		RrPolygonList segments = new RrPolygonList();
+		RrPolygon r;
+		for(int j = 0; j < tList.size(); j += 2)
+		{
+			r = new RrPolygon();
+			r.add(l.point(lEntry(tList, j)), fg);
+			r.add(l.point(lEntry(tList, j+1)), fg);
+			segments.add(r);
+		}
+		return segments;
+	}
+	
+	private static double lEntry(List tList, int i)
+	{
+		return ((Double)(tList.get(i))).doubleValue();
+	}
+	
+	/**
+	 * Hatch a csg polygon parallel to line l0 with index gap
+	 * @param l0
+	 * @param gap
+	 * @param fg
+	 * @param fs
+	 * @return a polygon list as the result with flag values f
+	 */
+	public RrPolygonList newHatch(RrLine l0, double gap, int fg, int fs)
+	{
+		RrBox big = box.scale(1.1);
+		double d = Math.sqrt(big.d_2());
+		
+		Rr2Point orth = new Rr2Point(-l0.direction().y(), l0.direction().x());
+		orth.norm();
+		
+		int quad = (int)(2*Math.atan2(orth.y(), orth.x())/Math.PI);
+		
+		Rr2Point org;
+		
+		switch(quad)
+		{
+		case 0:
+			org = big.sw();
+			break;
+			
+		case 1:
+			org = big.se();
+			break;
+			
+		case 2:
+			org = big.ne(); 
+			break;
+			
+		case 3:
+			org = big.nw();
+			break;
+			
+		default:
+			System.err.println("RrPolygon hatch(): The atan2 function doesn't seem to work...");
+			org = big.sw();
+		}
+		
+		double g = 0;
+				
+		orth = Rr2Point.mul(orth, gap);
+		
+		RrLine hatcher = new RrLine(org, Rr2Point.add(org, l0.direction()));
+
+		
+		List hatchTs = new ArrayList();
+		List hatchLs = new ArrayList();
+		
+		while (g < d)
+		{
+			hatchLs.add(hatcher);
+			hatchTs.add(pl_intersect(hatcher, true));
+			hatcher = hatcher.add(orth);
+			g = g + gap;
+		}
+
+		RrPolygonList snakes = new RrPolygonList();
+		RrPolygon s;
+		
+		for(int i = 0; i < hatchLs.size(); i++)
+		{
+			RrLine l = (RrLine)hatchLs.get(i);
+			List tList = (List)hatchTs.get(i);
+			if(tList.size() > 0)
+			{
+				if(snakes.size() <= 0)
+					snakes.add(remainder(tList, l, fg));
+				else
+				{
+					for(int j = 0; j < snakes.size(); j++)
+					{
+						s = snakes.polygon(j);
+						Rr2Point end1 = s.point(s.size() - 1);
+						int newSeg = -1;
+						double d1 = Double.POSITIVE_INFINITY;
+						double d2;
+						Rr2Point end2;
+						for(int k = 0; k < tList.size(); k++)
+						{
+							end2 = l.point(lEntry(tList, k));
+							if(all_inside(end1, end2))
+							{
+								d2 = Rr2Point.d_2(end1, end2);
+								if(d2 < d1)
+								{
+									d1 = d2;
+									newSeg = k;
+								}
+							}
+						}
+						if(newSeg >= 0)
+						{
+							if(newSeg%2 == 0)
+							{
+								s.add(l.point(lEntry(tList, newSeg)), fg);
+								s.add(l.point(lEntry(tList, newSeg + 1)), fg);
+								tList.remove(newSeg+1);
+								tList.remove(newSeg);
+							} else
+							{
+								s.add(l.point(lEntry(tList, newSeg)), fg);
+								s.add(l.point(lEntry(tList, newSeg - 1)), fg);
+								tList.remove(newSeg);
+								tList.remove(newSeg - 1);
+							}
+						}
+					}
+					snakes.add(remainder(tList, l, fg));
+				}
+			}
+		}
+		for(int j = 0; j < snakes.size(); j++)
+		{
+			s = snakes.polygon(j);
+			s.flag(0, fs);
+		}
+		return snakes;
+	}
 }

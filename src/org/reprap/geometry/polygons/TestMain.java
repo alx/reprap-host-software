@@ -112,15 +112,18 @@ public class TestMain
 	
 	public static void rrCSGTest()
 	{
-		//RrCSGPolygon cp = testPol();
-		RrCSGPolygon cp = hex();
+		RrCSGPolygon cp = testPol();
+		//RrCSGPolygon cp = hex();
 		cp.divide(1.0e-6, 1.0);
-		System.out.println(cp.toString());
-		RrGraphics g = new RrGraphics(cp.box().scale(1.1), true);
+		//System.out.println(cp.toString());
+		RrGraphics g = new RrGraphics(cp.box().scale(1.1), false);
+		RrLine hatch = new RrLine(new Rr2Point(-1, -1), new Rr2Point(1, 1));
+		RrPolygonList h = cp.newHatch(hatch, 0.05, 3, 4);
 		
 		g.addCSG(cp);
+		g.addPol(h);
 		
-//		RrLine x = new RrLine(new Rr2Point(-1, -1), new Rr2Point(1, 1));
+//		RrLine hatch = new RrLine(new Rr2Point(-1, -1), new Rr2Point(1, 1));
 //		RrPolygon  h = cp.hatch_join(x, 0.005, 1, 3);
 //		RrPolygonList hp;
 //		hp = cp.megList(1, 0);
@@ -158,8 +161,8 @@ public class TestMain
 	
 	public static void main(String args[])
 	{
-		//rrCSGTest();
-		rrCHTest();
+		rrCSGTest();
+		//rrCHTest();
 		//rrpTest();
 	}
 }
