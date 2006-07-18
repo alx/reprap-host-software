@@ -477,8 +477,7 @@ public class RrCSGPolygon
     }
         
     /**
-	 * Find the polygon starting at...
-	 * @param corner
+	 * Find the polygon starting at this quad
 	 * @param flag
      * @return the polygon 
      */
@@ -1161,7 +1160,7 @@ public class RrCSGPolygon
 						s = snakes.polygon(j);
 						Rr2Point end1 = s.point(s.size() - 1);
 						int newSeg = -1;
-						d1 = Double.POSITIVE_INFINITY;
+						d1 = jumpTooBig;
 						Rr2Point end2;
 						for(int k = 0; k < tList.size(); k++)
 						{
@@ -1177,7 +1176,7 @@ public class RrCSGPolygon
 							}
 						}
 						
-						if(newSeg >= 0 && d1 < jumpTooBig)
+						if(newSeg >= 0)
 						{
 							if(newSeg%2 == 0)
 							{
@@ -1207,8 +1206,8 @@ public class RrCSGPolygon
 			for(int k = snakes.size() - 1; k > j; k--)
 			{
 				RrPolygon t = snakes.polygon(k);
-				d1 = Double.POSITIVE_INFINITY;
-				int is = -1, it;
+				d1 = jumpTooBig;
+				int is = -1, it = -1;
 				for(int l = 0; l < 2; l++)
 					for(int m = 0; m < 2; m++)
 					{
@@ -1219,8 +1218,8 @@ public class RrCSGPolygon
 							is = l;
 							it = m;
 						}
-						d2 = Rr2Point.d_2(s.point(s.size() - l), 
-								t.point(t.size() - m));
+						d2 = Rr2Point.d_2(s.point(s.size() - 1 - l), 
+								t.point(t.size() - 1 - m));
 						if(d2 < d1)
 						{
 							d1 = d2;
@@ -1230,7 +1229,30 @@ public class RrCSGPolygon
 					}
 				if(is >= 0)
 				{
+					RrPolygon sp, tp;
+					if(is == 1 || is == s.size() - 2)
+					{
+						sp = antiWiggle(s);
+						if(is == 1)
+							is = 0;
+						else
+							is = s.size() - 1;
+					} else
+						sp = s;
 					
+					if(it == 1 || it == t.size() - 2)
+					{
+						tp = antiWiggle(t);
+						if(it == 1)
+							it = 0;
+						else
+							it = t.size() - 1;
+					} else
+						tp = t;
+					if(sp != null && tp != null)
+					{
+						
+					}
 				}
 			}
 		}
