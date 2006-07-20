@@ -873,6 +873,11 @@ public class RrPolygonList
 	{
 		RrPolygonList pgl = new RrPolygonList(this);
 		List all = pgl.allPoints();
+		if(all.size() < 3)
+		{
+			System.err.println("RrCSGPolygon.toCSG(): less than three points!");
+			return new RrCSGPolygon(RrCSG.nothing(), new RrBox(1));
+		}
 		pgl.flagSet(all, -1);
 		pgl = pgl.getComplete(all, 0);
 		all = pgl.allPoints();

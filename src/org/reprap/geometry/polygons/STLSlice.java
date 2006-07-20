@@ -54,6 +54,7 @@
 package org.reprap.geometry.polygons;
 
 import java.util.*;
+import java.io.*;
 import javax.media.j3d.*;
 import javax.vecmath.*;
 import org.reprap.gui.STLObject;
@@ -489,25 +490,25 @@ public class STLSlice
     	return result;
     }
 
-//    /**
-//     * Useful for debugging - plot a bit of the quad tree.
-//     *
-//     */
-//    private void quickPlot()
-//    {
-//    	RrGraphics g = new RrGraphics(box.scale(1.5), true);
-//		g.addSTL(this);
-//		System.out.print("Type any character: ");
-//		System.out.flush();
-//		try
-//		{
-//			System.in.read();
-//		} catch(IOException err)
-//		{
-//			System.err.print("Uh?");
-//		}
-//		g = null;
-//    }
+    /**
+     * Useful for debugging - plot a bit of the quad tree.
+     *
+     */
+    private void quickPlot()
+    {
+    	RrGraphics g = new RrGraphics(box.scale(1.5), true);
+		g.addSTL(this);
+		System.out.print("Type any character: ");
+		System.out.flush();
+		try
+		{
+			System.in.read();
+		} catch(IOException err)
+		{
+			System.err.print("Uh?");
+		}
+		g = null;
+    }
 //    
 //    
 //    public void reportStats()
@@ -584,7 +585,6 @@ public class STLSlice
 				edge = newEdge;
 				corner = newCorner;
 			} while (corner != startCorner);
-			 
 			if(pg.size() > 2)  // Throw away "noise"...
 			{
 				pg.flag(pg.size() - 1, 3);
@@ -671,9 +671,10 @@ public class STLSlice
 		// leaf quad containing either 0 or 2 ends of different line
 		// segments.  Then we just run round joining up all the pairs of
 		// ends.
+
 		
 		divide();
-
+		
 		// Run round joining up all the pairs of ends...
 		
 		RrPolygonList pgl = conquer();

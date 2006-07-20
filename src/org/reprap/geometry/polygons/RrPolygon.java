@@ -342,6 +342,8 @@ public class RrPolygon
 	 */
 	public RrPolygon simplify(double d)
 	{
+		if(size() <= 3)
+			return new RrPolygon(this);
 		RrPolygon r = new RrPolygon();
 		int leng = size();
 		double d2 = d*d;

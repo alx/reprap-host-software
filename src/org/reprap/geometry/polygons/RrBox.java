@@ -80,6 +80,17 @@ public class RrBox
 	}
 	
 	/**
+	 * For when we need one that has just something in
+	 * @param a
+	 */
+	public RrBox(double a)
+	{
+		x = new RrInterval(0, a);
+		y = new RrInterval(0, a);
+		empty = false;
+	}
+	
+	/**
 	 * Copy constructor
 	 */
 	public RrBox(RrBox b)
