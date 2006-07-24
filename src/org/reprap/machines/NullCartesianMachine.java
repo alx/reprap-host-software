@@ -17,8 +17,12 @@ public class NullCartesianMachine implements CartesianPrinter {
 	double extrusionSize, extrusionHeight;
 	
 	double currentX, currentY, currentZ;
-	
+
+	private long startTime;
+
 	public NullCartesianMachine(Preferences config) {
+		startTime = System.currentTimeMillis();
+
 		currentX = 0;
 		currentY = 0;
 		currentZ = 0;
@@ -165,6 +169,11 @@ public class NullCartesianMachine implements CartesianPrinter {
 	 * @see org.reprap.Printer#setCooling(boolean)
 	 */
 	public void setCooling(boolean enable) {
+	}
+
+	public double getTotalElapsedTime() {
+		long now = System.currentTimeMillis();
+		return (now - startTime) / 1000.0;
 	}
 
 }

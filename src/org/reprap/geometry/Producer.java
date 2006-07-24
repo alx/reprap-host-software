@@ -245,5 +245,9 @@ public class Producer {
 	public void dispose() {
 		reprap.dispose();
 	}
+
+	public double getTotalElapsedTime() {
+		return reprap.getTotalElapsedTime();
+	}
 	
 }

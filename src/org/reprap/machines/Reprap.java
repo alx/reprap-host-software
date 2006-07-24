@@ -1,6 +1,7 @@
 package org.reprap.machines;
 
 import java.io.IOException;
+import java.sql.Time;
 
 import org.reprap.CartesianPrinter;
 import org.reprap.Preferences;
@@ -53,7 +54,11 @@ public class Reprap implements CartesianPrinter {
 
 	private boolean excludeZ = false;  ///< Don't perform Z operations.  Should be removed later.
 	
+	private long startTime;
+	
 	public Reprap(Preferences prefs) throws Exception {
+		startTime = System.currentTimeMillis();
+		
 		int axes = prefs.loadInt("AxisCount");
 		if (axes != 3)
 			throw new Exception("A Reprap printer must contain 3 axes");
@@ -395,6 +400,11 @@ public class Reprap implements CartesianPrinter {
 	
 	public void setCooling(boolean enable) throws IOException {
 		extruder.setCooler(enable);
+	}
+
+	public double getTotalElapsedTime() {
+		long now = System.currentTimeMillis();
+		return (now - startTime) / 1000.0;
 	}
 }
 

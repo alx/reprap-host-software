@@ -72,4 +72,6 @@ public interface Printer {
 	 * @param enable
 	 */
 	public void setCooling(boolean enable) throws IOException;
+
+	public double getTotalElapsedTime();
 }

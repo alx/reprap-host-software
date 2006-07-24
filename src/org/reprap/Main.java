@@ -528,11 +528,12 @@ public class Main {
 	private String getResourceMessage(Producer producer) {
 		double moved = Math.round(producer.getTotalDistanceMoved() * 10.0) / 10.0;
 		double extruded = Math.round(producer.getTotalDistanceExtruded() * 10.0) / 10.0;
-		double extrudedVolume = Math.round(producer.getTotalVolumeExtruded() * 10.0) / 10.0;  
+		double extrudedVolume = Math.round(producer.getTotalVolumeExtruded() * 10.0) / 10.0;
+		double time = Math.round(producer.getTotalElapsedTime() * 10.0) / 10.0;
 		return "Total distance travelled=" + moved +
 			"mm.  Total distance extruded=" + extruded +
 			"mm.  Total volume extruded=" + extrudedVolume +
-			"mm^3";
+			"mm^3.  Elapsed time=" + time + "s";
 	}
 	
 	public static void main(String[] args) {
