@@ -58,7 +58,7 @@ import java.io.*;
 import javax.media.j3d.*;
 import javax.vecmath.*;
 import org.reprap.gui.STLObject;
-
+import org.reprap.Preferences;
 
 // Small class to hold line segments and the quads in which their ends lie
 
@@ -118,10 +118,6 @@ class LineSegment
 
 public class STLSlice 
 {
-	private static final int grid = 100;
-	private static final double gridRes = 1.0/grid;
-	private static final double lessGridSquare = gridRes*gridRes*0.01;
-	private static final double tiny = 1.0e-8;
 	List stls;                   ///< The STL objects in 3D
 	private List edges;          ///< List of the edges with points in this one
 	private RrBox box;           ///< Its enclosing box
@@ -148,7 +144,7 @@ public class STLSlice
 		visited = false;
 		stls = null;
 		sFactor = 1;
-		resolution_2 = 1.0e-8; // Default - set properly
+		resolution_2 = Preferences.tiny();
 	}
 	
 	/**
@@ -224,7 +220,7 @@ public class STLSlice
 	private double toGrid(double x)
 	{
 		//return x;
-		return (double)((int)(x*grid + 0.5))/(double)grid;
+		return (double)((int)(x*Preferences.grid() + 0.5))*Preferences.gridRes();
 	}
 	
 	/**
@@ -282,7 +278,7 @@ public class STLSlice
 		Rr2Point e2 = new Rr2Point(toGrid(odd.x + t*even2.x), 
 				toGrid(odd.y + t*even2.y));
 		
-		if(!Rr2Point.same(e1, e2, lessGridSquare))
+		if(!Rr2Point.same(e1, e2, Preferences.lessGridSquare()))
 		{
 			add(e1, e2);
 			box.expand(e1);
@@ -490,27 +486,30 @@ public class STLSlice
     	return result;
     }
 
-    /**
-     * Useful for debugging - plot a bit of the quad tree.
-     *
-     */
-    private void quickPlot()
-    {
-    	RrGraphics g = new RrGraphics(box.scale(1.5), true);
-		g.addSTL(this);
-		System.out.print("Type any character: ");
-		System.out.flush();
-		try
-		{
-			System.in.read();
-		} catch(IOException err)
-		{
-			System.err.print("Uh?");
-		}
-		g = null;
-    }
+//    /**
+//     * Useful for debugging - plot a bit of the quad tree.
+//     *
+//     */
+//    private void quickPlot()
+//    {
+//    	RrGraphics g = new RrGraphics(box.scale(1.5), true);
+//		g.addSTL(this);
+//		System.out.print("Type any character: ");
+//		System.out.flush();
+//		try
+//		{
+//			System.in.read();
+//		} catch(IOException err)
+//		{
+//			System.err.print("Uh?");
+//		}
+//		g = null;
+//    }
 //    
-//    
+//    /**
+//     * Useful for debugging - print statistics
+//     *
+//     */
 //    public void reportStats()
 //    {
 //    	int single = 0;
@@ -532,9 +531,11 @@ public class STLSlice
     
 	/**
 	 * Stitch up the line segment ends in the quad tree.
+	 * @param fg
+	 * @param fs
 	 * @return a list of all the resulting polygons.
 	 */
-	private RrPolygonList conquer()
+	private RrPolygonList conquer(int fg, int fs)
 	{
 		RrPolygonList pgl = new RrPolygonList();
 		RrPolygon pg;
@@ -581,13 +582,13 @@ public class STLSlice
 				}
 				
 				Rr2Point vertex = Rr2Point.mul(0.5, Rr2Point.add(p0, p1));
-				pg.add(vertex, 4);
+				pg.add(vertex, fg);
 				edge = newEdge;
 				corner = newCorner;
 			} while (corner != startCorner);
 			if(pg.size() > 2)  // Throw away "noise"...
 			{
-				pg.flag(pg.size() - 1, 3);
+				pg.flag(pg.size() - 1, fs);
 				pgl.add(pg);
 			}
 			startCorner = findCorner();
@@ -621,7 +622,7 @@ public class STLSlice
 	 * @param z
 	 * @return a CSG representation of all the polygons in the slice
 	 */
-	public RrCSGPolygon slice(double z)
+	public RrCSGPolygon slice(double z, int fg, int fs)
 	{
 		if(stls == null)
 		{
@@ -637,7 +638,7 @@ public class STLSlice
 		q4 = null;
 		visited = false;
 		sFactor = 1;
-		resolution_2 = tiny; 
+		resolution_2 = Preferences.tiny(); 
 		edges = new ArrayList();
 		
 		// Run through all the STL objects adding line segments to edges
@@ -663,9 +664,9 @@ public class STLSlice
 	
 		// Make sure nothing falls down the cracks.
 		
-		sFactor = 1.03;
+		sFactor = Preferences.swell();
 		box = box.scale(sFactor);
-		resolution_2 = box.d_2()*tiny;
+		resolution_2 = box.d_2()*Preferences.tiny();
 		
 		// Recursively generate the quad tree.  The aim is to have each
 		// leaf quad containing either 0 or 2 ends of different line
@@ -677,11 +678,11 @@ public class STLSlice
 		
 		// Run round joining up all the pairs of ends...
 		
-		RrPolygonList pgl = conquer();
+		RrPolygonList pgl = conquer(fg, fs);
 		
 		// Remove wrinkles
 		
-		pgl = pgl.simplify(gridRes*1.5);
+		pgl = pgl.simplify(Preferences.gridRes()*1.5);
 
 		// Check for a silly result.
 		
@@ -690,6 +691,6 @@ public class STLSlice
 			System.err.println("slice(): nothing there!");
 			return null;
 		} else
-			return pgl.toCSG();
+			return pgl.toCSG(Preferences.tiny());
 	}
 }

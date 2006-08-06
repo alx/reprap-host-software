@@ -75,7 +75,7 @@ public class RrGraphics
 	
 	private void setScales(RrBox b)
 	{
-		RrBox big = b.scale(1.1);
+		RrBox big = b.scale(1.2);
 		
 		double width = big.x().length();
 		double height = big.y().length();
@@ -262,7 +262,7 @@ public class RrGraphics
 		if(plot_box)
 		{
 			colour(5);
-			plot(p.box);
+			//plot(p.box);
 		}
 		
 		int leng = p.size();

@@ -249,12 +249,12 @@ public class RrInterval
 	 */
 	public boolean neg()
 	{
-		return high <= 0;
+		return high < 0;
 	}
 	
 	public boolean pos()
 	{
-		return low > 0;
+		return low >= 0;
 	}
 	
 	/**

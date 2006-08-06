@@ -292,9 +292,11 @@ public class RrBox
 	 * @param range
 	 * @return
 	 */
-	public RrInterval wipe(RrLine a, RrInterval range)
+	public RrInterval wipe(RrLine a, RrInterval oldRange)
 	{
-		if(range.empty()) return range;
+		if(oldRange.empty()) return oldRange;
+		
+		RrInterval range = new RrInterval(oldRange);
 		
 		RrHalfPlane hp = new RrHalfPlane(sw(), nw());
 		range = hp.wipe(a, range);

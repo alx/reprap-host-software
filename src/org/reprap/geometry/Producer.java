@@ -11,16 +11,16 @@ import org.reprap.machines.MachineFactory;
 public class Producer {
 	
 	protected Printer reprap;
-	protected RrLine oddHatchDirection;
-	protected RrLine evenHatchDirection;
+	protected RrHalfPlane oddHatchDirection;
+	protected RrHalfPlane evenHatchDirection;
 	protected RepRapBuild bld;
 	
 	public Producer(PreviewPanel preview, RepRapBuild builder) throws Exception {
 		reprap = MachineFactory.create();
 		reprap.setPreviewer(preview);
 		bld = builder;
-		oddHatchDirection = new RrLine(new Rr2Point(0.0, 0.0), new Rr2Point(1.0, 1.0));
-		evenHatchDirection = new RrLine(new Rr2Point(0.0, 1.0), new Rr2Point(1.0, 0.0));
+		oddHatchDirection = new RrHalfPlane(new Rr2Point(0.0, 0.0), new Rr2Point(1.0, 1.0));
+		evenHatchDirection = new RrHalfPlane(new Rr2Point(0.0, 1.0), new Rr2Point(1.0, 0.0));
 	}
 	
 	public RrPolygon square()
@@ -198,7 +198,8 @@ public class Producer {
 						isEvenLayer?evenHatchDirection:oddHatchDirection);
 			} else
 			{
-				RrCSGPolygon slice = stlc.slice(z+reprap.getExtrusionHeight()*0.5);
+				RrCSGPolygon slice = stlc.slice(z+reprap.getExtrusionHeight()*0.5, 
+						LayerProducer.solidMaterial(), LayerProducer.gapMaterial());
 				if(slice != null)
 					layer = new LayerProducer(reprap, slice,
 						isEvenLayer?evenHatchDirection:oddHatchDirection);

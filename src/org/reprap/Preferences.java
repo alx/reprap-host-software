@@ -23,6 +23,27 @@ public class Preferences {
 	Properties fallbackPreferences;
 	Properties mainPreferences;
 	
+	/*
+	 * This section deals with internal (i.e. not RepRap machine, but this code)
+	 * precisions and accuracies - it should probably
+	 * get its data from the properties file...
+	 */
+	
+	private static final int grid = 100;             // Click outline polygons to a...
+	private static final double gridRes = 1.0/grid;  // ...10 micron grid
+	private static final double lessGridSquare = gridRes*gridRes*0.01;  // Small squared size of a gridsquare
+	private static final double tiny = 1.0e-10;      // A small number
+	private static final double swell = 1.01;        // Quad tree swell factor
+	
+	public static int grid() { return grid; }
+	public static double gridRes() { return gridRes; }
+	public static double lessGridSquare() { return lessGridSquare; }
+	public static double tiny() { return tiny; }
+	public static double swell() { return swell; }
+	
+	
+	// Main preferences constructor
+	
 	public Preferences() throws IOException {
 		fallbackPreferences = new Properties();
 		mainPreferences = new Properties();

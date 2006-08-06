@@ -58,6 +58,7 @@ package org.reprap.geometry.polygons;
 
 import java.io.*;
 import java.util.*;
+import org.reprap.Preferences;
 
 /**
  * chPair - small class to hold double pointers for convex hull calculations.
@@ -107,6 +108,25 @@ public class RrPolygonList
 	}
 	
 	/**
+	 * Overwrite one of the polygons
+	 * @param i
+	 * @param p
+	 */
+	public void set(int i, RrPolygon p)
+	{
+		polygons.set(i, p);
+	}
+	
+	/**
+	 * Remove one from the list
+	 * @param i
+	 */
+	public void remove(int i)
+	{
+		polygons.remove(i);
+	}
+	
+	/**
 	 * Deep copy
 	 * @param lst
 	 */
@@ -114,8 +134,7 @@ public class RrPolygonList
 	{
 		polygons = new ArrayList();
 		box = new RrBox(lst.box);
-		int leng = lst.size();
-		for(int i = 0; i < leng; i++)
+		for(int i = 0; i < lst.size(); i++)
 			polygons.add(new RrPolygon(lst.polygon(i)));
 	}
 	
@@ -125,10 +144,9 @@ public class RrPolygonList
 	 */
 	public void add(RrPolygonList lst)
 	{
-		int leng = lst.size();
-		if(leng == 0)
+		if(lst.size() == 0)
 			return;
-		for(int i = 0; i < leng; i++)
+		for(int i = 0; i < lst.size(); i++)
 			polygons.add(new RrPolygon(lst.polygon(i)));
 		box.expand(lst.box);
 	}
@@ -151,11 +169,8 @@ public class RrPolygonList
 	public RrPolygonList negate()
 	{
 		RrPolygonList result = new RrPolygonList();
-		int leng = size();
-		for(int i = 0; i < leng; i++)
-		{
+		for(int i = 0; i < size(); i++)
 			result.polygons.add(polygon(i).negate());
-		}
 		result.box = new RrBox(box);
 		return result;
 	}
@@ -209,10 +224,9 @@ public class RrPolygonList
 	public RrPolygonList simplify(double d)
 	{
 		RrPolygonList r = new RrPolygonList();
-		int leng = size();
 		double d2 = d*d;
 		
-		for(int i = 0; i < leng; i++)
+		for(int i = 0; i < size(); i++)
 		{
 			RrPolygon p = polygon(i);
 			if(p.box.d_2() > 2*d2)
@@ -250,37 +264,6 @@ public class RrPolygonList
 		return polygon(chp.polygon);
 	}
 	
-	/**
-	 * find a vertex from a list of polygon/vertex pairs
-	 * @Param i
-	 * @param a
-	 * @return the vertex index
-	 */
-	private int listVertex(int i, List a)
-	{
-		chPair chp = (chPair)a.get(i);
-		return chp.vertex;
-	}
-	
-	/**
-	 * find a list entry from a polygon/vertex pair
-	 * @Param p
-	 * @param v
-	 * @param a
-	 * @return the index of the entry (-1 if not found)
-	 */
-	private int listFind(RrPolygon p, int v, List a)
-	{
-		int i;
-		chPair chp;
-		for(i = 0; i < a.size(); i++)
-		{
-			chp = (chPair)a.get(i);
-			if(chp.vertex == v && polygon(chp.polygon) == p)
-				return i;
-		}
-		return -1;	
-	}
 	
 	/**
 	 * find a flag from a list of polygon/vertex pairs
@@ -411,7 +394,7 @@ public class RrPolygonList
 		{
 			p = listPoint(i, inConsideration);
 			v = hull.value(p);
-			if(v <= 1.0e-6)				// Need an epsilon here?
+			if(v <= Math.sqrt(Preferences.tiny()))	// Was 1.0e-6
 			{
 				inConsideration.remove(i);
 			}
@@ -563,7 +546,6 @@ public class RrPolygonList
 	 */
 	private List polSection(List a, int level)
 	{
-		//System.out.println("polSection() in - " + a.size());
 		int flag, oldi;
 		oldi = a.size() - 1;
 		RrPolygon oldPg = listPolygon(oldi, a);
@@ -587,11 +569,9 @@ public class RrPolygonList
 			oldFlag = flag;
 			oldPg = pg;
 		}
+		
 		if(ptr < 0)
-		{
-			//System.out.println("polSection() out - null");
 			return null;
-		}
 		
 		List result = new ArrayList();
 		result.add(a.get(ptr));
@@ -607,7 +587,7 @@ public class RrPolygonList
 		}
 
 		result.add(a.get(ptr));
-		//System.out.println("polSection() out - " + result.size());
+
 		return result;
 	}
 	
@@ -651,7 +631,6 @@ public class RrPolygonList
 	 */
 	private RrPolygonList getComplete(List a, int level)
 	{
-		//System.out.println("getComplete() in - " + a.size());
 		RrPolygonList res = new RrPolygonList();
 		
 		RrPolygon pg = listPolygon(0, a);
@@ -694,13 +673,12 @@ public class RrPolygonList
 				}
 				result.add(pg);
 			}
-			//System.out.println("getComplete() out - " + result.size());
+			
 			return result;
 
 		}
 		else
 		{
-			//System.out.println("getComplete() out - null");
 			return null;
 		}
 	}
@@ -744,7 +722,6 @@ public class RrPolygonList
 	 */
 	private RrCSG toCSGRecursive(List a, int level, boolean closed)
 	{	
-		//System.out.println("toCSGRecursive() - " + a.size());
 		flagSet(a, level);	
 		level++;
 		List ch = convexHull(a);
@@ -759,7 +736,7 @@ public class RrPolygonList
 		if(!onePol)
 		{
 			RrPolygonList op = outerPols(ch);
-			//System.out.println("multi-pols - dealing with " + op.size());
+
 			if(level%2 == 1)
 				hull = RrCSG.nothing();
 			else
@@ -783,7 +760,6 @@ public class RrPolygonList
 					return RrCSG.union(hull, toCSGRecursive(a, level, true));
 			} else
 			{
-				//System.out.println("multi-pols, returning " + op.size());
 				return hull;
 			}
 		}else
@@ -869,7 +845,7 @@ public class RrPolygonList
 	 * using Kai Tang and Tony Woo's algorithm.
 	 * @return CSG representation
 	 */
-	public RrCSGPolygon toCSG()
+	public RrCSGPolygon toCSG(double tolerance)
 	{
 		RrPolygonList pgl = new RrPolygonList(this);
 		List all = pgl.allPoints();
@@ -881,111 +857,10 @@ public class RrPolygonList
 		pgl.flagSet(all, -1);
 		pgl = pgl.getComplete(all, 0);
 		all = pgl.allPoints();
-		return new RrCSGPolygon(pgl.toCSGRecursive(all, 0, true), pgl.box.scale(1.1));
+		RrCSG expression = pgl.toCSGRecursive(all, 0, true);
+		RrBox b = pgl.box.scale(1.1);
+		expression = expression.simplify(tolerance);
+		return new RrCSGPolygon(expression, b);
 	}
 	
-	/**
-	 * Intersect a line with a polygon list, returning an
-	 * unsorted list of the intersection parameters
-	 * @param l0
-	 * @return
-	 */
-	public List pl_intersect(RrLine l0)
-	{
-		int leng = size();
-		List t = new ArrayList();
-		
-		for(int i = 0; i < leng; i++)
-		{
-			List t1 = polygon(i).pl_intersect(l0);
-			int leng1 = t1.size();
-			for(int j = 0; j < leng1; j++)
-				t.add(t1.get(j));
-		}
-		return t;
-	}
-	
-	
-//	/**
-//	 * Offset every polygon in the list
-//	 * @param d
-//	 * @return
-//	 */
-//	public RrPolygonList offset(double d)
-//	{
-//		int leng = size();
-//		RrPolygonList r = new RrPolygonList();
-//		for (int i = 0; i < leng; i++)
-//			r.add(polygon(i).offset(d));
-//		return r;
-//	}
-	
-	
-//	/**
-//	 * Hatch a polygon list parallel to line l0 with index gap
-//	 * Returning a polygon as the result with flag values f
-//	 * @param l0
-//	 * @param gap The size of the gap between hatching strokes
-//	 * @param fg
-//	 * @param fs
-//	 * @return
-//	 */
-//	public RrPolygon hatch(RrLine l0, double gap, int fg, int fs)
-//	{
-//		RrBox big = box.scale(1.1);
-//		double d = Math.sqrt(big.d_2());
-//		RrPolygon r = new RrPolygon();
-//		Rr2Point orth = new Rr2Point(-l0.direction().y(), l0.direction().x());
-//		orth.norm();
-//		
-//		int quad = (int)(2*Math.atan2(orth.y(), orth.x())/Math.PI);
-//		
-//		Rr2Point org;
-//		
-//		switch(quad)
-//		{
-//		case 0:
-//			org = big.sw();
-//			break;
-//			
-//		case 1:
-//			org = big.se();
-//			break;
-//			
-//		case 2:
-//			org = big.ne();  
-//			break;
-//			
-//		case 3:
-//			org = big.nw();
-//			break;
-//			
-//		default:
-//			System.err.println("RrPolygon hatch(): The atan2 function doesn't seem to work...");
-//		    org = big.sw();
-//		}
-//		
-//		double g = 0;
-//
-//		orth = Rr2Point.mul(orth, gap);
-//		
-//		RrLine hatcher = new RrLine(org, Rr2Point.add(org, l0.direction()));
-//		
-//		while (g < d)
-//		{
-//			hatcher = hatcher.neg();
-//			List t_vals = pl_intersect(hatcher);
-//			if (t_vals.size() > 0)
-//			{
-//				java.util.Collections.sort(t_vals);
-//				r.add(RrPolygon.rr_t_polygon(t_vals, hatcher, fg, fs));
-//			}
-//			hatcher = hatcher.add(orth);
-//			g = g + gap;
-//		}
-//		r.flags.set(0, new Integer(0));
-//		return r;
-//	}
-//	
-
 }

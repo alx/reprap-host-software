@@ -55,21 +55,6 @@
 
 package org.reprap.geometry.polygons;
 
-/**
- * Teeny class to hold bisectors of line pairs
- */
-class rr_bisector
-{
-	public RrLine b;      // The bisecting line
-	public double s_angle;  // The sine of the angle 
-	
-	public rr_bisector(RrLine l, double a)
-	{
-		b = l;
-		s_angle = a;
-	}
-}
-
 
 /**
  * Class to hold and manipulate parametric lines
@@ -241,24 +226,5 @@ public class RrLine
 		double d2 = (dx*dx + dy*dy)*finv*finv;
 		double t = Rr2Point.mul(direction, j0)*finv;
 		return new Rr2Point(d2, t);
-	}
-	
-	/**
-	 * Normalised line that bisects the angle between
-	 * two others joining points a, b, and c and the sine
-	 * of the angle it makes with them.
-	 * @param a
-	 * @param b
-	 * @param c
-	 * @return
-	 */
-	static public rr_bisector bisect(Rr2Point a, Rr2Point b, Rr2Point c)
-	{
-		Rr2Point ab = (Rr2Point.sub(a, b)).norm();
-		Rr2Point cb = (Rr2Point.sub(c, b)).norm();
-		Rr2Point d = (Rr2Point.add(ab, cb)).norm();
-		double ang = Rr2Point.op(ab, d);
-		RrLine r = new RrLine(b, Rr2Point.add(b, d));
-		return new rr_bisector(r, ang);
 	}
 }

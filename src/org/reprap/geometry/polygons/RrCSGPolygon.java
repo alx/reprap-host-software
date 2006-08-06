@@ -56,25 +56,29 @@ First version 14 November 2005
 
 package org.reprap.geometry.polygons;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import org.reprap.Preferences;
 
-
-/**
- * Small class for containing results of hatch searches
- */
-class RrHSearch
+class snakeEnd
 {
-	public boolean join;
-	public boolean notFinished;
-	public int theLine;
-	public int thePoint;
-	public double dsq;
+	public RrPolygon p;
+	public RrHalfPlane h;
+	public int index;
+	
+	snakeEnd(RrPolygon pl, RrHalfPlane hs, int i)
+	{
+		p = pl;
+		h = hs;
+		index = i;
+	}
 }
-
 
 /**
  * Polygons as CSG combinations of half spaces with recursive quad-tree
  * division of their containing boxes.
+ * 
+ * TO DO: Change the quad tree to a BSP tree?
  */
 public class RrCSGPolygon
 {
@@ -99,55 +103,23 @@ public class RrCSGPolygon
 	 */
 	public RrCSGPolygon(RrCSG p, RrBox bx)
 	{
-		csg = p;
 		box = new RrBox(bx);
 		q1 = null;
 		q2 = null;
 		q3 = null;
 		q4 = null;
-		resolution_2 = box.d_2()*1.0e-8;  // Default - set properly
+		resolution_2 = box.d_2()*Preferences.tiny();
+		csg = p;
 		visit1 = false;
 		visit2 = false;
-		sFactor = 1;
+		sFactor = Preferences.swell();
 		edgeCount = 0;
 		corner = false;
 		vertex = null;
 		i1 = new RrInterval();
 		i2 = new RrInterval();
 	}
-	
-	/**
-	 * Deep copy
-	 * @param p
-	 */
-	public RrCSGPolygon(RrCSGPolygon p)
-	{
-		csg = new RrCSG(p.csg);
-		box = new RrBox(p.box);
-		if(p.q1 != null)
-		{
-			q1 = new RrCSGPolygon(p.q1);
-			q2 = new RrCSGPolygon(p.q2);
-			q3 = new RrCSGPolygon(p.q3);
-			q4 = new RrCSGPolygon(p.q4);
-			resolution_2 = p.resolution_2;
-		} else
-		{
-			q1 = null;
-			q2 = null;
-			q3 = null;
-			q4 = null;
-			resolution_2 = p.resolution_2;
-		}
-
-		visit1 = p.visit1;
-		visit2 = p.visit2;
-		sFactor = p.sFactor;
-		edgeCount = p.edgeCount;
-		corner = p.corner;
-		vertex = new Rr2Point(p.vertex);
-	}
-	
+		
 	// get children etc
 	
 	public RrCSGPolygon c_1() { return q1; }
@@ -156,7 +128,7 @@ public class RrCSGPolygon
 	public RrCSGPolygon c_4() { return q4; }
 	public RrCSG csg() { return csg; }
 	public RrBox box() { return box; }
-	public double resolution() { return resolution_2; }
+	public double resolution2() { return resolution_2; }
 	public double swell() { return sFactor; }
 	public int edges() { return edgeCount; }
 	public boolean corner() { return corner; }
@@ -198,11 +170,11 @@ public class RrCSGPolygon
 	}
 	
 	/**
-	 * Quad-tree division
+	 * Quad-tree division - recursive internal call
 	 * @param res_2
 	 * @param swell
 	 */
-	public void divide(double res_2, double swell)
+	private void divide_r(double res_2, double swell)
 	{
 		resolution_2 = res_2;
 		sFactor = swell;
@@ -244,33 +216,53 @@ public class RrCSGPolygon
 		Rr2Point ne = box.ne();
 		Rr2Point se = box.se();
 		Rr2Point cen = box.centre();
+		double addX = 0.5*(ne.x() - sw.x())*(sFactor - 1);
+		double addY = 0.5*(ne.y() - sw.y())*(sFactor - 1);
 		
 		// Prune the set to the four boxes, and put the results in the children
 		
-		RrBox s = new RrBox(Rr2Point.mul(Rr2Point.add(sw, nw), 0.5), 
-				Rr2Point.mul(Rr2Point.add(nw, ne), 0.5));
-		s = s.scale(sFactor);
+		Rr2Point newSW = Rr2Point.mul(Rr2Point.add(sw, nw), 0.5);
+		Rr2Point newNE = Rr2Point.mul(Rr2Point.add(nw, ne), 0.5);
+		RrBox s = new RrBox(Rr2Point.add(newSW, new Rr2Point(0, -addY)), 
+				Rr2Point.add(newNE, new Rr2Point(addX, 0)));
 		q1 = new RrCSGPolygon(csg.prune(s), s);
 		
-		s = new RrBox(cen, ne);
-		s = s.scale(sFactor);
+		s = new RrBox(Rr2Point.add(cen, new Rr2Point(-addX, -addY)), 
+				ne);
 		q2 = new RrCSGPolygon(csg.prune(s), s);
 		
-		s = new RrBox(Rr2Point.mul(Rr2Point.add(sw, se), 0.5), 
-				Rr2Point.mul(Rr2Point.add(se, ne), 0.5));
-		s = s.scale(sFactor);
+		newSW = Rr2Point.mul(Rr2Point.add(sw, se), 0.5);
+		newNE = Rr2Point.mul(Rr2Point.add(se, ne), 0.5);
+		s = new RrBox(Rr2Point.add(newSW, new Rr2Point(-addX, 0)), 
+				Rr2Point.add(newNE, new Rr2Point(0, addY)));		
 		q3 = new RrCSGPolygon(csg.prune(s), s);
 		
-		s = new RrBox(sw, cen);
-		s = s.scale(sFactor);
+		s = new RrBox(sw, 
+				Rr2Point.add(cen, new Rr2Point(addX, addY)));		
 		q4 = new RrCSGPolygon(csg.prune(s), s);
 		
 		// Recursively divide the children
 		
-		q1.divide(resolution_2, sFactor);
-		q2.divide(resolution_2, sFactor);
-		q3.divide(resolution_2, sFactor);
-		q4.divide(resolution_2, sFactor);
+		q1.divide_r(resolution_2, sFactor);
+		q2.divide_r(resolution_2, sFactor);
+		q3.divide_r(resolution_2, sFactor);
+		q4.divide_r(resolution_2, sFactor);
+	}
+	
+	/**
+	 * Divide the CSG polygon into a quad tree, each leaf of
+	 * which contains at most two planes.
+	 * Evaluate the leaves, and store lists of intersections with
+	 * the half-planes.
+	 * @param res_2
+	 * @param swell
+	 */
+	public void divide(double res_2, double swell)
+	{
+		csg = csg.simplify(Math.sqrt(res_2));
+		csg.clearCrossings();
+		divide_r(res_2, swell);
+		csg.sortCrossings(true, this);
 	}
 	
 	/**
@@ -282,14 +274,15 @@ public class RrCSGPolygon
 		corner = false;
 		vertex = null;
 		
-		switch(csg.complexity())
+		switch(csg.operator())
 		{
-		case 0:
+		case RrCSGOp.NULL:
+		case RrCSGOp.UNIVERSE:	
 			return;
 			
 			// One half-plane in the box:
 			
-		case 1:
+		case RrCSGOp.LEAF:
 			i1 = RrInterval.big_interval();
 			i1 = box.wipe(csg.plane().pLine(), i1);
 			if(i1.empty()) 
@@ -299,7 +292,14 @@ public class RrCSGPolygon
 			
 			// Two - maybe a corner, or they may not intersect
 			
-		case 2:
+		case RrCSGOp.UNION:
+		case RrCSGOp.INTERSECTION:
+			if(csg.complexity() != 2)
+			{
+				System.err.println("RrCSGPolygon.evaluate(): complexity: " + 
+					csg.complexity());
+				return;
+			}
 			i1 = RrInterval.big_interval();
 			i1 = box.wipe(csg.c_1().plane().pLine(), i1);
 			
@@ -339,10 +339,16 @@ public class RrCSGPolygon
 				corner = false;
 				vertex = null;
 			}
+			
+			// NB if the corner was in another box and this one (because of swell
+			// overlap) only the first gets recorded.
+			
+			if(corner)
+				corner = RrHalfPlane.cross(this);
 			return;
 			
 		default:
-			System.err.println("RrCSGPolygon.evaluate(): complexity > 2.");
+			System.err.println("RrCSGPolygon.evaluate(): dud CSG operator!");
 		}
 	}
 	
@@ -358,7 +364,7 @@ public class RrCSGPolygon
 		if(q1 == null)
 		{
 			if(box.point_relative(p) != 0)
-				System.err.println("find_quad(): point not in the box.");
+				System.err.println("RrCSGPolygon.quad(): point not in the box.");
 		} else
 		{
 			Rr2Point cen = box.centre();
@@ -395,7 +401,7 @@ public class RrCSGPolygon
 	}
 	
 	/**
-	 * Find the potentaial at point p.
+	 * Find the potential at point p.
 	 * @param p
 	 * @return
 	 */	
@@ -422,6 +428,8 @@ public class RrCSGPolygon
 		}
 		Rr2Point p = new Rr2Point(Math.sqrt(2)*d, Math.sqrt(2)*d);
 		b = new RrBox( Rr2Point.sub(box.sw(), p), Rr2Point.add(box.ne(), p) );
+		RrCSG expression = csg.offset(d);
+		expression = expression.simplify(Math.sqrt(resolution_2));
 		RrCSGPolygon result = new RrCSGPolygon(csg.offset(d), b);
 		if(q1 != null)
 			result.divide(resolution_2, sFactor);
@@ -490,15 +498,27 @@ public class RrCSGPolygon
     	now = csg.c_1().plane();
     	if(now.find(c)%2 == 1)  // Subtle, or what?
     		now = csg.c_2().plane();
+    	
+    	if(now.find(c)%2 == 1)
+    	{
+    		System.err.println("RrCSGPolygon.meg(): end convergence!");
+    		return result;
+    	}
+    	
     	int nextIndex;
     	do
     	{
     		if(!c.corner)
     			System.err.println("RrCSGPolygon.meg(): visiting non-corner quad!");
+    		
     		result.add(c.vertex, flag);
     		c.visit2 = true;
     		nextIndex = now.find(c) + 1;
-    		c = now.quad(nextIndex);
+    		
+    		if(nextIndex < 0 | nextIndex >= now.size())
+    			System.err.println("RrCSGPolygon.meg(): fallen off the end of the line!");
+    		
+    		c = now.getQuad(nextIndex);
     		next = c.csg.c_1().plane();
     		if(next == now)
     			next = c.csg.c_2().plane();
@@ -508,58 +528,8 @@ public class RrCSGPolygon
     	return result;
     }
     
-    /**
-	 * For each half plane remove any existing crossing list.
-     */
-    private static void clearCrossings(RrCSG c)
-    {
-    	if(c.complexity() > 1)
-    	{
-    		clearCrossings(c.c_1());
-    		clearCrossings(c.c_2());
-    	} else
-    	{
-    		if(c.operator() == RrCSGOp.LEAF)
-    			c.plane().removeCrossings();
-    	}
-    }
-    
-    
-    /**
-	 * For each half plane sort the crossing list.
-     */
-    private static void sortCrossings(RrCSG c)
-    {
-    	if(c.complexity() > 1)
-    	{
-    		sortCrossings(c.c_1());
-    		sortCrossings(c.c_2());
-    	} else
-    	{
-    		if(c.operator() == RrCSGOp.LEAF)
-    			c.plane().sortCrossings(true);
-    	}	
-    }
-    
-    /**
-	 * For each half plane record all the others that form
-	 * a corner with it.
-     */
-    private void setCrossingLists()
-    {
-    	clearCrossings(csg);
-    	RrCSGPolygon vtx = findCorner(true, true);
-    	while(vtx != null)
-    	{
-    		if(!RrHalfPlane.cross(vtx))
-    			vtx.visit1 = true;
-    		vtx.visit2 = true;
-    		vtx = findCorner(true, true);
-    	}
-    	clearVisited(false, true);
-    	sortCrossings(csg);
-    }
-    
+
+      
     /**
 	 * Find all the polygons represented by a CSG object
 	 * @param fg
@@ -569,7 +539,7 @@ public class RrCSGPolygon
     public RrPolygonList megList(int fg, int fs)
     {
     	clearVisited(true, true);
-    	setCrossingLists();
+
     	RrPolygonList result = new RrPolygonList();
     	RrPolygon m;
     	
@@ -590,678 +560,332 @@ public class RrCSGPolygon
     	
     	return result;
     }
-	
-	/**
-	 * Intersect a line with a polygon, adding to an existing
-	 * unsorted list of the intersection parameters - recursive
-	 * internal call.
-	 * @param l0
-	 * @param t
-	 * @param big_wipe
-	 * @return
-	 */
-	private List pl_intersect_r(RrLine l0, List t, boolean big_wipe)
+		
+    /**
+     * Intersect a line with a polygon - recursive internal call
+     * @param hp
+     * @param range
+     */
+    private void lineIntersect_r(RrHalfPlane hp, RrInterval range)
 	{
-		RrInterval range;
-		if(big_wipe)
-			range = RrInterval.big_interval();
-		else
-			range = new RrInterval(0, 1);
-		range = box.wipe(l0, range);
-		if(range.empty())
-			return t;
+    	RrInterval newRange = box.wipe(hp.pLine(), range);
+		if(newRange.empty())
+			return;
 		
 		if(q1 != null)
 		{
-			t = q1.pl_intersect_r(l0, t, big_wipe);
-			t = q2.pl_intersect_r(l0, t, big_wipe);
-			t = q3.pl_intersect_r(l0, t, big_wipe);
-			t = q4.pl_intersect_r(l0, t, big_wipe);
+			q1.lineIntersect_r(hp, newRange);
+			q2.lineIntersect_r(hp, newRange);
+			q3.lineIntersect_r(hp, newRange);
+			q4.lineIntersect_r(hp, newRange);
 		} else
-		{
-			double tx, v;
-			Rr2Point p;
-			
-			switch(csg.complexity())
+		{			
+			switch(csg.operator())
 			{
-			case 0:
+			case RrCSGOp.NULL:
+			case RrCSGOp.UNIVERSE:	
 				break;
 				
-			case 1:
-				try
-				{
-					tx = csg.plane().cross_t(l0);
-					if (range.in(tx))
-						t.add(new Double(tx));
-				}catch (RrParallelLineException ple)
-				{}
+			case RrCSGOp.LEAF:
+				hp.maybeAdd(this, range);
 				break;
 				
-			case 2:
-				try
+			case RrCSGOp.INTERSECTION:
+			case RrCSGOp.UNION:
+				if(csg.complexity() != 2)
 				{
-					tx = csg.c_1().plane().cross_t(l0);
-					if (range.in(tx))
-					{
-						p = l0.point(tx);
-						v = csg.value(p); 
-						if(v*v < resolution_2)
-							t.add(new Double(tx));
-					}
-				}catch (RrParallelLineException ple)
-				{}
-				
-				try
-				{
-					tx = csg.c_2().plane().cross_t(l0);
-					if (range.in(tx))
-					{
-						p = l0.point(tx);
-						v = csg.value(p); 
-						if(v*v < resolution_2)
-							t.add(new Double(tx));
-					}
-				}catch (RrParallelLineException ple)
-				{}
+					System.err.println("intersect_r(): comlexity = " + csg.complexity());
+					return;
+				}
+				hp.maybeAdd(this, range);
 				break;
 				
 			default:
-				System.err.println("pl_intersect_r(): complicated quad ignored. Complexity: " +
-						Integer.toString(csg.complexity()));
+				System.err.println("intersect_r(): dud CSG operator!");
 			}
 		}
-		
-		return t;
 	}
 	
-	/**
-	 * Take a sorted list of parameter values and a line, and
-	 * make sure they alternate solid/void/solid etc.  Insert
-	 * duplicate parameter values if need be to ensure this. 
-	 * @param t
-	 * @param l0
-	 */
-	private void solidSet(List t, RrLine l0)
+    /**
+     * Intersect a half-plane line and a polygon, storing the sorted list
+     * with the half-plane.
+     * @param hp
+     * @param big_wipe
+     * @param up
+     */
+	public void lineIntersect(RrHalfPlane hp, RrInterval range, boolean up)
 	{
-		
-		double half, v;
-		int i = 0;
-		boolean odd = true;
-		while(i < t.size()-1)
-		{
-			half = 0.5*(((Double)(t.get(i))).doubleValue() + 
-				((Double)(t.get(i+1))).doubleValue());
-			v = value(l0.point(half));
-			if(odd)
-			{
-				if(v > 0)
-					t.add(i, t.get(i));
-			} else
-			{
-				if(v <= 0)
-					t.add(i, t.get(i));
-			}
-			odd = !odd;
-			i++;
-		}
-		if (t.size()%2 != 0)    // Nasty hack that seems to work...
-			t.remove(t.size() - 1);
+		hp.removeCrossings();
+		lineIntersect_r(hp, range);
+		hp.sort(up, this);
+		//hp.solidSet(this);
 	}
-	
-	/**
-	 * Intersect a line with a polygon, giving a list of the 
-	 * intersection parameters.
-	 * @param l0
-	 * @param big_wipe
-	 * @return a sorted list of parameter values.
-	 */
-	public List pl_intersect(RrLine l0, boolean big_wipe)
-	{
-		if(q1 == null)
-		{
-			System.err.println("pl_intersect(): Ray intersection with undivided polygon!  Making it up...");
-			double r2 = box.d_2()*1.0e-8;
-			divide(r2, 1);
-		}
-		List t = new ArrayList();	
-		t = pl_intersect_r(l0, t, big_wipe);
-		java.util.Collections.sort(t);
-		if(big_wipe)
-			solidSet(t, l0);
-		return t;
-	}
-	
-	
 
-	
-	/**
-	 * Is the line between two points wholely within the polygon?
-	 * @param here
-	 * @param there
-	 * @return 
-	 */
-	private boolean all_inside(Rr2Point here, Rr2Point there)
-	{
-		// The points are on the surface.  Are they on the _same_
-		// surface?  (Suppose there's a gap in it, dummo?...)
-		RrCSG ch = leaf(here);
-		RrCSG ct = leaf(there);
-		if(ch == ct)
-			return true;
-		
-		RrLine line = new RrLine(here, there);
-		if(value(line.point(0.5)) > 0) // Need to go round the corner here
-			return false;
-		
-		List t = new ArrayList();	
-		t = pl_intersect_r(line, t, false);
-		double v;
-		double r = Math.sqrt(resolution_2);
-		for(int i = 0; i < t.size(); i++)
-		{
-			v = ((Double)(t.get(i))).doubleValue();
-			if((v > r) && (v < 1 - r))
-				return false;
-		}
-		
-		return true;
-	}
+//	/**
+//	 * Is the line between two points wholely within the polygon?
+//	 * @param here
+//	 * @param there
+//	 * @return 
+//	 */
+//	private boolean allInside(Rr2Point here, Rr2Point there)
+//	{
+//		// The points are on the surface.  Are they on the _same_
+//		// surface?  (Suppose there's a gap in it, dummo?...)
+//		RrCSG ch = leaf(here);
+//		RrCSG ct = leaf(there);
+//		if(ch == ct)
+//			return true;
+//		
+//		RrHalfPlane hp = new RrHalfPlane(here, there);
+//		if(value(hp.pLine().point(0.5)) > 0) // Need to go round the corner here
+//			return false;
+//		
+//		lineIntersect(hp, new RrInterval(0, Rr2Point.sub(here, there).mod()), true);
+//		double v;
+//		double r = Math.sqrt(resolution_2);
+//		for(int i = 0; i < hp.size(); i++)
+//		{
+//			v = hp.getParameter(i);
+//			if((v > r) && (v < 1 - r))
+//				return false;
+//		}
+//		
+//		return true;
+//	}
 	
 	
-	private RrHSearch search_line(RrPolygon pg, Rr2Point here, double ds)
-	{
-		RrHSearch result = new RrHSearch();
-		result.thePoint = -1;
-		result.dsq = ds;
-		Rr2Point there;
-		double d2;
-		
-		for(int i = 0; i < pg.size(); i += 2) 
-		{
-			if(pg.flag(i) >= 0) 
-			{
-				there = pg.point(i);
-				d2 = Rr2Point.d_2(here, there);
-				if(d2 < result.dsq) 
-				{
-					if(all_inside(here, there)) 
-					{
-						result.thePoint = i;
-						result.dsq = d2;
-					} 
-				}
-				there = pg.point(i+1);
-				d2 = Rr2Point.d_2(here, there);
-				if(d2 < result.dsq) 
-				{
-					if(all_inside(here, there)) 
-					{
-						result.thePoint = i + 1;
-						result.dsq = d2;
-						
-					}
-				}
-			}
-		}
-		return result;
-	}
+//	private RrPolygonList remainder(RrHalfPlane hp, int fg)
+//	{
+//		RrPolygonList segments = new RrPolygonList();
+//		RrPolygon r;
+//		for(int j = 0; j < hp.size() - 1; j += 2)
+//		{
+//			r = new RrPolygon();
+//			r.add(hp.getPoint(j), fg);
+//			r.add(hp.getPoint(j+1), fg);
+//			segments.add(r);
+//		}
+//		return segments;
+//	}
 	
-	private RrHSearch search_join(RrPolygonList p_l, Rr2Point here, int line)
-	{
-		RrHSearch result = new RrHSearch();
-		RrHSearch intermediate;
-		result.notFinished = true;
-		result.join = false;
-		double dsq = Double.POSITIVE_INFINITY;
-		int thePoint = -1;
-		int theLine = -1;
-		RrPolygon pg;
-		
-		if(line > 0) 
-		{
-			pg = p_l.polygon(line - 1);
-			intermediate = search_line(pg, here, dsq);
-			if(intermediate.thePoint >= 0) 
-			{
-				dsq = intermediate.dsq;
-				theLine = line - 1;
-				thePoint = intermediate.thePoint;
-			}
-		}
-		if(line < p_l.size() - 1) 
-		{
-			pg = p_l.polygon(line + 1);
-			intermediate = search_line(pg, here, dsq);
-			if(intermediate.thePoint >= 0) 
-			{
-				dsq = intermediate.dsq;
-				theLine = line + 1;
-				thePoint = intermediate.thePoint;
-			}
-		}
-		
-		if(thePoint >= 0)
-		{
-			result.join = true;
-			result.theLine = theLine;
-			result.thePoint = thePoint;
-		}
-		
-		return result;
-	}
+//	private RrPolygon antiWiggle(RrPolygon cand)
+//	{
+//		if(cand.size() <= 1)
+//			return null;
+//		
+//		RrPolygon result = new RrPolygon();
+//		int flag = cand.flag(1);
+//		for(int i = 0; i < cand.size(); i += 2)
+//		{
+//			if(i != 0)
+//			{
+//				if(!allInside(cand.point(i+1), result.point(i-1)))
+//					return null;
+//			}
+//			result.add(cand.point(i+1), flag);
+//			result.add(cand.point(i), flag);
+//		}
+//		
+//		return result;
+//	}
 	
-	private RrHSearch new_start(RrPolygonList p_l, Rr2Point here)
-	{
-		RrHSearch result = new RrHSearch();
-		result.notFinished = false;        
-		result.join = false;
-		result.dsq = Double.POSITIVE_INFINITY;
-		double d2;
-		
-		for(int i = 0; i < p_l.size(); i++)
-		{
-			RrPolygon pg = p_l.polygon(i);
-			for(int j = 0; j < pg.size(); j += 2)
-			{
-				if(pg.flag(j) >= 0) 
-				{
-					Rr2Point there = pg.point(j);
-					d2 = Rr2Point.d_2(here, there);
-					if(d2 < result.dsq) 
-					{
-						result.dsq = d2;
-						result.notFinished = true;
-						result.theLine = i;
-						result.thePoint = j;   
-					}
-					there = pg.point(j + 1);
-					d2 = Rr2Point.d_2(here, there);
-					if(d2 < result.dsq) 
-					{
-						result.dsq = d2;
-						result.notFinished = true;
-						result.theLine = i;
-						result.thePoint = j + 1;   
-					}
-				}
-			}
-		}
-		
-		return result;       
-	}
-	
-	public RrPolygon hatch_join(RrLine l0, double gap, int fg, int fs)
-	{
-		if(fg < 0 || fs < 0)
-			System.err.println("hatch_join(): illegal negative flag value " + 
-					Integer.toString(fg) + " or " + Integer.toString(fs));
-		
-		RrPolygonList p_l = hatch(l0, gap, fg, fs);
-		RrPolygon p1 = new RrPolygon();
-		
-		int leng = p_l.size();
-		if(leng <= 0)
-			return p1;
+    /**
+     * Find the bit of polygon edge between start/originPlane and targetPlane
+     * @param start
+     * @param modelEdge
+     * @param originPlane
+     * @param targetPlane
+     * @param flag
+     * @return
+     */
+    public snakeEnd megGoToPlane(Rr2Point start, RrHalfPlane modelEdge, RrHalfPlane originPlane,
+    		RrHalfPlane targetPlane, int flag)
+    {
+    	int beforeIndex = -1;
 
-		int i = 0;
-		RrPolygon here_p = p_l.polygon(i);
-		while(here_p.size() <= 0)
-		{
-			i++;
-			if(i >= leng)
-				break;
-			here_p = p_l.polygon(i);
-		}
-		
-		if(here_p.size() <= 0)
-		{
-			System.err.println("Nothing in the hatch!");
-			return p1;
-		}
-		
-		Rr2Point here = here_p.point(0);
-		
-		Rr2Point pa, pb;
-		
-		RrHSearch next = new_start(p_l, here);
-		int line = next.theLine;
-		boolean notFinished = next.notFinished;
-		next.join = true;
-		int flag = fs;
-		
-		while(notFinished) 
-		{
-			if(next.join) 
-			{
-				if(next.thePoint%2 == 1) 
-				{
-					pa = p_l.polygon(next.theLine).point(next.thePoint);
-					pb = p_l.polygon(next.theLine).point(next.thePoint - 1);
-					p_l.polygon(next.theLine).flag(next.thePoint - 1, -1);
-				} else 
-				{
-					pa = p_l.polygon(next.theLine).point(next.thePoint);
-					p_l.polygon(next.theLine).flag(next.thePoint, -1);
-					pb = p_l.polygon(next.theLine).point(next.thePoint + 1);
-				}
-				p1.add(pa, flag);
-				flag = fg;
-				here = pb;
-				line = next.theLine;
-				p1.add(here, flag);
-			} else 
-			{
-				flag = fs;
-				next = new_start(p_l, here);
-				notFinished = next.notFinished;
-				if(notFinished) 
-				{
-					if(next.thePoint%2 == 1) 
-					{
-						pa = p_l.polygon(next.theLine).point(next.thePoint);
-						pb = p_l.polygon(next.theLine).point(next.thePoint - 1);
-						p_l.polygon(next.theLine).flag(next.thePoint - 1, -1);
-					} else 
-					{
-						pa = p_l.polygon(next.theLine).point(next.thePoint);
-						p_l.polygon(next.theLine).flag(next.thePoint, -1);
-						pb = p_l.polygon(next.theLine).point(next.thePoint + 1);
-					}
-					p1.add(pa, flag);
-					flag = fg;
-					here = pb;
-					line = next.theLine;
-					p1.add(here, flag);
-				}
-			}
-			if(notFinished)
-				next = search_join(p_l, here, line);
-		}
-		
-		return p1;
-	}
+    	double t = modelEdge.pLine().nearest(start);
+    	for(int i = 0; i < modelEdge.size(); i++)
+    	{
+    		if (modelEdge.getParameter(i) > t)
+    			break;
+       		beforeIndex = i;
+    	}
+    	
+    	if(beforeIndex < 0 | beforeIndex >= modelEdge.size() - 1)
+    	{
+   			System.err.println("RrCSGPolygon.megGoToPlane(): can't find parameter in range!");
+   			return null;
+    	}
+    	
+    	Rr2Point pt = modelEdge.getPoint(beforeIndex + 1);
+    	boolean backwards = originPlane.value(pt) <= 0;
+    	if(backwards)
+    		beforeIndex++;
+    	
+    	RrPolygon rPol = new RrPolygon();
+    	RrCSGPolygon startQuad = modelEdge.getQuad(beforeIndex);
+    	RrCSGPolygon c = startQuad;
+    	RrHalfPlane next;
+    	RrHalfPlane now = modelEdge;
+    	int nextIndex;
+    	
+    	do
+    	{
+    		if(!c.corner)
+    		{
+    			System.err.println("RrCSGPolygon.megGoToPlane(): visiting non-corner quad!");
+    			return null;
+    		}
+    		
+       		if(backwards)
+    			nextIndex = now.find(c) - 1;
+    		else
+    			nextIndex = now.find(c) + 1;
+       		
+       		if(nextIndex < 0 | nextIndex >= now.size()) //Hack - why needed?
+       			return null;
+       		
+    	   	pt = now.getPoint(nextIndex);
+        	if(targetPlane.value(pt) >= 0)
+        	{
+        		nextIndex = targetPlane.find(now);
+        		if(nextIndex < 0)
+        			return null;
+        		rPol.add(targetPlane.getPoint(nextIndex), flag);
+        		return new snakeEnd(rPol, targetPlane, nextIndex);
+        	}
+        	if(originPlane.value(pt) <= 0)
+        		return null;
+        	   		
+    		c = now.getQuad(nextIndex);
+    		rPol.add(c.vertex, flag);
+    		next = c.csg.c_1().plane();
+    		if(next == now)
+    			next = c.csg.c_2().plane();
+    		now = next;
+    	} while (c != startQuad);
+    	
+    	System.err.println("RrCSGPolygon.megGoToPlane(): gone right round!");
+    	return null;
+    }
 	
-	/**
-	 * Hatch a csg polygon parallel to line l0 with index gap
-	 * @param l0
-	 * @param gap
-	 * @param fg
-	 * @param fs
-	 * @return a polygon list as the result with flag values f
-	 */
-	public RrPolygonList hatch(RrLine l0, double gap, int fg, int fs)
+    /**
+     * Take the start of a zig-zag hatch polyline and grow it as far as possible
+     * @param hatches
+     * @param thisHatch
+     * @param thisPt
+     * @param fg
+     * @param fs
+     * @return
+     */
+	private RrPolygon snakeGrow(List hatches, int thisHatch, int thisPt, int fg, int fs)
 	{
-		RrBox big = box.scale(1.1);
-		double d = Math.sqrt(big.d_2());
-		RrPolygonList result = new RrPolygonList();
-		Rr2Point orth = new Rr2Point(-l0.direction().y(), l0.direction().x());
-		orth.norm();
-		
-		int quad = (int)(2*Math.atan2(orth.y(), orth.x())/Math.PI);
-		
-		Rr2Point org;
-		
-		switch(quad)
-		{
-		case 0:
-			org = big.sw();
-			break;
-			
-		case 1:
-			org = big.se();
-			break;
-			
-		case 2:
-			org = big.ne(); 
-			break;
-			
-		case 3:
-			org = big.nw();
-			break;
-			
-		default:
-			System.err.println("RrPolygon hatch(): The atan2 function doesn't seem to work...");
-			org = big.sw();
-		}
-		
-		double g = 0;
-		
-		//double proj = (Rr2Point.mul(orth, org) - Rr2Point.mul(orth, l0.origin()))/gap;
-		//proj = (double)((int)proj + 1) - proj;
-		//org = Rr2Point.add(org, Rr2Point.mul(orth, proj));
-		
-		orth = Rr2Point.mul(orth, gap);
-		
-		RrLine hatcher = new RrLine(org, Rr2Point.add(org, l0.direction()));
-		RrPolygon r;
-		
-		while (g < d)
-		{
-			hatcher = hatcher.neg();
-			List t_vals = pl_intersect(hatcher, true);
-			if (t_vals.size() > 0)
-			{
-				r = RrPolygon.rr_t_polygon(t_vals, hatcher, fg, fs);
-				result.add(r);
-			}
-			hatcher = hatcher.add(orth);
-			g = g + gap;
-		}
-		return result;
-	}
-	
-	private RrPolygonList remainder(List tList, RrLine l, int fg)
-	{
-		RrPolygonList segments = new RrPolygonList();
-		RrPolygon r;
-		for(int j = 0; j < tList.size(); j += 2)
-		{
-			r = new RrPolygon();
-			r.add(l.point(lEntry(tList, j)), fg);
-			r.add(l.point(lEntry(tList, j+1)), fg);
-			segments.add(r);
-		}
-		return segments;
-	}
-	
-	private static double lEntry(List tList, int i)
-	{
-		return ((Double)(tList.get(i))).doubleValue();
-	
-	}
-	
-	private RrPolygon antiWiggle(RrPolygon cand)
-	{
-		if(cand.size() <= 1)
-			return null;
-		
 		RrPolygon result = new RrPolygon();
-		int flag = cand.flag(1);
-		for(int i = 0; i < cand.size(); i += 2)
+		
+		RrHalfPlane h = (RrHalfPlane)hatches.get(thisHatch);
+		Rr2Point pt = h.pLine().point(h.getParameter(thisPt));
+		result.add(pt, fg);
+		snakeEnd jump;
+		
+		do
 		{
-			if(i != 0)
+			h.remove(thisPt);
+			if(thisPt%2 != 0)
+				thisPt--;
+			pt = h.pLine().point(h.getParameter(thisPt));
+			result.add(pt, fg);
+			thisHatch++;
+			if(thisHatch < hatches.size())
+				jump = megGoToPlane(pt, h.getPlane(thisPt), h, 
+					(RrHalfPlane)hatches.get(thisHatch), fg);
+			else 
+				jump = null;
+			h.remove(thisPt);
+			if(jump != null)
 			{
-				if(!all_inside(cand.point(i+1), result.point(i-1)))
-					return null;
+				result.add(jump.p);
+				h = jump.h;
+				thisPt = jump.index;
 			}
-			result.add(cand.point(i+1), flag);
-			result.add(cand.point(i), flag);
-		}
-		System.out.println("wiggle successful.");
+		} while(jump != null);
+		
+		result.flag(0, fs);
 		return result;
 	}
 	
 	/**
-	 * Hatch a csg polygon parallel to line l0 with index gap
-	 * @param l0
+	 * Hatch a csg polygon parallel to line hp with index gap
+	 * @param hp
 	 * @param gap
 	 * @param fg
 	 * @param fs
 	 * @return a polygon list as the result with flag values f
 	 */
-	public RrPolygonList newHatch(RrLine l0, double gap, int fg, int fs)
+	public RrPolygonList hatch(RrHalfPlane hp, double gap, int fg, int fs)
 	{
 		RrBox big = box.scale(1.1);
 		double d = Math.sqrt(big.d_2());
 		
-		Rr2Point orth = new Rr2Point(-l0.direction().y(), l0.direction().x());
-		orth = orth.norm();
+		Rr2Point orth = hp.normal();
 		
-		int quad = (int)(2*Math.atan2(orth.y(), orth.x())/Math.PI);
+		int quadPointing = (int)(2 + 2*Math.atan2(orth.y(), orth.x())/Math.PI);
 		
-		Rr2Point org;
+		Rr2Point org = big.ne();
 		
-		switch(quad)
+		switch(quadPointing)
 		{
 		case 0:
-			org = big.sw();
 			break;
 			
 		case 1:
-			org = big.se();
-			break;
-			
-		case 2:
-			org = big.ne(); 
-			break;
-			
-		case 3:
 			org = big.nw();
 			break;
 			
+		case 2:
+			org = big.sw(); 
+			break;
+			
+		case 3:
+			org = big.se();
+			break;
+			
 		default:
-			System.err.println("RrPolygon hatch(): The atan2 function doesn't seem to work...");
-			org = big.sw();
+			System.err.println("RrPolygonList.hatch(): The atan2 function doesn't seem to work...");
 		}
 		
-		double g = 0;
-				
-		orth = Rr2Point.mul(orth, gap);
-		
-		RrLine hatcher = new RrLine(org, Rr2Point.add(org, l0.direction()));
+		RrHalfPlane hatcher = new 
+			RrHalfPlane(org, Rr2Point.add(org, hp.pLine().direction()));
 
-		RrPolygonList snakes = new RrPolygonList();
-		RrPolygon s;
-		List tList;
-		double jumpTooBig = gap*gap*4;
-		double d1, d2;
+		List hatches = new ArrayList();
 		
+		double g = 0;		
 		while (g < d)
 		{
-			tList = pl_intersect(hatcher, true);
-			if(tList.size() > 0)
-			{
-				if(snakes.size() <= 0)
-					snakes.add(remainder(tList, hatcher, fg));
-				else
-				{
-					for(int j = 0; j < snakes.size(); j++)
-					{
-						s = snakes.polygon(j);
-						Rr2Point end1 = s.point(s.size() - 1);
-						int newSeg = -1;
-						d1 = jumpTooBig;
-						Rr2Point end2;
-						for(int k = 0; k < tList.size(); k++)
-						{
-							end2 = hatcher.point(lEntry(tList, k));
-							if(all_inside(end1, end2))
-							{
-								d2 = Rr2Point.d_2(end1, end2);
-								if(d2 < d1)
-								{
-									d1 = d2;
-									newSeg = k;
-								}
-							}
-						}
-						
-						if(newSeg >= 0)
-						{
-							if(newSeg%2 == 0)
-							{
-								s.add(hatcher.point(lEntry(tList, newSeg)), fg);
-								s.add(hatcher.point(lEntry(tList, newSeg + 1)), fg);
-								tList.remove(newSeg+1);
-								tList.remove(newSeg);
-							} else
-							{
-								s.add(hatcher.point(lEntry(tList, newSeg)), fg);
-								s.add(hatcher.point(lEntry(tList, newSeg - 1)), fg);
-								tList.remove(newSeg);
-								tList.remove(newSeg - 1);
-							}
-						}
-					}
-					snakes.add(remainder(tList, hatcher, fg));
-				}
-			}
-			hatcher = hatcher.add(orth);
+			lineIntersect(hatcher, RrInterval.big_interval(), true);
+			if(hatcher.size() > 0)
+				hatches.add(hatcher);
+			hatcher = hatcher.offset(gap);
 			g += gap;
 		}
 		
-		for(int j = snakes.size() - 2; j >= 0; j--)
+		RrPolygonList snakes = new RrPolygonList();
+		int segment;
+		do
 		{
-			s = snakes.polygon(j);
-			for(int k = snakes.size() - 1; k > j; k--)
+			segment = -1;
+			for(int i = 0; i < hatches.size(); i++)
 			{
-				RrPolygon t = snakes.polygon(k);
-				d1 = jumpTooBig;
-				int is = -1, it = -1;
-				for(int l = 0; l < 2; l++)
-					for(int m = 0; m < 2; m++)
-					{
-						d2 = Rr2Point.d_2(s.point(l), t.point(m));
-						if(d2 < d1)
-						{
-							d1 = d2;
-							is = l;
-							it = m;
-						}
-						d2 = Rr2Point.d_2(s.point(s.size() - 1 - l), 
-								t.point(t.size() - 1 - m));
-						if(d2 < d1)
-						{
-							d1 = d2;
-							is = s.size() - l;
-							it = t.size() - m;
-						}
-					}
-				if(is >= 0)
+				if(((RrHalfPlane)hatches.get(i)).size() > 0)
 				{
-					RrPolygon sp, tp;
-					if(is == 1 || is == s.size() - 2)
-					{
-						sp = antiWiggle(s);
-						if(is == 1)
-							is = 0;
-						else
-							is = s.size() - 1;
-					} else
-						sp = s;
-					
-					if(it == 1 || it == t.size() - 2)
-					{
-						tp = antiWiggle(t);
-						if(it == 1)
-							it = 0;
-						else
-							it = t.size() - 1;
-					} else
-						tp = t;
-					if(sp != null && tp != null)
-					{
-						
-					}
+					segment = i;
+					break;
 				}
 			}
-		}
-		
-		for(int j = 0; j < snakes.size(); j++)
-		{
-			s = snakes.polygon(j);
-			s.flag(0, fs);
-		}
+			if(segment >= 0)
+			{
+				snakes.add(snakeGrow(hatches, segment, 0, fg, fs));
+			}
+		} while(segment >= 0);
 		
 		return snakes;
 	}

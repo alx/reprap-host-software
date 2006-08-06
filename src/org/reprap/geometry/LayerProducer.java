@@ -16,6 +16,8 @@ public class LayerProducer {
 	private static final double resolution = 1.0e-8; // How close (in mm^2) are two points before they're the same?
 	private static int gapMaterial = 0;
 	private static int solidMaterial = 1;
+	public static int gapMaterial() { return gapMaterial; }
+	public static int solidMaterial() { return solidMaterial; }
 	
 
 	private Printer printer;
@@ -29,29 +31,30 @@ public class LayerProducer {
 		
 	/**
 	 * @param reprap
-	 * @param list
+	 * @param list 
 	 * @param hatchDirection
 	 */
-	public LayerProducer(Printer printer, RrCSGPolygon csgPol, RrLine hatchDirection) {
+	public LayerProducer(Printer printer, RrCSGPolygon csgPol, RrHalfPlane hatchDirection) {
 		this.printer = printer;
 		
 		
 		RrCSGPolygon offBorder = csgPol.offset(-0.5*printer.getExtrusionSize());
 		RrCSGPolygon offHatch = csgPol.offset(-1.5*printer.getExtrusionSize());
 		
-		offBorder.divide(resolution, 1);
-		offHatch.divide(resolution, 1);
-				
+		offBorder.divide(resolution, 1.01);
+		offHatch.divide(resolution, 1.01);
+		
+		//RrGraphics g = new RrGraphics(offBorder, true);
+		
 		borderPolygons = offBorder.megList(solidMaterial, solidMaterial);
 		
 		hatchedPolygons = new RrPolygonList();
-		hatchedPolygons.add(offHatch.hatch_join(hatchDirection, printer.getExtrusionSize(), 
-				solidMaterial, gapMaterial));
-//		hatchedPolygons.add(offHatch.newHatch(hatchDirection, printer.getExtrusionSize(), 
-//				solidMaterial, gapMaterial));		
-		csg_p = null;
-		
+		hatchedPolygons.add(offHatch.hatch(hatchDirection, printer.getExtrusionSize(), 
+				solidMaterial, gapMaterial));	
+	
 		//RrGraphics g = new RrGraphics(hatchedPolygons, false);
+
+		csg_p = null;
 		
 		RrBox big = csgPol.box().scale(1.1);
 		

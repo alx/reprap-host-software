@@ -408,6 +408,7 @@ public class RrCSG
 		return result;
 	}
 	
+	// TO DO - there's a bug in reg_4 somewhere.  So it's not called at present.
 	/**
 	 * Regularise a set with a contents of 4
 	 * This assumes simplify has been run over the set
@@ -576,7 +577,7 @@ public class RrCSG
 			break;
 			
 		case 4:
-			result = reg_4();
+			//result = reg_4();
 //			if(result.complexity < complexity)
 //				System.out.println("regularise: \n" + toString() + " > " + 
 //						result.toString());
@@ -589,6 +590,7 @@ public class RrCSG
 		return result;
 	}
 	
+	// TO DO - this should also use known complements
 	/**
 	 * Replace duplicate of leaf with leaf itself
 	 * @param leaf
@@ -675,6 +677,40 @@ public class RrCSG
 		return root;
 	}
 	
+	/**
+	 * For each half plane remove any existing crossing list.
+     */
+    public void clearCrossings()
+    {
+    	if(complexity() > 1)
+    	{
+    		c_1().clearCrossings();
+    		c_2().clearCrossings();
+    	} else
+    	{
+    		if(operator() == RrCSGOp.LEAF)
+    			plane().removeCrossings();
+    	}
+    }
+    
+    
+    /**
+	 * For each half plane sort the crossing list.
+     */
+    public void sortCrossings(boolean up, RrCSGPolygon q)
+    {
+    	if(complexity() > 1)
+    	{
+    		c_1().sortCrossings(up, q);
+    		c_2().sortCrossings(up, q);
+    	} else
+    	{
+    		if(operator() == RrCSGOp.LEAF)
+    			plane().sort(up, q);
+    	}	
+    }
+	
+    // TO DO: this should keep track of complements
 	/**
 	 * Offset by a distance (+ve or -ve)
 	 * @param d

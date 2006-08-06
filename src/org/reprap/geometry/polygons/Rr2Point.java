@@ -240,6 +240,7 @@ public class Rr2Point
 	 * The same, withing tolerance?
 	 * @param a
 	 * @param b
+	 * @param tol_2
 	 * @return
 	 */
 	public static boolean same(Rr2Point a, Rr2Point b, double tol_2)

@@ -111,6 +111,10 @@ public class RrPolygon
 		String result = " Polygon -  vertices: ";
 		result += size() + ", enclosing box: ";
 		result += box.toString();
+		result += "\n";
+		for(int i = 0; i < size(); i++)
+			result += point(i).toString();
+		
 		return result;
 	}
 	
@@ -142,55 +146,12 @@ public class RrPolygon
 		points = new ArrayList();
 		flags = new ArrayList();
 		box = new RrBox(p.box);
-		int leng = p.size();
-		for(int i = 0; i < leng; i++)
+		for(int i = 0; i < p.size(); i++)
 		{
 			points.add(new Rr2Point(p.point(i)));
 			flags.add(new Integer((p.flag(i)))); 
 		}		
 	}
-	
-	/**
-	 * Polygon from a file
-	 * @param f_name
-	 */
-	public RrPolygon(String f_name)
-	{
-		points = new ArrayList();
-		flags = new ArrayList();
-		box = new RrBox();
-		
-		try
-		{
-			FileInputStream inp =  new FileInputStream(f_name);
-			DataInputStream ip = new DataInputStream(inp);
-			
-			Rr2Point r;
-			double x, y;
-			
-			while(ip.available() != 0)
-			{
-				x = ip.readDouble();
-				y = ip.readDouble();
-				r = new Rr2Point(x, y);
-				this.add(r, 1);
-			}
-			
-			try
-			{
-				inp.close();
-			}
-			catch(IOException err)
-			{
-				System.err.println("RrPolygon(String): Can't close input file - " + f_name);
-			}
-		}
-		catch(IOException err)
-		{
-			System.err.println("RrPolygon(String): Can't open input file - " + f_name);
-		}
-	}
-	
 	
 	
 	/**
@@ -211,10 +172,9 @@ public class RrPolygon
 	 */
 	public void add(RrPolygon p)
 	{
-		int leng = p.size();
-		if(leng == 0)
+		if(p.size() == 0)
 			return;
-		for(int i = 0; i < leng; i++)
+		for(int i = 0; i < p.size(); i++)
 		{
 			points.add(new Rr2Point(p.point(i)));
 			flags.add(new Integer(p.flag(i))); 
@@ -269,11 +229,8 @@ public class RrPolygon
 	public RrPolygon negate()
 	{
 		RrPolygon result = new RrPolygon();
-		int leng = size();
-		for(int i = 1; i <= leng; i++)
-		{
-			result.add(point(leng - i), flag(leng - i));
-		} 
+		for(int i = size() - 1; i >= 0; i--)
+			result.add(point(i), flag(i));
 		return result;
 	}
 	
@@ -296,43 +253,7 @@ public class RrPolygon
 		return a*0.5;
 	}
 	
-	/**
-	 * Intersect a line with a polygon, returning an
-	 * unsorted list of the intersection parameters
-	 * @param l0
-	 * @return
-	 */
-	public List pl_intersect(RrLine l0)
-	{
-		int leng = size();
-		List t = new ArrayList();
-		int it = 0;
-		for(int i = 0; i < leng; i++)
-		{
-			int ip = (i + 1) % leng;
-			RrLine l1 = new RrLine(point(i), point(ip));
-			try
-			{
-				double s = l1.cross_t(l0);
-				if(s >= 0 && s < 1)
-				{
-					try
-					{
-						s = l0.cross_t(l1);
-						t.add(new Double(s));
-						it++;
-					}					
-					catch(RrParallelLineException ple)
-					{
-						System.err.println("pl_intersect: A crosses B, but B does not cross A!");
-					}
-				}
-			}
-			catch (RrParallelLineException ple)
-			{}
-		}	
-		return t;
-	}
+
 	
 	/**
 	 * Simplify a polygon by deleting points from it that
@@ -368,146 +289,7 @@ public class RrPolygon
 		}
 		return r;
 	}
-	
-	/**
-	 * Take a sorted list of parameter values and a line, and 
-	 * turn them into a polygon.  Use the trace
-	 * value to flag the start of solid lines.
-	 * @param t
-	 * @param line
-	 * @param fg
-	 * @param fs
-	 * @return
-	 */
-	public static RrPolygon rr_t_polygon(List t, RrLine line, int fg, int fs)
-	{
-		RrPolygon r = new RrPolygon();
-		int leng = t.size();
-		for(int i = 0; i < leng-1; i = i+2)
-		{
-			r.add(line.point(((Double)(t.get(i))).doubleValue()), fg);
-			r.add(line.point(((Double)(t.get(i+1))).doubleValue()), fs);
-		}
-		return r;
-	}
-	
-	
-	/**
-	 * Figure out if all polygons in a list avoid the parametric interval [0, 1)
-	 * in the line ln.
-	 * @param ln
-	 * @param avoid
-	 * @return
-	 */
-	public boolean no_cross(RrLine ln, RrPolygonList avoid)
-	{
-		List t_vals = avoid.pl_intersect(ln);
-		int leng = t_vals.size();
-		for(int i = 0; i < leng; i++)
-		{
-			double t = ((Double)(t_vals.get(i))).doubleValue();
-			if(t >= 0 && t < 1)
-				return false;
-		}
-		return true;
-	}
-	
-	
-	/**
-	 * Take a gappy polygon (as from the hatch function below)
-	 * and join (almost) all the ends up while avoiding the polygons in RrPolygonList
-	 * @param avoid
-	 * @return
-	 */
-	public RrPolygon join_up(RrPolygonList avoid)
-	{
-		RrPolygon old = new RrPolygon(this);
-		RrPolygon r = new RrPolygon();
-		int i = 0;
-		while(i < old.size() - 1)
-		{
-			Rr2Point p0 = new Rr2Point(old.point(i));
-			Rr2Point p1 = new Rr2Point(old.point(i+1));
-			int f = old.flag(i);
-			if(old.flag(i+1) != 0)
-				System.err.println("join_up: non alternating polygon.");
-			old.remove(i);
-			old.remove(i); // i.e. i+1...
-			Rr2Point p3, p_near, p_far;
-			int j_near = -1;
-			p_near = null;
-			p_far = null;
-			double d2 = box.d_2();
-			int leng = old.points.size();
-			for(int j = 0; j < leng; j++)
-			{
-				p3 = old.point(j);
-				double d = Rr2Point.d_2(p3, p0);
-				RrLine lin;
-				if(d < d2)
-				{
-					lin = new RrLine(p0, p3);
-					if(no_cross(lin, avoid))
-					{
-						d2 = d;
-						p_near = p0;
-						p_far = p1;
-						j_near = j;
-					}
-				}
-				d = Rr2Point.d_2(p3, p1);
-				if(d < d2)
-				{
-					lin = new RrLine(p1, p3);
-					if(no_cross(lin, avoid))
-					{
-						d2 = d;
-						p_near = p1;
-						p_far = p0;
-						j_near = j;
-					}
-				}
-			}
-			if(j_near < 0)
-			{
-				r.add(p0, f);
-				r.add(p1, 0);
-			} else
-			{
-				int j_far;
-				if(old.flag(j_near) == 0)
-					j_far = (j_near + 1)%leng;
-				else
-				{
-					j_far = j_near - 1;
-					if(j_far < 0)
-						j_far = leng - 1;
-				}
-				r.add(p_far, f);
-				r.add(p_near, f);
-				r.add(old.point(j_near), f);
-				r.add(old.point(j_far), f);
-				if(j_far > j_near)
-				{
-					old.remove(j_near);
-					if(j_near >= old.points.size())
-						old.remove(0);
-					else
-						old.remove(j_near);
-				} else
-				{
-					old.remove(j_far);
-					if(j_far >= old.points.size())
-						old.remove(0);
-					else
-						old.remove(j_far);
-				}
-			}
-			
-			i = i + 2;
-		}
-		return r;
-	}
+
 }
 
 
