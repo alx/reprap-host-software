@@ -262,8 +262,11 @@ public class RrGraphics
 		if(plot_box)
 		{
 			colour(5);
-			//plot(p.box);
+			plot(p.box);
 		}
+		
+//		colour(4);
+//		plot(p.point(0));
 		
 		int leng = p.size();
 		for(int j = 0; j <= leng; j++)
@@ -275,8 +278,11 @@ public class RrGraphics
 				colour(f);
 				plot(p.point(i));
 			} else
-				move(p.point(i)); 
+				if(j != leng)
+					move(p.point(i));
 		}
+		
+
 	}
 	
 	// Plot a section of parametric line

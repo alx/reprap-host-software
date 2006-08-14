@@ -52,7 +52,10 @@ public class LayerProducer {
 		hatchedPolygons.add(offHatch.hatch(hatchDirection, printer.getExtrusionSize(), 
 				solidMaterial, gapMaterial));	
 	
-		//RrGraphics g = new RrGraphics(hatchedPolygons, false);
+//		RrPolygonList pllist = new RrPolygonList();
+//		pllist.add(borderPolygons);
+//		pllist.add(hatchedPolygons);
+//		RrGraphics g = new RrGraphics(pllist, false);
 
 		csg_p = null;
 		
@@ -96,68 +99,71 @@ public class LayerProducer {
 				if (printer.isCancelled()) return;
 				plot(p.point(i));
 			} else
+			{
 				if (printer.isCancelled()) return;
-				move(p.point(i)); 
+				if(j != leng)
+					move(p.point(i)); 
+			}
 		}
 	}
 	
-	/**
-	 * Plot a section of parametric line
-	 * @throws IOException
-	 * @throws ReprapException
-	 */
-	private void plot(RrLine a, RrInterval i) throws ReprapException, IOException
-	{
-		if(i.empty()) return;
-		if (printer.isCancelled()) return;
-		move(a.point(i.low()));
-		if (printer.isCancelled()) return;
-		plot(a.point(i.high()));
-	}
+//	/**
+//	 * Plot a section of parametric line
+//	 * @throws IOException
+//	 * @throws ReprapException
+//	 */
+//	private void plot(RrLine a, RrInterval i) throws ReprapException, IOException
+//	{
+//		if(i.empty()) return;
+//		if (printer.isCancelled()) return;
+//		move(a.point(i.low()));
+//		if (printer.isCancelled()) return;
+//		plot(a.point(i.high()));
+//	}
 	
-	/**
-	 * Plot a set in a box
-	 * @throws IOException
-	 * @throws ReprapException
-	 */
-	private void plotLeaf(RrCSGPolygon q) throws ReprapException, IOException
-	{
-		
-		if (printer.isCancelled()) return;		
-		
-		if(q.csg().complexity() == 1)
-			plot(q.csg().plane().pLine(), q.interval1());
-		else if (q.csg().complexity() == 2)
-		{
-			plot(q.csg().c_1().plane().pLine(), q.interval1());
-			plot(q.csg().c_2().plane().pLine(), q.interval2());
-		}
-
-	}
+//	/**
+//	 * Plot a set in a box
+//	 * @throws IOException
+//	 * @throws ReprapException
+//	 */
+//	private void plotLeaf(RrCSGPolygon q) throws ReprapException, IOException
+//	{
+//		
+//		if (printer.isCancelled()) return;		
+//		
+//		if(q.csg().complexity() == 1)
+//			plot(q.csg().plane().pLine(), q.interval1());
+//		else if (q.csg().complexity() == 2)
+//		{
+//			plot(q.csg().c_1().plane().pLine(), q.interval1());
+//			plot(q.csg().c_2().plane().pLine(), q.interval2());
+//		}
+//
+//	}
 	
-	/**
-	 * Plot a divided CSG polygon recursively
-	 * @throws IOException
-	 * @throws ReprapException
-	 */
-	private void plot(RrCSGPolygon p) throws ReprapException, IOException
-	{
-		if(p.c_1() == null)
-		{
-			if (printer.isCancelled()) return;
-			plotLeaf(p);
-		} else
-		{
-			if (printer.isCancelled()) return;
-			plot(p.c_1());
-			if (printer.isCancelled()) return;
-			plot(p.c_2());
-			if (printer.isCancelled()) return;
-			plot(p.c_3());
-			if (printer.isCancelled()) return;
-			plot(p.c_4());
-		}
-	}
+//	/**
+//	 * Plot a divided CSG polygon recursively
+//	 * @throws IOException
+//	 * @throws ReprapException
+//	 */
+//	private void plot(RrCSGPolygon p) throws ReprapException, IOException
+//	{
+//		if(p.c_1() == null)
+//		{
+//			if (printer.isCancelled()) return;
+//			plotLeaf(p);
+//		} else
+//		{
+//			if (printer.isCancelled()) return;
+//			plot(p.c_1());
+//			if (printer.isCancelled()) return;
+//			plot(p.c_2());
+//			if (printer.isCancelled()) return;
+//			plot(p.c_3());
+//			if (printer.isCancelled()) return;
+//			plot(p.c_4());
+//		}
+//	}
 	
 	/**
 	 * Master plot function - draw everything
@@ -166,9 +172,9 @@ public class LayerProducer {
 	 */
 	public void plot() throws ReprapException, IOException
 	{
-		if (hatchedPolygons == null)
-			plot(csg_p);
-		else {
+//		if (hatchedPolygons == null)
+//			plot(csg_p);
+//		else {
 			int leng = borderPolygons.size();
 			for(int i = 0; i < leng; i++) {
 				plot(borderPolygons.polygon(i));
@@ -179,7 +185,7 @@ public class LayerProducer {
 					break;
 				plot(hatchedPolygons.polygon(i));
 			}
-		}
+		//}
 	}
 	
 }

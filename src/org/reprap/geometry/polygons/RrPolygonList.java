@@ -161,6 +161,17 @@ public class RrPolygonList
 		box.expand(p.box);
 	}
 	
+	/**
+	 * Swap two in the list
+	 * @param i
+	 * @param j
+	 */
+	private void swap(int i, int j)
+	{
+		Object p = polygons.get(i);
+		polygons.set(i, polygons.get(j));
+		polygons.set(j, p);
+	}
 	
 	/**
 	 * Negate all the polygons
@@ -173,6 +184,19 @@ public class RrPolygonList
 			result.polygons.add(polygon(i).negate());
 		result.box = new RrBox(box);
 		return result;
+	}
+	
+	/**
+	 * Negate one of the polygons (also swaps a couple of flags)
+	 * @param i
+	 */
+	private void negate(int i)
+	{
+		RrPolygon p = polygon(i).negate();
+		int fl = p.flag(0);
+		p.flag(0, p.flag(p.size() - 1));
+		p.flag(p.size() - 1, fl);
+		polygons.set(i, p);
 	}
 	
 	/**
@@ -236,7 +260,66 @@ public class RrPolygonList
 		return r;
 	}
 	
-	
+	/**
+	 * Re-order and (if need be) reverse the order of the polygons
+	 * in a list so the end of the first is near the start of the second and so on.
+	 * This is a heuristic - it does not do a full travelling salesman...
+	 * @return
+	 */
+	public RrPolygonList nearEnds()
+	{
+		RrPolygonList r = new RrPolygonList();
+		if(size() <= 0)
+			return r;
+		
+		int i;
+		
+		for(i = 0; i < size(); i++)
+			r.add(polygon(i));
+		
+		int pg = 0;
+		while(pg < r.size() - 1)
+		{
+			Rr2Point end = r.polygon(pg).point(r.polygon(pg).size() - 1);
+			boolean neg = false;
+			int near = -1;
+			double d = Double.POSITIVE_INFINITY;
+			pg++;
+			for(i = pg; i < r.size(); i++)
+			{
+				Rr2Point e1 = r.polygon(i).point(0);
+				double d2 = Rr2Point.d_2(end, e1);
+				if(d2 < d)
+				{
+					near = i;
+					d = d2;
+					neg = false;
+				}
+				
+				e1 = r.polygon(i).point(r.polygon(i).size() - 1);
+				d2 = Rr2Point.d_2(end, e1);
+				if(d2 < d)
+				{
+					near = i;
+					d = d2;
+					neg = true;
+				}
+				
+			}
+			
+			if(near < 0)
+			{
+				System.err.println("RrPolygonList.nearEnds(): no nearest end found!");
+				return r;
+			}
+			
+			r.swap(pg, near);
+			if(neg)
+				r.negate(pg);
+		}
+		
+		return r;
+	}
 	
 	// Convex hull code - this uses the QuickHull algorithm
 	

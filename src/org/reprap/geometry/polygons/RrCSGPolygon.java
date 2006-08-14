@@ -784,7 +784,7 @@ public class RrCSGPolygon
 		
 		RrHalfPlane h = (RrHalfPlane)hatches.get(thisHatch);
 		Rr2Point pt = h.pLine().point(h.getParameter(thisPt));
-		result.add(pt, fg);
+		result.add(pt, fs);
 		snakeEnd jump;
 		
 		do
@@ -809,7 +809,6 @@ public class RrCSGPolygon
 			}
 		} while(jump != null);
 		
-		result.flag(0, fs);
 		return result;
 	}
 	
@@ -887,6 +886,6 @@ public class RrCSGPolygon
 			}
 		} while(segment >= 0);
 		
-		return snakes;
+		return snakes.nearEnds();
 	}
 }
