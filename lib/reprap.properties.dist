@@ -34,6 +34,7 @@ MachineColourB=0.3
 Port=/dev/ttyS0
 CommsDebug=false
 Geometry=nullcartesian
+RememberWindowPosition=false
 
 # Motor settings
 AxisCount=3
@@ -89,3 +90,7 @@ Extruder1OffsetZ=500
 
 # Period between layers to drive cooling system (in seconds)
 CoolingPeriod=0
+
+# Whether or not to idle the Z axis motors between levels
+IdleZAxis=false
+

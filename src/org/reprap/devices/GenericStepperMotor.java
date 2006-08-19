@@ -187,7 +187,7 @@ public class GenericStepperMotor extends Device {
 		lock();
 		try {
 			setNotification();
-			RequestHomeResetResponse response = new RequestHomeResetResponse(this, new OutgoingByteMessage(MSG_HomeReset, (byte)speed), 60000);
+			new RequestHomeResetResponse(this, new OutgoingByteMessage(MSG_HomeReset, (byte)speed), 60000);
 			setNotificationOff();
 		} finally {
 			unlock();

@@ -23,6 +23,7 @@ import javax.swing.JOptionPane;
 import javax.swing.JPopupMenu;
 import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
+import javax.swing.WindowConstants;
 
 import org.reprap.geometry.EstimationProducer;
 import org.reprap.geometry.Producer;
@@ -76,7 +77,7 @@ public class Main {
 	private void createAndShowGUI() throws Exception {
         JFrame.setDefaultLookAndFeelDecorated(false);
         mainFrame = new JFrame("RepRap");
-        mainFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        mainFrame.setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 
         // Required so menus float over Java3D
         JPopupMenu.setDefaultLightWeightPopupEnabled(false);
@@ -112,7 +113,7 @@ public class Main {
         fileExit.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, ActionEvent.ALT_MASK));
         fileExit.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				System.exit(0);
+				dispose();
 			}});
         fileMenu.add(fileExit);
 
@@ -320,7 +321,7 @@ public class Main {
         mainFrame.setJMenuBar(menubar);
         
         mainFrame.pack();
-        Utility.centerWindowOnScreen(mainFrame);
+        Utility.positionWindowOnScreen(mainFrame);
         mainFrame.setVisible(true);
 	}
 
@@ -461,7 +462,7 @@ public class Main {
     	  builder.deleteSTL();
       }
 
-    private void onViewBuilder() {
+	private void onViewBuilder() {
     		if (!viewBuilder.isSelected() && !viewPreview.isSelected())
     			viewPreview.setSelected(true);
         	updateView();
@@ -536,6 +537,21 @@ public class Main {
 			"mm^3.  Elapsed time=" + time + "s";
 	}
 	
+	public void dispose() {
+		/// TODO This class should be fixed so it gets the dispose on window close
+		try {
+			// Attempt to save screen position if requested
+			org.reprap.Preferences prefs = org.reprap.Preferences.getGlobalPreferences();
+			if (prefs.loadBool("RememberWindowPosition")) {
+				//prefs.setGlobalBool("MainWindowTop", xxx)
+			}
+		} catch (Exception ex) {
+			
+		}
+		
+		System.exit(0);
+	}
+	
 	public static void main(String[] args) {
 		Thread.currentThread().setName("Main");
 		javax.swing.SwingUtilities.invokeLater(new Runnable() {
@@ -543,7 +559,7 @@ public class Main {
 	            	try {
 	            		Thread.currentThread().setName("RepRap");
 		        		Main gui = new Main();
-		            gui.createAndShowGUI();
+		        		gui.createAndShowGUI();
 	            	}
 	            	catch (Exception ex) {
 	            		JOptionPane.showMessageDialog(null, "General exception: " + ex);

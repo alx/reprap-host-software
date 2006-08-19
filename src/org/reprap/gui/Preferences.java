@@ -6,6 +6,7 @@ import javax.swing.ComboBoxModel;
 import javax.swing.DefaultComboBoxModel;
 
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JComboBox;
 
 import javax.swing.JFrame;
@@ -45,6 +46,8 @@ public class Preferences extends javax.swing.JDialog {
 	private JLabel jLabel19;
 	private JTextField extrusionSize;
 	private JTextField extruderMaxSpeed1;
+	private JCheckBox idleZMotor;
+	private JCheckBox rememberWindowPosition;
 	private JTextField coolingPeriod;
 	private JLabel jLabel5;
 	private JTextField extrudert01;
@@ -118,8 +121,16 @@ public class Preferences extends javax.swing.JDialog {
 		return org.reprap.Preferences.loadGlobalString(name);
 	}
 	
+	private boolean loadBool(String name) throws IOException {
+		return org.reprap.Preferences.loadGlobalBool(name);
+	}
+	
 	private void saveString(String name, String value) throws IOException {
 		org.reprap.Preferences.setGlobalString(name, value);
+	}
+	
+	private void saveBool(String name, boolean value) throws IOException {
+		org.reprap.Preferences.setGlobalBool(name, value);
 	}
 	
 	public void loadPreferences() {
@@ -155,6 +166,9 @@ public class Preferences extends javax.swing.JDialog {
 			movementSpeedZ.setText(loadString("MovementSpeedZ"));
 			
 			coolingPeriod.setText(loadString("CoolingPeriod"));
+			
+			idleZMotor.setSelected(loadBool("IdleZAxis"));
+			rememberWindowPosition.setSelected(loadBool("RememberWindowPosition"));
 			
 			String geometryName = loadString("Geometry");
 			for(int i = 0; i < geometries.length; i++)
@@ -202,6 +216,8 @@ public class Preferences extends javax.swing.JDialog {
 			saveString("MovementSpeedZ", movementSpeedZ.getText());
 
 			saveString("CoolingPeriod", coolingPeriod.getText());
+			saveBool("IdleZAxis", idleZMotor.isSelected());
+			saveBool("RememberWindowPosition", rememberWindowPosition.isSelected());
 			
 			org.reprap.Preferences.saveGlobal();
 		} catch (Exception ex) {
@@ -270,6 +286,12 @@ public class Preferences extends javax.swing.JDialog {
 						jTextPane1.setEditable(false);
 						jTextPane1.setOpaque(false);
 					}
+					/*{
+						rememberWindowPosition = new JCheckBox();
+						jPanelGeneral.add(rememberWindowPosition);
+						rememberWindowPosition.setText("Remember window position at startup");
+						rememberWindowPosition.setBounds(35, 105, 260, 28);
+					}*/
 				}
 				{
 					jPanelMotors = new JPanel();
@@ -629,6 +651,12 @@ public class Preferences extends javax.swing.JDialog {
 						coolingPeriod = new JTextField();
 						jPanelProduction.add(coolingPeriod);
 						coolingPeriod.setBounds(126, 35, 63, 28);
+					}
+					{
+						idleZMotor = new JCheckBox();
+						jPanelProduction.add(idleZMotor);
+						idleZMotor.setText("Idle Z motor between layers");
+						idleZMotor.setBounds(35, 77, 203, 28);
 					}
 				}
 			}

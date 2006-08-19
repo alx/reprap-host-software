@@ -1,7 +1,6 @@
 package org.reprap.machines;
 
 import java.io.IOException;
-import java.sql.Time;
 
 import org.reprap.CartesianPrinter;
 import org.reprap.Preferences;
@@ -56,6 +55,8 @@ public class Reprap implements CartesianPrinter {
 	
 	private long startTime;
 	
+	private boolean idleZ;
+	
 	public Reprap(Preferences prefs) throws Exception {
 		startTime = System.currentTimeMillis();
 		
@@ -96,6 +97,8 @@ public class Reprap implements CartesianPrinter {
 		offsetX = prefs.loadDouble("Extruder1OffsetX");
 		offsetY = prefs.loadDouble("Extruder1OffsetY");
 		offsetZ = prefs.loadDouble("Extruder1OffsetZ");
+	
+		idleZ = prefs.loadBool("IdleZAxis");
 		
 		try {
 			currentX = convertToPositionZ(motorX.getPosition());
@@ -121,11 +124,13 @@ public class Reprap implements CartesianPrinter {
 	}
 
 	public void moveTo(double x, double y, double z) throws ReprapException, IOException {
+		
 		if (isCancelled()) return;
 
 		if (z != currentZ) {
 			totalDistanceMoved += Math.abs(currentZ - z);
 			if (!excludeZ) motorZ.seekBlocking(speedZ, convertToStepZ(z));
+			if (idleZ) motorZ.setIdle();
 		}
 
 		layer.moveTo(convertToStepX(x), convertToStepY(y), speedXY);

@@ -76,10 +76,14 @@ public class Preferences {
 				path = propsFile;
 			File f = new File(path);
 			url = f.toURL();
-			int x = 1 + 1;
 		}
 		
-		OutputStream output = new FileOutputStream(url.getPath());
+		String savePath = url.getPath();
+		
+		/// @todo This is a temporary fix for Windows, but it should be done properly. 
+		savePath = savePath.replaceAll("%20", " ");
+		
+		OutputStream output = new FileOutputStream(savePath);
 		mainPreferences.store(output, "Reprap properties http://reprap.org/");
 		
 	}
@@ -154,6 +158,11 @@ public class Preferences {
 	public static void setGlobalString(String name, String value) throws IOException {
 		initIfNeeded();
 		globalPrefs.setString(name, value);
+	}
+
+	public static void setGlobalBool(String name, boolean value) throws IOException {
+		initIfNeeded();
+		globalPrefs.setString(name, value ? "true" : "false");
 	}
 
 	/**
