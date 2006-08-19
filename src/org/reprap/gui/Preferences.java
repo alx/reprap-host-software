@@ -47,7 +47,7 @@ public class Preferences extends javax.swing.JDialog {
 	private JTextField extrusionSize;
 	private JTextField extruderMaxSpeed1;
 	private JCheckBox idleZMotor;
-	private JCheckBox rememberWindowPosition;
+	//private JCheckBox rememberWindowPosition;
 	private JTextField coolingPeriod;
 	private JLabel jLabel5;
 	private JTextField extrudert01;
@@ -168,7 +168,7 @@ public class Preferences extends javax.swing.JDialog {
 			coolingPeriod.setText(loadString("CoolingPeriod"));
 			
 			idleZMotor.setSelected(loadBool("IdleZAxis"));
-			rememberWindowPosition.setSelected(loadBool("RememberWindowPosition"));
+			//rememberWindowPosition.setSelected(loadBool("RememberWindowPosition"));
 			
 			String geometryName = loadString("Geometry");
 			for(int i = 0; i < geometries.length; i++)
@@ -217,7 +217,7 @@ public class Preferences extends javax.swing.JDialog {
 
 			saveString("CoolingPeriod", coolingPeriod.getText());
 			saveBool("IdleZAxis", idleZMotor.isSelected());
-			saveBool("RememberWindowPosition", rememberWindowPosition.isSelected());
+			//saveBool("RememberWindowPosition", rememberWindowPosition.isSelected());
 			
 			org.reprap.Preferences.saveGlobal();
 		} catch (Exception ex) {
