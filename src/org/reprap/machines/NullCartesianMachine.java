@@ -14,9 +14,12 @@ public class NullCartesianMachine implements CartesianPrinter {
 	double totalDistanceMoved = 0.0;
 	double totalDistanceExtruded = 0.0;
 	
-	double extrusionSize, extrusionHeight;
+	double extrusionSize, extrusionHeight, infillWidth;
 	
 	double currentX, currentY, currentZ;
+	
+	private double overRun;
+	private long delay;
 
 	private long startTime;
 
@@ -30,9 +33,15 @@ public class NullCartesianMachine implements CartesianPrinter {
 		try {
 			extrusionSize = config.loadDouble("ExtrusionSize");
 			extrusionHeight = config.loadDouble("ExtrusionHeight");
+			infillWidth = config.loadDouble("ExtrusionInfillWidth");
+			overRun = config.loadDouble("ExtrusionOverRun");
+			delay = config.loadInt("ExtrusionDelay");
 		} catch (Exception ex) {
 			extrusionSize = 1.0;
 			extrusionHeight = 1.0;
+			infillWidth = extrusionSize;
+			overRun = 5.0;
+			delay = 5000;
 		}
 
 	}
@@ -164,12 +173,30 @@ public class NullCartesianMachine implements CartesianPrinter {
 	public double getExtrusionHeight() {
 		return extrusionHeight;
 	}
+	
+	public double getInfillWidth() {
+		return infillWidth;
+	}
 
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#setCooling(boolean)
 	 */
 	public void setCooling(boolean enable) {
 	}
+	
+	/**
+	 * Get the length before the end of a track to turn the extruder off
+	 * to allow for the delay in the stream stopping.
+	 * @return
+	 */
+	public double getOverRun() { return overRun; };
+	
+	/**
+	 * Get the number of milliseconds to wait between turning an 
+	 * extruder on and starting to move it.
+	 * @return
+	 */
+	public long getDelay() { return delay; };
 
 	public double getTotalElapsedTime() {
 		long now = System.currentTimeMillis();

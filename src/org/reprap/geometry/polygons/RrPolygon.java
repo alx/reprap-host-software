@@ -70,7 +70,7 @@ package org.reprap.geometry.polygons;
 
 import java.io.*;
 import java.util.*;
-
+import org.reprap.geometry.LayerProducer;
 
 /**
  * The main boundary-representation polygon class
@@ -253,7 +253,49 @@ public class RrPolygon
 		return a*0.5;
 	}
 	
-
+	/**
+	 * Backtrack a given distance, inserting a new point there and returning its index
+	 * @param d
+	 * @return
+	 */
+	public int backStep(double d)
+	{
+		Rr2Point last, p;
+		int start = size() - 1;
+		if(flag(0) != LayerProducer.gapMaterial())
+			last = point(0);
+		else
+		{
+			last = point(start);
+			start--;
+		}
+		double sum = 0;
+		for(int i = start; i >= 0; i--)
+		{
+			p = point(i);
+			sum += Math.sqrt(Rr2Point.d_2(p, last));
+			if(sum > d)
+			{
+				sum = sum - d;
+				p = Rr2Point.sub(last, p);
+				sum = sum/p.mod();
+				p = Rr2Point.add(point(i), Rr2Point.mul(sum, p));
+				int j = i + 1;
+				if(j < size())
+				{
+					points.add(j, p);
+					flags.add(j, flags.get(i));
+				} else
+				{
+					points.add(p);
+					flags.add(flags.get(i));					
+				}
+				return(j);
+			}
+			last = p;
+		}
+		return 0;
+	}
 	
 	/**
 	 * Simplify a polygon by deleting points from it that

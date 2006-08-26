@@ -73,9 +73,10 @@ public class TestMain
 		Rr2Point r = new Rr2Point(0.97, 0.89);
 		Rr2Point s = new Rr2Point(0.95, 0.03);
 		
-		Rr2Point pp = new Rr2Point(0.35, 0.62);
-		Rr2Point qq = new Rr2Point(0.55, 0.95);
-		Rr2Point rr = new Rr2Point(0.45, 0.5);    
+		Rr2Point pp = new Rr2Point(0.3, 0.62);
+		//Rr2Point qq = new Rr2Point(0.55, 0.95);
+		Rr2Point qq = new Rr2Point(0.35, 0.95);
+		Rr2Point rr = new Rr2Point(0.35, 0.2);    
 		
 		RrHalfPlane ph = new RrHalfPlane(p, q);
 		RrHalfPlane qh = new RrHalfPlane(q, r);
@@ -95,15 +96,15 @@ public class TestMain
 		rc = RrCSG.intersection(sc, rc);		
 		pc = RrCSG.intersection(pc, rc);
 		
-		RrCSG ppc = new RrCSG(pph);
+		//RrCSG ppc = new RrCSG(pph);
 		RrCSG qqc = new RrCSG(qqh);
 		RrCSG rrc = new RrCSG(rrh);
 		
-		ppc = RrCSG.intersection(ppc, qqc);
-		ppc = RrCSG.intersection(ppc, rrc);
+		// ppc = RrCSG.intersection(ppc, qqc);
+		RrCSG ppc = RrCSG.intersection(qqc, rrc);
 		ppc = RrCSG.difference(pc, ppc);
 		
-		pc = ppc.offset(-0.15);
+		pc = ppc.offset(-0.08);
 		ppc = RrCSG.difference(ppc, pc);
 		
 		return new RrCSGPolygon(ppc, new 
@@ -119,7 +120,7 @@ public class TestMain
 		//RrPolygonList pl = cp.megList(2, 3);
 		//RrGraphics g = new RrGraphics(pl, false);
 		//System.out.println(cp.toString());
-		RrGraphics g1 = new RrGraphics(cp.box().scale(1.1), true);
+		RrGraphics g1 = new RrGraphics(cp.box().scale(1.1), false);
 		//RrHalfPlane hatch = new RrHalfPlane(new Rr2Point(1, -1), new Rr2Point(-1, 1));
 		//RrHalfPlane hatch = new RrHalfPlane(new Rr2Point(1, 1), new Rr2Point(-1, -1));
 		//RrPolygonList h = cp.hatch(hatch, 0.05, 3, 0);

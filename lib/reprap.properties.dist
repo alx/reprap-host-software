@@ -55,6 +55,7 @@ ExtrusionSpeed=150
 ExtrusionTemp=40
 ExtrusionSize=0.5
 ExtrusionHeight=0.4
+ExtrusionInfillWidth=0.5
 Extruder1MaterialType=CAPA
 Extruder1Address=8
 
@@ -87,6 +88,11 @@ Extruder1hb=20
 Extruder1OffsetX=0
 Extruder1OffsetY=0
 Extruder1OffsetZ=500
+
+#The number of mm to turn off the extruder before the end of its path
+#And the number of ms to wait between turning it on and moving it.
+ExtrusionOverRun=8
+ExtrusionDelay=5000
 
 # Period between layers to drive cooling system (in seconds)
 CoolingPeriod=0

@@ -45,6 +45,7 @@ public class Preferences extends javax.swing.JDialog {
 	private JLabel jLabel20;
 	private JLabel jLabel19;
 	private JTextField extrusionSize;
+	private JTextField extrusionInfillWidth;
 	private JTextField extruderMaxSpeed1;
 	private JCheckBox idleZMotor;
 	//private JCheckBox rememberWindowPosition;
@@ -66,6 +67,8 @@ public class Preferences extends javax.swing.JDialog {
 	private JLabel jLabel24;
 	private JLabel jLabel23;
 	private JTextField extrusionHeight;
+	private JTextField extrusionOverRun;
+	private JTextField extrusionDelay;	
 	private JPanel jPanelProduction;
 	private JTextField extrusionTemp;
 	private JLabel jLabel18;
@@ -101,6 +104,7 @@ public class Preferences extends javax.swing.JDialog {
 	private JLabel jLabel1;
 	private JPanel jPanelGeneral;
 	private JTabbedPane jTabbedPane1;
+	private JLabel jLabel32, jLabel33, jLabel34, jLabel35, jLabel36, jLabel37;
 	
 	private String [][] geometries =
 	{
@@ -161,7 +165,10 @@ public class Preferences extends javax.swing.JDialog {
 			extrusionSpeed.setText(loadString("ExtrusionSpeed"));
 			extrusionTemp.setText(loadString("ExtrusionTemp"));
 			extrusionSize.setText(loadString("ExtrusionSize"));
+			extrusionInfillWidth.setText(loadString("ExtrusionInfillWidth"));
 			extrusionHeight.setText(loadString("ExtrusionHeight"));
+			extrusionOverRun.setText(loadString("ExtrusionOverRun"));
+			extrusionDelay.setText(loadString("ExtrusionDelay"));
 			movementSpeedXY.setText(loadString("MovementSpeed"));
 			movementSpeedZ.setText(loadString("MovementSpeedZ"));
 			
@@ -211,7 +218,10 @@ public class Preferences extends javax.swing.JDialog {
 			saveString("ExtrusionSpeed", extrusionSpeed.getText());
 			saveString("ExtrusionTemp", extrusionTemp.getText());
 			saveString("ExtrusionSize", extrusionSize.getText());
+			saveString("ExtrusionInfillWidth", extrusionInfillWidth.getText());
 			saveString("ExtrusionHeight", extrusionHeight.getText());
+			saveString("ExtrusionOverRun", extrusionOverRun.getText());
+			saveString("ExtrusionDelay", extrusionDelay.getText());
 			saveString("MovementSpeed", movementSpeedXY.getText());
 			saveString("MovementSpeedZ", movementSpeedZ.getText());
 
@@ -525,6 +535,24 @@ public class Preferences extends javax.swing.JDialog {
 						extrusionSize.setBounds(119, 105, 70, 21);
 					}
 					{
+						extrusionInfillWidth = new JTextField();
+						jPanelExtruders.add(extrusionInfillWidth);
+						extrusionInfillWidth.setBounds(119, 215, 70, 21);
+					}
+					{
+						jLabel36 = new JLabel();
+						jPanelExtruders.add(jLabel36);
+						jLabel36.setText("Infill");
+						jLabel36.setBounds(14, 215, 84, 28);
+					}
+					{
+						jLabel37 = new JLabel();
+						jPanelExtruders.add(jLabel37);
+						jLabel37.setText("mm");
+						jLabel37.setBounds(196, 215, 84, 28);
+					}
+					
+					{
 						jLabel18 = new JLabel();
 						jPanelExtruders.add(jLabel18);
 						jLabel18.setText("Temperature");
@@ -534,6 +562,40 @@ public class Preferences extends javax.swing.JDialog {
 						extrusionHeight = new JTextField();
 						jPanelExtruders.add(extrusionHeight);
 						extrusionHeight.setBounds(266, 105, 70, 21);
+					}
+					{
+						extrusionOverRun = new JTextField();
+						jPanelExtruders.add(extrusionOverRun);
+						extrusionOverRun.setBounds(119, 190, 70, 21);
+					}
+					{
+						jLabel32 = new JLabel();
+						jPanelExtruders.add(jLabel32);
+						jLabel32.setText("Overrun");
+						jLabel32.setBounds(14, 190, 84, 28);
+					}
+					{
+						jLabel33 = new JLabel();
+						jPanelExtruders.add(jLabel33);
+						jLabel33.setText("mm");
+						jLabel33.setBounds(196, 190, 84, 28);
+					}
+					{
+						extrusionDelay = new JTextField();
+						jPanelExtruders.add(extrusionDelay);
+						extrusionDelay.setBounds(266, 190, 70, 21);
+					}
+					{
+						jLabel34 = new JLabel();
+						jPanelExtruders.add(jLabel34);
+						jLabel34.setText("Delay");
+						jLabel34.setBounds(220, 190, 84, 28);
+					}
+					{
+						jLabel35 = new JLabel();
+						jPanelExtruders.add(jLabel35);
+						jLabel35.setText("ms");
+						jLabel35.setBounds(340, 190, 84, 28);
 					}
 					{
 						extrusionTemp = new JTextField();

@@ -9,11 +9,11 @@ package org.reprap.geometry;
 import java.io.IOException;
 
 import org.reprap.Printer;
+import org.reprap.Preferences;
 import org.reprap.ReprapException;
 import org.reprap.geometry.polygons.*;
 
 public class LayerProducer {
-	private static final double resolution = 1.0e-8; // How close (in mm^2) are two points before they're the same?
 	private static int gapMaterial = 0;
 	private static int solidMaterial = 1;
 	public static int gapMaterial() { return gapMaterial; }
@@ -41,15 +41,15 @@ public class LayerProducer {
 		RrCSGPolygon offBorder = csgPol.offset(-0.5*printer.getExtrusionSize());
 		RrCSGPolygon offHatch = csgPol.offset(-1.5*printer.getExtrusionSize());
 		
-		offBorder.divide(resolution, 1.01);
-		offHatch.divide(resolution, 1.01);
+		offBorder.divide(Preferences.tiny(), 1.01);
+		offHatch.divide(Preferences.tiny(), 1.01);
 		
 		//RrGraphics g = new RrGraphics(offBorder, true);
 		
 		borderPolygons = offBorder.megList(solidMaterial, solidMaterial);
 		
 		hatchedPolygons = new RrPolygonList();
-		hatchedPolygons.add(offHatch.hatch(hatchDirection, printer.getExtrusionSize(), 
+		hatchedPolygons.add(offHatch.hatch(hatchDirection, printer.getInfillWidth(), 
 				solidMaterial, gapMaterial));	
 	
 //		RrPolygonList pllist = new RrPolygonList();
@@ -87,84 +87,36 @@ public class LayerProducer {
 	 */
 	private void plot(RrPolygon p) throws ReprapException, IOException
 	{
-		int leng = p.size();
-		if(leng <= 0)
+		if(p.size() <= 0)
 			return;
-		for(int j = 0; j <= leng; j++)
+		
+		int stopExtruding = p.backStep(printer.getOverRun());
+		
+		int leng = p.size();
+		
+		if (printer.isCancelled()) return;
+		move(p.point(0));
+		plot(p.point(0));
+		try
 		{
+			Thread.sleep(printer.getDelay());
+		} catch(InterruptedException e)
+		{}
+		
+		for(int j = 1; j <= leng; j++)
+		{
+			if (printer.isCancelled()) return;
+			
 			int i = j%leng;
 			int f = p.flag(i);
-			if(f != gapMaterial && j != 0)
-			{
-				if (printer.isCancelled()) return;
+			
+			if(f != gapMaterial && j <= stopExtruding)
 				plot(p.point(i));
-			} else
-			{
-				if (printer.isCancelled()) return;
-				if(j != leng)
-					move(p.point(i)); 
-			}
+			else
+				move(p.point(i));
 		}
 	}
-	
-//	/**
-//	 * Plot a section of parametric line
-//	 * @throws IOException
-//	 * @throws ReprapException
-//	 */
-//	private void plot(RrLine a, RrInterval i) throws ReprapException, IOException
-//	{
-//		if(i.empty()) return;
-//		if (printer.isCancelled()) return;
-//		move(a.point(i.low()));
-//		if (printer.isCancelled()) return;
-//		plot(a.point(i.high()));
-//	}
-	
-//	/**
-//	 * Plot a set in a box
-//	 * @throws IOException
-//	 * @throws ReprapException
-//	 */
-//	private void plotLeaf(RrCSGPolygon q) throws ReprapException, IOException
-//	{
-//		
-//		if (printer.isCancelled()) return;		
-//		
-//		if(q.csg().complexity() == 1)
-//			plot(q.csg().plane().pLine(), q.interval1());
-//		else if (q.csg().complexity() == 2)
-//		{
-//			plot(q.csg().c_1().plane().pLine(), q.interval1());
-//			plot(q.csg().c_2().plane().pLine(), q.interval2());
-//		}
-//
-//	}
-	
-//	/**
-//	 * Plot a divided CSG polygon recursively
-//	 * @throws IOException
-//	 * @throws ReprapException
-//	 */
-//	private void plot(RrCSGPolygon p) throws ReprapException, IOException
-//	{
-//		if(p.c_1() == null)
-//		{
-//			if (printer.isCancelled()) return;
-//			plotLeaf(p);
-//		} else
-//		{
-//			if (printer.isCancelled()) return;
-//			plot(p.c_1());
-//			if (printer.isCancelled()) return;
-//			plot(p.c_2());
-//			if (printer.isCancelled()) return;
-//			plot(p.c_3());
-//			if (printer.isCancelled()) return;
-//			plot(p.c_4());
-//		}
-//	}
-	
+		
 	/**
 	 * Master plot function - draw everything
 	 * @throws IOException
@@ -172,9 +124,6 @@ public class LayerProducer {
 	 */
 	public void plot() throws ReprapException, IOException
 	{
-//		if (hatchedPolygons == null)
-//			plot(csg_p);
-//		else {
 			int leng = borderPolygons.size();
 			for(int i = 0; i < leng; i++) {
 				plot(borderPolygons.polygon(i));
@@ -185,7 +134,6 @@ public class LayerProducer {
 					break;
 				plot(hatchedPolygons.polygon(i));
 			}
-		//}
 	}
 	
 }

@@ -48,6 +48,10 @@ public class Reprap implements CartesianPrinter {
 	
 	private double extrusionSize;
 	private double extrusionHeight;
+	private double infillWidth;
+	
+	private double overRun;
+	private long delay;
 	
 	private GenericExtruder extruder;  ///< Only one supported for now
 
@@ -86,6 +90,10 @@ public class Reprap implements CartesianPrinter {
 
 		extrusionSize = prefs.loadDouble("ExtrusionSize");
 		extrusionHeight = prefs.loadDouble("ExtrusionHeight");
+		infillWidth = prefs.loadDouble("ExtrusionInfillWidth");
+		
+		overRun = prefs.loadDouble("ExtrusionOverRun");
+		delay = prefs.loadInt("ExtrusionDelay");
 		
 		layer = new LinePrinter(motorX, motorY, extruder);
 
@@ -403,10 +411,28 @@ public class Reprap implements CartesianPrinter {
 		return extrusionHeight;
 	}
 	
+	public double getInfillWidth() {
+		return infillWidth;
+	}
+	
 	public void setCooling(boolean enable) throws IOException {
 		extruder.setCooler(enable);
 	}
-
+	
+	/**
+	 * Get the length before the end of a track to turn the extruder off
+	 * to allow for the delay in the stream stopping.
+	 * @return
+	 */
+	public double getOverRun() { return overRun; }
+	
+	/**
+	 * Get the number of milliseconds to wait between turning an 
+	 * extruder on and starting to move it.
+	 * @return
+	 */
+	public long getDelay() { return delay; }
+	
 	public double getTotalElapsedTime() {
 		long now = System.currentTimeMillis();
 		return (now - startTime) / 1000.0;

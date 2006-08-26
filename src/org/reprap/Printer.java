@@ -48,6 +48,12 @@ public interface Printer {
 	public double getExtrusionSize();
 	
 	/**
+	 * Returns the gap between infill lines
+	 * @return the size in mm
+	 */
+	public double getInfillWidth();	
+	
+	/**
 	 * Related to the getExtrusionSize, except this is the height
 	 * of material that forms after any settling has taken place. 
 	 * @return the extrusion height in mm
@@ -72,6 +78,20 @@ public interface Printer {
 	 * @param enable
 	 */
 	public void setCooling(boolean enable) throws IOException;
+	
+	/**
+	 * Get the length before the end of a track to turn the extruder off
+	 * to allow for the delay in the stream stopping.
+	 * @return
+	 */
+	public double getOverRun();
+	
+	/**
+	 * Get the number of milliseconds to wait between turning an 
+	 * extruder on and starting to move it.
+	 * @return
+	 */
+	public long getDelay();
 
 	public double getTotalElapsedTime();
 }

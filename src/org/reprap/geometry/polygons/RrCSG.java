@@ -793,6 +793,7 @@ public class RrCSG
 		return result;
 	}
 	
+	// TO DO - this should work independently of a call to leaf(); that's more efficient
 	/**
 	 * "Potential" value of a point; i.e. a membership test
 	 * -ve means inside; 0 means on the surface; +ve means outside
@@ -859,7 +860,7 @@ public class RrCSG
 			
 		default:
 			System.err.println("value(RrBox): invalid operator.");
-		result = new RrInterval();
+			result = new RrInterval();
 		}
 		
 		return result;
@@ -879,7 +880,7 @@ public class RrCSG
 		case RrCSGOp.LEAF:            
 			RrInterval i = hp.value(b);
 			if (i.empty())
-				System.err.println("prune(RrBox): empty interval!");
+				System.err.println("RrCSG.prune(RrBox): empty interval!");
 			else if(i.neg())
 				result = universe();
 			else if (i.pos())
@@ -899,7 +900,7 @@ public class RrCSG
 			break;
 			
 		default:
-			System.err.println("prune(RrBox): dud op value!");
+			System.err.println("RrCSG.prune(RrBox): dud op value!");
 		}
 		
 		return result;
