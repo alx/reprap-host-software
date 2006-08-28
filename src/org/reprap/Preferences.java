@@ -51,7 +51,7 @@ public class Preferences {
 		URL mainUrl = ClassLoader.getSystemResource(propsFile);
 		
 		if (fallbackUrl == null && mainUrl == null)
-			throw new IOException("Cannot load RepRap properties file");
+			throw new IOException("Cannot load RepRap properties file or default "+propsFileDist);
 		
 		if (fallbackUrl != null)
 			fallbackPreferences.load(fallbackUrl.openStream());

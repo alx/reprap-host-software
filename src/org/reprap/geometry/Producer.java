@@ -172,6 +172,17 @@ public class Producer {
 
 			// Change Z height
 			reprap.moveTo(reprap.getX(), reprap.getY(), z);
+
+			// Layer cooling phase - after we've just raised the head.
+			if ((z>0)&&(coolingPeriod > 0)) {
+				System.out.println("Starting a cooling period");
+				reprap.setCooling(true);
+				Thread.sleep(1000 * coolingPeriod);
+				reprap.setCooling(false);
+				System.out.println("End of cooling period");
+			}
+			
+			
 			
 			if (reprap.isCancelled())
 				break;
@@ -213,15 +224,6 @@ public class Producer {
 			if(layer != null)
 				layer.plot();
 		
-			// Layer cooling phase
-			if (coolingPeriod > 0) {
-				System.out.println("Starting a cooling period");
-				reprap.setCooling(true);
-				Thread.sleep(1000 * coolingPeriod);
-				reprap.setCooling(false);
-				System.out.println("End of cooling period");
-			}
-			
 			isEvenLayer = !isEvenLayer;
 		}
 		
