@@ -179,6 +179,8 @@ public class Producer {
 				reprap.setCooling(true);
 				Thread.sleep(1000 * coolingPeriod);
 				reprap.setCooling(false);
+				System.out.println("Brief delay for head to warm up.");
+				Thread.sleep(200 * coolingPeriod);
 				System.out.println("End of cooling period");
 			}
 			

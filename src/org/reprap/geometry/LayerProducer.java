@@ -97,11 +97,8 @@ public class LayerProducer {
 		if (printer.isCancelled()) return;
 		move(p.point(0));
 		plot(p.point(0));
-		try
-		{
-			Thread.sleep(printer.getDelay());
-		} catch(InterruptedException e)
-		{}
+		// Print any lead-in.
+		printer.printStartDelay(printer.getDelay());
 		
 		for(int j = 1; j <= leng; j++)
 		{

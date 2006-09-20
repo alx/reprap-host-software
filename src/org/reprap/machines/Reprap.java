@@ -437,6 +437,22 @@ public class Reprap implements CartesianPrinter {
 		long now = System.currentTimeMillis();
 		return (now - startTime) / 1000.0;
 	}
+
+	/**
+	 * Extrude for the given time in milliseconds, so that polymer is flowing
+	 * before we try to move the extruder.
+	 */
+	public void printStartDelay(long msDelay) {
+		try
+		{
+			extruder.setExtrusion(speedExtruder);
+			Thread.sleep(msDelay);
+			extruder.setExtrusion(0);
+		} catch(Exception e)
+		{
+			// If anything goes wrong, we'll let someone else catch it.
+		}
+	}
 }
 
 

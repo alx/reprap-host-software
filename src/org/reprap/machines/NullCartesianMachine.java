@@ -203,4 +203,8 @@ public class NullCartesianMachine implements CartesianPrinter {
 		return (now - startTime) / 1000.0;
 	}
 
+	public void printStartDelay(long msDelay) {
+		// This would extrude for the given interval to ensure polymer flow.
+	}
+
 }

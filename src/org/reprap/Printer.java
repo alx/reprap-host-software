@@ -13,7 +13,8 @@ public interface Printer {
 	
 	public void moveTo(double x, double y, double z) throws ReprapException, IOException;
 	public void printTo(double x, double y, double z) throws ReprapException, IOException;
-
+	public void printStartDelay(long msDelay);	// Fire up the extruder for a lead-in
+	
 	public void selectMaterial(int materialIndex);
 	
 	/**
