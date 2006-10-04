@@ -62,6 +62,7 @@ import javax.vecmath.*;
 import com.sun.j3d.utils.picking.*;
 import com.sun.j3d.loaders.Scene;
 import org.j3d.renderer.java3d.loaders.STLLoader;
+import org.reprap.Preferences;
 
 public class STLObject
 {
@@ -128,6 +129,8 @@ public class STLObject
                     bbox = (BoundingBox)((Shape3D)value).getBounds();
                     
                     ((Shape3D)value).setCapability(Shape3D.ALLOW_APPEARANCE_WRITE );
+                    GeometryArray g = (GeometryArray)((Shape3D)value).getGeometry();
+                    g.setCapability(GeometryArray.ALLOW_COORDINATE_WRITE);
                     ((Shape3D)value).setAppearance(app);
                     
                     Object key = enumKeys.nextElement( );
@@ -294,6 +297,49 @@ public class STLObject
             {
                 g.getCoordinate(i, p3d);
                 p3d.add(p);
+                g.setCoordinate(i, p3d);
+            }
+        }
+    }
+    
+    // Scale the object by s permanently (i.e. don't just apply a transform).
+    
+    void recursiveSetScale( Object value, double s) 
+    {
+        if( value instanceof SceneGraphObject != false ) 
+        {
+            // set the user data for the item
+            SceneGraphObject sg = (SceneGraphObject) value;
+            
+            // recursively process group
+            if( sg instanceof Group ) 
+            {
+                Group g = (Group) sg;
+                
+                // recurse on child nodes
+                java.util.Enumeration enumKids = g.getAllChildren( );
+                
+                while( enumKids.hasMoreElements( ) != false )
+                    recursiveSetScale( enumKids.nextElement( ), s );
+            } else if ( sg instanceof Shape3D ) 
+            {
+                    s3dScale((Shape3D)sg, s);
+            }
+        }
+    }
+    
+   // Scale a Shape3D permanently by s
+    
+    void s3dScale(Shape3D shape, double s)
+    {
+        GeometryArray g = (GeometryArray)shape.getGeometry();
+        Point3d p3d = new Point3d();
+        if(g != null)
+        {
+            for(int i = 0; i < g.getVertexCount(); i++) 
+            {
+                g.getCoordinate(i, p3d);
+                p3d.scale(s);
                 g.setCoordinate(i, p3d);
             }
         }
@@ -498,6 +544,60 @@ public class STLObject
         mouse.setTransform(fromZeroT);       
     }
     
+   // Rescale the STL object (for inch -> mm conversion)
+    
+    void rScale(double s)
+    {
+        if(mouse == null)
+            return;
+        
+        // Get the mouse transform and split it into a rotation and a translation
+        
+        Transform3D mtrans = new Transform3D();
+        mouse.getTransform(mtrans);
+        Vector3d mouseTranslation = new Vector3d();
+        Matrix3d mouseRotation = new Matrix3d();
+        mtrans.get(mouseRotation, mouseTranslation);
+        
+        // Subtract the part of the translation that puts the bottom left corner
+        // at the origin.
+        
+        Vector3d zero = scale(size, 0.5);
+        mouseTranslation = add(mouseTranslation, neg(zero));       
+        
+        // Rescale the box
+        
+       	size.scale(s);
+        
+        // Add a new translation to put the bottom left corner
+        // back at the origin.
+        
+        zero = scale(size, 0.5);
+        mouseTranslation = add(mouseTranslation, zero);
+        
+        // Then slide us back where we were
+        
+        Transform3D fromZeroT = new Transform3D();
+        fromZeroT.setTranslation(mouseTranslation);
+        
+        // Apply the whole new transformation
+        
+        mouse.setTransform(fromZeroT);
+        
+        // Rescale the object
+ 
+        Enumeration things;
+
+        things = stl.getAllChildren();
+        while(things.hasMoreElements()) 
+        {
+        	Object value = things.nextElement();
+        	recursiveSetScale(value, s);
+        }
+
+
+    }
+    
     // Apply X, Y or Z 90 degree clicks to us if we're the active (i.e. mouse
     // controlled) object.
     
@@ -532,6 +632,17 @@ public class STLObject
         x90.set(new AxisAngle4d(0, 0, 1, 0.5*Math.PI));
         
         rClick(x90);
+    } 
+    
+    // This is called when the user wants to convert the object from
+    // inches to mm.
+    
+    public void inToMM()
+    {
+        if(mouse == null)
+            return;
+        
+        rScale(Preferences.inchesToMillimetres());
     } 
 }
 

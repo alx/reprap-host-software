@@ -173,6 +173,14 @@ public class Main {
 			}});
         manipMenu.add(manipZ);
         
+        JMenuItem inToMM = new JMenuItem("Scale by 25.4 (in -> mm)", KeyEvent.VK_I);
+        inToMM.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_I, ActionEvent.CTRL_MASK));
+        inToMM.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				oninToMM();
+			}});
+        manipMenu.add(inToMM);
+        
         JMenuItem deleteSTL = new JMenuItem("Delete selected object", KeyEvent.VK_W);
         deleteSTL.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, ActionEvent.CTRL_MASK));
         deleteSTL.addActionListener(new ActionListener() {
@@ -457,6 +465,10 @@ public class Main {
     private void onRotateZ() {
   	  builder.zRotate();
     }
+    
+    private void oninToMM() {
+    	  builder.inToMM();
+      }  
     
     private void onDelete() {
     	  builder.deleteSTL();

@@ -40,6 +40,7 @@ public class Preferences {
 	public static double lessGridSquare() { return lessGridSquare; }
 	public static double tiny() { return tiny; }
 	public static double swell() { return swell; }
+	public static double inchesToMillimetres() { return 25.4; }
 	
 	
 	// Main preferences constructor

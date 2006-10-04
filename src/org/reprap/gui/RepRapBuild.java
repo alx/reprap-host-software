@@ -315,6 +315,11 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 			lastPicked.zClick();
 	}
 	
+	public void inToMM() {
+		if (lastPicked != null)
+			lastPicked.inToMM();
+	}
+	
 	public void deleteSTL()
 	{
 		if (lastPicked == null)
