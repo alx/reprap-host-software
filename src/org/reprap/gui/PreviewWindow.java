@@ -1,6 +1,6 @@
 package org.reprap.gui;
 import java.awt.BorderLayout;
-
+import javax.media.j3d.*;
 import javax.swing.WindowConstants;
 
 public class PreviewWindow extends javax.swing.JFrame implements Previewer {
@@ -50,4 +50,8 @@ public class PreviewWindow extends javax.swing.JFrame implements Previewer {
 		panel.setCancelled(isCancelled);
 	}
 	
+	public void setLowerShell(Shape3D ls)
+	{
+		panel.setLowerShell(ls);
+	}
 }

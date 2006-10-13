@@ -1,5 +1,7 @@
 package org.reprap.gui;
 
+import javax.media.j3d.*;
+
 public interface Previewer {
 
 	public void setMaterial(int index, double extrusionSize, double extrusionHeight);
@@ -9,4 +11,5 @@ public interface Previewer {
 	public void reset();
 	public boolean isCancelled();
 	public void setCancelled(boolean isCancelled);
+	public void setLowerShell(Shape3D ls);
 }

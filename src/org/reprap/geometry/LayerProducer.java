@@ -7,7 +7,7 @@
 package org.reprap.geometry;
 
 import java.io.IOException;
-
+import javax.media.j3d.*;
 import org.reprap.Printer;
 import org.reprap.Preferences;
 import org.reprap.ReprapException;
@@ -18,7 +18,7 @@ public class LayerProducer {
 	private static int solidMaterial = 1;
 	public static int gapMaterial() { return gapMaterial; }
 	public static int solidMaterial() { return solidMaterial; }
-	
+	private Shape3D lowerShell;
 
 	private Printer printer;
 	private RrPolygonList hatchedPolygons;
@@ -34,8 +34,9 @@ public class LayerProducer {
 	 * @param list 
 	 * @param hatchDirection
 	 */
-	public LayerProducer(Printer printer, RrCSGPolygon csgPol, RrHalfPlane hatchDirection) {
+	public LayerProducer(Printer printer, RrCSGPolygon csgPol, Shape3D ls, RrHalfPlane hatchDirection) {
 		this.printer = printer;
+		printer.setLowerShell(ls);
 		
 		
 		RrCSGPolygon offBorder = csgPol.offset(-0.5*printer.getExtrusionSize());
@@ -121,16 +122,17 @@ public class LayerProducer {
 	 */
 	public void plot() throws ReprapException, IOException
 	{
-			int leng = borderPolygons.size();
-			for(int i = 0; i < leng; i++) {
-				plot(borderPolygons.polygon(i));
-			}			
-			leng = hatchedPolygons.size();
-			for(int i = 0; i < leng; i++) {
-				if (printer.isCancelled())
-					break;
-				plot(hatchedPolygons.polygon(i));
-			}
+		printer.setLowerShell(lowerShell);
+		int leng = borderPolygons.size();
+		for(int i = 0; i < leng; i++) {
+			plot(borderPolygons.polygon(i));
+		}			
+		leng = hatchedPolygons.size();
+		for(int i = 0; i < leng; i++) {
+			if (printer.isCancelled())
+				break;
+			plot(hatchedPolygons.polygon(i));
+		}
 	}
 	
 }

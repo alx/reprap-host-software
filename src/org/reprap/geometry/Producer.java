@@ -1,6 +1,6 @@
 package org.reprap.geometry;
 
-
+import javax.media.j3d.*;
 import org.reprap.Preferences;
 import org.reprap.Printer;
 import org.reprap.geometry.polygons.*;
@@ -207,14 +207,15 @@ public class Producer {
 			LayerProducer layer;
 			if(testPiece)
 			{
-				layer = new LayerProducer(reprap, hex(),
+				layer = new LayerProducer(reprap, hex(), null,
 						isEvenLayer?evenHatchDirection:oddHatchDirection);
 			} else
 			{
 				RrCSGPolygon slice = stlc.slice(z+reprap.getExtrusionHeight()*0.5, 
 						LayerProducer.solidMaterial(), LayerProducer.gapMaterial());
+				Shape3D lowerShell = stlc.getShape3D();
 				if(slice != null)
-					layer = new LayerProducer(reprap, slice,
+					layer = new LayerProducer(reprap, slice, lowerShell,
 						isEvenLayer?evenHatchDirection:oddHatchDirection);
 				else
 					layer = null;

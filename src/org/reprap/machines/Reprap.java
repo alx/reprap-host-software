@@ -1,7 +1,7 @@
 package org.reprap.machines;
 
 import java.io.IOException;
-
+import javax.media.j3d.*;
 import org.reprap.CartesianPrinter;
 import org.reprap.Preferences;
 import org.reprap.ReprapException;
@@ -29,7 +29,7 @@ public class Reprap implements CartesianPrinter {
 	private GenericStepperMotor motorX;
 	private GenericStepperMotor motorY;
 	private GenericStepperMotor motorZ;
-
+	
 	double totalDistanceMoved = 0.0;
 	double totalDistanceExtruded = 0.0;
 
@@ -452,6 +452,11 @@ public class Reprap implements CartesianPrinter {
 		{
 			// If anything goes wrong, we'll let someone else catch it.
 		}
+	}
+	
+	public void setLowerShell(Shape3D ls)
+	{
+		previewer.setLowerShell(ls);
 	}
 }
 

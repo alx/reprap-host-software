@@ -111,7 +111,7 @@ import com.sun.j3d.utils.picking.PickTool;
 
 // This is the main public class that creates a virtual world of the RepRap
 // working volume, allows you to put STL-file objects in it, move them about
-// to arrange them, (and builds them in the machine - one day soon).
+// to arrange them, and build them in the machine.
 
 public class RepRapBuild extends Panel3D implements MouseListener {
 	private MouseObject mouse = null;
@@ -315,10 +315,14 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 			lastPicked.zClick();
 	}
 	
+	// Callback for a request to convert units
+	
 	public void inToMM() {
 		if (lastPicked != null)
 			lastPicked.inToMM();
 	}
+	
+	// Callback to delete one of the loaded objects
 	
 	public void deleteSTL()
 	{

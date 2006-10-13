@@ -1,7 +1,7 @@
 package org.reprap;
 
 import java.io.IOException;
-
+import javax.media.j3d.*;
 import org.reprap.gui.Previewer;
 
 public interface Printer {
@@ -95,4 +95,6 @@ public interface Printer {
 	public long getDelay();
 
 	public double getTotalElapsedTime();
+	
+	public void setLowerShell(Shape3D ls);
 }

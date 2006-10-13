@@ -1,13 +1,6 @@
 package org.reprap.gui;
 
-import javax.media.j3d.AmbientLight;
-import javax.media.j3d.Background;
-import javax.media.j3d.Bounds;
-import javax.media.j3d.BranchGroup;
-import javax.media.j3d.DirectionalLight;
-import javax.media.j3d.Group;
-import javax.media.j3d.TransformGroup;
-import javax.media.j3d.ViewPlatform;
+import javax.media.j3d.*;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.vecmath.Color3f;
@@ -233,5 +226,16 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	public void setCancelled(boolean isCancelled) {
 		statusWindow.setCancelled(isCancelled);
 	}
-
+	
+	public void setLowerShell(Shape3D ls)
+	{
+		if(ls == null)
+			return;
+		extrusions.removeAllChildren();
+		BranchGroup bg = new BranchGroup();
+		ls.setAppearance(extrusion_app);
+		bg.addChild(ls);
+		bg.setCapability(BranchGroup.ALLOW_DETACH);
+		extrusions.addChild(bg);
+	}
 }

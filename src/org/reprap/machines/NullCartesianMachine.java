@@ -1,7 +1,7 @@
 package org.reprap.machines;
 
 import java.io.IOException;
-
+import javax.media.j3d.*;
 import org.reprap.CartesianPrinter;
 import org.reprap.Preferences;
 import org.reprap.ReprapException;
@@ -206,5 +206,9 @@ public class NullCartesianMachine implements CartesianPrinter {
 	public void printStartDelay(long msDelay) {
 		// This would extrude for the given interval to ensure polymer flow.
 	}
-
+	
+	public void setLowerShell(Shape3D ls)
+	{
+		previewer.setLowerShell(ls);
+	}
 }
