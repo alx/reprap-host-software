@@ -370,8 +370,8 @@ public class Preferences extends javax.swing.JDialog {
 					{
 						jLabel7 = new JLabel();
 						jPanelMotors.add(jLabel7);
-						jLabel7.setText("Scale");
-						jLabel7.setBounds(259, 56, 77, 28);
+						jLabel7.setText("Scale (steps/mm)");
+						jLabel7.setBounds(259, 56, 177, 28);
 					}
 					{
 						motorAddress3 = new JTextField();
