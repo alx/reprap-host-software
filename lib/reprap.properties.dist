@@ -97,6 +97,11 @@ ExtrusionDelay=5000
 # Period between layers to drive cooling system (in seconds)
 CoolingPeriod=0
 
+# The pause after extrusion starts before the actual movement
+# starts.  This is to allow the material to start flowing
+# before moving.  (milliseconds)
+PreMoveDelay=10
+
 # Whether or not to idle the Z axis motors between levels
 IdleZAxis=false
 
