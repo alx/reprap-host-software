@@ -15,6 +15,7 @@ import org.reprap.comms.messages.OutgoingByteMessage;
 public class GenericExtruder extends Device {
 
 	public static final byte MSG_SetActive = 1;
+	public static final byte MSG_SetActiveReverse = 2;
 	public static final byte MSG_IsEmpty = 8;
 	public static final byte MSG_SetHeat = 9;
 	public static final byte MSG_GetTemp = 10;
@@ -119,7 +120,7 @@ public class GenericExtruder extends Device {
 			pollThread.interrupt();
 		}
 	}
-	
+
 	/**
 	 * Start the extruder motor at a given speed.  This ranges from 0
 	 * to 255 but is scaled by maxSpeed and t0, so that 255 corresponds to the
@@ -129,6 +130,19 @@ public class GenericExtruder extends Device {
 	 * @throws IOException
 	 */
 	public void setExtrusion(int speed) throws IOException {
+		setExtrusion(speed, false);
+	}
+	
+	/**
+	 * Start the extruder motor at a given speed.  This ranges from 0
+	 * to 255 but is scaled by maxSpeed and t0, so that 255 corresponds to the
+	 * highest permitted speed.  It is also scaled so that 0 would correspond
+	 * with the lowest extrusion speed.
+	 * @param speed The speed to drive the motor at (0-255)
+	 * @param reverse If set, run extruder in reverse
+	 * @throws IOException
+	 */
+	public void setExtrusion(int speed, boolean reverse) throws IOException {
 		// Assumption: Between t0 and maxSpeed, the speed is fairly linear
 		int scaledSpeed;
 		
@@ -140,7 +154,8 @@ public class GenericExtruder extends Device {
 		lock();
 		try {
 			OutgoingMessage request =
-				new OutgoingByteMessage(MSG_SetActive, (byte)scaledSpeed);
+				new OutgoingByteMessage(reverse ? MSG_SetActiveReverse : MSG_SetActive,
+						(byte)scaledSpeed);
 			sendMessage(request);
 		}
 		finally {

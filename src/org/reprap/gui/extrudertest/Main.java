@@ -1,6 +1,7 @@
 package org.reprap.gui.extrudertest;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ComponentAdapter;
 
 import javax.swing.JButton;
 
@@ -39,6 +40,7 @@ public class Main extends javax.swing.JDialog {
 	private JLabel jLabel1;
 	private JLabel jLabel2;
 	private JLabel jLabel4;
+	private JCheckBox reverseCheckbox;
 	private JCheckBox coolerActive;
 	private JCheckBox materialEmpty;
 	private JButton extrudeButton;
@@ -59,6 +61,8 @@ public class Main extends javax.swing.JDialog {
 	private boolean pollThreadExiting = false;
 
 	private boolean extruding = false;
+	
+	private boolean reverse = false;
 	
 	/**
 	* Auto-generated main method to display this JDialog
@@ -246,6 +250,17 @@ public class Main extends javax.swing.JDialog {
 				materialEmpty.setBounds(182, 14, 175, 21);
 			}
 			{
+				reverseCheckbox = new JCheckBox();
+				getContentPane().add(reverseCheckbox);
+				reverseCheckbox.setText("Reverse");
+				reverseCheckbox.setBounds(273, 203, 91, 28);
+				reverseCheckbox.addChangeListener(new ChangeListener() {
+					public void stateChanged(ChangeEvent evt) {
+						reverseCheckboxStateChanged(evt);
+					}
+				});
+			}
+			{
 				getContentPane().setLayout(null);
 				this.setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 				this.setTitle("Extruder Exerciser");
@@ -308,11 +323,16 @@ public class Main extends javax.swing.JDialog {
 
 	private void setExtruderSpeed() {
 		try {
-			extruder.setExtrusion(extruding?extruderSpeed.getValue():0);
+			extruder.setExtrusion(extruding?extruderSpeed.getValue():0, reverse);
 		} catch (Exception ex) {
 			JOptionPane.showMessageDialog(null, "Extruder exception: " + ex);
 			ex.printStackTrace();
 		}
+	}
+	
+	private void reverseCheckboxStateChanged(ChangeEvent evt) {
+		reverse = reverseCheckbox.isSelected();
+		setExtruderSpeed();
 	}
 
 }
