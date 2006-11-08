@@ -297,6 +297,25 @@ public class RrPolygon
 		return 0;
 	}
 	
+	private int findAngleStart(int v1, double d2)
+	{
+		int leng = size();
+		Rr2Point p1 = point(v1%leng);
+		int v2 = v1;
+		for(int i = 0; i <= leng; i++)
+		{
+			v2++;
+			RrLine line = new RrLine(p1, point(v2%leng));
+			for (int j = v1+1; j < v2; j++)
+			{
+				if (line.d_2(point(j%leng)).x() > d2)
+					return v2 - 1;
+			}	
+		}
+		System.err.println("RrPolygon.findAngleStart(): polygon is all one straight line!");
+		return 0;
+	}
+	
 	/**
 	 * Simplify a polygon by deleting points from it that
 	 * are closer than d to lines joining other points
@@ -305,31 +324,21 @@ public class RrPolygon
 	 */
 	public RrPolygon simplify(double d)
 	{
-		if(size() <= 3)
+		int leng = size();
+		if(leng <= 3)
 			return new RrPolygon(this);
 		RrPolygon r = new RrPolygon();
-		int leng = size();
 		double d2 = d*d;
-		int i = 0;
-		int jold = 0;
-		while(i < leng - 1)
+		int v1 = findAngleStart(0, d2);
+		r.add(point(v1%leng), flag(v1%leng));
+		int v2 = v1;
+		while(true)
 		{
-			r.add(point(i), flag(i));
-			int j = i + 1;
-			find_ignored: while (j < leng + 1)
-			{
-				jold = j;
-				j++;
-				RrLine line = new RrLine(point(i), point(j%leng));
-				for (int k = i+1; k < j; k++)
-				{
-					if (line.d_2(point(k%leng)).x() > d2)
-						break find_ignored;
-				}
-			}
-			i = jold;
+			v2 = findAngleStart(v2, d2);
+			if(v2 > leng)
+				return(r);
+			r.add(point(v2%leng), flag(v2%leng));
 		}
-		return r;
 	}
 
 }

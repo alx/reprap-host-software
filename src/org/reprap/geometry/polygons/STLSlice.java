@@ -578,25 +578,25 @@ public class STLSlice
     	return result;
     }
 
-//    /**
-//     * Useful for debugging - plot a bit of the quad tree.
-//     *
-//     */
-//    private void quickPlot()
-//    {
-//    	RrGraphics g = new RrGraphics(box.scale(1.5), true);
-//		g.addSTL(this);
-//		System.out.print("Type any character: ");
-//		System.out.flush();
-//		try
-//		{
-//			System.in.read();
-//		} catch(IOException err)
-//		{
-//			System.err.print("Uh?");
-//		}
-//		g = null;
-//    }
+    /**
+     * Useful for debugging - plot a bit of the quad tree.
+     *
+     */
+    private void quickPlot()
+    {
+    	RrGraphics g = new RrGraphics(box.scale(1.5), true);
+		g.addSTL(this);
+		System.out.print("Type any character: ");
+		System.out.flush();
+		try
+		{
+			System.in.read();
+		} catch(IOException err)
+		{
+			System.err.print("Uh?");
+		}
+		g = null;
+    }
 //    
 //    /**
 //     * Useful for debugging - print statistics
@@ -775,17 +775,16 @@ public class STLSlice
 		// segments.  Then we just run round joining up all the pairs of
 		// ends.
 
-		
 		divide();
-		
+
 		// Run round joining up all the pairs of ends...
 		
 		RrPolygonList pgl = conquer(fg, fs);
 		
 		// Remove wrinkles
-		
+	   	//RrGraphics g = new RrGraphics(pgl, false);
 		pgl = pgl.simplify(Preferences.gridRes()*1.5);
-
+		//RrGraphics g2 = new RrGraphics(pgl, false);
 		// Check for a silly result.
 		
 		if(pgl.size() < 1)

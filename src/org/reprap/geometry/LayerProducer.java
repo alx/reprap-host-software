@@ -38,7 +38,6 @@ public class LayerProducer {
 		this.printer = printer;
 		printer.setLowerShell(ls);
 		
-		
 		RrCSGPolygon offBorder = csgPol.offset(-0.5*printer.getExtrusionSize());
 		RrCSGPolygon offHatch = csgPol.offset(-1.5*printer.getExtrusionSize());
 		
