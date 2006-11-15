@@ -211,4 +211,17 @@ public class NullCartesianMachine implements CartesianPrinter {
 	{
 		previewer.setLowerShell(ls);
 	}
+
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#setZManual()
+	 */
+	public void setZManual() {
+		setZManual(0.0);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#setZManual(double)
+	 */
+	public void setZManual(double zeroPoint) {
+	}
 }

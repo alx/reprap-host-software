@@ -41,6 +41,23 @@ public interface Printer {
 	public double getX();
 	public double getY();
 	public double getZ();
+
+	/**
+	 * Allow the user to manually calibrate the Z axis position to deal
+	 * with special circumstances like different extruder sizes, platform
+	 * additions or subtractive fabrication.
+	 */
+	public void setZManual() throws IOException;
+
+	/**
+	 * Allow the user to manually calibrate the Z axis position to deal
+	 * with special circumstances like different extruder sizes, platform
+	 * additions or subtractive fabrication.
+	 * 
+	 * @param zeroPoint The point the user selects will be treated as the
+	 * given Z value rather than 0.0 
+	 */
+	public void setZManual(double zeroPoint) throws IOException;
 	
 	/**
 	 * Returns the extrusion size for the currently selected material

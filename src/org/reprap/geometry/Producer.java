@@ -114,7 +114,8 @@ public class Producer {
 		int movementSpeedXY = 230;
 		int movementSpeedZ = 230;
 		
-		int coolingPeriod = Preferences.loadGlobalInt("CoolingPeriod"); 
+		int coolingPeriod = Preferences.loadGlobalInt("CoolingPeriod");
+		boolean subtractive = Preferences.loadGlobalBool("Subtractive");
 		
 		try {
 			extrusionSpeed = Preferences.loadGlobalInt("ExtrusionSpeed");
@@ -135,15 +136,18 @@ public class Producer {
 		reprap.selectMaterial(0);
 		reprap.setExtruderSpeed(extrusionSpeed);
 
+		
 		// A "warmup" segment to get things in working order
-		System.out.println("Printing warmup segments, moving to (0,5)");
-		reprap.moveTo(0, 5, 0);
-		System.out.println("Printing warmup segments, printing to (0,20)");
-		reprap.printTo(0, 20, 0);
-		System.out.println("Printing warmup segments, printing to (2,20)");
-		reprap.printTo(2, 20, 0);
-		System.out.println("Printing warmup segments, printing to (2,5)");
-		reprap.printTo(2, 5, 0);
+		if (!subtractive) {
+			System.out.println("Printing warmup segments, moving to (0,5)");
+			reprap.moveTo(0, 5, 0);
+			System.out.println("Printing warmup segments, printing to (0,20)");
+			reprap.printTo(0, 20, 0);
+			System.out.println("Printing warmup segments, printing to (2,20)");
+			reprap.printTo(2, 20, 0);
+			System.out.println("Printing warmup segments, printing to (2,5)");
+			reprap.printTo(2, 5, 0);
+		}
 		
 		// This should now split off layers one at a time
 		// and pass them to the LayerProducer.  
@@ -163,8 +167,23 @@ public class Producer {
 			// zMax = 1.6;  // For testing.
 		}
 		
+		double startZ;
+		double endZ;
+		double stepZ;
+		if (subtractive) {
+			// Subtractive construction works from the top, downwards
+			startZ = zMax;
+			endZ = 0;
+			stepZ = -reprap.getExtrusionHeight();
+			reprap.setZManual(startZ);
+		} else {
+			// Normal constructive fabrication, start at the bottom and work up
+			startZ = 0;
+			endZ = zMax;
+			stepZ = reprap.getExtrusionHeight();
+		}
 		
-		for(double z = 0; z < zMax; z += reprap.getExtrusionHeight()) {
+		for(double z = startZ; subtractive ? z > endZ : z < endZ; z += stepZ) {
 			
 			if (reprap.isCancelled())
 				break;
@@ -174,7 +193,7 @@ public class Producer {
 			reprap.moveTo(reprap.getX(), reprap.getY(), z);
 
 			// Layer cooling phase - after we've just raised the head.
-			if ((z>0)&&(coolingPeriod > 0)) {
+			if (z != startZ && coolingPeriod > 0) {
 				System.out.println("Starting a cooling period");
 				reprap.setCooling(true);
 				Thread.sleep(1000 * coolingPeriod);
@@ -184,26 +203,9 @@ public class Producer {
 				System.out.println("End of cooling period");
 			}
 			
-			
-			
 			if (reprap.isCancelled())
 				break;
-			
 
-// ************ Simon's example start
-//			RrPolygonList list = new RrPolygonList();
-//			// Add a square block
-//
-//			list.add(square());
-//	
-//			// Add a hex block
-//			
-//			list.add(hex());
-//
-//			LayerProducer layer = new LayerProducer(reprap, list,
-//					isEvenLayer?evenHatchDirection:oddHatchDirection);
-			
-// ************ Simon's examples end - Adrian's start
 			LayerProducer layer;
 			if(testPiece)
 			{
@@ -221,16 +223,17 @@ public class Producer {
 					layer = null;
 
 			}
-
-// ************ Adrian's example end.
 			
 			if(layer != null)
 				layer.plot();
 		
 			isEvenLayer = !isEvenLayer;
 		}
-		
-		reprap.moveTo(0, 0, reprap.getZ());
+
+		if (subtractive)
+			reprap.moveTo(0, 0, startZ);
+		else
+			reprap.moveTo(0, 0, reprap.getZ());
 		
 		reprap.terminate();
 

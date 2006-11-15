@@ -11,6 +11,8 @@ import org.reprap.comms.snap.SNAPCommunicator;
 import org.reprap.devices.GenericExtruder;
 import org.reprap.devices.GenericStepperMotor;
 import org.reprap.devices.pseudo.LinePrinter;
+import org.reprap.gui.CalibrateZAxis;
+import org.reprap.gui.ContinuationMesage;
 import org.reprap.gui.Previewer;
 
 /**
@@ -134,16 +136,28 @@ public class Reprap implements CartesianPrinter {
 	public void moveTo(double x, double y, double z) throws ReprapException, IOException {
 		
 		if (isCancelled()) return;
+		
+		if (currentX == x && currentY == y && currentZ == z)
+			return;
 
-		if (z != currentZ) {
-			totalDistanceMoved += Math.abs(currentZ - z);
-			if (!excludeZ) motorZ.seekBlocking(speedZ, convertToStepZ(z));
+		double liftedZ = z + extrusionHeight;
+		
+		// Raise head slightly before move
+		if (liftedZ != currentZ) {
+			totalDistanceMoved += Math.abs(currentZ - liftedZ);
+			if (!excludeZ) motorZ.seekBlocking(speedZ, convertToStepZ(liftedZ));
 			if (idleZ) motorZ.setIdle();
+			currentZ = liftedZ;
 		}
-
+		
 		layer.moveTo(convertToStepX(x), convertToStepY(y), speedXY);
 		totalDistanceMoved += segmentLength(x - currentX, y - currentY);
 
+		// Move head back down to surface
+		totalDistanceMoved += Math.abs(currentZ - z);
+		if (!excludeZ) motorZ.seekBlocking(speedZ, convertToStepZ(z));
+		if (idleZ) motorZ.setIdle();
+		
 		currentX = x;
 		currentY = y;
 		currentZ = z;
@@ -169,8 +183,6 @@ public class Reprap implements CartesianPrinter {
 		
 		if (x == convertToPositionX(layer.getCurrentX()) && y == convertToPositionY(layer.getCurrentY()) && z != currentZ) {
 			// Print a simple vertical extrusion
-			// TODO extrusion speed should be based on actual head speed
-			// which depends on the angle of the line
 			double distance = Math.abs(currentZ - z);
 			totalDistanceExtruded += distance;
 			totalDistanceMoved += distance;
@@ -307,7 +319,7 @@ public class Reprap implements CartesianPrinter {
 	}
 	
 	private void EnsureHot() throws ReprapException, IOException {
-		double threshold = extruder.getTemperatureTarget() * 0.88;	// Changed from 0.95 by Vik.
+		double threshold = extruder.getTemperatureTarget() * 0.65;	// Changed from 0.95 by Vik.
 		
 		if (extruder.getTemperature() >= threshold)
 			return;
@@ -371,6 +383,7 @@ public class Reprap implements CartesianPrinter {
 		motorX.homeReset(speedXY);
 		motorY.homeReset(speedXY);
 		if (!excludeZ) motorZ.homeReset(speedZ);
+		currentX = currentY = currentZ = 0.0;
 	}
 
 	public double getX() {
@@ -457,6 +470,32 @@ public class Reprap implements CartesianPrinter {
 	public void setLowerShell(Shape3D ls)
 	{
 		previewer.setLowerShell(ls);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#setZManual()
+	 */
+	public void setZManual() throws IOException {
+		setZManual(0.0);
+	}
+
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#setZManual(double)
+	 */
+	public void setZManual(double zeroPoint) throws IOException {
+		
+		CalibrateZAxis msg =
+			new CalibrateZAxis(null, motorZ, scaleZ, speedZ);
+		msg.setVisible(true);
+		try {
+			synchronized(msg) {
+				msg.wait();
+			}
+		} catch (Exception ex) {
+		}
+		msg.dispose();
+		
+		motorZ.setPosition(convertToStepZ(zeroPoint));
 	}
 }
 

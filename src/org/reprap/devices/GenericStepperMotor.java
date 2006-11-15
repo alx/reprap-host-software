@@ -148,8 +148,7 @@ public class GenericStepperMotor extends Device {
 		lock();
 		try {
 			setNotification();
-			IncomingContext replyContext = sendMessage(new RequestSeekPosition(speed, position));
-			new RequestSeekResponse(replyContext);
+			new RequestSeekResponse(this, new RequestSeekPosition(speed, position), 5000);
 			setNotificationOff();
 		} catch (Exception e) {
 			// TODO: Nasty error. But WTF do we do about it?
@@ -272,8 +271,8 @@ public class GenericStepperMotor extends Device {
 	}
 
 	protected class RequestSeekResponse extends IncomingIntMessage {
-		public RequestSeekResponse(IncomingContext incomingContext) throws IOException {
-			super(incomingContext);
+		public RequestSeekResponse(Device device, OutgoingMessage message, long timeout) throws IOException {
+			super(device, message, timeout);
 		}
 		
 		protected boolean isExpectedPacketType(byte packetType) {
