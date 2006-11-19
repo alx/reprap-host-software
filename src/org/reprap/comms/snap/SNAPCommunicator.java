@@ -20,8 +20,8 @@ import org.reprap.comms.OutgoingMessage;
 
 public class SNAPCommunicator implements Communicator {
 
-	private final static int ackTimeout = 600;
-	private final static int messageTimeout = 600;
+	private final static int ackTimeout = 300;
+	private final static int messageTimeout = 300;
     
 	private Address localAddress;
 	
@@ -38,6 +38,7 @@ public class SNAPCommunicator implements Communicator {
 	public SNAPCommunicator(String portName, int baudRate, Address localAddress)
 			throws NoSuchPortException, PortInUseException, IOException, UnsupportedCommOperationException {
 		this.localAddress = localAddress;
+		System.out.println("Opening port "+portName);
 		CommPortIdentifier commId = CommPortIdentifier.getPortIdentifier(portName);
 		port = (SerialPort)commId.open(portName, 30000);
 		

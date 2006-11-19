@@ -224,4 +224,14 @@ public class NullCartesianMachine implements CartesianPrinter {
 	 */
 	public void setZManual(double zeroPoint) {
 	}
+
+	public void homeToZeroX() throws ReprapException, IOException {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void homeToZeroY() throws ReprapException, IOException {
+		// TODO Auto-generated method stub
+		
+	}
 }

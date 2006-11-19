@@ -202,6 +202,16 @@ public class Reprap implements CartesianPrinter {
 		currentY = y;
 	}
 
+	// Move to zero stop on X axis.
+	public void homeToZeroX() throws ReprapException, IOException {
+		motorX.homeReset(getSpeed());
+	}
+	
+	// Move to zero stop on Y axis.
+	public void homeToZeroY() throws ReprapException, IOException {
+		motorY.homeReset(getSpeed());
+	}
+
 	public void selectMaterial(int materialIndex) {
 		if (isCancelled()) return;
 
