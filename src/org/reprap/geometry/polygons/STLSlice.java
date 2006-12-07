@@ -215,8 +215,8 @@ public class STLSlice
 	
 	public Shape3D getShape3D()
 	{
-		return null;
-		//return below;
+		//return null;
+		return below;
 	}
 	
 	/**
