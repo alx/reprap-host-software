@@ -75,7 +75,7 @@ class snakeEnd
 }
 
 /**
- * Polygons as CSG combinations of half spaces with recursive quad-tree
+ * Polygons as  CSG combinations of half spaces with recursive quad-tree
  * division of their containing boxes.
  * 
  * TO DO: Change the quad tree to a BSP tree?
