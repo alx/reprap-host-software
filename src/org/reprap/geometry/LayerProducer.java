@@ -36,7 +36,7 @@ public class LayerProducer {
 	 */
 	public LayerProducer(Printer printer, RrCSGPolygon csgPol, Shape3D ls, RrHalfPlane hatchDirection) {
 		this.printer = printer;
-		printer.setLowerShell(ls);
+		//printer.setLowerShell(ls);
 		
 		RrCSGPolygon offBorder = csgPol.offset(-0.5*printer.getExtrusionSize());
 		RrCSGPolygon offHatch = csgPol.offset(-1.5*printer.getExtrusionSize());
@@ -122,12 +122,19 @@ public class LayerProducer {
 	public void plot() throws ReprapException, IOException
 	{
 		printer.setLowerShell(lowerShell);
-		int leng = borderPolygons.size();
-		for(int i = 0; i < leng; i++) {
+		int i;
+		
+		//borderPolygons = borderPolygons.filterShorts(Preferences.machineResolution()*2);
+		for(i = 0; i < borderPolygons.size(); i++) 
+		{
+			if (printer.isCancelled())
+				break;
 			plot(borderPolygons.polygon(i));
-		}			
-		leng = hatchedPolygons.size();
-		for(int i = 0; i < leng; i++) {
+		}
+		
+		//hatchedPolygons = hatchedPolygons.filterShorts(Preferences.machineResolution()*2);
+		for(i = 0; i < hatchedPolygons.size(); i++) 
+		{
 			if (printer.isCancelled())
 				break;
 			plot(hatchedPolygons.polygon(i));

@@ -34,6 +34,8 @@ public class Preferences {
 	private static final double lessGridSquare = gridRes*gridRes*0.01;  // Small squared size of a gridsquare
 	private static final double tiny = 1.0e-10;      // A small number
 	private static final double swell = 1.01;        // Quad tree swell factor
+	private static final double machineResolution = 0.1; // RepRap step size in mm - should probably be 
+	                                                     // in the properties file
 	
 	public static int grid() { return grid; }
 	public static double gridRes() { return gridRes; }
@@ -41,6 +43,7 @@ public class Preferences {
 	public static double tiny() { return tiny; }
 	public static double swell() { return swell; }
 	public static double inchesToMillimetres() { return 25.4; }
+	public static double machineResolution() { return machineResolution; }
 	
 	
 	// Main preferences constructor
