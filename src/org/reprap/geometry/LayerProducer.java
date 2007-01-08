@@ -36,6 +36,8 @@ public class LayerProducer {
 	 */
 	public LayerProducer(Printer printer, RrCSGPolygon csgPol, Shape3D ls, RrHalfPlane hatchDirection) {
 		this.printer = printer;
+		
+		// Uncomment the next line to replace lower layers with shell triangles.
 		//printer.setLowerShell(ls);
 		
 		RrCSGPolygon offBorder = csgPol.offset(-0.5*printer.getExtrusionSize());
@@ -124,7 +126,7 @@ public class LayerProducer {
 		printer.setLowerShell(lowerShell);
 		int i;
 		
-		//borderPolygons = borderPolygons.filterShorts(Preferences.machineResolution()*2);
+		borderPolygons = borderPolygons.filterShorts(Preferences.machineResolution()*2);
 		for(i = 0; i < borderPolygons.size(); i++) 
 		{
 			if (printer.isCancelled())
@@ -132,7 +134,7 @@ public class LayerProducer {
 			plot(borderPolygons.polygon(i));
 		}
 		
-		//hatchedPolygons = hatchedPolygons.filterShorts(Preferences.machineResolution()*2);
+		hatchedPolygons = hatchedPolygons.filterShorts(Preferences.machineResolution()*2);
 		for(i = 0; i < hatchedPolygons.size(); i++) 
 		{
 			if (printer.isCancelled())

@@ -342,8 +342,8 @@ public class RrPolygon
 	}
 	
 	/**
-	 * Remove edges that are shorter than tiny from the
-	 *   polygon if they are preceeded by gap material.
+	 * Remove solitary edges that are shorter than tiny from the
+	 *   polygon if they are preceeded and followed by gap material.
 	 * @param tiny
 	 * @param fg
 	 * @return
@@ -352,13 +352,14 @@ public class RrPolygon
 	{
 		RrPolygon r = new RrPolygon();
 		int oldEdgeFlag = flag(size()-1);
-		int i;
+		int i, ii;
 		
 		for(i = 1; i <= size(); i++)
 		{
-			if(oldEdgeFlag == LayerProducer.gapMaterial())
+			ii = i%size();
+			if(oldEdgeFlag == LayerProducer.gapMaterial() && flag(ii) == LayerProducer.gapMaterial())
 			{
-				double d = Rr2Point.sub(point(i%size()), point(i - 1)).mod();
+				double d = Rr2Point.sub(point(ii), point(i - 1)).mod();
 				if(d > tiny)
 					r.add(point(i - 1), flag(i - 1));
 				else
