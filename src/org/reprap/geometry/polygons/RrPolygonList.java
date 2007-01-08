@@ -321,6 +321,29 @@ public class RrPolygonList
 		return r;
 	}
 	
+	/**
+	 * Remove edges that are shorter than tiny from the
+	 *   polygons in the list if those edges are preceeded 
+	 *   by gap material.  
+	 * @param tiny
+	 * @param flag
+	 * @return
+	 */
+	public RrPolygonList filterShorts(double tiny)
+	{
+		RrPolygonList r = new RrPolygonList();
+		int i;
+		RrPolygon p;
+		
+		for(i = 0; i < size(); i++)
+		{
+			p = polygon(i).filterShort(tiny);
+			if(p.size() > 0)
+				r.add(polygon(i));
+		}
+		return r;
+	}
+	
 	// Convex hull code - this uses the QuickHull algorithm
 	
 	/**

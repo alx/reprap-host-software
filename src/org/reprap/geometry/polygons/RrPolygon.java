@@ -340,7 +340,46 @@ public class RrPolygon
 			r.add(point(v2%leng), flag(v2%leng));
 		}
 	}
-
+	
+	/**
+	 * Remove edges that are shorter than tiny from the
+	 *   polygon if they are preceeded by gap material.
+	 * @param tiny
+	 * @param fg
+	 * @return
+	 */
+	public RrPolygon filterShort(double tiny)
+	{
+		RrPolygon r = new RrPolygon();
+		int oldEdgeFlag = flag(size()-1);
+		int i;
+		
+		for(i = 1; i <= size(); i++)
+		{
+			if(oldEdgeFlag == LayerProducer.gapMaterial())
+			{
+				double d = Rr2Point.sub(point(i%size()), point(i - 1)).mod();
+				if(d > tiny)
+					r.add(point(i - 1), flag(i - 1));
+				else
+					System.out.println("Tiny edge removed.");
+			} else
+				r.add(point(i - 1), flag(i - 1));
+			oldEdgeFlag = flag(i - 1);
+		}
+		
+		// Anything left?
+		
+		for(i = 0; i < r.size(); i++)
+		{
+			if(r.flag(i) != LayerProducer.gapMaterial())
+				return r;
+		}
+		
+		// Nothing left
+		
+		return new RrPolygon();
+	}
 }
 
 
