@@ -120,7 +120,7 @@ public class SNAPCommunicator implements Communicator {
 			} catch (IOException ex) {
 				// An error occurred during receive, so send and try again
 				//if (debugMode) {
-					System.out.println("Receive error, re-sending");
+					System.out.println("Receive error, re-sending: " + ex.getMessage());
 					dumpPacket(device, messageToSend);
 				//}
 				continue;
@@ -180,7 +180,7 @@ public class SNAPCommunicator implements Communicator {
 			int c = readByte(timeout);
 			if (debugMode) System.out.print(Integer.toHexString(c) + " ");
 			if (c == -1)
-				throw new IOException();
+				throw new IOException("Timeout receiving byte");
 			if (packet == null) {
 				if (c != 0x54)  // Always wait for a sync byte before doing anything
 					continue;
