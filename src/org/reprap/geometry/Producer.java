@@ -195,10 +195,16 @@ public class Producer {
 			// Layer cooling phase - after we've just raised the head.
 			if (z != startZ && coolingPeriod > 0) {
 				System.out.println("Starting a cooling period");
-				reprap.setCooling(true);
+				// Save where we are. We'll come back after we've cooled off.
+				double storedX=reprap.getX();
+				double storedY=reprap.getY();
+				reprap.setCooling(true);	// On with the fan.
+				reprap.homeToZeroX();		// Seek (0,0)
+				reprap.homeToZeroY();
 				Thread.sleep(1000 * coolingPeriod);
 				reprap.setCooling(false);
 				System.out.println("Brief delay for head to warm up.");
+				reprap.moveTo(storedX, storedY, z);
 				Thread.sleep(200 * coolingPeriod);
 				System.out.println("End of cooling period");
 			}
