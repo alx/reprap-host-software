@@ -45,6 +45,7 @@ public class GenericExtruder extends Device {
 	
 	private double beta;  ///< Thermistor beta
 	private double rz;    ///< Thermistor resistance at 0C
+	private double cap;   ///< Thermistor timing capacitor in farads
 	private double hm;    ///< Heater power gradient
 	private double hb;    ///< Heater power intercept
 	private int maxSpeed; ///< Maximum motor speed (0-255)
@@ -66,8 +67,11 @@ public class GenericExtruder extends Device {
 
 		String prefName = "Extruder" + extruderId; 
 		
+		cap = 1.0e-6;  // For safety - adrian
+		
 		beta = prefs.loadDouble(prefName + "Beta");
 		rz = prefs.loadDouble(prefName + "Rz");
+		cap = prefs.loadDouble(prefName + "Capacitor");
 		hm = prefs.loadDouble(prefName + "hm");
 		hb = prefs.loadDouble(prefName + "hb");
 		maxSpeed = prefs.loadInt(prefName + "MaxSpeed");
@@ -398,7 +402,7 @@ public class GenericExtruder extends Device {
 		// TODO should use calibration value instead of first principles
 		
 		//double resistor = 10000;                   // ohms
-		double c = 1e-6;                           // farads
+		//double c = 1e-6;                           // farads - now cap from prefs(AB)
 		double scale = 1 << (tempScaler+1);
 		double clock = 4000000.0 / (4.0 * scale);  // hertz		
 		double vdd = 5.0;                          // volts
@@ -407,7 +411,7 @@ public class GenericExtruder extends Device {
 		
 		double T = picTemp / clock; // seconds
 		
-		double resistance =	-T / (Math.log(1 - vRef / vdd) * c);  // ohms
+		double resistance =	-T / (Math.log(1 - vRef / vdd) * cap);  // ohms
 		
 		return resistance;
 	}
@@ -432,14 +436,14 @@ public class GenericExtruder extends Device {
 	 * @return
 	 */
 	private int calculatePicTempForResistance(double resistance) {
-		double c = 1e-6;                           // farads
+		//double c = 1e-6;                           // farads - now cap from prefs(AB)
 		double scale = 1 << (tempScaler+1);
 		double clock = 4000000.0 / (4.0 * scale);  // hertz		
 		double vdd = 5.0;                          // volts
 		
 		double vRef = 0.25 * vdd + vdd * vRefFactor / 32.0;  // volts
 		
-		double T = -resistance * (Math.log(1 - vRef / vdd) * c);
+		double T = -resistance * (Math.log(1 - vRef / vdd) * cap);
 
 		double picTemp = T * clock;
 		return (int)Math.round(picTemp);

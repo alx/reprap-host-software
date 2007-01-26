@@ -72,6 +72,7 @@ Extruder1t0=150
 # http://reprapdoc.voodoo.co.nz/bin/view/Main/MeasuringThermistorBeta
 Extruder1Beta=5000
 Extruder1Rz=500000
+Extruder1Capacitor=0.000001
 
 # Extruder heater characteristics.  This defines an approximate relationship
 # between power input and heater temperature:
