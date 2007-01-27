@@ -40,8 +40,8 @@ public class GenericExtruder extends Device {
 	private Thread pollThread = null;
 	private boolean pollThreadExiting = false;
 
-	private int vRefFactor = 3;  ///< Default firmware value
-	private int tempScaler = 7;  ///< Default firmware value
+	private int vRefFactor = 7;
+	private int tempScaler = 4;
 	
 	private double beta;  ///< Thermistor beta
 	private double rz;    ///< Thermistor resistance at 0C
@@ -77,12 +77,10 @@ public class GenericExtruder extends Device {
 		maxSpeed = prefs.loadInt(prefName + "MaxSpeed");
 		t0 = prefs.loadInt(prefName + "t0");
 
-		//setVref(3);
-		//setTempScaler(7);
-		
 		// Check Extruder is available
 		try {
 			getVersion();
+			setTempRange();
 		} catch (Exception ex) {
 			isCommsAvailable = false;
 			return;
@@ -173,6 +171,10 @@ public class GenericExtruder extends Device {
 	 * @throws Exception
 	 */
 	public void setTemperature(double temperature) throws Exception {
+		setTemperature(temperature, true);
+	}
+	
+	private void setTemperature(double temperature, boolean lock) throws Exception {
 		requestedTemperature = temperature;
 		
 		// Aim for 10% above our target to ensure we reach it.  It doesn't matter
@@ -213,9 +215,9 @@ public class GenericExtruder extends Device {
 		if (t1 > 255) t1 = 255;
 		
 		if (temperature == 0)
-			setHeater(0, 0);
+			setHeater(0, 0, lock);
 		else {
-			setHeater(power0, power1, t0, t1);
+			setHeater(power0, power1, t0, t1, lock);
 		}
 	}
 	
@@ -236,9 +238,9 @@ public class GenericExtruder extends Device {
 		if (safetyPICTemp > 255) safetyPICTemp = 255;
 
 		if (heat == 0)
-			setHeater(0, 0);
+			setHeater(0, 0, true);
 		else
-			setHeater(heat, safetyPICTemp);
+			setHeater(heat, safetyPICTemp, true);
 
 	}
 	
@@ -252,14 +254,14 @@ public class GenericExtruder extends Device {
 	 * @param safetyCutoff A temperature at which to cut off the heater
 	 * @throws IOException
 	 */
-	private void setHeater(int heat, int safetyCutoff) throws IOException {
+	private void setHeater(int heat, int safetyCutoff, boolean lock) throws IOException {
 		//System.out.println("Set heater to " + heat + " limit " + safetyCutoff);
-		lock();
+		if (lock) lock();
 		try {
 			sendMessage(new RequestSetHeat((byte)heat, (byte)safetyCutoff));
 		}
 		finally {
-			unlock();
+			if (lock) unlock();
 		}
 	}
 
@@ -274,9 +276,9 @@ public class GenericExtruder extends Device {
 	 * @param t1
 	 * @throws IOException
 	 */
-	private void setHeater(int heat0, int heat1, int t0, int t1) throws IOException {
+	private void setHeater(int heat0, int heat1, int t0, int t1, boolean lock) throws IOException {
 		System.out.println("Set heater to " + heat0 + "/" + heat1 + " limit " + t0 + "/" + t1);
-		lock();
+		if (lock) lock();
 		try {
 			sendMessage(new RequestSetHeat((byte)heat0,
 										   (byte)heat1,
@@ -284,7 +286,7 @@ public class GenericExtruder extends Device {
 										   (byte)t1));
 		}
 		finally {
-			unlock();
+			if (lock) unlock();
 		}
 	}
 
@@ -306,6 +308,25 @@ public class GenericExtruder extends Device {
 		//	} catch (InterruptedException e) {
 		//	}
 		//}
+	}
+	
+	/**
+	 * Send current vRefFactor and a suitable timer scaler
+	 * to the device. 
+	 *
+	 */
+	private void setTempRange() throws Exception
+	{
+		// We will send the vRefFactor to the PIC.  At the same
+		// time we will send a suitable temperature scale as well.
+		// To maximize the range, when vRefFactor is high (15) then
+		// the scale is minimum (0).
+		System.out.println("Set to " + vRefFactor);
+		tempScaler = 7 - (vRefFactor >> 1);
+	    setVref(vRefFactor);
+		setTempScaler(tempScaler);
+		if (requestedTemperature != 0)
+			setTemperature(requestedTemperature, false);
 	}
 	
 	/**
@@ -370,15 +391,36 @@ public class GenericExtruder extends Device {
 		getDeviceTemperature();
 	}
 	
+	/**
+	 * 
+	 * @throws Exception
+	 */
 	private void getDeviceTemperature() throws Exception {
 		lock();
 		try {
-			OutgoingMessage request = new OutgoingBlankMessage(MSG_GetTemp);
-			RequestTemperatureResponse reply = new RequestTemperatureResponse(this, request, 500);
+			int rawHeat;
+			int calibration;
+			for(;;) {
+				OutgoingMessage request = new OutgoingBlankMessage(MSG_GetTemp);
+				RequestTemperatureResponse reply = new RequestTemperatureResponse(this, request, 500);
+				
+				rawHeat = reply.getHeat();
+				System.out.println("Raw temp " + rawHeat);
+				calibration = reply.getCalibration();
+				
+				if (rawHeat == 255 && vRefFactor > 0) {
+					System.out.println("Re-ranging temperature (faster)");
+					vRefFactor--;
+					setTempRange();
+				} else if (rawHeat < 64 && vRefFactor < 15) {
+					System.out.println("Re-ranging temperature (slower)");
+					vRefFactor++;
+					setTempRange();
+				} else
+					break;
+			}
 			
-			//System.out.println("Raw temp " + reply.getHeat());
-	
-			double resistance = calculateResistance(reply.getHeat(), reply.getCalibration());
+			double resistance = calculateResistance(rawHeat, calibration);
 			
 			currentTemperature = calculateTemperature(resistance);
 			System.out.println("Current temp " + currentTemperature);
@@ -452,35 +494,25 @@ public class GenericExtruder extends Device {
 	
 	/**
 	 * Set raw voltage reference used for analogue to digital converter
-	 * @param ref Set reference voltage (0-63)
+	 * @param ref Set reference voltage (0-15).  Actually this is
+	 * just directly OR'd into the PIC VRCON register, so it can also
+	 * set the High/Low range bit.  
 	 * @throws IOException
 	 */
 	private void setVref(int ref) throws IOException {
-		lock();
-		try {
-			sendMessage(new OutgoingByteMessage(MSG_SetVRef, (byte)ref));		
-			vRefFactor = ref;
-		}
-		finally {
-			unlock();
-		}
+		sendMessage(new OutgoingByteMessage(MSG_SetVRef, (byte)ref));		
+		vRefFactor = ref;
 	}
 
 	/**
 	 * Set the scale factor used on the temperature timer used
 	 * for analogue to digital conversion
-	 * @param scale
+	 * @param scale A value from 0..7
 	 * @throws IOException
 	 */
 	private void setTempScaler(int scale) throws IOException {
-		lock();
-		try {
-			sendMessage(new OutgoingByteMessage(MSG_SetTempScaler, (byte)scale));		
-			tempScaler = scale;
-		}
-		finally {
-			unlock();
-		}
+		sendMessage(new OutgoingByteMessage(MSG_SetTempScaler, (byte)scale));		
+		tempScaler = scale;
 	}
 	
 	public boolean isAvailable() {
