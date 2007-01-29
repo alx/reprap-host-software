@@ -43,6 +43,7 @@ public abstract class IncomingMessage {
 			try {
 				comm.receiveMessage(this, timeout);
 			} catch (IOException e) {
+				e.printStackTrace();
 				System.out.println("IO error/timeout, resending");
 				// Just to prevent any unexpected spinning
 				try {

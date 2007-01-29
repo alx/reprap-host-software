@@ -140,13 +140,13 @@ public class Producer {
 		// A "warmup" segment to get things in working order
 		if (!subtractive) {
 			System.out.println("Printing warmup segments, moving to (0,5)");
-			reprap.moveTo(0, 5, 0);
+			reprap.moveTo(0, 5, reprap.getExtrusionHeight());
 			System.out.println("Printing warmup segments, printing to (0,20)");
-			reprap.printTo(0, 20, 0);
+			reprap.printTo(0, 20, reprap.getExtrusionHeight());
 			System.out.println("Printing warmup segments, printing to (2,20)");
-			reprap.printTo(2, 20, 0);
+			reprap.printTo(2, 20, reprap.getExtrusionHeight());
 			System.out.println("Printing warmup segments, printing to (2,5)");
-			reprap.printTo(2, 5, 0);
+			reprap.printTo(2, 5, reprap.getExtrusionHeight());
 		}
 		
 		// This should now split off layers one at a time
@@ -177,8 +177,9 @@ public class Producer {
 			stepZ = -reprap.getExtrusionHeight();
 			reprap.setZManual(startZ);
 		} else {
-			// Normal constructive fabrication, start at the bottom and work up
-			startZ = 0;
+			// Normal constructive fabrication, start at the bottom and work up.
+			// Note that we start extruding one layer off the baseboard...
+			startZ = reprap.getExtrusionHeight();
 			endZ = zMax;
 			stepZ = reprap.getExtrusionHeight();
 		}
@@ -196,15 +197,16 @@ public class Producer {
 			if (z != startZ && coolingPeriod > 0) {
 				System.out.println("Starting a cooling period");
 				// Save where we are. We'll come back after we've cooled off.
-				double storedX=reprap.getX();
-				double storedY=reprap.getY();
+				//double storedX=reprap.getX();
+				//double storedY=reprap.getY();
 				reprap.setCooling(true);	// On with the fan.
-				reprap.homeToZeroX();		// Seek (0,0)
-				reprap.homeToZeroY();
+				//reprap.homeToZeroX();		// Seek (0,0)
+				//reprap.homeToZeroY();
 				Thread.sleep(1000 * coolingPeriod);
 				reprap.setCooling(false);
 				System.out.println("Brief delay for head to warm up.");
-				reprap.moveTo(storedX, storedY, z);
+				// TODO: BUG! Strangely, this only restores Y axis!
+				//reprap.moveTo(storedX, storedY, z);
 				Thread.sleep(200 * coolingPeriod);
 				System.out.println("End of cooling period");
 			}
