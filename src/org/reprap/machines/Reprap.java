@@ -199,7 +199,7 @@ public class Reprap implements CartesianPrinter {
 		double distance = segmentLength(deltaX, deltaY);
 		totalDistanceExtruded += distance;
 		totalDistanceMoved += distance;
-		layer.printTo(convertToStepX(x), convertToStepY(y), angleSpeed(speedXY, deltaX, deltaY), speedExtruder);
+		layer.printTo(convertToStepX(x), convertToStepY(y), speedXY, speedExtruder);
 		currentX = x;
 		currentY = y;
 	}
@@ -225,16 +225,6 @@ public class Reprap implements CartesianPrinter {
 		if (isCancelled()) return;
 		// TODO Select new material
 		// TODO Load new x/y/z offsets for the new extruder
-	}
-	
-	// Correct the speed for the angle of the line to the axes
-	private int angleSpeed(int speedXY, double deltaX, double deltaY)
-	{
-		// Uncomment the next line to make this function go away
-		// return speedXY;
-		double length = Math.sqrt(deltaX*deltaX + deltaY*deltaY);
-		double side = Math.max(Math.abs(deltaX), Math.abs(deltaY));
-		return (int)Math.round(speedXY*side/length);
 	}
 
 	protected int convertToStepX(double n) {

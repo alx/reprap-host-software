@@ -82,21 +82,30 @@ public class LinePrinter {
 		currentX = endX;
 		currentY = endY;
 	}
+	
+	// Correct the speed for the angle of the line to the axes
+	private int angleSpeed(int movementSpeed, double dx, double dy)
+	{
+		double length = Math.sqrt(dx*dx + dy*dy);
+		double longSide = Math.max(Math.abs(dx), Math.abs(dy));
+		return (int)Math.round((movementSpeed*longSide)/length);
+	}
 
 	public void printTo(int endX, int endY, int movementSpeed, int extruderSpeed) throws IOException {
 		// Determine the extruder speed, based on the geometry of the line
 		// to be printed
-		double dx = Math.abs(endX - currentX);
-		double dy = Math.abs(endY - currentY);
-		double h = Math.sqrt(dx * dx + dy * dy);
-		double speedFraction;
-		if (dx > dy)
-			speedFraction = h / (dx * Math.sqrt(2.0));
-		else
-			speedFraction = h / (dy * Math.sqrt(2.0));
+		double dx = endX - currentX;
+		double dy = endY - currentY;
+//		double h = Math.sqrt(dx * dx + dy * dy);
+//		double speedFraction;
+//		if (dx > dy)
+//			speedFraction = h / (dx * Math.sqrt(2.0));
+//		else
+//			speedFraction = h / (dy * Math.sqrt(2.0));
 
-		extruder.setExtrusion((int)Math.round(extruderSpeed * speedFraction));
-		moveTo(endX, endY, movementSpeed);
+		//extruder.setExtrusion((int)Math.round(extruderSpeed * speedFraction));
+		extruder.setExtrusion(extruderSpeed);
+		moveTo(endX, endY, angleSpeed(movementSpeed, dx, dy));
 		extruder.setExtrusion(0);
 	}
 	
