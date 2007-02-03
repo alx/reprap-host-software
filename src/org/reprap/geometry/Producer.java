@@ -7,6 +7,7 @@ import org.reprap.geometry.polygons.*;
 import org.reprap.gui.PreviewPanel;
 import org.reprap.gui.RepRapBuild;
 import org.reprap.machines.MachineFactory;
+import org.reprap.machines.NullCartesianMachine;
 
 public class Producer {
 	
@@ -194,7 +195,8 @@ public class Producer {
 			reprap.moveTo(reprap.getX(), reprap.getY(), z);
 
 			// Layer cooling phase - after we've just raised the head.
-			if (z != startZ && coolingPeriod > 0) {
+			//Only if we're not a null device.
+			if ((z != startZ && coolingPeriod > 0)&&!(reprap instanceof NullCartesianMachine)) {
 				System.out.println("Starting a cooling period");
 				// Save where we are. We'll come back after we've cooled off.
 				//double storedX=reprap.getX();
