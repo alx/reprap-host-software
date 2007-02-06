@@ -191,7 +191,8 @@ public class RrCSGPolygon
 		
 		if(box.d_2() < resolution_2)
 		{
-			System.err.println("RrCSGPolygon.divide(): hit resolution limit!");
+			System.err.println("RrCSGPolygon.divide(): hit resolution limit!  Complexity: " +
+					csg.complexity());
 			csg = RrCSG.nothing();  // Throw it away!  (It is small...)
 			return;
 		}

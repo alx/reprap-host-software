@@ -43,6 +43,9 @@ public class LayerProducer {
 		RrCSGPolygon offBorder = csgPol.offset(-0.5*printer.getExtrusionSize());
 		RrCSGPolygon offHatch = csgPol.offset(-1.5*printer.getExtrusionSize());
 		
+		//csgPol.divide(Preferences.tiny(), 1.01);
+		//RrGraphics g = new RrGraphics(csgPol, true);
+		
 		offBorder.divide(Preferences.tiny(), 1.01);
 		offHatch.divide(Preferences.tiny(), 1.01);
 		

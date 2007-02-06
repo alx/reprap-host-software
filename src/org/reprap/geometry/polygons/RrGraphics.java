@@ -237,6 +237,9 @@ public class RrGraphics
 		case 6:
 			g2d.setColor(Color.pink);
 			
+		case 7:
+			g2d.setColor(Color.gray);
+			
 		default:
 			g2d.setColor(Color.orange);
 		break;
@@ -268,18 +271,22 @@ public class RrGraphics
 //		colour(4);
 //		plot(p.point(0));
 		
+		move(p.point(0));
+		
 		int leng = p.size();
-		for(int j = 0; j <= leng; j++)
+		for(int j = 1; j <= leng; j++)
 		{
 			int i = j%leng;
-			int f = p.flag(i);
-			if(f != 0 && j != 0)
+			int f = p.flag(j-1);
+			if(f != 0)
 			{
 				colour(f);
 				plot(p.point(i));
 			} else
-				if(j != leng)
-					move(p.point(i));
+			{
+				colour(7);
+				plot(p.point(i));
+			}
 		}
 		
 
