@@ -65,6 +65,12 @@ public class NullCartesianMachine implements CartesianPrinter {
 		currentY = y;
 		currentZ = z;
 	}
+	
+	public void blankTo(double x, double y, double z) throws ReprapException, IOException 
+	{
+		moveTo(x, y, z);
+	}
+
 
 	public void printTo(double x, double y, double z) throws ReprapException, IOException {
 		if (previewer != null)

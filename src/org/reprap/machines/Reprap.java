@@ -162,6 +162,34 @@ public class Reprap implements CartesianPrinter {
 		currentY = y;
 		currentZ = z;
 	}
+	
+	/**
+	 * Like moveTo, except it doesn't raise the head
+	 */
+
+	public void blankTo(double x, double y, double z) throws ReprapException, IOException {
+		
+		if (isCancelled()) return;
+		
+		if (currentX == x && currentY == y && currentZ == z)
+			return;
+
+		// Check we're at the right height
+		if (z != currentZ) 
+		{
+			totalDistanceMoved += Math.abs(currentZ - z);
+			if (!excludeZ) motorZ.seekBlocking(speedZ, convertToStepZ(z));
+			if (idleZ) motorZ.setIdle();
+			currentZ = z;
+		}
+		
+		layer.moveTo(convertToStepX(x), convertToStepY(y), speedXY);
+		totalDistanceMoved += segmentLength(x - currentX, y - currentY);
+		
+		currentX = x;
+		currentY = y;
+		currentZ = z;
+	}
 
 	public void printTo(double x, double y, double z) throws ReprapException, IOException {
 		if (isCancelled()) return;

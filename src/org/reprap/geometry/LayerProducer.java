@@ -18,6 +18,7 @@ public class LayerProducer {
 	private static int solidMaterial = 1;
 	public static int gapMaterial() { return gapMaterial; }
 	public static int solidMaterial() { return solidMaterial; }
+
 	private Shape3D lowerShell;
 
 	private Printer printer;
@@ -83,6 +84,13 @@ public class LayerProducer {
 		printer.moveTo(a.x(), a.y(), printer.getZ());
 		pos = a;
 	}
+	
+	private void blank(Rr2Point a) throws ReprapException, IOException
+	{
+		if (printer.isCancelled()) return;
+		printer.blankTo(a.x(), a.y(), printer.getZ());
+		pos = a;
+	}
 
 
 	/**
@@ -105,18 +113,22 @@ public class LayerProducer {
 		// Print any lead-in.
 		printer.printStartDelay(printer.getDelay());
 		
+		Rr2Point lastPoint = p.point(0);
 		for(int j = 1; j <= leng; j++)
 		{
-			if (printer.isCancelled()) return;
-			
 			int i = j%leng;
 			int f = p.flag(i);
+			
+			if (printer.isCancelled()) return;
 			
 			if(f != gapMaterial && j <= stopExtruding)
 				plot(p.point(i));
 			else
-				move(p.point(i));
+				blank(p.point(i));
+			
+			lastPoint = p.point(i);
 		}
+		move(lastPoint);
 	}
 		
 	/**
