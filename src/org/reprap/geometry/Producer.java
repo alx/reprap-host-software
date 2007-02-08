@@ -199,18 +199,20 @@ public class Producer {
 			if ((z != startZ && coolingPeriod > 0)&&!(reprap instanceof NullCartesianMachine)) {
 				System.out.println("Starting a cooling period");
 				// Save where we are. We'll come back after we've cooled off.
-				//double storedX=reprap.getX();
-				//double storedY=reprap.getY();
+				double storedX=reprap.getX();
+				double storedY=reprap.getY();
 				reprap.setCooling(true);	// On with the fan.
-				//reprap.homeToZeroX();		// Seek (0,0)
-				//reprap.homeToZeroY();
+				reprap.homeToZeroX();		// Seek (0,0)
+				reprap.homeToZeroY();
 				Thread.sleep(1000 * coolingPeriod);
 				reprap.setCooling(false);
 				System.out.println("Brief delay for head to warm up.");
-				// TODO: BUG! Strangely, this only restores Y axis!
-				//reprap.moveTo(storedX, storedY, z);
 				Thread.sleep(200 * coolingPeriod);
 				System.out.println("End of cooling period");
+				// TODO: BUG! Strangely, this only restores Y axis!
+				System.out.println("stored X and Y: " + storedX + "   " + storedY);
+				reprap.moveTo(reprap.getX(), storedY, z);
+				reprap.moveTo(storedX, reprap.getY(), z);
 			}
 			
 			if (reprap.isCancelled())
