@@ -78,17 +78,10 @@ public class LayerProducer {
 		pos = a;
 	}
 
-	private void move(Rr2Point a) throws ReprapException, IOException
+	private void move(Rr2Point a, boolean startUp, boolean endUp) throws ReprapException, IOException
 	{
 		if (printer.isCancelled()) return;
-		printer.moveTo(a.x(), a.y(), printer.getZ());
-		pos = a;
-	}
-	
-	private void blank(Rr2Point a) throws ReprapException, IOException
-	{
-		if (printer.isCancelled()) return;
-		printer.blankTo(a.x(), a.y(), printer.getZ());
+		printer.moveTo(a.x(), a.y(), printer.getZ(), startUp, endUp);
 		pos = a;
 	}
 
@@ -108,7 +101,7 @@ public class LayerProducer {
 		int leng = p.size();
 		
 		if (printer.isCancelled()) return;
-		move(p.point(0));
+		move(p.point(0), true, true);
 		plot(p.point(0));
 		// Print any lead-in.
 		printer.printStartDelay(printer.getDelay());
@@ -124,11 +117,16 @@ public class LayerProducer {
 			if(f != gapMaterial && j <= stopExtruding)
 				plot(p.point(i));
 			else
-				blank(p.point(i));
+			{
+				if(f == gapMaterial)
+					move(p.point(i), true, true);
+				else
+					move(p.point(i), false, false);
+			}
 			
 			lastPoint = p.point(i);
 		}
-		move(lastPoint);
+		move(lastPoint, true, true);
 	}
 		
 	/**

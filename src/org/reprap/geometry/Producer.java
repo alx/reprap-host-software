@@ -141,7 +141,7 @@ public class Producer {
 		// A "warmup" segment to get things in working order
 		if (!subtractive) {
 			System.out.println("Printing warmup segments, moving to (0,5)");
-			reprap.moveTo(0, 5, reprap.getExtrusionHeight());
+			reprap.moveTo(0, 5, reprap.getExtrusionHeight(), true, false);
 			System.out.println("Printing warmup segments, printing to (0,20)");
 			reprap.printTo(0, 20, reprap.getExtrusionHeight());
 			System.out.println("Printing warmup segments, printing to (2,20)");
@@ -192,7 +192,7 @@ public class Producer {
 			System.out.println("Commencing layer at " + z);
 
 			// Change Z height
-			reprap.moveTo(reprap.getX(), reprap.getY(), z);
+			reprap.moveTo(reprap.getX(), reprap.getY(), z, false, false);
 
 			// Layer cooling phase - after we've just raised the head.
 			//Only if we're not a null device.
@@ -210,9 +210,9 @@ public class Producer {
 				Thread.sleep(200 * coolingPeriod);
 				System.out.println("End of cooling period");
 				// TODO: BUG! Strangely, this only restores Y axis!
-				System.out.println("stored X and Y: " + storedX + "   " + storedY);
-				reprap.moveTo(reprap.getX(), storedY, z);
-				reprap.moveTo(storedX, reprap.getY(), z);
+				//System.out.println("stored X and Y: " + storedX + "   " + storedY);
+				reprap.moveTo(reprap.getX(), storedY, z, true, true);
+				reprap.moveTo(storedX, reprap.getY(), z, true, true);
 			}
 			
 			if (reprap.isCancelled())
@@ -243,9 +243,9 @@ public class Producer {
 		}
 
 		if (subtractive)
-			reprap.moveTo(0, 0, startZ);
+			reprap.moveTo(0, 0, startZ, true, true);
 		else
-			reprap.moveTo(0, 0, reprap.getZ());
+			reprap.moveTo(0, 0, reprap.getZ(), true, true);
 		
 		reprap.terminate();
 

@@ -128,12 +128,12 @@ public class Reprap implements CartesianPrinter {
 	public void calibrate() {
 	}
 
-	public void printSegment(double startX, double startY, double startZ, double endX, double endY, double endZ) throws ReprapException, IOException {
-		moveTo(startX, startY, startZ);
-		printTo(endX, endY, endZ);
-	}
+//	public void printSegment(double startX, double startY, double startZ, double endX, double endY, double endZ) throws ReprapException, IOException {
+//		moveTo(startX, startY, startZ);
+//		printTo(endX, endY, endZ);
+//	}
 
-	public void moveTo(double x, double y, double z) throws ReprapException, IOException {
+	public void moveTo(double x, double y, double z, boolean startUp, boolean endUp) throws ReprapException, IOException {
 		
 		if (isCancelled()) return;
 		
@@ -142,54 +142,35 @@ public class Reprap implements CartesianPrinter {
 
 		double liftedZ = z + extrusionHeight;
 		
-		// Raise head slightly before move
-		if (liftedZ != currentZ) {
-			totalDistanceMoved += Math.abs(currentZ - liftedZ);
-			if (!excludeZ) motorZ.seekBlocking(speedZ, convertToStepZ(liftedZ));
-			if (idleZ) motorZ.setIdle();
-			currentZ = liftedZ;
+		// Raise head slightly before move?
+		if(startUp)
+		{
+			if (liftedZ != currentZ) {
+				totalDistanceMoved += Math.abs(currentZ - liftedZ);
+				if (!excludeZ) motorZ.seekBlocking(speedZ, convertToStepZ(liftedZ));
+				if (idleZ) motorZ.setIdle();
+				currentZ = liftedZ;
+			}
 		}
 		
 		layer.moveTo(convertToStepX(x), convertToStepY(y), speedXY);
 		totalDistanceMoved += segmentLength(x - currentX, y - currentY);
 
-		// Move head back down to surface
-		totalDistanceMoved += Math.abs(currentZ - z);
-		if (!excludeZ) motorZ.seekBlocking(speedZ, convertToStepZ(z));
-		if (idleZ) motorZ.setIdle();
-		
-		currentX = x;
-		currentY = y;
-		currentZ = z;
-	}
-	
-	/**
-	 * Like moveTo, except it doesn't raise the head
-	 */
-
-	public void blankTo(double x, double y, double z) throws ReprapException, IOException {
-		
-		if (isCancelled()) return;
-		
-		if (currentX == x && currentY == y && currentZ == z)
-			return;
-
-		// Check we're at the right height
-		if (z != currentZ) 
+		// Move head back down to surface?
+		if(!endUp && startUp)
 		{
 			totalDistanceMoved += Math.abs(currentZ - z);
 			if (!excludeZ) motorZ.seekBlocking(speedZ, convertToStepZ(z));
 			if (idleZ) motorZ.setIdle();
 			currentZ = z;
-		}
-		
-		layer.moveTo(convertToStepX(x), convertToStepY(y), speedXY);
-		totalDistanceMoved += segmentLength(x - currentX, y - currentY);
+		} else
+			currentZ = liftedZ;
 		
 		currentX = x;
 		currentY = y;
-		currentZ = z;
 	}
+	
+
 
 	public void printTo(double x, double y, double z) throws ReprapException, IOException {
 		if (isCancelled()) return;
@@ -385,7 +366,7 @@ public class Reprap implements CartesianPrinter {
 			}
 		}
 		System.out.println("Returning to previous position");
-		moveTo(x, y, currentZ);
+		moveTo(x, y, currentZ, true, false);
 		if (previewer != null) previewer.setMessage(null);
 		
 	}
@@ -410,7 +391,7 @@ public class Reprap implements CartesianPrinter {
 	 * @throws ReprapException
 	 */
 	private void moveToHeatingZone() throws ReprapException, IOException {
-		moveTo(5, 5, currentZ);
+		moveTo(5, 5, currentZ, true, true);
 	}
 
 	public boolean isCancelled() {

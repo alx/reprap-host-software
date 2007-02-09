@@ -22,7 +22,7 @@ public class SquareTest {
 		reprap.setTemperature(60);
 
 		// Print a square, rotated 45 degrees
-		reprap.moveTo(20, 5, 2);
+		reprap.moveTo(20, 5, 2, true, false);
 		reprap.printTo(15, 10, 2);
 		reprap.printTo(20, 15, 2);
 		reprap.printTo(25, 10, 2);

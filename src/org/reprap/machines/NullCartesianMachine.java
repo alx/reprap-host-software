@@ -50,25 +50,21 @@ public class NullCartesianMachine implements CartesianPrinter {
 	}
 
 	public void printSegment(double startX, double startY, double startZ, double endX, double endY, double endZ) throws ReprapException, IOException {
-		moveTo(startX, startY, startZ);
+		moveTo(startX, startY, startZ, true, true);
 		printTo(endX, endY, endZ);
 	}
 
-	public void moveTo(double x, double y, double z) throws ReprapException, IOException {
+	public void moveTo(double x, double y, double z, boolean startUp, boolean endUp) throws ReprapException, IOException {
 		if (isCancelled()) return;
 
 		totalDistanceMoved += segmentLength(x - currentX, y - currentY);
+		//TODO - next bit needs to take account of startUp and endUp
 		if (z != currentZ)
 			totalDistanceMoved += Math.abs(currentZ - z);
 
 		currentX = x;
 		currentY = y;
 		currentZ = z;
-	}
-	
-	public void blankTo(double x, double y, double z) throws ReprapException, IOException 
-	{
-		moveTo(x, y, z);
 	}
 
 
