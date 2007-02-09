@@ -137,41 +137,69 @@ public class Reprap implements CartesianPrinter {
 		
 		if (isCancelled()) return;
 		
-		if (currentX == x && currentY == y && currentZ == z)
+		int stepperX = convertToStepX(x);
+		int stepperY = convertToStepY(y);
+		int stepperZ = convertToStepZ(z);
+		int currentStepperX = convertToStepX(currentX);
+		int currentStepperY = convertToStepY(currentY);
+		int currentStepperZ = convertToStepZ(currentZ);		
+		
+		if (currentStepperX == stepperX && 
+				currentStepperY ==stepperY && 
+				currentStepperZ == stepperZ && 
+				!startUp)
 			return;
 
 		double liftedZ = z + extrusionHeight;
+		int stepperLiftedZ = convertToStepZ(liftedZ);
+		int targetZ;
 		
 		// Raise head slightly before move?
 		if(startUp)
 		{
-			if (liftedZ != currentZ) {
-				totalDistanceMoved += Math.abs(currentZ - liftedZ);
-				if (!excludeZ) motorZ.seekBlocking(speedZ, convertToStepZ(liftedZ));
-				if (idleZ) motorZ.setIdle();
-				currentZ = liftedZ;
-			}
+			targetZ = stepperLiftedZ;
+			currentZ = liftedZ;
+		} else
+		{
+			targetZ = stepperZ;
+			currentZ = z;
 		}
 		
-		layer.moveTo(convertToStepX(x), convertToStepY(y), speedXY);
-		totalDistanceMoved += segmentLength(x - currentX, y - currentY);
-
-		// Move head back down to surface?
-		if(!endUp && startUp)
-		{
-			totalDistanceMoved += Math.abs(currentZ - z);
-			if (!excludeZ) motorZ.seekBlocking(speedZ, convertToStepZ(z));
+		if (targetZ != currentStepperZ) {
+			totalDistanceMoved += Math.abs(currentZ - liftedZ);
+			if (!excludeZ) motorZ.seekBlocking(speedZ, targetZ);
 			if (idleZ) motorZ.setIdle();
-			currentZ = z;
-		} else
-			currentZ = liftedZ;
+			currentStepperZ = targetZ;
+		}
 		
+		layer.moveTo(stepperX, stepperY, speedXY);
+		totalDistanceMoved += segmentLength(x - currentX, y - currentY);
 		currentX = x;
 		currentY = y;
+		
+		if(endUp)
+		{
+			targetZ = stepperLiftedZ;
+			currentZ = liftedZ;
+		} else
+		{
+			targetZ = stepperZ;
+			currentZ = z;
+		}
+		
+		// Move head back down to surface?
+		if(targetZ != currentStepperZ)
+		{
+			totalDistanceMoved += Math.abs(currentZ - z);
+			if (!excludeZ) motorZ.seekBlocking(speedZ, targetZ);
+			if (idleZ) motorZ.setIdle();
+			currentStepperZ = targetZ;
+		} 
 	}
 	
 
-
+	// TODO convert internal workings to stepper coordinates to make == & !=
+	// robust.
 	public void printTo(double x, double y, double z) throws ReprapException, IOException {
 		if (isCancelled()) return;
 		EnsureNotEmpty();

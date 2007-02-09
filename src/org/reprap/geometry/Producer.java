@@ -202,8 +202,8 @@ public class Producer {
 				double storedX=reprap.getX();
 				double storedY=reprap.getY();
 				reprap.setCooling(true);	// On with the fan.
-				reprap.homeToZeroX();		// Seek (0,0)
-				reprap.homeToZeroY();
+				//reprap.homeToZeroX();		// Seek (0,0)
+				//reprap.homeToZeroY();
 				Thread.sleep(1000 * coolingPeriod);
 				reprap.setCooling(false);
 				System.out.println("Brief delay for head to warm up.");
@@ -211,8 +211,8 @@ public class Producer {
 				System.out.println("End of cooling period");
 				// TODO: BUG! Strangely, this only restores Y axis!
 				//System.out.println("stored X and Y: " + storedX + "   " + storedY);
-				reprap.moveTo(reprap.getX(), storedY, z, true, true);
-				reprap.moveTo(storedX, reprap.getY(), z, true, true);
+				//reprap.moveTo(reprap.getX(), storedY, z, true, true);
+				//reprap.moveTo(storedX, reprap.getY(), z, true, true);
 			}
 			
 			if (reprap.isCancelled())
@@ -221,7 +221,7 @@ public class Producer {
 			LayerProducer layer;
 			if(testPiece)
 			{
-				layer = new LayerProducer(reprap, hex(), null,
+				layer = new LayerProducer(reprap, z, hex(), null,
 						isEvenLayer?evenHatchDirection:oddHatchDirection);
 			} else
 			{
@@ -229,7 +229,7 @@ public class Producer {
 						LayerProducer.solidMaterial(), LayerProducer.gapMaterial());
 				Shape3D lowerShell = stlc.getShape3D();
 				if(slice != null)
-					layer = new LayerProducer(reprap, slice, lowerShell,
+					layer = new LayerProducer(reprap, z, slice, lowerShell,
 						isEvenLayer?evenHatchDirection:oddHatchDirection);
 				else
 					layer = null;

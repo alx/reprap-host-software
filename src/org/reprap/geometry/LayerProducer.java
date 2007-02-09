@@ -27,6 +27,7 @@ public class LayerProducer {
 	
 	private RrCSGPolygon csg_p;
 	private double scale;
+	private double z;
 	private Rr2Point p_0;
 	private Rr2Point pos;
 		
@@ -35,8 +36,10 @@ public class LayerProducer {
 	 * @param list 
 	 * @param hatchDirection
 	 */
-	public LayerProducer(Printer printer, RrCSGPolygon csgPol, Shape3D ls, RrHalfPlane hatchDirection) {
+	public LayerProducer(Printer printer, double zValue, RrCSGPolygon csgPol, Shape3D ls, RrHalfPlane hatchDirection) {
 		this.printer = printer;
+		
+		z = zValue;
 		
 		// Uncomment the next line to replace lower layers with shell triangles.
 		//printer.setLowerShell(ls);
@@ -74,14 +77,14 @@ public class LayerProducer {
 	private void plot(Rr2Point a) throws ReprapException, IOException
 	{
 		if (printer.isCancelled()) return;
-		printer.printTo(a.x(), a.y(), printer.getZ());
+		printer.printTo(a.x(), a.y(), z);
 		pos = a;
 	}
 
 	private void move(Rr2Point a, boolean startUp, boolean endUp) throws ReprapException, IOException
 	{
 		if (printer.isCancelled()) return;
-		printer.moveTo(a.x(), a.y(), printer.getZ(), startUp, endUp);
+		printer.moveTo(a.x(), a.y(), z, startUp, endUp);
 		pos = a;
 	}
 
@@ -101,12 +104,17 @@ public class LayerProducer {
 		int leng = p.size();
 		
 		if (printer.isCancelled()) return;
-		move(p.point(0), true, true);
+		
+		printer.moveTo(printer.getX(), printer.getY(), z, true, true);
+		printer.moveTo(p.point(0).x(), p.point(0).y(), z, true, false);
 		plot(p.point(0));
 		// Print any lead-in.
 		printer.printStartDelay(printer.getDelay());
 		
 		Rr2Point lastPoint = p.point(0);
+		if(p.flag(leng-1) == gapMaterial)
+			leng--;
+		
 		for(int j = 1; j <= leng; j++)
 		{
 			int i = j%leng;
@@ -118,9 +126,10 @@ public class LayerProducer {
 				plot(p.point(i));
 			else
 			{
-				if(f == gapMaterial)
-					move(p.point(i), true, true);
-				else
+				if(f == gapMaterial && j != leng)
+				{
+						move(p.point(i), true, true);
+				} else
 					move(p.point(i), false, false);
 			}
 			
