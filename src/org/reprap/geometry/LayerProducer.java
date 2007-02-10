@@ -105,20 +105,15 @@ public class LayerProducer {
 		
 		if (printer.isCancelled()) return;
 		
-		printer.moveTo(printer.getX(), printer.getY(), z, true, true);
-		printer.moveTo(p.point(0).x(), p.point(0).y(), z, true, false);
+		move(p.point(0), true, false);
 		plot(p.point(0));
 		// Print any lead-in.
 		printer.printStartDelay(printer.getDelay());
 		
-		Rr2Point lastPoint = p.point(0);
-		if(p.flag(leng-1) == gapMaterial)
-			leng--;
-		
+		int f = p.flag(0);
 		for(int j = 1; j <= leng; j++)
 		{
 			int i = j%leng;
-			int f = p.flag(i);
 			
 			if (printer.isCancelled()) return;
 			
@@ -126,16 +121,18 @@ public class LayerProducer {
 				plot(p.point(i));
 			else
 			{
-				if(f == gapMaterial && j != leng)
+				if(f == gapMaterial)
 				{
-						move(p.point(i), true, true);
-				} else
+					if(j == leng)
+						return;
+					else
+						move(p.point(i), true, false);
+				}else
 					move(p.point(i), false, false);
 			}
-			
-			lastPoint = p.point(i);
+
+			f = p.flag(i);
 		}
-		move(lastPoint, true, true);
 	}
 		
 	/**

@@ -230,8 +230,15 @@ public class RrPolygon
 	public RrPolygon negate()
 	{
 		RrPolygon result = new RrPolygon();
+		int f;
 		for(int i = size() - 1; i >= 0; i--)
-			result.add(point(i), flag(i));
+		{
+			if(i > 0)
+				f = flag(i-1);
+			else
+				f = flag(size() - 1);
+			result.add(point(i), f);
+		}
 		return result;
 	}
 	
@@ -764,9 +771,6 @@ public class RrPolygon
 	 */
 	public RrCSGPolygon toCSG(double tolerance)
 	{
-		//RrPolygonList pgl = new RrPolygonList();
-		//pgl.add(this);
-		//RrGraphics g1 = new RrGraphics(pgl, false);
 		
 		RrPolygon copy = new RrPolygon(this);
 		if(copy.area() < 0)
@@ -778,14 +782,6 @@ public class RrPolygon
 		RrBox b = copy.box.scale(1.1);
 		//expression = expression.simplify(tolerance);
 		RrCSGPolygon result = new RrCSGPolygon(expression, b);
-		
-		//RrCSG xx = new RrCSG(expression);
-		//System.out.println(xx.toString()+"\n\n");
-		
-		//RrCSGPolygon gr = new RrCSGPolygon(xx, b);
-		//gr.divide(Preferences.tiny(), 1.01);
-		//RrGraphics g2 = new RrGraphics(gr, true);
-		//System.out.println(gr.csg().toString()+"\n\n----------------------------------\n\n");
 		
 		return result;
 	}

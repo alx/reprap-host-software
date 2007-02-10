@@ -197,9 +197,6 @@ public class Reprap implements CartesianPrinter {
 		} 
 	}
 	
-
-	// TODO convert internal workings to stepper coordinates to make == & !=
-	// robust.
 	public void printTo(double x, double y, double z) throws ReprapException, IOException {
 		if (isCancelled()) return;
 		EnsureNotEmpty();
@@ -207,7 +204,11 @@ public class Reprap implements CartesianPrinter {
 		EnsureHot();
 		if (isCancelled()) return;
 
-		if ((x != convertToPositionX(layer.getCurrentX()) || y != convertToPositionY(layer.getCurrentY())) && z != currentZ)
+		int stepperX = convertToStepX(x);
+		int stepperY = convertToStepY(y);
+		int stepperZ = convertToStepZ(z);
+		
+		if ((stepperX != layer.getCurrentX() || stepperY != layer.getCurrentY()) && z != currentZ)
 			throw new ReprapException("Reprap cannot print a line across 3 axes simultaneously");
 
 		if (previewer != null)
@@ -218,13 +219,14 @@ public class Reprap implements CartesianPrinter {
 		if (isCancelled()) return;
 		
 		
-		if (x == convertToPositionX(layer.getCurrentX()) && y == convertToPositionY(layer.getCurrentY()) && z != currentZ) {
+		if (z != currentZ) 
+		{
 			// Print a simple vertical extrusion
 			double distance = Math.abs(currentZ - z);
 			totalDistanceExtruded += distance;
 			totalDistanceMoved += distance;
 			extruder.setExtrusion(speedExtruder);
-			if (!excludeZ) motorZ.seekBlocking(speedZ, convertToStepZ(z));
+			if (!excludeZ) motorZ.seekBlocking(speedZ, stepperZ);
 			extruder.setExtrusion(0);
 			currentZ = z;
 			return;
@@ -236,7 +238,7 @@ public class Reprap implements CartesianPrinter {
 		double distance = segmentLength(deltaX, deltaY);
 		totalDistanceExtruded += distance;
 		totalDistanceMoved += distance;
-		layer.printTo(convertToStepX(x), convertToStepY(y), speedXY, speedExtruder);
+		layer.printTo(stepperX, stepperY, speedXY, speedExtruder);
 		currentX = x;
 		currentY = y;
 	}
@@ -264,6 +266,7 @@ public class Reprap implements CartesianPrinter {
 		// TODO Load new x/y/z offsets for the new extruder
 	}
 
+	// Why don't these use round()? - AB.
 	protected int convertToStepX(double n) {
 		return (int)((n + offsetX) * scaleX);
 	}

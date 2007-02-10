@@ -405,7 +405,7 @@ public class GenericExtruder extends Device {
 				RequestTemperatureResponse reply = new RequestTemperatureResponse(this, request, 500);
 				
 				rawHeat = reply.getHeat();
-				System.out.println("Raw temp " + rawHeat);
+				//System.out.println("Raw temp " + rawHeat);
 				calibration = reply.getCalibration();
 				
 				if (rawHeat == 255 && vRefFactor > 0) {
@@ -423,7 +423,7 @@ public class GenericExtruder extends Device {
 			double resistance = calculateResistance(rawHeat, calibration);
 			
 			currentTemperature = calculateTemperature(resistance);
-			System.out.println("Current temp " + currentTemperature);
+			//System.out.println("Current temp " + currentTemperature);
 			
 			lastTemperatureUpdate = System.currentTimeMillis();
 		}

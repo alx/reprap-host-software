@@ -622,74 +622,6 @@ public class RrCSGPolygon
 		//hp.solidSet(this);
 	}
 
-//	/**
-//	 * Is the line between two points wholely within the polygon?
-//	 * @param here
-//	 * @param there
-//	 * @return 
-//	 */
-//	private boolean allInside(Rr2Point here, Rr2Point there)
-//	{
-//		// The points are on the surface.  Are they on the _same_
-//		// surface?  (Suppose there's a gap in it, dummo?...)
-//		RrCSG ch = leaf(here);
-//		RrCSG ct = leaf(there);
-//		if(ch == ct)
-//			return true;
-//		
-//		RrHalfPlane hp = new RrHalfPlane(here, there);
-//		if(value(hp.pLine().point(0.5)) > 0) // Need to go round the corner here
-//			return false;
-//		
-//		lineIntersect(hp, new RrInterval(0, Rr2Point.sub(here, there).mod()), true);
-//		double v;
-//		double r = Math.sqrt(resolution_2);
-//		for(int i = 0; i < hp.size(); i++)
-//		{
-//			v = hp.getParameter(i);
-//			if((v > r) && (v < 1 - r))
-//				return false;
-//		}
-//		
-//		return true;
-//	}
-	
-	
-//	private RrPolygonList remainder(RrHalfPlane hp, int fg)
-//	{
-//		RrPolygonList segments = new RrPolygonList();
-//		RrPolygon r;
-//		for(int j = 0; j < hp.size() - 1; j += 2)
-//		{
-//			r = new RrPolygon();
-//			r.add(hp.getPoint(j), fg);
-//			r.add(hp.getPoint(j+1), fg);
-//			segments.add(r);
-//		}
-//		return segments;
-//	}
-	
-//	private RrPolygon antiWiggle(RrPolygon cand)
-//	{
-//		if(cand.size() <= 1)
-//			return null;
-//		
-//		RrPolygon result = new RrPolygon();
-//		int flag = cand.flag(1);
-//		for(int i = 0; i < cand.size(); i += 2)
-//		{
-//			if(i != 0)
-//			{
-//				if(!allInside(cand.point(i+1), result.point(i-1)))
-//					return null;
-//			}
-//			result.add(cand.point(i+1), flag);
-//			result.add(cand.point(i), flag);
-//		}
-//		
-//		return result;
-//	}
-	
     /**
      * Find the bit of polygon edge between start/originPlane and targetPlane
      * @param start
@@ -785,7 +717,7 @@ public class RrCSGPolygon
 		
 		RrHalfPlane h = (RrHalfPlane)hatches.get(thisHatch);
 		Rr2Point pt = h.pLine().point(h.getParameter(thisPt));
-		result.add(pt, fs);
+		result.add(pt, fg);
 		snakeEnd jump;
 		
 		do
@@ -809,6 +741,8 @@ public class RrCSGPolygon
 				thisPt = jump.index;
 			}
 		} while(jump != null);
+		
+		result.flag(result.size()-1, fs);
 		
 		return result;
 	}

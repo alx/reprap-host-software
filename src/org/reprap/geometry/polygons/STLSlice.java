@@ -322,61 +322,7 @@ public class STLSlice
 		}
 	}
 	
-//	private void addEdgeX(Point3d p, Point3d q, Point3d r, double z)
-//	{
-//		Point3d odd = null, even1 = null, even2 = null;
-//		int pat = 0;
-//		
-//		if(p.z < z)
-//			pat = pat | 1;
-//		if(q.z < z)
-//			pat = pat | 2;
-//		if(r.z < z)
-//			pat = pat | 4;
-//		
-//		switch(pat)
-//		{
-//		case 0:
-//		case 7:
-//			return;
-//		case 1:
-//		case 6:
-//			odd = p;
-//			even1 = q;
-//			even2 = r;
-//			break;
-//		case 2:
-//		case 5:
-//			odd = q;
-//			even1 = p;
-//			even2 = r;
-//			break;
-//		case 3:
-//		case 4:
-//			odd = r;
-//			even1 = p;
-//			even2 = q;
-//			break;
-//		default:
-//			System.err.println("addEdge(): the | function doesn't seem to work...");
-//		}
-//		
-//		even1.sub((Tuple3d)odd);
-//		even2.sub((Tuple3d)odd);
-//		double t = (z - odd.z)/even1.z;	
-//		Rr2Point e1 = new Rr2Point(toGrid(odd.x + t*even1.x), 
-//				toGrid(odd.y + t*even1.y));
-//		t = (z - odd.z)/even2.z;
-//		Rr2Point e2 = new Rr2Point(toGrid(odd.x + t*even2.x), 
-//				toGrid(odd.y + t*even2.y));
-//		
-//		if(!Rr2Point.same(e1, e2, Preferences.lessGridSquare()))
-//		{
-//			add(e1, e2);
-//			box.expand(e1);
-//			box.expand(e2);
-//		}
-//	}
+
 	
 	/**
 	 * Run through a Shape3D and set edges from it at plane z
