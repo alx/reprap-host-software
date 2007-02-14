@@ -52,17 +52,35 @@ class variables
 		return v[j];
 	}
 	
-	public String toString()
+	public String toString(int b)
 	{
 		String result = "";
 		for(int j = 0; j < max; j++)
 		{
-			if(v[j])
-				result += "1 ";
-			else
-				result += "0 ";
+			if(b == 0 || Math.abs(b) != j)
+			{
+				if(v[j])
+					result += "1 ";
+				else
+					result += "0 ";
+			}
 		}
 		return result;
+	}
+	
+	public String toString()
+	{
+		return toString(0);
+	}
+	
+	static boolean same(variables a, variables b)
+	{
+		if(a.max != b.max)
+			return false;
+		for(int j = 0; j < a.max; j++)
+			if(a.v[j] != b.v[j])
+				return false;
+		return true;
 	}
 }
 
@@ -153,9 +171,11 @@ class FunctionTable
 	private int inputs, entries;
 	boolean[] table;
 	variables[] vs;
+	int equal_2;
 	
 	public FunctionTable(BooleanExpression b)
 	{
+		equal_2 = 0;
 		int i;
 		inputs = b.leafCount();
 		entries = 1;
@@ -172,6 +192,7 @@ class FunctionTable
 	
 	public FunctionTable(BooleanExpression b, int a, int equal_a)
 	{
+		equal_2 = equal_a;
 		int i;
 		inputs = b.leafCount();
 		entries = 1;
@@ -181,7 +202,6 @@ class FunctionTable
 		vs = new variables[entries];
 		variables vsc;
 		int k = 0;
-		variables v;
 		for(i = 0; i < entries*2; i++)
 		{
 			vsc = new variables(inputs, i);
@@ -220,7 +240,7 @@ class FunctionTable
 		String result = "";
 		for(int j = 0; j < entries; j++)
 		{
-			result = result + vs[j].toString() + "| ";
+			result = result + vs[j].toString(equal_2) + "| ";
 			if(table[j])
 				result += "1 \n";
 			else
@@ -243,9 +263,8 @@ public class CodeGenerator
 		BooleanExpression c = new BooleanExpression(a, b, bop.AND);
 		BooleanExpression d = new BooleanExpression();
 		BooleanExpression e = new BooleanExpression(d, c, bop.AND);
-		FunctionTable f = new FunctionTable(e, 0, 2);
+		FunctionTable f = new FunctionTable(e, 0, -2);
 		System.out.println(f.toString());
 	}
-
 }
 
