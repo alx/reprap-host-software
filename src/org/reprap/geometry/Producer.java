@@ -204,6 +204,7 @@ public class Producer {
 				reprap.setCooling(true);	// On with the fan.
 				//reprap.homeToZeroX();		// Seek (0,0)
 				//reprap.homeToZeroY();
+				reprap.moveTo(0, 0, z, true, true);
 				Thread.sleep(1000 * coolingPeriod);
 				reprap.setCooling(false);
 				System.out.println("Brief delay for head to warm up.");
@@ -211,7 +212,7 @@ public class Producer {
 				System.out.println("End of cooling period");
 				// TODO: BUG! Strangely, this only restores Y axis!
 				//System.out.println("stored X and Y: " + storedX + "   " + storedY);
-				//reprap.moveTo(reprap.getX(), storedY, z, true, true);
+				reprap.moveTo(storedX, storedY, z, true, true);
 				//reprap.moveTo(storedX, reprap.getY(), z, true, true);
 			}
 			
