@@ -357,6 +357,11 @@ public class Reprap implements CartesianPrinter {
 	public void setTemperature(int temperature) throws Exception {
 		extruder.setTemperature(temperature);
 	}
+	
+	public double getInfillSpeedRatio()
+	{
+		return extruder.getInfillSpeedRatio();
+	}
 
 	private void EnsureNotEmpty() {
 		if (!extruder.isEmpty()) return;

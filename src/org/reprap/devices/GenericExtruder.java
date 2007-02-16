@@ -12,6 +12,11 @@ import org.reprap.comms.IncomingMessage.InvalidPayloadException;
 import org.reprap.comms.messages.OutgoingBlankMessage;
 import org.reprap.comms.messages.OutgoingByteMessage;
 
+//TODO: make all extruder properties ExtruderN... like Extruder1Address; at the moment some of them
+// are Extrusion... (like ExtrusionHeight).  That way we can have multiple extruders each with
+// their own properties.  Also, all the rest of the code should get this information from the
+// current extruder, rather than directly from the properties file.
+
 public class GenericExtruder extends Device {
 
 	public static final byte MSG_SetActive = 1;
@@ -43,13 +48,14 @@ public class GenericExtruder extends Device {
 	private int vRefFactor = 7;
 	private int tempScaler = 4;
 	
-	private double beta;  ///< Thermistor beta
-	private double rz;    ///< Thermistor resistance at 0C
-	private double cap;   ///< Thermistor timing capacitor in farads
-	private double hm;    ///< Heater power gradient
-	private double hb;    ///< Heater power intercept
-	private int maxSpeed; ///< Maximum motor speed (0-255)
-	private int t0;       ///< Zero torque speed
+	private double beta;   ///< Thermistor beta
+	private double rz;     ///< Thermistor resistance at 0C
+	private double cap;    ///< Thermistor timing capacitor in farads
+	private double hm;     ///< Heater power gradient
+	private double hb;     ///< Heater power intercept
+	private int maxSpeed;  ///< Maximum motor speed (0-255)
+	private int t0;        ///< Zero torque speed
+	private double isRatio;///< Ratio of infill speed to outline speed
 	
 	private long lastTemperatureUpdate = 0;
 	
@@ -76,6 +82,7 @@ public class GenericExtruder extends Device {
 		hb = prefs.loadDouble(prefName + "hb");
 		maxSpeed = prefs.loadInt(prefName + "MaxSpeed");
 		t0 = prefs.loadInt(prefName + "t0");
+		isRatio = prefs.loadDouble(prefName + "InfillSpeedRatio");
 
 		// Check Extruder is available
 		try {
@@ -372,6 +379,11 @@ public class GenericExtruder extends Device {
 		awaitSensorsInitialised();
 		TEMPpollcheck();
 		return currentTemperature;
+	}
+	
+	public double getInfillSpeedRatio()
+	{
+		return isRatio;
 	}
 	
 	public void setCooler(boolean f) throws IOException {

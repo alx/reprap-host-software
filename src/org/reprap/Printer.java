@@ -35,7 +35,7 @@ public interface Printer {
 	public void setExtruderSpeed(int speed);
 	public void setPreviewer(Previewer previewer);
 	public void setTemperature(int temperature) throws Exception;
-
+	public double getInfillSpeedRatio();
 	public boolean isCancelled();
 
 	public void initialise() throws Exception;

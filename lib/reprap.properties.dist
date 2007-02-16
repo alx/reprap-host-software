@@ -58,6 +58,7 @@ ExtrusionHeight=0.4
 ExtrusionInfillWidth=0.5
 Extruder1MaterialType=CAPA
 Extruder1Address=8
+Extruder1InfillSpeedRatio=1.0
 
 # The maximum permitted motor speed.  This is useful if driving
 # a motor with a voltage beyond it's design limits (eg running

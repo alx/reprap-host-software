@@ -120,7 +120,12 @@ public class NullCartesianMachine implements CartesianPrinter {
 
 	public void setTemperature(int temperature) {
 	}
-
+	
+	public double getInfillSpeedRatio()
+	{
+		return 1.0;
+	}
+	
 	public void dispose() {
 	}
 

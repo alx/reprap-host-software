@@ -145,6 +145,7 @@ public class LayerProducer {
 		printer.setLowerShell(lowerShell);
 		int i;
 		
+		int speed = printer.getSpeed();
 		borderPolygons = borderPolygons.filterShorts(Preferences.machineResolution()*2);
 		for(i = 0; i < borderPolygons.size(); i++) 
 		{
@@ -153,6 +154,8 @@ public class LayerProducer {
 			plot(borderPolygons.polygon(i));
 		}
 		
+		int hatchSpeed = (int)Math.round(speed*printer.getInfillSpeedRatio());
+		printer.setSpeed(hatchSpeed);
 		hatchedPolygons = hatchedPolygons.filterShorts(Preferences.machineResolution()*2);
 		for(i = 0; i < hatchedPolygons.size(); i++) 
 		{
@@ -160,6 +163,7 @@ public class LayerProducer {
 				break;
 			plot(hatchedPolygons.polygon(i));
 		}
+		printer.setSpeed(speed);
 	}
 	
 }
