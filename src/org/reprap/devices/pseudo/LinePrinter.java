@@ -87,6 +87,8 @@ public class LinePrinter {
 	private int angleSpeed(int movementSpeed, double dx, double dy)
 	{
 		double length = Math.sqrt(dx*dx + dy*dy);
+		if(length == 0)
+			return movementSpeed;
 		double longSide = Math.max(Math.abs(dx), Math.abs(dy));
 		return (int)Math.round((movementSpeed*longSide)/length);
 	}
