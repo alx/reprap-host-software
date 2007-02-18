@@ -159,6 +159,7 @@ public class StepperPanel extends JPanel implements ChangeListener {
 			torque.setEnabled(false);
 			home.setEnabled(false);
 			stepForward.setEnabled(false);
+			stepBackward.setEnabled(false);
 			return;
 		}
 
