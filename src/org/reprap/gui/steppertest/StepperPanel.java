@@ -121,6 +121,24 @@ public class StepperPanel extends JPanel implements ChangeListener {
 		});
 		add(home, c);
 		
+		c.gridx = 3;
+		JButton stepForward = new JButton("Step +");
+		stepForward.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				onOneStep(true);
+			}
+		});
+		add(stepForward, c);
+		
+		c.gridx = 4;
+		JButton stepBackward = new JButton("Step -");
+		stepBackward.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent evt) {
+				onOneStep(false);
+			}
+		});
+		add(stepBackward, c);
+		
 		c.gridx = 1;
 		c.gridy = 2;
 		torque = new JCheckBox("Torque");
@@ -140,6 +158,7 @@ public class StepperPanel extends JPanel implements ChangeListener {
 			calibrate.setEnabled(false);
 			torque.setEnabled(false);
 			home.setEnabled(false);
+			stepForward.setEnabled(false);
 			return;
 		}
 
@@ -212,6 +231,23 @@ public class StepperPanel extends JPanel implements ChangeListener {
 			torque.setSelected(true);
 		} catch (Exception ex) {
 			JOptionPane.showMessageDialog(null, "Could not home motor: " + ex);
+		}
+	}
+	
+	/**
+	 * Callback when the Step + button is clicked
+	 */
+	protected void onOneStep(boolean forward)
+	{
+		try {
+			if(forward)
+				motor.stepForward();
+			else
+				motor.stepBackward();
+			setDisplayPosition();
+			torque.setSelected(true);
+		} catch (Exception ex) {
+			JOptionPane.showMessageDialog(null, "Could not step motor: " + ex);
 		}
 	}
 

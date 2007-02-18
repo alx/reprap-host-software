@@ -30,8 +30,11 @@ public class GenericStepperMotor extends Device {
 	public static final byte MSG_Calibrate = 9;		
 	public static final byte MSG_GetRange = 10;
 	public static final byte MSG_DDAMaster = 11;
+	public static final byte MSG_StepForward = 12;
+	public static final byte MSG_StepBackward = 13;	
 	public static final byte MSG_SetPower = 14;
 	public static final byte MSG_HomeReset = 16;
+
 
 	public static final byte SYNC_NONE = 0;
 	public static final byte SYNC_SEEK = 1;
@@ -84,6 +87,30 @@ public class GenericStepperMotor extends Device {
 		lock();
 		try {
 			OutgoingMessage request = new RequestSetSpeed();
+			sendMessage(request);
+		}
+		finally {
+			unlock();
+		}
+	}
+	
+	public void stepForward() throws IOException {
+		initialiseIfNeeded();
+		lock();
+		try {
+			OutgoingMessage request = new RequestOneStep(true);
+			sendMessage(request);
+		}
+		finally {
+			unlock();
+		}
+	}
+	
+	public void stepBackward() throws IOException {
+		initialiseIfNeeded();
+		lock();
+		try {
+			OutgoingMessage request = new RequestOneStep(false);
 			sendMessage(request);
 		}
 		finally {
@@ -321,6 +348,25 @@ public class GenericStepperMotor extends Device {
 			return message;
 		}
 		
+	}
+	
+	protected class RequestOneStep extends OutgoingMessage
+	{
+		byte [] message;
+		
+		RequestOneStep(boolean forward) {
+			byte command;
+			if (forward)
+				command = MSG_StepForward;
+			else
+				command = MSG_StepBackward;
+			message = new byte[] { command };
+				
+		}
+		
+		public byte[] getBinary() {
+			return message;
+		}
 	}
 	
 	protected class RequestSeekPosition extends OutgoingMessage {
