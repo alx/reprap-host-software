@@ -39,6 +39,7 @@ RememberWindowPosition=false
 # Motor settings
 AxisCount=3
 MovementSpeed=230
+FastSpeed=230
 Axis1Address=2
 Axis2Address=3
 Axis3Address=4
@@ -59,6 +60,8 @@ ExtrusionInfillWidth=0.5
 Extruder1MaterialType=CAPA
 Extruder1Address=8
 Extruder1InfillSpeedRatio=1.0
+Extruder1AngleSpeedLength=2.5
+Extruder1AngleSpeedFactor=0.3
 
 # The maximum permitted motor speed.  This is useful if driving
 # a motor with a voltage beyond it's design limits (eg running

@@ -113,6 +113,7 @@ public class Producer {
 		int extrusionSpeed = 200;
 		int extrusionTemp = 40;
 		int movementSpeedXY = 230;
+		int fastSpeedXY = 230;
 		int movementSpeedZ = 230;
 		
 		int coolingPeriod = Preferences.loadGlobalInt("CoolingPeriod");
@@ -122,6 +123,7 @@ public class Producer {
 			extrusionSpeed = Preferences.loadGlobalInt("ExtrusionSpeed");
 			extrusionTemp = Preferences.loadGlobalInt("ExtrusionTemp");
 			movementSpeedXY = Preferences.loadGlobalInt("MovementSpeed");
+			fastSpeedXY = Preferences.loadGlobalInt("FastSpeed");
 			movementSpeedZ = Preferences.loadGlobalInt("MovementSpeedZ");
 		} catch (Exception ex) {
 			System.out.println("Warning: could not load ExtrusionSpeed/MovementSpeed, using defaults");
@@ -130,6 +132,7 @@ public class Producer {
 		System.out.println("Setting temperature and speed");
 		reprap.setTemperature(extrusionTemp);
 		reprap.setSpeed(movementSpeedXY);
+		reprap.setFastSpeed(fastSpeedXY);
 		reprap.setSpeedZ(movementSpeedZ);
 		System.out.println("Intialising reprap");
 		reprap.initialise();
@@ -204,6 +207,7 @@ public class Producer {
 				reprap.setCooling(true);	// On with the fan.
 				//reprap.homeToZeroX();		// Seek (0,0)
 				//reprap.homeToZeroY();
+				reprap.setSpeed(reprap.getFastSpeed());
 				reprap.moveTo(0, 0, z, true, true);
 				Thread.sleep(1000 * coolingPeriod);
 				reprap.setCooling(false);
@@ -213,6 +217,7 @@ public class Producer {
 				// TODO: BUG! Strangely, this only restores Y axis!
 				//System.out.println("stored X and Y: " + storedX + "   " + storedY);
 				reprap.moveTo(storedX, storedY, z, true, true);
+				reprap.setSpeed(reprap.getSpeed());
 				//reprap.moveTo(storedX, reprap.getY(), z, true, true);
 			}
 			

@@ -29,6 +29,7 @@ public interface Printer {
 	
 	public int getSpeed();
 	public void setSpeed(int speed);
+	public void setFastSpeed(int speed);
 	public int getSpeedZ();
 	public void setSpeedZ(int speed);
 	public int getExtruderSpeed();
@@ -37,7 +38,9 @@ public interface Printer {
 	public void setTemperature(int temperature) throws Exception;
 	public double getInfillSpeedRatio();
 	public boolean isCancelled();
-
+	public double getAngleSpeedUpLength();
+	public double getAngleSpeedFactor();
+	public int getFastSpeed();
 	public void initialise() throws Exception;
 	
 	public double getX();

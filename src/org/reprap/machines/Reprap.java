@@ -45,6 +45,7 @@ public class Reprap implements CartesianPrinter {
 	
 	
 	private int speedXY = 230;  			// Initial default speed
+	private int fastSpeedXY = 230;
 	private int speedZ = 230;  			// Initial default speed
 	private int speedExtruder = 200;    // Initial default extruder speed
 	
@@ -318,10 +319,24 @@ public class Reprap implements CartesianPrinter {
 		return speedXY;
 	}
 	/**
+	 * @return Returns the maximum speed for the X & Y axes in air movement.
+	 */
+	public int getFastSpeed() {
+		return fastSpeedXY;
+	}	
+	
+	/**
 	 * @param speed The speed to set for the X and Y axes.
 	 */
 	public void setSpeed(int speed) {
 		this.speedXY = speed;
+	}
+	
+	/**
+	 * @param speed The speed to set for the X and Y axes moving in air.
+	 */
+	public void setFastSpeed(int speed) {
+		this.fastSpeedXY = speed;
 	}
 
 	/**
@@ -358,9 +373,31 @@ public class Reprap implements CartesianPrinter {
 		extruder.setTemperature(temperature);
 	}
 	
+	/**
+	 * The ratio between the outline speed and the infill speed
+	 */
 	public double getInfillSpeedRatio()
 	{
 		return extruder.getInfillSpeedRatio();
+	}
+	
+	/**
+	 * The length in mm to speed up when going round corners
+	 */
+	public double getAngleSpeedUpLength()
+	{
+		return extruder.getAngleSpeedUpLength();
+	}
+	
+	/**
+	 * The factor by which to speed up when going round a corner.
+	 * The formula is speed = baseSpeed*[1 + 0.5*(1 - ca)*getAngleSpeedFactor()]
+	 * where ca is the cos of the angle between the lines.  So it goes fastest when
+	 * the line doubles back on itself, and slowest when it continues straight.
+	 */	
+	public double getAngleSpeedFactor()
+	{
+		return extruder.getAngleSpeedFactor();
 	}
 
 	private void EnsureNotEmpty() {

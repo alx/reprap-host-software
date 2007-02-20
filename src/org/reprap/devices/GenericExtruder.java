@@ -56,6 +56,8 @@ public class GenericExtruder extends Device {
 	private int maxSpeed;  ///< Maximum motor speed (0-255)
 	private int t0;        ///< Zero torque speed
 	private double isRatio;///< Ratio of infill speed to outline speed
+	private double asLength;///< Length (mm) to speed up round corners
+	private double asFactor;///< Factor by which to speed up round corners
 	
 	private long lastTemperatureUpdate = 0;
 	
@@ -83,7 +85,9 @@ public class GenericExtruder extends Device {
 		maxSpeed = prefs.loadInt(prefName + "MaxSpeed");
 		t0 = prefs.loadInt(prefName + "t0");
 		isRatio = prefs.loadDouble(prefName + "InfillSpeedRatio");
-
+		asLength = prefs.loadDouble(prefName + "AngleSpeedLength");
+		asFactor = prefs.loadDouble(prefName + "AngleSpeedFactor");
+		
 		// Check Extruder is available
 		try {
 			getVersion();
@@ -380,11 +384,34 @@ public class GenericExtruder extends Device {
 		TEMPpollcheck();
 		return currentTemperature;
 	}
-	
+
+	/**
+	 * The ratio between the outline speed and the infill speed
+	 */
 	public double getInfillSpeedRatio()
 	{
 		return isRatio;
 	}
+	
+	/**
+	 * The length in mm to speed up when going round corners
+	 */
+	public double getAngleSpeedUpLength()
+	{
+		return asLength;
+	}
+	
+	/**
+	 * The factor by which to speed up when going round a corner.
+	 * The formula is speed = baseSpeed*[1 + 0.5*(1 - ca)*getAngleSpeedFactor()]
+	 * where ca is the cos of the angle between the lines.  So it goes fastest when
+	 * the line doubles back on itself, and slowest when it continues straight.
+	 */	
+	public double getAngleSpeedFactor()
+	{
+		return asFactor;
+	}	
+	
 	
 	public void setCooler(boolean f) throws IOException {
 		lock();
