@@ -4,7 +4,7 @@
 package org.reprap.gui.steppertest;
 
 /**
- * @author Ed Sells
+ * @author eD Sells
  *
  */
 public class StepperExerciser {
