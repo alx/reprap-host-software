@@ -12,7 +12,6 @@ import org.reprap.devices.GenericExtruder;
 import org.reprap.devices.GenericStepperMotor;
 import org.reprap.devices.pseudo.LinePrinter;
 import org.reprap.gui.CalibrateZAxis;
-import org.reprap.gui.ContinuationMesage;
 import org.reprap.gui.Previewer;
 
 /**

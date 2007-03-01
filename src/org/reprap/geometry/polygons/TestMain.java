@@ -1,8 +1,6 @@
 
 package org.reprap.geometry.polygons;
 
-import java.util.*;
-
 public class TestMain
 {
 	public static void rrpTest()
@@ -16,7 +14,6 @@ public class TestMain
 		Rr2Point qq = new Rr2Point(0.55, 0.65);
 		Rr2Point rr = new Rr2Point(0.45, 0.5);
 		Rr2Point ss = new Rr2Point(0.4, 0.3);    
-		RrLine x = new RrLine(new Rr2Point(-1, -1), new Rr2Point(1, 1));
 		
 		RrPolygon a = new RrPolygon();
 		a.add(p, 1);

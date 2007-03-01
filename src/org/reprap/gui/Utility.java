@@ -7,7 +7,6 @@ import java.awt.Window;
 
 import javax.swing.JFrame;
 
-import org.omg.CORBA.SystemException;
 import org.reprap.Preferences;
 
 public class Utility {
