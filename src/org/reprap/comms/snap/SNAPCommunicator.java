@@ -107,11 +107,14 @@ public class SNAPCommunicator implements Communicator {
 				(SNAPAddress)device.getAddress(),
 				binaryMessage);
 
-		for(;;) {
-			if (debugMode) {
+		for(;;) 
+		{
+			if (debugMode) 
+			{
 				System.out.print("TX ");
 				dumpPacket(device, messageToSend);
 			}
+
 			sendRawMessage(packet);
 
 			SNAPPacket ackPacket;
@@ -135,6 +138,15 @@ public class SNAPCommunicator implements Communicator {
 			if (!ackPacket.isNak()) {
 				System.out.println("Received data packet when expecting ACK");
 			}
+			
+			// All gone wrong - wait a bit and try again - ***AB
+			System.out.println("sendMessage error - retrying");
+			try
+			{
+				Thread.sleep(100);
+			} catch (Exception e)
+			{
+			}
 		}
 		
 		IncomingContext replyContext = messageToSend.getReplyContext(this,
@@ -143,6 +155,12 @@ public class SNAPCommunicator implements Communicator {
 	}
 	
 	private synchronized void sendRawMessage(SNAPPacket packet) throws IOException {
+//		try{
+//			Thread.sleep(200);
+//		} catch (Exception ex)
+//		{
+//			System.err.println("Comms sleep: " + ex.toString());
+//		}
 		writeStream.write(packet.getRawData());
 	}
 

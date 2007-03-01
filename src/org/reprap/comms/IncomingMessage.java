@@ -39,6 +39,7 @@ public abstract class IncomingMessage {
 	public IncomingMessage(Device device, OutgoingMessage message, long timeout) throws IOException {
 		Communicator comm = device.getCommunicator();
 		for(int i=0;i<3;i++) {	// Allow 3 retries.
+			//System.out.println("Retry: " + i);
 			incomingContext = comm.sendMessage(device, message);
 			try {
 				comm.receiveMessage(this, timeout);

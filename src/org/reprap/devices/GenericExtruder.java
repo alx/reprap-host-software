@@ -347,9 +347,10 @@ public class GenericExtruder extends Device {
 	 */
 	private void RefreshEmptySensor() throws IOException {
 		// TODO in future, this should use the notification mechanism rather than polling (when fully working)
-		//System.out.println("Refreshing sensor");
+		
 		lock();
 		try {
+			//System.out.println("Refreshing sensor");
 			RequestIsEmptyResponse reply = new RequestIsEmptyResponse(this, new OutgoingBlankMessage(MSG_IsEmpty), 500);
 			currentMaterialOutSensor = reply.getValue() == 0 ? false : true; 
 		} catch (InvalidPayloadException e) {
@@ -417,7 +418,7 @@ public class GenericExtruder extends Device {
 		lock();
 		try {
 			OutgoingMessage request =
-				new OutgoingByteMessage(MSG_SetCooler, f?(byte)1:(byte)0);
+				new OutgoingByteMessage(MSG_SetCooler, f?(byte)200:(byte)0); // Should set speed properly!
 			sendMessage(request);
 		}
 		finally {
