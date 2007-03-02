@@ -8,16 +8,10 @@ import org.reprap.comms.snap.SNAPAddress;
 import org.reprap.comms.Communicator;
 import org.reprap.comms.snap.SNAPCommunicator;
 import org.reprap.devices.GenericStepperMotor;
+import java.io.*;
 
 /**
  * @author eD Sells
- * 
- * Runs the axis back and forwards n times. To be used with calipers on the axis. 
- * Delay at each end included for chip cooling.
- * 
- * WARNING: The delay must be longer than stroke time. I don't know how to pause the code!
- * 
- * 
  *
  */
 public class AxisRepeatabilityTest {
@@ -31,6 +25,7 @@ public class AxisRepeatabilityTest {
 		final int baudRate = 19200;
 		int motorId = 3;
 		int address;
+		
 		try
 		{
 			address = Preferences.loadGlobalInt("Axis" + motorId + "Address");
@@ -39,14 +34,7 @@ public class AxisRepeatabilityTest {
 			System.err.println("Argh 1!");
 			return;
 		}
-		// Request Stepper speed
-		// Request Step number
-		// Request delay between strokes (for cooling)
-		// Request number of runs (includes return stroke)
-		
-		int stepperExcerciserRepeatabilityRuns = 2;
-		int stepperExcerciserRepeatabilityStepsPerStroke = 2000;
-		
+			
 		SNAPAddress myAddress = new SNAPAddress(localNodeNumber);
 		Communicator communicator;
 		try
@@ -68,29 +56,67 @@ public class AxisRepeatabilityTest {
 			System.err.println("Argh 3!");
 			return;
 		}
+	
+		// Console Reader
+		BufferedReader console = new BufferedReader (new InputStreamReader(System.in));		
+		
+		// Parameters
+		int motorSpeed = 200;
+		int stepperExcerciserRepeatabilityRuns = 2;
+		int stepperExcerciserRepeatabilityStepsPerStroke = 200;
+		int stepperExcerciserRepeatabilityDelay = 10000; 
+		
+		//Find home
 		try
 		{		
-			motor.seek(100, 300);
+			motor.seek(motorSpeed, 0);
 		}catch(Exception ex)
 		{
 			System.err.println("Argh 4!");
 			return;
 		}
 		
-//		for (int i = 0; i <= stepperExcerciserRepeatabilityRuns; i++)
-//		{
-//			for (int j = 1; j <= stepperExcerciserRepeatabilityStepsPerStroke; j++)
-//			{
-//				// Go out
-//			}
-//			 
-//			for (int k = 1; k <= stepperExcerciserRepeatabilityStepsPerStroke; k++)
-//			{
-//				// Come back
-//			}
-//			
-//		}
+		System.out.println("Reset your calipers, and then push a return to start...");
+		try {
+			String trigger = console.readLine();}
+		catch(Exception ex)
+		{
+			System.err.println("Argh 5!");
+			return;
+		}
+				
+		for (int i = 0; i <= stepperExcerciserRepeatabilityRuns; i++)
+		{
 		
+			try {		
+				motor.seek(motorSpeed, stepperExcerciserRepeatabilityStepsPerStroke);
+			}catch(Exception ex)
+			{
+				System.err.println("Argh 6!");
+				return;
+			}
+			
+			try { 
+				Thread.sleep(stepperExcerciserRepeatabilityDelay);
+			} catch (InterruptedException e) { System.out.println(e);
+			}
+
+			try {		
+				motor.seek(motorSpeed, 0);
+			}catch(Exception ex)
+			{
+				System.err.println("Argh 7!");
+				return;
+			}
+			
+			try {
+				Thread.sleep(stepperExcerciserRepeatabilityDelay);
+			} catch (InterruptedException e) {
+			}
+			
+		}
+		System.out.println("Done");
+		communicator.close();
 	}
 
 }
