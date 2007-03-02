@@ -12,6 +12,10 @@ import java.io.*;
 
 /**
  * @author eD Sells
+ * 
+ * Send the axis back and forth to check repeatability. 
+ * Delay in between incorporated to allow for driver chip cooling.
+ * To be used in conjunction with calipers.
  *
  */
 public class AxisRepeatabilityTest {
@@ -62,21 +66,26 @@ public class AxisRepeatabilityTest {
 		
 		// Parameters
 		int motorSpeed = 200;
-		int stepperExcerciserRepeatabilityRuns = 2;
-		int stepperExcerciserRepeatabilityStepsPerStroke = 200;
-		int stepperExcerciserRepeatabilityDelay = 10000; 
+		int axisRepeatabilityRuns = 2;
+		int axisRepeatabilityStepsPerStroke = 200;
+		int axisRepeatabilityDelay = 4000; 
 		
 		//Find home
 		try
 		{		
-			motor.seek(motorSpeed, 0);
+			motor.homeReset(motorSpeed);
 		}catch(Exception ex)
 		{
 			System.err.println("Argh 4!");
 			return;
 		}
 		
-		System.out.println("Reset your calipers, and then push a return to start...");
+		System.out.println("Motor speed: " + motorSpeed);
+		System.out.println("Runs: " + axisRepeatabilityRuns);
+		System.out.println("Steps per stroke: " + axisRepeatabilityStepsPerStroke);
+		System.out.println("Pause between strokes (s): " + (axisRepeatabilityDelay/1000));
+		
+		System.out.println("\nReset your calipers, and then push return to start...");
 		try {
 			String trigger = console.readLine();}
 		catch(Exception ex)
@@ -85,11 +94,11 @@ public class AxisRepeatabilityTest {
 			return;
 		}
 				
-		for (int i = 0; i <= stepperExcerciserRepeatabilityRuns; i++)
+		for (int i = 0; i <= axisRepeatabilityRuns; i++)
 		{
 		
 			try {		
-				motor.seek(motorSpeed, stepperExcerciserRepeatabilityStepsPerStroke);
+				motor.seekBlocking(motorSpeed, axisRepeatabilityStepsPerStroke);
 			}catch(Exception ex)
 			{
 				System.err.println("Argh 6!");
@@ -97,12 +106,12 @@ public class AxisRepeatabilityTest {
 			}
 			
 			try { 
-				Thread.sleep(stepperExcerciserRepeatabilityDelay);
+				Thread.sleep(axisRepeatabilityDelay);
 			} catch (InterruptedException e) { System.out.println(e);
 			}
 
 			try {		
-				motor.seek(motorSpeed, 0);
+				motor.seekBlocking(motorSpeed, 0);
 			}catch(Exception ex)
 			{
 				System.err.println("Argh 7!");
@@ -110,12 +119,14 @@ public class AxisRepeatabilityTest {
 			}
 			
 			try {
-				Thread.sleep(stepperExcerciserRepeatabilityDelay);
+				Thread.sleep(axisRepeatabilityDelay);
 			} catch (InterruptedException e) {
 			}
 			
+			System.out.println("Run complete: " + (i+1));
+						
 		}
-		System.out.println("Done");
+		System.out.println("All Done");
 		communicator.close();
 	}
 
