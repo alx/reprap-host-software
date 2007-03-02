@@ -11,9 +11,16 @@ import org.reprap.devices.GenericStepperMotor;
 
 /**
  * @author eD Sells
+ * 
+ * Runs the axis back and forwards n times. To be used with calipers on the axis. 
+ * Delay at each end included for chip cooling.
+ * 
+ * WARNING: The delay must be longer than stroke time. I don't know how to pause the code!
+ * 
+ * 
  *
  */
-public class StepperExerciser {
+public class AxisRepeatabilityTest {
 	
 	/**
 	 * @param args
