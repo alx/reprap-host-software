@@ -138,11 +138,17 @@ public class NullCartesianMachine implements CartesianPrinter {
 	public void setTemperature(int temperature) {
 	}
 	
-	public double getInfillSpeedRatio()
+	/**
+	 * outline speed and the infill speed
+	 */
+	public double getOutlineSpeed()
 	{
 		return 1.0;
 	}
-	
+	public double getInfillSpeed()
+	{
+		return 1.0;
+	}
 	public void dispose() {
 	}
 

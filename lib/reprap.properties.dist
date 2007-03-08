@@ -59,7 +59,8 @@ ExtrusionHeight=0.4
 ExtrusionInfillWidth=0.5
 Extruder1MaterialType=CAPA
 Extruder1Address=8
-Extruder1InfillSpeedRatio=1.0
+Extruder1InfillSpeed=1.0
+Extruder1OutlineSpeed=1.0
 Extruder1AngleSpeedLength=2.5
 Extruder1AngleSpeedFactor=0.3
 

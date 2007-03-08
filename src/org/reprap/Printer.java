@@ -36,7 +36,8 @@ public interface Printer {
 	public void setExtruderSpeed(int speed);
 	public void setPreviewer(Previewer previewer);
 	public void setTemperature(int temperature) throws Exception;
-	public double getInfillSpeedRatio();
+	public double getInfillSpeed();
+	public double getOutlineSpeed();
 	public boolean isCancelled();
 	public double getAngleSpeedUpLength();
 	public double getAngleSpeedFactor();

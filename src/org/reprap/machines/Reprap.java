@@ -373,11 +373,15 @@ public class Reprap implements CartesianPrinter {
 	}
 	
 	/**
-	 * The ratio between the outline speed and the infill speed
+	 * outline speed and the infill speed
 	 */
-	public double getInfillSpeedRatio()
+	public double getOutlineSpeed()
 	{
-		return extruder.getInfillSpeedRatio();
+		return extruder.getOutlineSpeed();
+	}
+	public double getInfillSpeed()
+	{
+		return extruder.getInfillSpeed();
 	}
 	
 	/**

@@ -55,7 +55,8 @@ public class GenericExtruder extends Device {
 	private double hb;     ///< Heater power intercept
 	private int maxSpeed;  ///< Maximum motor speed (0-255)
 	private int t0;        ///< Zero torque speed
-	private double isRatio;///< Ratio of infill speed to outline speed
+	private double iSpeed;///< Infill speed [0,1]*maxSpeed
+	private double oSpeed;///< Outline speed [0,1]*maxSpeed	
 	private double asLength;///< Length (mm) to speed up round corners
 	private double asFactor;///< Factor by which to speed up round corners
 	
@@ -84,7 +85,8 @@ public class GenericExtruder extends Device {
 		hb = prefs.loadDouble(prefName + "hb");
 		maxSpeed = prefs.loadInt(prefName + "MaxSpeed");
 		t0 = prefs.loadInt(prefName + "t0");
-		isRatio = prefs.loadDouble(prefName + "InfillSpeedRatio");
+		iSpeed = prefs.loadDouble(prefName + "InfillSpeed");
+		oSpeed = prefs.loadDouble(prefName + "OutlineSpeed");
 		asLength = prefs.loadDouble(prefName + "AngleSpeedLength");
 		asFactor = prefs.loadDouble(prefName + "AngleSpeedFactor");
 		
@@ -387,11 +389,15 @@ public class GenericExtruder extends Device {
 	}
 
 	/**
-	 * The ratio between the outline speed and the infill speed
+	 * The the outline speed and the infill speed [0,1]
 	 */
-	public double getInfillSpeedRatio()
+	public double getInfillSpeed()
 	{
-		return isRatio;
+		return iSpeed;
+	}
+	public double getOutlineSpeed()
+	{
+		return oSpeed;
 	}
 	
 	/**
@@ -404,9 +410,10 @@ public class GenericExtruder extends Device {
 	
 	/**
 	 * The factor by which to speed up when going round a corner.
-	 * The formula is speed = baseSpeed*[1 + 0.5*(1 - ca)*getAngleSpeedFactor()]
+	 * The formula is speed = baseSpeed*[1 - 0.5*(1 + ca)*getAngleSpeedFactor()]
 	 * where ca is the cos of the angle between the lines.  So it goes fastest when
-	 * the line doubles back on itself, and slowest when it continues straight.
+	 * the line doubles back on itself (returning 1), and slowest when it 
+	 * continues straight (returning 1 - getAngleSpeedFactor()).
 	 */	
 	public double getAngleSpeedFactor()
 	{

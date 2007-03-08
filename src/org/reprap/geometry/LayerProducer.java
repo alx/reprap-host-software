@@ -46,8 +46,8 @@ class segmentSpeeds
 	
 	int speed(int currentSpeed, double angFac)
 	{
-		return (int)Math.round((double)currentSpeed*(1 + 
-				0.5*(1 - ca)*angFac));
+		return (int)Math.round((double)currentSpeed*(1 - 
+				0.5*(1 + ca)*angFac));
 	}
 }
 
@@ -68,6 +68,7 @@ public class LayerProducer {
 	private double z;
 	private int baseSpeed;
 	private int infillSpeed;
+	private int outlineSpeed;
 	private int currentSpeed;
 	private Rr2Point p_0;
 	private Rr2Point pos;
@@ -80,7 +81,8 @@ public class LayerProducer {
 	public LayerProducer(Printer printer, double zValue, RrCSGPolygon csgPol, Shape3D ls, RrHalfPlane hatchDirection) {
 		this.printer = printer;
 		baseSpeed = printer.getSpeed();
-		infillSpeed = (int)Math.round(baseSpeed*printer.getInfillSpeedRatio());
+		outlineSpeed = (int)Math.round(baseSpeed*printer.getOutlineSpeed());
+		infillSpeed = (int)Math.round(baseSpeed*printer.getInfillSpeed());
 		z = zValue;
 		
 		// Uncomment the next line to replace lower layers with shell triangles.
@@ -233,8 +235,8 @@ public class LayerProducer {
 		printer.setLowerShell(lowerShell);
 		int i;
 		
-		printer.setSpeed(baseSpeed);
-		currentSpeed = baseSpeed;
+		printer.setSpeed(outlineSpeed);
+		currentSpeed = outlineSpeed;
 		
 		borderPolygons = borderPolygons.filterShorts(Preferences.machineResolution()*2);
 		for(i = 0; i < borderPolygons.size(); i++) 
@@ -255,8 +257,8 @@ public class LayerProducer {
 			plot(hatchedPolygons.polygon(i));
 		}
 		
-		printer.setSpeed(baseSpeed);
-		currentSpeed = baseSpeed;		
+		printer.setSpeed(outlineSpeed);
+		currentSpeed = outlineSpeed;		
 	}
 	
 }
