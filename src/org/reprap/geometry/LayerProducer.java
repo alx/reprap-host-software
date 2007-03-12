@@ -127,23 +127,28 @@ public class LayerProducer {
 	{
 		if (printer.isCancelled()) return;
 		
-		segmentSpeeds ss = new segmentSpeeds(posNow(), first, second, 
-				printer.getAngleSpeedUpLength());
-		if(ss.abandon)
-			return;
-		
-		printer.printTo(ss.p1.x(), ss.p1.y(), z);
-		
-		if(ss.plotMiddle)
+		double speedUpLength = printer.getAngleSpeedUpLength();
+		if(speedUpLength > 0)
 		{
-			printer.setSpeed(currentSpeed);
-			printer.printTo(ss.p2.x(), ss.p2.y(), z);
-		}
+			segmentSpeeds ss = new segmentSpeeds(posNow(), first, second, 
+					speedUpLength);
+			if(ss.abandon)
+				return;
 
-		printer.setSpeed(ss.speed(currentSpeed, printer.getAngleSpeedFactor()));
-		printer.printTo(ss.p3.x(), ss.p3.y(), z);
-		pos = ss.p3;
+			printer.printTo(ss.p1.x(), ss.p1.y(), z);
+
+			if(ss.plotMiddle)
+			{
+				printer.setSpeed(currentSpeed);
+				printer.printTo(ss.p2.x(), ss.p2.y(), z);
+			}
+
+			printer.setSpeed(ss.speed(currentSpeed, printer.getAngleSpeedFactor()));
+			printer.printTo(ss.p3.x(), ss.p3.y(), z);
+			pos = ss.p3;
 		// Leave speed set for the start of the next line.
+		} else
+			printer.printTo(first.x(), first.y(), z);
 	}
 
 	private void move(Rr2Point first, Rr2Point second, boolean startUp, boolean endUp) 
@@ -158,23 +163,28 @@ public class LayerProducer {
 			return;
 		}
 		
-		segmentSpeeds ss = new segmentSpeeds(posNow(), first, second, 
-				printer.getAngleSpeedUpLength());
-		if(ss.abandon)
-			return;
-		
-		printer.moveTo(ss.p1.x(), ss.p1.y(), z, startUp, startUp);
-		
-		if(ss.plotMiddle)
+		double speedUpLength = printer.getAngleSpeedUpLength();
+		if(speedUpLength > 0)
 		{
-			printer.setSpeed(currentSpeed);
-			printer.moveTo(ss.p2.x(), ss.p2.y(), z, startUp, startUp);
-		}
+			segmentSpeeds ss = new segmentSpeeds(posNow(), first, second, 
+					speedUpLength);
+			if(ss.abandon)
+				return;
 
-		printer.setSpeed(ss.speed(currentSpeed, printer.getAngleSpeedFactor()));
-		printer.moveTo(ss.p3.x(), ss.p3.y(), z, startUp, endUp);
-		pos = ss.p3;
-		// Leave speed set for the start of the next movement.		
+			printer.moveTo(ss.p1.x(), ss.p1.y(), z, startUp, startUp);
+
+			if(ss.plotMiddle)
+			{
+				printer.setSpeed(currentSpeed);
+				printer.moveTo(ss.p2.x(), ss.p2.y(), z, startUp, startUp);
+			}
+
+			printer.setSpeed(ss.speed(currentSpeed, printer.getAngleSpeedFactor()));
+			printer.moveTo(ss.p3.x(), ss.p3.y(), z, startUp, endUp);
+			pos = ss.p3;
+			// Leave speed set for the start of the next movement.
+		} else
+			printer.moveTo(first.x(), first.y(), z, startUp, endUp);
 	}
 
 
@@ -193,6 +203,8 @@ public class LayerProducer {
 		int leng = p.size();
 		
 		if (printer.isCancelled()) return;
+		
+		printer.setSpeed(currentSpeed);
 		
 		move(p.point(0), p.point(1), true, false);
 		plot(p.point(0), p.point(1));
