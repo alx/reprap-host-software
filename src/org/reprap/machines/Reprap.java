@@ -467,7 +467,7 @@ public class Reprap implements CartesianPrinter {
 	 * @throws ReprapException
 	 */
 	private void moveToHeatingZone() throws ReprapException, IOException {
-		moveTo(5, 5, currentZ, true, true);
+		moveTo(5, 5, currentZ, true, false);
 	}
 
 	public boolean isCancelled() {

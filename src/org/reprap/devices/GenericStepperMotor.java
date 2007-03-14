@@ -175,7 +175,7 @@ public class GenericStepperMotor extends Device {
 		lock();
 		try {
 			setNotification();
-			new RequestSeekResponse(this, new RequestSeekPosition(speed, position), 5000);
+			new RequestSeekResponse(this, new RequestSeekPosition(speed, position), 50000);
 			setNotificationOff();
 		} catch (Exception e) {
 			// TODO: Nasty error. But WTF do we do about it?

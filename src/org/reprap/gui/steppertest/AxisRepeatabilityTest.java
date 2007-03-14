@@ -27,15 +27,17 @@ public class AxisRepeatabilityTest {
 	{
 		
 		// Test parameters
-		int motorId = 3;
+		int motorId = 2;
 		int motorSpeed = 200;
-		int axisRepeatabilityRuns = 100;
+		int axisRepeatabilityRuns = 10;
 		int axisRepeatabilityStepsPerStroke = 400;
 		int axisRepeatabilityDelay = 3000; 
 		
 		
 		final int localNodeNumber = 0;
 		final int baudRate = 19200;
+
+
 		int address;
 		
 		try
