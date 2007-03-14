@@ -25,9 +25,17 @@ public class AxisRepeatabilityTest {
 	 */
 	public static void main(String[] args) 
 	{
+		
+		// Test parameters
+		int motorId = 3;
+		int motorSpeed = 200;
+		int axisRepeatabilityRuns = 100;
+		int axisRepeatabilityStepsPerStroke = 400;
+		int axisRepeatabilityDelay = 3000; 
+		
+		
 		final int localNodeNumber = 0;
 		final int baudRate = 19200;
-		int motorId = 3;
 		int address;
 		
 		try
@@ -64,22 +72,19 @@ public class AxisRepeatabilityTest {
 		// Console Reader
 		BufferedReader console = new BufferedReader (new InputStreamReader(System.in));		
 		
-		// Parameters
-		int motorSpeed = 200;
-		int axisRepeatabilityRuns = 2;
-		int axisRepeatabilityStepsPerStroke = 200;
-		int axisRepeatabilityDelay = 4000; 
+	
 		
-		//Find home
-		try
-		{		
-			motor.homeReset(motorSpeed);
-		}catch(Exception ex)
-		{
-			System.err.println("Argh 4!");
-			return;
-		}
+//		//Find home
+//		try
+//		{		
+//			motor.homeReset(motorSpeed);
+//		}catch(Exception ex)
+//		{
+//			System.err.println("Argh 4!");
+//			return;
+//		}
 		
+		System.out.println("Motor: " + motorId);
 		System.out.println("Motor speed: " + motorSpeed);
 		System.out.println("Runs: " + axisRepeatabilityRuns);
 		System.out.println("Steps per stroke: " + axisRepeatabilityStepsPerStroke);
@@ -94,7 +99,7 @@ public class AxisRepeatabilityTest {
 			return;
 		}
 				
-		for (int i = 0; i <= axisRepeatabilityRuns; i++)
+		for (int i = 1; i <= axisRepeatabilityRuns; i++)
 		{
 		
 			try {		
@@ -123,7 +128,7 @@ public class AxisRepeatabilityTest {
 			} catch (InterruptedException e) {
 			}
 			
-			System.out.println("Run complete: " + (i+1));
+			System.out.println("Run complete: " + i);
 						
 		}
 		System.out.println("All Done");
