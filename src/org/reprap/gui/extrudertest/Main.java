@@ -316,6 +316,7 @@ public class Main extends javax.swing.JDialog {
 		} else {
 			extruding = true;
 			extrudeButton.setText("Stop");
+			System.out.println("Extruding at speed: " + extruderSpeed.getValue());
 		}
 		setExtruderSpeed();
 	}

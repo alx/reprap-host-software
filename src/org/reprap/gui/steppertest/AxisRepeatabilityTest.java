@@ -29,7 +29,7 @@ public class AxisRepeatabilityTest {
 		// Test parameters
 		int motorId = 2;
 		int motorSpeed = 200;
-		int axisRepeatabilityRuns = 10;
+		int axisRepeatabilityRuns = 20;
 		int axisRepeatabilityStepsPerStroke = 400;
 		int axisRepeatabilityDelay = 3000; 
 		
