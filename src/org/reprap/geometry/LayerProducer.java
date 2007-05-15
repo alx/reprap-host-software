@@ -139,7 +139,9 @@ public class LayerProducer {
 
 			if(ss.plotMiddle)
 			{
-				printer.setSpeed(currentSpeed);
+				int straightSpeed = (int)Math.round((double)currentSpeed*(1 - 
+						printer.getAngleSpeedFactor()));
+				printer.setSpeed(straightSpeed);
 				printer.printTo(ss.p2.x(), ss.p2.y(), z);
 			}
 
