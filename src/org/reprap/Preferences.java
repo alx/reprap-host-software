@@ -97,6 +97,7 @@ public class Preferences {
 			return mainPreferences.getProperty(name);
 		if (fallbackPreferences.containsKey(name))
 			return fallbackPreferences.getProperty(name);
+		System.err.println("RepRap preference: " + name + " not found in either preference file.");
 		return null;
 	}
 	

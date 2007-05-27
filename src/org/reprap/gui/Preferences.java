@@ -162,17 +162,17 @@ public class Preferences extends javax.swing.JDialog {
 			hb.setText(loadString("Extruder1hb"));
 			extrudert01.setText(loadString("Extruder1t0"));
 			
-			extrusionSpeed.setText(loadString("ExtrusionSpeed"));
-			extrusionTemp.setText(loadString("ExtrusionTemp"));
-			extrusionSize.setText(loadString("ExtrusionSize"));
-			extrusionInfillWidth.setText(loadString("ExtrusionInfillWidth"));
-			extrusionHeight.setText(loadString("ExtrusionHeight"));
-			extrusionOverRun.setText(loadString("ExtrusionOverRun"));
-			extrusionDelay.setText(loadString("ExtrusionDelay"));
-			movementSpeedXY.setText(loadString("MovementSpeed"));
+			extrusionSpeed.setText(loadString("Extruder1ExtrusionSpeed"));
+			extrusionTemp.setText(loadString("Extruder1ExtrusionTemp"));
+			extrusionSize.setText(loadString("Extruder1ExtrusionSize"));
+			extrusionInfillWidth.setText(loadString("Extruder1ExtrusionInfillWidth"));
+			extrusionHeight.setText(loadString("Extruder1ExtrusionHeight"));
+			extrusionOverRun.setText(loadString("Extruder1ExtrusionOverRun"));
+			extrusionDelay.setText(loadString("Extruder1ExtrusionDelay"));
+			movementSpeedXY.setText(loadString("Extruder1XYSpeed"));
 			movementSpeedZ.setText(loadString("MovementSpeedZ"));
 			
-			coolingPeriod.setText(loadString("CoolingPeriod"));
+			coolingPeriod.setText(loadString("Extruder1CoolingPeriod"));
 			
 			idleZMotor.setSelected(loadBool("IdleZAxis"));
 			//rememberWindowPosition.setSelected(loadBool("RememberWindowPosition"));
@@ -215,17 +215,17 @@ public class Preferences extends javax.swing.JDialog {
 			saveString("Extruder1hb", hb.getText());
 			saveString("Extruder1t0", extrudert01.getText());
 			
-			saveString("ExtrusionSpeed", extrusionSpeed.getText());
-			saveString("ExtrusionTemp", extrusionTemp.getText());
-			saveString("ExtrusionSize", extrusionSize.getText());
-			saveString("ExtrusionInfillWidth", extrusionInfillWidth.getText());
-			saveString("ExtrusionHeight", extrusionHeight.getText());
-			saveString("ExtrusionOverRun", extrusionOverRun.getText());
-			saveString("ExtrusionDelay", extrusionDelay.getText());
-			saveString("MovementSpeed", movementSpeedXY.getText());
+			saveString("Extruder1ExtrusionSpeed", extrusionSpeed.getText());
+			saveString("Extruder1ExtrusionTemp", extrusionTemp.getText());
+			saveString("Extruder1ExtrusionSize", extrusionSize.getText());
+			saveString("Extruder1ExtrusionInfillWidth", extrusionInfillWidth.getText());
+			saveString("Extruder1ExtrusionHeight", extrusionHeight.getText());
+			saveString("Extruder1ExtrusionOverRun", extrusionOverRun.getText());
+			saveString("Extruder1ExtrusionDelay", extrusionDelay.getText());
+			saveString("Extruder1XYSpeed", movementSpeedXY.getText());
 			saveString("MovementSpeedZ", movementSpeedZ.getText());
 
-			saveString("CoolingPeriod", coolingPeriod.getText());
+			saveString("Extruder1CoolingPeriod", coolingPeriod.getText());
 			saveBool("IdleZAxis", idleZMotor.isSelected());
 			//saveBool("RememberWindowPosition", rememberWindowPosition.isSelected());
 			

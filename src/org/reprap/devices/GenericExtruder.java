@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.reprap.Device;
 import org.reprap.Preferences;
+import org.reprap.Extruder;
 import org.reprap.comms.Address;
 import org.reprap.comms.Communicator;
 import org.reprap.comms.IncomingMessage;
@@ -17,7 +18,7 @@ import org.reprap.comms.messages.OutgoingByteMessage;
 // their own properties.  Also, all the rest of the code should get this information from the
 // current extruder, rather than directly from the properties file.
 
-public class GenericExtruder extends Device {
+public class GenericExtruder extends Device implements Extruder{
 
 	public static final byte MSG_SetActive = 1;
 	public static final byte MSG_SetActiveReverse = 2;
@@ -53,16 +54,27 @@ public class GenericExtruder extends Device {
 	private double cap;    ///< Thermistor timing capacitor in farads
 	private double hm;     ///< Heater power gradient
 	private double hb;     ///< Heater power intercept
-	private int maxSpeed;  ///< Maximum motor speed (0-255)
+	private int maxExtruderSpeed;  ///< Maximum motor speed (0-255)
+	private int extrusionSpeed; ///< The actual extrusion speed
+	private double extrusionTemp; ///< The extrusion temperature
+	private double extrusionSize; ///< The extrusion width in XY
+	private double extrusionHeight; ///< The extrusion height in Z
+	                                 // Should this be a machine-wide constant? - AB
+	private double extrusionInfillWidth; ///< The step between infill tracks
+	private double extrusionOverRun; ///< The number of mm to stop extruding before the end of a track
+	private int extrusionDelay; ///< The number of ms to wait before starting a track
+	private int coolingPeriod; ///< The number of s to cool between layers
+	private int xySpeed; ///< The speed of movement in XY when depositing
 	private int t0;        ///< Zero torque speed
 	private double iSpeed;///< Infill speed [0,1]*maxSpeed
 	private double oSpeed;///< Outline speed [0,1]*maxSpeed	
 	private double asLength;///< Length (mm) to speed up round corners
 	private double asFactor;///< Factor by which to speed up round corners
-	
+	private String materialType;  ///< The name of this extruder's material
+	private double offsetX, offsetY, offsetZ; ///< Where to put the nozzle
 	private long lastTemperatureUpdate = 0;
 	
-	/// TODO hb should probably be ambient temperature
+	/// TODO hb should probably be ambient temperature measured at this point
 	
 	/// Flag indicating if initialisation succeeded.  Usually this
 	/// indicates if the extruder is present in the network.
@@ -70,25 +82,34 @@ public class GenericExtruder extends Device {
 	
 	public GenericExtruder(Communicator communicator, Address address, Preferences prefs, int extruderId) {
 		
-		//double beta, double rz, double hm, double hb, int maxSpeed
-		
 		super(communicator, address);
 
-		String prefName = "Extruder" + extruderId; 
-		
-		cap = 1.0e-6;  // For safety - adrian
+		String prefName = "Extruder" + extruderId;
 		
 		beta = prefs.loadDouble(prefName + "Beta");
 		rz = prefs.loadDouble(prefName + "Rz");
 		cap = prefs.loadDouble(prefName + "Capacitor");
 		hm = prefs.loadDouble(prefName + "hm");
 		hb = prefs.loadDouble(prefName + "hb");
-		maxSpeed = prefs.loadInt(prefName + "MaxSpeed");
+		maxExtruderSpeed = prefs.loadInt(prefName + "MaxSpeed");
+		extrusionSpeed = prefs.loadInt(prefName + "ExtrusionSpeed");
+		extrusionTemp = prefs.loadDouble(prefName + "ExtrusionTemp");
+		extrusionSize = prefs.loadDouble(prefName + "ExtrusionSize");
+		extrusionHeight = prefs.loadDouble(prefName + "ExtrusionHeight");
+		extrusionInfillWidth = prefs.loadDouble(prefName + "ExtrusionInfillWidth");
+		extrusionOverRun = prefs.loadDouble(prefName + "ExtrusionOverRun");
+		extrusionDelay = prefs.loadInt(prefName + "ExtrusionDelay");
+		coolingPeriod = prefs.loadInt(prefName + "CoolingPeriod");
+		xySpeed = prefs.loadInt(prefName + "XYSpeed");
 		t0 = prefs.loadInt(prefName + "t0");
 		iSpeed = prefs.loadDouble(prefName + "InfillSpeed");
 		oSpeed = prefs.loadDouble(prefName + "OutlineSpeed");
 		asLength = prefs.loadDouble(prefName + "AngleSpeedLength");
 		asFactor = prefs.loadDouble(prefName + "AngleSpeedFactor");
+		materialType = prefs.loadString(prefName + "MaterialType");
+		offsetX = prefs.loadDouble(prefName + "OffsetX");
+		offsetY = prefs.loadDouble(prefName + "OffsetY");
+		offsetZ = prefs.loadDouble(prefName + "OffsetZ");
 		
 		// Check Extruder is available
 		try {
@@ -162,7 +183,7 @@ public class GenericExtruder extends Device {
 		int scaledSpeed;
 		
 		if (speed > 0)
-			scaledSpeed = (int)Math.round((maxSpeed - t0) * speed / 255.0 + t0);
+			scaledSpeed = (int)Math.round((maxExtruderSpeed - t0) * speed / 255.0 + t0);
 		else
 			scaledSpeed = 0;
 		
@@ -183,13 +204,23 @@ public class GenericExtruder extends Device {
 	 * @param temperature
 	 * @throws Exception
 	 */
+	
+	public void heatOn() throws Exception 
+	{
+		setTemperature(extrusionTemp);
+	}
+	
 	public void setTemperature(double temperature) throws Exception {
 		setTemperature(temperature, true);
 	}
 	
 	private void setTemperature(double temperature, boolean lock) throws Exception {
 		requestedTemperature = temperature;
-		
+		if(Math.abs(requestedTemperature - extrusionTemp) > 5)
+		{
+			System.out.println(materialType + " extruder temperature set to " + requestedTemperature +
+				"C, which is not the standard temperature (" + extrusionTemp + "C).");
+		}
 		// Aim for 10% above our target to ensure we reach it.  It doesn't matter
 		// if we go over because the power will be adjusted when we get there.  At
 		// the same time, if we aim too high, we'll overshoot a bit before we
@@ -268,7 +299,7 @@ public class GenericExtruder extends Device {
 	 * @throws IOException
 	 */
 	private void setHeater(int heat, int safetyCutoff, boolean lock) throws IOException {
-		//System.out.println("Set heater to " + heat + " limit " + safetyCutoff);
+		//System.out.println(materialType + " extruder heater set to " + heat + " limit " + safetyCutoff);
 		if (lock) lock();
 		try {
 			sendMessage(new RequestSetHeat((byte)heat, (byte)safetyCutoff));
@@ -290,7 +321,7 @@ public class GenericExtruder extends Device {
 	 * @throws IOException
 	 */
 	private void setHeater(int heat0, int heat1, int t0, int t1, boolean lock) throws IOException {
-		System.out.println("Set heater to " + heat0 + "/" + heat1 + " limit " + t0 + "/" + t1);
+		System.out.println(materialType + " extruder heater set to " + heat0 + "/" + heat1 + " limit " + t0 + "/" + t1);
 		if (lock) lock();
 		try {
 			sendMessage(new RequestSetHeat((byte)heat0,
@@ -334,7 +365,7 @@ public class GenericExtruder extends Device {
 		// time we will send a suitable temperature scale as well.
 		// To maximize the range, when vRefFactor is high (15) then
 		// the scale is minimum (0).
-		System.out.println("Set to " + vRefFactor);
+		System.out.println(materialType + " extruder vRefFactor set to " + vRefFactor);
 		tempScaler = 7 - (vRefFactor >> 1);
 	    setVref(vRefFactor);
 		setTempScaler(tempScaler);
@@ -352,7 +383,7 @@ public class GenericExtruder extends Device {
 		
 		lock();
 		try {
-			//System.out.println("Refreshing sensor");
+			//System.out.println(materialType + " extruder refreshing sensor");
 			RequestIsEmptyResponse reply = new RequestIsEmptyResponse(this, new OutgoingBlankMessage(MSG_IsEmpty), 500);
 			currentMaterialOutSensor = reply.getValue() == 0 ? false : true; 
 		} catch (InvalidPayloadException e) {
@@ -366,6 +397,9 @@ public class GenericExtruder extends Device {
 		return requestedTemperature;
 	}
 
+	public double getDefaultTemperature() {
+		return extrusionTemp;
+	}	
 	/**
 	 * TEMPORARY WORKAROUND FUNCTION
 	 */
@@ -377,7 +411,7 @@ public class GenericExtruder extends Device {
 				RefreshEmptySensor();
 				RefreshTemperature();
 			} catch (Exception ex) {
-				System.out.println("Exception during temperature/material update ignored");
+				System.out.println(materialType + " extruder exception during temperature/material update ignored");
 			}
 		}
 	}
@@ -434,7 +468,7 @@ public class GenericExtruder extends Device {
 	}
 	
 	private void RefreshTemperature() throws Exception {
-		//System.out.println("Refreshing temperature");
+		//System.out.println(materialType + " extruder refreshing temperature");
 		getDeviceTemperature();
 	}
 	
@@ -452,15 +486,15 @@ public class GenericExtruder extends Device {
 				RequestTemperatureResponse reply = new RequestTemperatureResponse(this, request, 500);
 				
 				rawHeat = reply.getHeat();
-				//System.out.println("Raw temp " + rawHeat);
+				//System.out.println(materialType + " extruder raw temp " + rawHeat);
 				calibration = reply.getCalibration();
 				
 				if (rawHeat == 255 && vRefFactor > 0) {
-					System.out.println("Re-ranging temperature (faster)");
+					System.out.println(materialType + " extruder re-ranging temperature (faster)");
 					vRefFactor--;
 					setTempRange();
 				} else if (rawHeat < 64 && vRefFactor < 15) {
-					System.out.println("Re-ranging temperature (slower)");
+					System.out.println(materialType + " extruder re-ranging temperature (slower)");
 					vRefFactor++;
 					setTempRange();
 				} else
@@ -470,7 +504,7 @@ public class GenericExtruder extends Device {
 			double resistance = calculateResistance(rawHeat, calibration);
 			
 			currentTemperature = calculateTemperature(resistance);
-			//System.out.println("Current temp " + currentTemperature);
+			//System.out.println(materialType + " extruder current temp " + currentTemperature);
 			
 			lastTemperatureUpdate = System.currentTimeMillis();
 		}
@@ -628,5 +662,57 @@ public class GenericExtruder extends Device {
 		
 	}
 
-
+    
+    public int getXYSpeed()
+    {
+    	return xySpeed;
+    }
+    
+    public int getExtruderSpeed()
+    {
+    	return extrusionSpeed;
+    } 
+    
+    public double getExtrusionSize()
+    {
+    	return extrusionSize;
+    } 
+    
+    public double getExtrusionHeight()
+    {
+    	return extrusionHeight;
+    } 
+    
+    public double getExtrusionInfillWidth()
+    {
+    	return extrusionInfillWidth;
+    } 
+    
+    public double getExtrusionOverRun()
+    {
+    	return extrusionOverRun;
+    } 
+    
+    public long getExtrusionDelay()
+    {
+    	return extrusionDelay;
+    } 
+    
+    public int getCoolingPeriod()
+    {
+    	return coolingPeriod;
+    } 
+    
+    public double getOffsetX()
+    {
+    	return offsetX;
+    }    
+    public double getOffsetY()
+    {
+    	return offsetY;
+    }
+    public double getOffsetZ()
+    {
+    	return offsetZ;
+    }
 }

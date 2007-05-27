@@ -229,9 +229,8 @@ abstract public class Panel3D extends JPanel {
 	protected Canvas3D createCanvas3D() {
 		GraphicsConfigTemplate3D gc3D = new GraphicsConfigTemplate3D();
 		gc3D.setSceneAntialiasing(GraphicsConfigTemplate.PREFERRED);
-		GraphicsDevice gd[] = GraphicsEnvironment.getLocalGraphicsEnvironment()
-				.getScreenDevices();
-
+		GraphicsDevice gd[] = GraphicsEnvironment.getLocalGraphicsEnvironment().getScreenDevices();
+		
 		Canvas3D c3d = new Canvas3D(gd[0].getBestConfiguration(gc3D));
 		//c3d.setSize(getCanvas3dWidth(c3d), getCanvas3dHeight(c3d));
 

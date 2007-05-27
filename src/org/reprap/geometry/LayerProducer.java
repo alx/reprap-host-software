@@ -80,16 +80,17 @@ public class LayerProducer {
 	 */
 	public LayerProducer(Printer printer, double zValue, RrCSGPolygon csgPol, Shape3D ls, RrHalfPlane hatchDirection) {
 		this.printer = printer;
-		baseSpeed = printer.getSpeed();
-		outlineSpeed = (int)Math.round(baseSpeed*printer.getOutlineSpeed());
-		infillSpeed = (int)Math.round(baseSpeed*printer.getInfillSpeed());
+		baseSpeed = printer.getExtruder().getXYSpeed();
+		outlineSpeed = (int)Math.round(baseSpeed*printer.getExtruder().getOutlineSpeed());
+		infillSpeed = (int)Math.round(baseSpeed*printer.getExtruder().getInfillSpeed());
+		currentSpeed= outlineSpeed; // Always start with an outline
 		z = zValue;
 		
 		// Uncomment the next line to replace lower layers with shell triangles.
 		//printer.setLowerShell(ls);
 		
-		RrCSGPolygon offBorder = csgPol.offset(-0.5*printer.getExtrusionSize());
-		RrCSGPolygon offHatch = csgPol.offset(-1.5*printer.getExtrusionSize());
+		RrCSGPolygon offBorder = csgPol.offset(-0.5*printer.getExtruder().getExtrusionSize());
+		RrCSGPolygon offHatch = csgPol.offset(-1.5*printer.getExtruder().getExtrusionSize());
 		
 		//csgPol.divide(Preferences.tiny(), 1.01);
 		//RrGraphics g = new RrGraphics(csgPol, true);
@@ -102,7 +103,7 @@ public class LayerProducer {
 		borderPolygons = offBorder.megList(solidMaterial, solidMaterial);
 		
 		hatchedPolygons = new RrPolygonList();
-		hatchedPolygons.add(offHatch.hatch(hatchDirection, printer.getInfillWidth(), 
+		hatchedPolygons.add(offHatch.hatch(hatchDirection, printer.getExtruder().getExtrusionInfillWidth(), 
 				solidMaterial, gapMaterial));	
 	
 //		RrPolygonList pllist = new RrPolygonList();
@@ -127,7 +128,7 @@ public class LayerProducer {
 	{
 		if (printer.isCancelled()) return;
 		
-		double speedUpLength = printer.getAngleSpeedUpLength();
+		double speedUpLength = printer.getExtruder().getAngleSpeedUpLength();
 		if(speedUpLength > 0)
 		{
 			segmentSpeeds ss = new segmentSpeeds(posNow(), first, second, 
@@ -140,12 +141,12 @@ public class LayerProducer {
 			if(ss.plotMiddle)
 			{
 				int straightSpeed = (int)Math.round((double)currentSpeed*(1 - 
-						printer.getAngleSpeedFactor()));
+						printer.getExtruder().getAngleSpeedFactor()));
 				printer.setSpeed(straightSpeed);
 				printer.printTo(ss.p2.x(), ss.p2.y(), z);
 			}
 
-			printer.setSpeed(ss.speed(currentSpeed, printer.getAngleSpeedFactor()));
+			printer.setSpeed(ss.speed(currentSpeed, printer.getExtruder().getAngleSpeedFactor()));
 			printer.printTo(ss.p3.x(), ss.p3.y(), z);
 			pos = ss.p3;
 		// Leave speed set for the start of the next line.
@@ -165,7 +166,7 @@ public class LayerProducer {
 			return;
 		}
 		
-		double speedUpLength = printer.getAngleSpeedUpLength();
+		double speedUpLength = printer.getExtruder().getAngleSpeedUpLength();
 		if(speedUpLength > 0)
 		{
 			segmentSpeeds ss = new segmentSpeeds(posNow(), first, second, 
@@ -181,7 +182,7 @@ public class LayerProducer {
 				printer.moveTo(ss.p2.x(), ss.p2.y(), z, startUp, startUp);
 			}
 
-			printer.setSpeed(ss.speed(currentSpeed, printer.getAngleSpeedFactor()));
+			printer.setSpeed(ss.speed(currentSpeed, printer.getExtruder().getAngleSpeedFactor()));
 			printer.moveTo(ss.p3.x(), ss.p3.y(), z, startUp, endUp);
 			pos = ss.p3;
 			// Leave speed set for the start of the next movement.
@@ -200,18 +201,18 @@ public class LayerProducer {
 		if(p.size() <= 1)
 			return;
 		
-		int stopExtruding = p.backStep(printer.getOverRun());
+		int stopExtruding = p.backStep(printer.getExtruder().getExtrusionOverRun());
 		
 		int leng = p.size();
 		
 		if (printer.isCancelled()) return;
 		
-		printer.setSpeed(currentSpeed);
-		
+		printer.setSpeed(printer.getFastSpeed());
 		move(p.point(0), p.point(1), true, false);
+		printer.setSpeed(outlineSpeed);
 		plot(p.point(0), p.point(1));
 		// Print any lead-in.
-		printer.printStartDelay(printer.getDelay());
+		printer.printStartDelay(printer.getExtruder().getExtrusionDelay());
 		
 		int f = p.flag(0);
 		for(int j = 1; j <= leng; j++)

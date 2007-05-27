@@ -38,7 +38,6 @@ RememberWindowPosition=false
 
 # Motor settings
 AxisCount=3
-MovementSpeed=230
 FastSpeed=230
 Axis1Address=2
 Axis2Address=3
@@ -52,11 +51,12 @@ Axis3Torque=50
 
 # Extruder settings
 ExtruderCount=1
-ExtrusionSpeed=150
-ExtrusionTemp=40
-ExtrusionSize=0.5
-ExtrusionHeight=0.4
-ExtrusionInfillWidth=0.5
+Extruder1XYSpeed=230
+Extruder1ExtrusionSpeed=150
+Extruder1ExtrusionTemp=40
+Extruder1ExtrusionSize=0.5
+Extruder1ExtrusionHeight=0.4
+Extruder1ExtrusionInfillWidth=0.5
 Extruder1MaterialType=CAPA
 Extruder1Address=8
 Extruder1InfillSpeed=1.0
@@ -97,11 +97,11 @@ Extruder1OffsetZ=500
 
 #The number of mm to turn off the extruder before the end of its path
 #And the number of ms to wait between turning it on and moving it.
-ExtrusionOverRun=8
-ExtrusionDelay=5000
+Extruder1ExtrusionOverRun=8
+Extruder1ExtrusionDelay=5000
 
 # Period between layers to drive cooling system (in seconds)
-CoolingPeriod=0
+Extruder1CoolingPeriod=0
 
 # Whether or not to idle the Z axis motors between levels
 IdleZAxis=false

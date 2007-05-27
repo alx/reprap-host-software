@@ -4,8 +4,10 @@ import java.io.IOException;
 import javax.media.j3d.*;
 import org.reprap.CartesianPrinter;
 import org.reprap.Preferences;
+import org.reprap.Extruder;
 import org.reprap.ReprapException;
 import org.reprap.gui.Previewer;
+import org.reprap.devices.NullExtruder;
 
 public class NullCartesianMachine implements CartesianPrinter {
 	
@@ -14,7 +16,7 @@ public class NullCartesianMachine implements CartesianPrinter {
 	double totalDistanceMoved = 0.0;
 	double totalDistanceExtruded = 0.0;
 	
-	double extrusionSize, extrusionHeight, infillWidth;
+	//double extrusionSize, extrusionHeight, infillWidth;
 	
 	double currentX, currentY, currentZ;
 	
@@ -22,27 +24,17 @@ public class NullCartesianMachine implements CartesianPrinter {
 	private long delay;
 
 	private long startTime;
+	
+	private Extruder extruder;
 
 	public NullCartesianMachine(Preferences config) {
 		startTime = System.currentTimeMillis();
+		extruder = new NullExtruder(config, 1);
 
 		currentX = 0;
 		currentY = 0;
 		currentZ = 0;
 		
-		try {
-			extrusionSize = config.loadDouble("ExtrusionSize");
-			extrusionHeight = config.loadDouble("ExtrusionHeight");
-			infillWidth = config.loadDouble("ExtrusionInfillWidth");
-			overRun = config.loadDouble("ExtrusionOverRun");
-			delay = config.loadInt("ExtrusionDelay");
-		} catch (Exception ex) {
-			extrusionSize = 1.0;
-			extrusionHeight = 1.0;
-			infillWidth = extrusionSize;
-			overRun = 5.0;
-			delay = 5000;
-		}
 
 	}
 	
@@ -87,7 +79,8 @@ public class NullCartesianMachine implements CartesianPrinter {
 	public void selectMaterial(int materialIndex) {
 		if (isCancelled()) return;
 		if (previewer != null)
-			previewer.setMaterial(materialIndex, extrusionSize, extrusionHeight);
+			previewer.setMaterial(materialIndex, extruder.getExtrusionSize(), 
+					extruder.getExtrusionHeight());
 	}
 
 	public void terminate() throws IOException {
@@ -196,17 +189,17 @@ public class NullCartesianMachine implements CartesianPrinter {
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#getExtrusionSize()
 	 */
-	public double getExtrusionSize() {
-		return extrusionSize;
-	}
-
-	public double getExtrusionHeight() {
-		return extrusionHeight;
-	}
-	
-	public double getInfillWidth() {
-		return infillWidth;
-	}
+//	public double getExtrusionSize() {
+//		return extrusionSize;
+//	}
+//
+//	public double getExtrusionHeight() {
+//		return extrusionHeight;
+//	}
+//	
+//	public double getInfillWidth() {
+//		return infillWidth;
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#setCooling(boolean)
@@ -263,5 +256,10 @@ public class NullCartesianMachine implements CartesianPrinter {
 	public void homeToZeroY() throws ReprapException, IOException {
 		// TODO Auto-generated method stub
 		
+	}
+	
+	public Extruder getExtruder()
+	{
+		return extruder;
 	}
 }

@@ -34,26 +34,26 @@ public class Reprap implements CartesianPrinter {
 	double totalDistanceMoved = 0.0;
 	double totalDistanceExtruded = 0.0;
 
-	private LinePrinter layer;
+	private LinePrinter layerPrinter;
 	
 	double scaleX, scaleY, scaleZ;
 	
 	double currentX, currentY, currentZ;
 	
-	double offsetX, offsetY, offsetZ;
+	//double offsetX, offsetY, offsetZ;
 	
 	
-	private int speedXY = 230;  			// Initial default speed
+	private int currentSpeedXY = 200;  			// Initial default speed
 	private int fastSpeedXY = 230;
 	private int speedZ = 230;  			// Initial default speed
-	private int speedExtruder = 200;    // Initial default extruder speed
+	//private int speedExtruder = 200;    // Initial default extruder speed
 	
-	private double extrusionSize;
-	private double extrusionHeight;
-	private double infillWidth;
+	//private double extrusionSize;
+	//private double extrusionHeight;
+	//private double infillWidth;
 	
-	private double overRun;
-	private long delay;
+	//private double overRun;
+	//private long delay;
 	
 	private GenericExtruder extruder;  ///< Only one supported for now
 
@@ -73,7 +73,7 @@ public class Reprap implements CartesianPrinter {
 		if (extruders < 1)
 			throw new Exception("A Reprap printer must contain at least one extruder");
 		
-		offsetX = offsetY = offsetZ = 0.0;
+		//offsetX = offsetY = offsetZ = 0.0;
 		
 		String commPortName = prefs.loadString("Port");
 		
@@ -90,25 +90,27 @@ public class Reprap implements CartesianPrinter {
 		extruder = new GenericExtruder(communicator,
 				new SNAPAddress(prefs.loadInt("Extruder1Address")), prefs, 1);
 
-		extrusionSize = prefs.loadDouble("ExtrusionSize");
-		extrusionHeight = prefs.loadDouble("ExtrusionHeight");
-		infillWidth = prefs.loadDouble("ExtrusionInfillWidth");
+		//extrusionSize = prefs.loadDouble("ExtrusionSize");
+		//extrusionHeight = prefs.loadDouble("ExtrusionHeight");
+		//infillWidth = prefs.loadDouble("ExtrusionInfillWidth");
 		
-		overRun = prefs.loadDouble("ExtrusionOverRun");
-		delay = prefs.loadInt("ExtrusionDelay");
+		//overRun = prefs.loadDouble("ExtrusionOverRun");
+		//delay = prefs.loadInt("ExtrusionDelay");
 		
-		layer = new LinePrinter(motorX, motorY, extruder);
+		layerPrinter = new LinePrinter(motorX, motorY, extruder);
 
 		// TODO This should be from calibration
 		scaleX = prefs.loadDouble("Axis1Scale");
 		scaleY = prefs.loadDouble("Axis2Scale");
 		scaleZ = prefs.loadDouble("Axis3Scale");
 
-		offsetX = prefs.loadDouble("Extruder1OffsetX");
-		offsetY = prefs.loadDouble("Extruder1OffsetY");
-		offsetZ = prefs.loadDouble("Extruder1OffsetZ");
+		//offsetX = prefs.loadDouble("Extruder1OffsetX");
+		//offsetY = prefs.loadDouble("Extruder1OffsetY");
+		//offsetZ = prefs.loadDouble("Extruder1OffsetZ");
 	
 		idleZ = prefs.loadBool("IdleZAxis");
+		
+		fastSpeedXY = prefs.loadInt("FastSpeed");
 		
 		try {
 			currentX = convertToPositionZ(motorX.getPosition());
@@ -150,7 +152,7 @@ public class Reprap implements CartesianPrinter {
 				!startUp)
 			return;
 
-		double liftedZ = z + extrusionHeight;
+		double liftedZ = z + extruder.getExtrusionHeight();
 		int stepperLiftedZ = convertToStepZ(liftedZ);
 		int targetZ;
 		
@@ -172,7 +174,7 @@ public class Reprap implements CartesianPrinter {
 			currentStepperZ = targetZ;
 		}
 		
-		layer.moveTo(stepperX, stepperY, speedXY);
+		layerPrinter.moveTo(stepperX, stepperY, currentSpeedXY);
 		totalDistanceMoved += segmentLength(x - currentX, y - currentY);
 		currentX = x;
 		currentY = y;
@@ -208,12 +210,12 @@ public class Reprap implements CartesianPrinter {
 		int stepperY = convertToStepY(y);
 		int stepperZ = convertToStepZ(z);
 		
-		if ((stepperX != layer.getCurrentX() || stepperY != layer.getCurrentY()) && z != currentZ)
+		if ((stepperX != layerPrinter.getCurrentX() || stepperY != layerPrinter.getCurrentY()) && z != currentZ)
 			throw new ReprapException("Reprap cannot print a line across 3 axes simultaneously");
 
 		if (previewer != null)
-			previewer.addSegment(convertToPositionX(layer.getCurrentX()),
-					convertToPositionY(layer.getCurrentY()), currentZ,
+			previewer.addSegment(convertToPositionX(layerPrinter.getCurrentX()),
+					convertToPositionY(layerPrinter.getCurrentY()), currentZ,
 					x, y, z);
 
 		if (isCancelled()) return;
@@ -225,7 +227,7 @@ public class Reprap implements CartesianPrinter {
 			double distance = Math.abs(currentZ - z);
 			totalDistanceExtruded += distance;
 			totalDistanceMoved += distance;
-			extruder.setExtrusion(speedExtruder);
+			extruder.setExtrusion(extruder.getExtruderSpeed());
 			if (!excludeZ) motorZ.seekBlocking(speedZ, stepperZ);
 			extruder.setExtrusion(0);
 			currentZ = z;
@@ -238,20 +240,20 @@ public class Reprap implements CartesianPrinter {
 		double distance = segmentLength(deltaX, deltaY);
 		totalDistanceExtruded += distance;
 		totalDistanceMoved += distance;
-		layer.printTo(stepperX, stepperY, speedXY, speedExtruder);
+		layerPrinter.printTo(stepperX, stepperY, currentSpeedXY, extruder.getExtruderSpeed());
 		currentX = x;
 		currentY = y;
 	}
 
 	// Move to zero stop on X axis.
 	public void homeToZeroX() throws ReprapException, IOException {
-		motorX.homeReset(getSpeed());
+		motorX.homeReset(fastSpeedXY);
 		currentX=0;
 	}
 	
 	// Move to zero stop on Y axis.
 	public void homeToZeroY() throws ReprapException, IOException {
-		motorY.homeReset(getSpeed());
+		motorY.homeReset(fastSpeedXY);
 		currentY=0;
 	}
 
@@ -259,7 +261,8 @@ public class Reprap implements CartesianPrinter {
 		if (isCancelled()) return;
 
 		if (previewer != null)
-			previewer.setMaterial(materialIndex, extrusionSize, extrusionHeight);
+			previewer.setMaterial(materialIndex, extruder.getExtrusionSize(), 
+					extruder.getExtrusionHeight());
 
 		if (isCancelled()) return;
 		// TODO Select new material
@@ -268,27 +271,27 @@ public class Reprap implements CartesianPrinter {
 
 	// Why don't these use round()? - AB.
 	protected int convertToStepX(double n) {
-		return (int)((n + offsetX) * scaleX);
+		return (int)((n + extruder.getOffsetX()) * scaleX);
 	}
 
 	protected int convertToStepY(double n) {
-		return (int)((n + offsetY) * scaleY);
+		return (int)((n + extruder.getOffsetY()) * scaleY);
 	}
 
 	protected int convertToStepZ(double n) {
-		return (int)((n + offsetZ) * scaleZ);
+		return (int)((n + extruder.getOffsetZ()) * scaleZ);
 	}
 
 	protected double convertToPositionX(int n) {
-		return n / scaleX - offsetX;
+		return n / scaleX - extruder.getOffsetX();
 	}
 
 	protected double convertToPositionY(int n) {
-		return n / scaleY - offsetY;
+		return n / scaleY - extruder.getOffsetY();
 	}
 
 	protected double convertToPositionZ(int n) {
-		return n / scaleZ - offsetZ;
+		return n / scaleZ - extruder.getOffsetZ();
 	}
 
 	/* (non-Javadoc)
@@ -314,9 +317,9 @@ public class Reprap implements CartesianPrinter {
 	/**
 	 * @return Returns the speed for the X & Y axes.
 	 */
-	public int getSpeed() {
-		return speedXY;
-	}
+//	public int getSpeed() {
+//		return currentSpeedXY;
+//	}
 	/**
 	 * @return Returns the maximum speed for the X & Y axes in air movement.
 	 */
@@ -328,7 +331,7 @@ public class Reprap implements CartesianPrinter {
 	 * @param speed The speed to set for the X and Y axes.
 	 */
 	public void setSpeed(int speed) {
-		this.speedXY = speed;
+		currentSpeedXY = speed;
 	}
 	
 	/**
@@ -354,43 +357,43 @@ public class Reprap implements CartesianPrinter {
 	/**
 	 * @return Returns the speedExtruder.
 	 */
-	public int getExtruderSpeed() {
-		return speedExtruder;
-	}
+//	public int getExtruderSpeed() {
+//		return speedExtruder;
+//	}
 	/**
 	 * @param speedExtruder The speedExtruder to set.
 	 */
-	public void setExtruderSpeed(int speedExtruder) {
-		this.speedExtruder = speedExtruder;
-	}
+//	public void setExtruderSpeed(int speedExtruder) {
+//		this.speedExtruder = speedExtruder;
+//	}
 	
 	public void setPreviewer(Previewer previewer) {
 		this.previewer = previewer;
 	}
 
-	public void setTemperature(int temperature) throws Exception {
-		extruder.setTemperature(temperature);
-	}
+//	public void setTemperature(int temperature) throws Exception {
+//		extruder.setTemperature(temperature);
+//	}
 	
 	/**
 	 * outline speed and the infill speed
 	 */
-	public double getOutlineSpeed()
-	{
-		return extruder.getOutlineSpeed();
-	}
-	public double getInfillSpeed()
-	{
-		return extruder.getInfillSpeed();
-	}
+//	public double getOutlineSpeed()
+//	{
+//		return extruder.getOutlineSpeed();
+//	}
+//	public double getInfillSpeed()
+//	{
+//		return extruder.getInfillSpeed();
+//	}
 	
 	/**
 	 * The length in mm to speed up when going round corners
 	 */
-	public double getAngleSpeedUpLength()
-	{
-		return extruder.getAngleSpeedUpLength();
-	}
+//	public double getAngleSpeedUpLength()
+//	{
+//		return extruder.getAngleSpeedUpLength();
+//	}
 	
 	/**
 	 * The factor by which to speed up when going round a corner.
@@ -398,10 +401,10 @@ public class Reprap implements CartesianPrinter {
 	 * where ca is the cos of the angle between the lines.  So it goes fastest when
 	 * the line doubles back on itself, and slowest when it continues straight.
 	 */	
-	public double getAngleSpeedFactor()
-	{
-		return extruder.getAngleSpeedFactor();
-	}
+//	public double getAngleSpeedFactor()
+//	{
+//		return extruder.getAngleSpeedFactor();
+//	}
 
 	private void EnsureNotEmpty() {
 		if (!extruder.isEmpty()) return;
@@ -428,6 +431,7 @@ public class Reprap implements CartesianPrinter {
 		int tempReminder=0;
 		temperatureReminder();
 		System.out.println("Moving to heating zone");
+		int oldSpeed = currentSpeedXY;
 		moveToHeatingZone();
 		while(extruder.getTemperature() < threshold && !isCancelled()) {
 			if (previewer != null) previewer.setMessage("Waiting for extruder to reach working temperature (" + Math.round(extruder.getTemperature()) + ")");
@@ -443,6 +447,7 @@ public class Reprap implements CartesianPrinter {
 		}
 		System.out.println("Returning to previous position");
 		moveTo(x, y, currentZ, true, false);
+		setSpeed(oldSpeed);
 		if (previewer != null) previewer.setMessage(null);
 		
 	}
@@ -455,7 +460,8 @@ public class Reprap implements CartesianPrinter {
 	private void temperatureReminder() {
 		System.out.println("Reminding it of the temperature");
 		try {
-			setTemperature(Preferences.loadGlobalInt("ExtrusionTemp"));
+			extruder.setTemperature(extruder.getTemperatureTarget());
+			//setTemperature(Preferences.loadGlobalInt("ExtrusionTemp"));
 		} catch (Exception e) {
 			System.out.println("Error resetting temperature.");
 		}
@@ -467,10 +473,8 @@ public class Reprap implements CartesianPrinter {
 	 * @throws ReprapException
 	 */
 	private void moveToHeatingZone() throws ReprapException, IOException {
-		int speed = getSpeed();
-		setSpeed(getFastSpeed());
+		setSpeed(fastSpeedXY);
 		moveTo(5, 5, currentZ, true, false);
-		setSpeed(speed);
 	}
 
 	public boolean isCancelled() {
@@ -482,8 +486,8 @@ public class Reprap implements CartesianPrinter {
 	public void initialise() throws Exception {
 		if (previewer != null)
 			previewer.reset();
-		motorX.homeReset(speedXY);
-		motorY.homeReset(speedXY);
+		motorX.homeReset(fastSpeedXY);
+		motorY.homeReset(fastSpeedXY);
 		if (!excludeZ) motorZ.homeReset(speedZ);
 		currentX = currentY = currentZ = 0.0;
 	}
@@ -518,17 +522,17 @@ public class Reprap implements CartesianPrinter {
 		return Math.sqrt(x*x + y*y);
 	}
 	
-	public double getExtrusionSize() {
-		return extrusionSize;
-	}
+//	public double getExtrusionSize() {
+//		return extrusionSize;
+//	}
 
-	public double getExtrusionHeight() {
-		return extrusionHeight;
-	}
+//	public double getExtrusionHeight() {
+//		return extrusionHeight;
+//	}
 	
-	public double getInfillWidth() {
-		return infillWidth;
-	}
+//	public double getInfillWidth() {
+//		return infillWidth;
+//	}
 	
 	public void setCooling(boolean enable) throws IOException {
 		extruder.setCooler(enable);
@@ -539,14 +543,14 @@ public class Reprap implements CartesianPrinter {
 	 * to allow for the delay in the stream stopping.
 	 * @return
 	 */
-	public double getOverRun() { return overRun; }
+//	public double getOverRun() { return overRun; }
 	
 	/**
 	 * Get the number of milliseconds to wait between turning an 
 	 * extruder on and starting to move it.
 	 * @return
 	 */
-	public long getDelay() { return delay; }
+//	public long getDelay() { return delay; }
 	
 	public double getTotalElapsedTime() {
 		long now = System.currentTimeMillis();
@@ -560,9 +564,9 @@ public class Reprap implements CartesianPrinter {
 	public void printStartDelay(long msDelay) {
 		try
 		{
-			extruder.setExtrusion(speedExtruder);
+			extruder.setExtrusion(extruder.getExtruderSpeed());
 			Thread.sleep(msDelay);
-			extruder.setExtrusion(0);
+			extruder.setExtrusion(0);  // What's this for?  - AB
 		} catch(Exception e)
 		{
 			// If anything goes wrong, we'll let someone else catch it.
@@ -598,6 +602,11 @@ public class Reprap implements CartesianPrinter {
 		msg.dispose();
 		
 		motorZ.setPosition(convertToStepZ(zeroPoint));
+	}
+	
+	public GenericExtruder getExtruder()
+	{
+		return extruder;
 	}
 }
 

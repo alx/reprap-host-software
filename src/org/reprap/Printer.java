@@ -3,6 +3,7 @@ package org.reprap;
 import java.io.IOException;
 import javax.media.j3d.*;
 import org.reprap.gui.Previewer;
+import org.reprap.devices.GenericExtruder;
 
 public interface Printer {
 
@@ -27,26 +28,27 @@ public interface Printer {
 	public void dispose();
 	
 	
-	public int getSpeed();
+//	public int getSpeed();
 	public void setSpeed(int speed);
 	public void setFastSpeed(int speed);
 	public int getSpeedZ();
 	public void setSpeedZ(int speed);
-	public int getExtruderSpeed();
-	public void setExtruderSpeed(int speed);
+//	public int getExtruderSpeed();
+//	public void setExtruderSpeed(int speed);
 	public void setPreviewer(Previewer previewer);
-	public void setTemperature(int temperature) throws Exception;
-	public double getInfillSpeed();
-	public double getOutlineSpeed();
+//	public void setTemperature(int temperature) throws Exception;
+//	public double getInfillSpeed();
+//	public double getOutlineSpeed();
 	public boolean isCancelled();
-	public double getAngleSpeedUpLength();
-	public double getAngleSpeedFactor();
+//	public double getAngleSpeedUpLength();
+//	public double getAngleSpeedFactor();
 	public int getFastSpeed();
 	public void initialise() throws Exception;
 	
 	public double getX();
 	public double getY();
 	public double getZ();
+	public Extruder getExtruder();
 
 	/**
 	 * Allow the user to manually calibrate the Z axis position to deal
@@ -69,20 +71,20 @@ public interface Printer {
 	 * Returns the extrusion size for the currently selected material
 	 * @return the size in mm
 	 */
-	public double getExtrusionSize();
+//	public double getExtrusionSize();
 	
 	/**
 	 * Returns the gap between infill lines
 	 * @return the size in mm
 	 */
-	public double getInfillWidth();	
+//	public double getInfillWidth();	
 	
 	/**
 	 * Related to the getExtrusionSize, except this is the height
 	 * of material that forms after any settling has taken place. 
 	 * @return the extrusion height in mm
 	 */
-	public double getExtrusionHeight();
+//	public double getExtrusionHeight();
 
 	
 	/**
@@ -101,21 +103,21 @@ public interface Printer {
 	 * Turn on or off the layer cooling system
 	 * @param enable
 	 */
-	public void setCooling(boolean enable) throws IOException;
+//	public void setCooling(boolean enable) throws IOException;
 	
 	/**
 	 * Get the length before the end of a track to turn the extruder off
 	 * to allow for the delay in the stream stopping.
 	 * @return
 	 */
-	public double getOverRun();
+//	public double getOverRun();
 	
 	/**
 	 * Get the number of milliseconds to wait between turning an 
 	 * extruder on and starting to move it.
 	 * @return
 	 */
-	public long getDelay();
+//	public long getDelay();
 
 	public double getTotalElapsedTime();
 	

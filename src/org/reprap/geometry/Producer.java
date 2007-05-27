@@ -110,47 +110,50 @@ public class Producer {
 	public void produce(boolean testPiece) throws Exception {
 
         // Fallback defaults
-		int extrusionSpeed = 200;
-		int extrusionTemp = 40;
-		int movementSpeedXY = 230;
-		int fastSpeedXY = 230;
-		int movementSpeedZ = 230;
+		//int extrusionSpeed = 200;
+		//int extrusionTemp = 40;
+		//int movementSpeedXY = 230;
+		//int fastSpeedXY = 230;
+		//int movementSpeedZ = 230;
 		
-		int coolingPeriod = Preferences.loadGlobalInt("CoolingPeriod");
+		//int coolingPeriod = Preferences.loadGlobalInt("CoolingPeriod");
 		boolean subtractive = Preferences.loadGlobalBool("Subtractive");
 		
-		try {
-			extrusionSpeed = Preferences.loadGlobalInt("ExtrusionSpeed");
-			extrusionTemp = Preferences.loadGlobalInt("ExtrusionTemp");
-			movementSpeedXY = Preferences.loadGlobalInt("MovementSpeed");
-			fastSpeedXY = Preferences.loadGlobalInt("FastSpeed");
-			movementSpeedZ = Preferences.loadGlobalInt("MovementSpeedZ");
-		} catch (Exception ex) {
-			System.out.println("Warning: could not load ExtrusionSpeed/MovementSpeed, using defaults");
-		}
+//		try {
+//			extrusionSpeed = Preferences.loadGlobalInt("ExtrusionSpeed");
+//			extrusionTemp = Preferences.loadGlobalInt("ExtrusionTemp");
+//			movementSpeedXY = Preferences.loadGlobalInt("MovementSpeed");
+//			fastSpeedXY = Preferences.loadGlobalInt("FastSpeed");
+//			movementSpeedZ = Preferences.loadGlobalInt("MovementSpeedZ");
+//		} catch (Exception ex) {
+//			System.out.println("Warning: could not load ExtrusionSpeed/MovementSpeed, using defaults");
+//		}
 		
-		System.out.println("Setting temperature and speed");
-		reprap.setTemperature(extrusionTemp);
-		reprap.setSpeed(movementSpeedXY);
-		reprap.setFastSpeed(fastSpeedXY);
-		reprap.setSpeedZ(movementSpeedZ);
+
+//		reprap.setSpeed(movementSpeedXY);
+//		reprap.setFastSpeed(fastSpeedXY);
+//		reprap.setSpeedZ(movementSpeedZ);
 		System.out.println("Intialising reprap");
 		reprap.initialise();
 		System.out.println("Selecting material");
 		reprap.selectMaterial(0);
-		reprap.setExtruderSpeed(extrusionSpeed);
-
+		//reprap.setExtruderSpeed(extrusionSpeed);
+		System.out.println("Setting temperature");
+		reprap.getExtruder().heatOn();
 		
 		// A "warmup" segment to get things in working order
 		if (!subtractive) {
 			System.out.println("Printing warmup segments, moving to (0,5)");
-			reprap.moveTo(0, 5, reprap.getExtrusionHeight(), true, false);
+			reprap.setSpeed(reprap.getFastSpeed());
+			reprap.moveTo(0, 5, reprap.getExtruder().getExtrusionHeight(), true, false);
+			reprap.setSpeed(reprap.getExtruder().getXYSpeed());
 			System.out.println("Printing warmup segments, printing to (0,20)");
-			reprap.printTo(0, 20, reprap.getExtrusionHeight());
+			reprap.printTo(0, 20, reprap.getExtruder().getExtrusionHeight());
 			System.out.println("Printing warmup segments, printing to (2,20)");
-			reprap.printTo(2, 20, reprap.getExtrusionHeight());
+			reprap.printTo(2, 20, reprap.getExtruder().getExtrusionHeight());
 			System.out.println("Printing warmup segments, printing to (2,5)");
-			reprap.printTo(2, 5, reprap.getExtrusionHeight());
+			reprap.printTo(2, 5, reprap.getExtruder().getExtrusionHeight());
+			reprap.setSpeed(reprap.getFastSpeed());
 		}
 		
 		// This should now split off layers one at a time
@@ -178,14 +181,14 @@ public class Producer {
 			// Subtractive construction works from the top, downwards
 			startZ = zMax;
 			endZ = 0;
-			stepZ = -reprap.getExtrusionHeight();
+			stepZ = -reprap.getExtruder().getExtrusionHeight();
 			reprap.setZManual(startZ);
 		} else {
 			// Normal constructive fabrication, start at the bottom and work up.
 			// Note that we start extruding one layer off the baseboard...
-			startZ = reprap.getExtrusionHeight();
+			startZ = reprap.getExtruder().getExtrusionHeight();
 			endZ = zMax;
-			stepZ = reprap.getExtrusionHeight();
+			stepZ = reprap.getExtruder().getExtrusionHeight();
 		}
 		
 		for(double z = startZ; subtractive ? z > endZ : z < endZ; z += stepZ) {
@@ -199,25 +202,28 @@ public class Producer {
 
 			// Layer cooling phase - after we've just raised the head.
 			//Only if we're not a null device.
-			if ((z != startZ && coolingPeriod > 0)&&!(reprap instanceof NullCartesianMachine)) {
+			if ((z != startZ && reprap.getExtruder().getCoolingPeriod() > 0)&&!(reprap instanceof NullCartesianMachine)) {
 				System.out.println("Starting a cooling period");
 				// Save where we are. We'll come back after we've cooled off.
 				double storedX=reprap.getX();
 				double storedY=reprap.getY();
-				reprap.setCooling(true);	// On with the fan.
+				reprap.getExtruder().setCooler(true);	// On with the fan.
 				//reprap.homeToZeroX();		// Seek (0,0)
 				//reprap.homeToZeroY();
 				reprap.setSpeed(reprap.getFastSpeed());
 				reprap.moveTo(0, 0, z, true, true);
-				Thread.sleep(1000 * coolingPeriod);
-				reprap.setCooling(false);
+				Thread.sleep(1000 * reprap.getExtruder().getCoolingPeriod());
+				reprap.getExtruder().setCooler(false);
 				System.out.println("Brief delay for head to warm up.");
-				Thread.sleep(200 * coolingPeriod);
+				Thread.sleep(200 * reprap.getExtruder().getCoolingPeriod());
 				System.out.println("End of cooling period");
 				// TODO: BUG! Strangely, this only restores Y axis!
 				//System.out.println("stored X and Y: " + storedX + "   " + storedY);
-				reprap.moveTo(storedX, storedY, z, true, true);
-				reprap.setSpeed(reprap.getSpeed());
+				
+				// The next layer will go where it wants to.
+				
+				//reprap.moveTo(storedX, storedY, z, true, true);
+				//reprap.setSpeed(reprap.getExtruder().getXYSpeed());
 				//reprap.moveTo(storedX, reprap.getY(), z, true, true);
 			}
 			
@@ -231,7 +237,7 @@ public class Producer {
 						isEvenLayer?evenHatchDirection:oddHatchDirection);
 			} else
 			{
-				RrCSGPolygon slice = stlc.slice(z+reprap.getExtrusionHeight()*0.5, 
+				RrCSGPolygon slice = stlc.slice(z+reprap.getExtruder().getExtrusionHeight()*0.5, 
 						LayerProducer.solidMaterial(), LayerProducer.gapMaterial());
 				Shape3D lowerShell = stlc.getShape3D();
 				if(slice != null)
@@ -265,8 +271,10 @@ public class Producer {
 		return reprap.getTotalDistanceExtruded();
 	}
 	
+	// This figure needs to get added up as we go along to allow for different extruders
 	public double getTotalVolumeExtruded() {
-		return reprap.getTotalDistanceExtruded() * reprap.getExtrusionHeight() * reprap.getExtrusionSize();
+		return reprap.getTotalDistanceExtruded() * reprap.getExtruder().getExtrusionHeight() * 
+		reprap.getExtruder().getExtrusionSize();
 	}
 	
 	public void dispose() {
