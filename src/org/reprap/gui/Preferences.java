@@ -2,232 +2,128 @@ package org.reprap.gui;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.IOException;
-import javax.swing.ComboBoxModel;
-import javax.swing.DefaultComboBoxModel;
+import java.lang.System;
+import java.util.Arrays;
 
 import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JComboBox;
-
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
 import javax.swing.JTextField;
-import javax.swing.JTextPane;
-import javax.swing.SwingConstants;
 
 /**
- * This code was edited or generated using CloudGarden's Jigloo
- * SWT/Swing GUI Builder, which is free for non-commercial
- * use. If Jigloo is being used commercially (ie, by a corporation,
- * company or business for any purpose whatever) then you
- * should purchase a license for each developer using Jigloo.
- * Please visit www.cloudgarden.com for details.
- * Use of Jigloo implies acceptance of these licensing terms.
- * A COMMERCIAL LICENSE HAS NOT BEEN PURCHASED FOR
- * THIS MACHINE, SO JIGLOO OR THIS CODE CANNOT BE USED
- * LEGALLY FOR ANY CORPORATE OR COMMERCIAL PURPOSE.
+ * This reads in the preferences file and constructs a set of menus from it to allow entries
+ * to be edited.
+ * 
+ * Preference keys either start with the string "Extruder" followed by a number
+ * and an underscore (that is, they look like "Extruder3_temp(C)") in which case they
+ * are assumed to be a characteristic of the extruder with that number; or they don't,
+ * in which case they are assumed to be global characteristics of the entire machine.
+ * 
+ * The keys should end with their dimensions: "Extruder3_temp(C)", "Axis2Scale(steps/mm)", but
+ * regretably can't contain unescaped space characters (see java.util.Properties).
+ * 
+ * Some weak type checking is done to prevent obvious crassness being put in the edit
+ * boxes.  This is done at save time and prevents the junk being written, but doesn't give
+ * a chance to correct it.
+ * 
+ * Extensively adapted from Simon's old version by Adrian to construct itself from
+ * the preferences file.
+ * 
+ * TODO: make booleans use check boxes, not "true" or "false".
  */
+
+//Boxes must contain one of three types:
+
+enum Category
+{
+	number, string, bool;
+}
+
 public class Preferences extends javax.swing.JDialog {
-	private JButton jButtonOK;
-	private JButton jButtonCancel;
-	private JComboBox geometry;
-	private JLabel jLabel2;
-	private JLabel jLabel4;
-	private JLabel jLabel8;
-	private JTextField motorScale3;
-	private JTextField motorScale2;
-	private JTextField motorScale1;
-	private JLabel jLabel22;
-	private JLabel jLabel21;
-	private JLabel jLabel20;
-	private JLabel jLabel19;
-	private JTextField extrusionSize;
-	private JTextField extrusionInfillWidth;
-	private JTextField extruderMaxSpeed1;
-	private JCheckBox idleZMotor;
-	//private JCheckBox rememberWindowPosition;
-	private JTextField coolingPeriod;
-	private JLabel jLabel5;
-	private JTextField extrudert01;
-	private JLabel jLabel31;
-	private JLabel jLabel30;
-	private JLabel jLabel29;
-	private JTextField extruderOffsetZ1;
-	private JTextField extruderOffsetY1;
-	private JLabel jLabel28;
-	private JTextField extruderOffsetX1;
-	private JLabel jLabel27;
-	private JLabel jLabel26;
-	private JLabel jLabel25;
-	private JTextField hb;
-	private JTextField hm;
-	private JLabel jLabel24;
-	private JLabel jLabel23;
-	private JTextField extrusionHeight;
-	private JTextField extrusionOverRun;
-	private JTextField extrusionDelay;	
-	private JPanel jPanelProduction;
-	private JTextField extrusionTemp;
-	private JLabel jLabel18;
-	private JTextField extrusionSpeed;
-	private JLabel jLabel17;
-	private JLabel jLabel16;
-	private JTextField movementSpeedXY;
-	private JTextField movementSpeedZ;
-	private JTextField extruderRz1;
-	private JTextField extruderAddress1;
-	private JTextField extruderBeta1;
-	private JLabel jLabel15;
-	private JLabel jLabel14;
-	private JLabel jLabel13;
-	private JLabel jLabel12;
-	private JLabel jLabel11;
-	private JPanel jPanelExtruders;
-	private JLabel jLabel10;
-	private JLabel jLabel9;
-	private JTextField motorTorque1;
-	private JTextField motorTorque2;
-	private JTextField motorTorque3;
-	private JTextField motorAddress1;
-	private JTextField motorAddress2;
-	private JTextField motorAddress3;
-	private JLabel jLabel7;
-	private JLabel jLabel6;
-	private JLabel speedLbl;
-	private JLabel jLabel3;
-	private JPanel jPanelMotors;
-	private JTextPane jTextPane1;
-	private JTextField serialPort;
-	private JLabel jLabel1;
-	private JPanel jPanelGeneral;
-	private JTabbedPane jTabbedPane1;
-	private JLabel jLabel32, jLabel33, jLabel34, jLabel35, jLabel36, jLabel37;
 	
-	private String [][] geometries =
-	{
-			{ "cartesian", "Cartesian" },
-			{ "nullcartesian", "Null cartesian" }
-	};
+	// Pixel dimensions of boxes and things
 	
-	/**
-	 * Auto-generated main method to display this JDialog
-	 */
+	static private final int gx = 10;    // Horizontal gap
+	static private final int gy = 5;     // Veryical gap
+	static private final int tx = 9;     // Character X width (average)
+	static private final int ty = 20;    // Character Y height
+	static private final int bx = 80;    // Button X width
+	static private final int by = 20;    // Button Y height
+	static private final int taby = 50;  // Tab Y height
+	
+	// Load of arrays for all the stuff...
+	
+	private int extruderCount;
+	JLabel[] globals;              // Array of JLabels for the general key names
+	JTextField[] globalValues;     // Array of JTextFields for the general variables
+	Category[] globalCats;         // What are they?
+	JLabel[][] extruders;          // Array of Arrays of JLabels for the extruders' key names
+	JTextField[][] extruderValues; // Array of Arrays of JTextFields for the extruders' variables
+	Category[][] extruderCats;     // What are they?
+	int longestGlobal;             // The longest string in the global list
+	int longestGlobalVal;          // The longest value in the global list
+	int longestExtruders[];        // The longest strings in the extuder lists
+	int longestExtruderVals[];     // The longest strings in the extuder lists
+
+	// Get the show on the road...
+	
 	public static void main(String[] args) {
 		JFrame frame = new JFrame();
 		Preferences inst = new Preferences(frame);
 		inst.setVisible(true);
 	}
 	
+
+	/**
+	 * Get the value corresponding to name from the preferences file
+	 * @param name
+	 * @return String
+	 */
 	private String loadString(String name) throws IOException {
 		return org.reprap.Preferences.loadGlobalString(name);
 	}
 	
-	private boolean loadBool(String name) throws IOException {
-		return org.reprap.Preferences.loadGlobalBool(name);
-	}
-	
+	/**
+	 * Save the value corresponding to name to the preferences file
+	 * @param name
+	 * @param value
+	 */	
 	private void saveString(String name, String value) throws IOException {
 		org.reprap.Preferences.setGlobalString(name, value);
 	}
 	
-	private void saveBool(String name, boolean value) throws IOException {
-		org.reprap.Preferences.setGlobalBool(name, value);
-	}
-	
-	public void loadPreferences() {
-		try {
-			serialPort.setText(loadString("Port"));
-			motorAddress1.setText(loadString("Axis1Address"));
-			motorAddress2.setText(loadString("Axis2Address"));
-			motorAddress3.setText(loadString("Axis3Address"));
-			motorTorque1.setText(loadString("Axis1Torque"));
-			motorTorque2.setText(loadString("Axis2Torque"));
-			motorTorque3.setText(loadString("Axis3Torque"));
-			motorScale1.setText(loadString("Axis1Scale"));
-			motorScale2.setText(loadString("Axis2Scale"));
-			motorScale3.setText(loadString("Axis3Scale"));
-			
-			extruderAddress1.setText(loadString("Extruder1Address"));
-			extruderBeta1.setText(loadString("Extruder1Beta"));
-			extruderRz1.setText(loadString("Extruder1Rz"));
-			extruderMaxSpeed1.setText(loadString("Extruder1MaxSpeed"));
-			extruderOffsetX1.setText(loadString("Extruder1OffsetX"));
-			extruderOffsetY1.setText(loadString("Extruder1OffsetY"));
-			extruderOffsetZ1.setText(loadString("Extruder1OffsetZ"));
-			
-			hm.setText(loadString("Extruder1hm"));
-			hb.setText(loadString("Extruder1hb"));
-			extrudert01.setText(loadString("Extruder1t0"));
-			
-			extrusionSpeed.setText(loadString("Extruder1ExtrusionSpeed"));
-			extrusionTemp.setText(loadString("Extruder1ExtrusionTemp"));
-			extrusionSize.setText(loadString("Extruder1ExtrusionSize"));
-			extrusionInfillWidth.setText(loadString("Extruder1ExtrusionInfillWidth"));
-			extrusionHeight.setText(loadString("Extruder1ExtrusionHeight"));
-			extrusionOverRun.setText(loadString("Extruder1ExtrusionOverRun"));
-			extrusionDelay.setText(loadString("Extruder1ExtrusionDelay"));
-			movementSpeedXY.setText(loadString("Extruder1XYSpeed"));
-			movementSpeedZ.setText(loadString("MovementSpeedZ"));
-			
-			coolingPeriod.setText(loadString("Extruder1CoolingPeriod"));
-			
-			idleZMotor.setSelected(loadBool("IdleZAxis"));
-			//rememberWindowPosition.setSelected(loadBool("RememberWindowPosition"));
-			
-			String geometryName = loadString("Geometry");
-			for(int i = 0; i < geometries.length; i++)
-				if (geometries[i][0].compareToIgnoreCase(geometryName) == 0)
-					geometry.setSelectedIndex(i);
-			
-		} catch (Exception ex) {
-			JOptionPane.showMessageDialog(null, "Loading preferences: " + ex);
-			ex.printStackTrace();
-		}
-		
-	}
-
+	/**
+	 * Save the lot to the preferences file
+	 *
+	 */
 	public void savePreferences() {
 		try {
-			saveString("Port", serialPort.getText());
-			saveString("Axis1Address", motorAddress1.getText());
-			saveString("Axis2Address", motorAddress2.getText());
-			saveString("Axis3Address", motorAddress3.getText());
-			saveString("Axis1Torque", motorTorque1.getText());
-			saveString("Axis2Torque", motorTorque2.getText());
-			saveString("Axis3Torque", motorTorque3.getText());
-			saveString("Axis1Scale", motorScale1.getText());
-			saveString("Axis2Scale", motorScale2.getText());
-			saveString("Axis3Scale", motorScale3.getText());
+			for(int i = 0; i < globals.length; i++)
+			{
+				String s = globalValues[i].getText();
+				if(category(s) != globalCats[i])
+					System.err.println("Dud format for " + globals[i].getText() + ": " + s);
+				else
+					saveString(globals[i].getText(), s);
+			}
 			
-			saveString("Geometry", geometries[geometry.getSelectedIndex()][0]);
-
-			saveString("Extruder1Address", extruderAddress1.getText());
-			saveString("Extruder1Beta", extruderBeta1.getText());
-			saveString("Extruder1Rz", extruderRz1.getText());
-			saveString("Extruder1MaxSpeed", extruderMaxSpeed1.getText());
-			saveString("Extruder1OffsetX", extruderOffsetX1.getText());
-			saveString("Extruder1OffsetY", extruderOffsetY1.getText());
-			saveString("Extruder1OffsetZ", extruderOffsetZ1.getText());
-			saveString("Extruder1hm", hm.getText());
-			saveString("Extruder1hb", hb.getText());
-			saveString("Extruder1t0", extrudert01.getText());
-			
-			saveString("Extruder1ExtrusionSpeed", extrusionSpeed.getText());
-			saveString("Extruder1ExtrusionTemp", extrusionTemp.getText());
-			saveString("Extruder1ExtrusionSize", extrusionSize.getText());
-			saveString("Extruder1ExtrusionInfillWidth", extrusionInfillWidth.getText());
-			saveString("Extruder1ExtrusionHeight", extrusionHeight.getText());
-			saveString("Extruder1ExtrusionOverRun", extrusionOverRun.getText());
-			saveString("Extruder1ExtrusionDelay", extrusionDelay.getText());
-			saveString("Extruder1XYSpeed", movementSpeedXY.getText());
-			saveString("MovementSpeedZ", movementSpeedZ.getText());
-
-			saveString("Extruder1CoolingPeriod", coolingPeriod.getText());
-			saveBool("IdleZAxis", idleZMotor.isSelected());
-			//saveBool("RememberWindowPosition", rememberWindowPosition.isSelected());
+			for(int j = 0; j < extruderCount; j++)
+			{
+				JLabel[] enames = extruders[j];
+				JTextField[] evals = extruderValues[j];
+				Category[] cats = extruderCats[j];
+				for(int i = 0; i < enames.length; i++)
+				{
+					String s = evals[i].getText();
+					if(category(s) != cats[i])
+						System.err.println("Dud format for " + enames[i].getText() + ": " + s);
+					else
+						saveString(enames[i].getText(), s);
+				}
+			}
 			
 			org.reprap.Preferences.saveGlobal();
 		} catch (Exception ex) {
@@ -236,511 +132,408 @@ public class Preferences extends javax.swing.JDialog {
 		}
 	}
 	
-	public Preferences(JFrame frame) {
+	/**
+	 * Constructor loads all the information from the preferences file,
+	 * converts it into arrays of JPanels and JTextFields, then builds the
+	 * menus from them.
+	 * 
+	 * @param frame
+	 */
+	public Preferences(JFrame frame) 
+	{
 		super(frame);
+		
+		// Start with everything that isn't an extruder value.
+		
+		try {
+			String[] g = org.reprap.Preferences.notStartsWith("Extruder");
+			Arrays.sort(g);
+			globals = makeLabels(g);
+			globalValues = makeValues(globals);
+			globalCats = categorise(globalValues);
+			longestGlobal = jLabelListLongest(globals);
+			longestGlobalVal = jTextFieldListLongest(globalValues);
+		}catch (Exception ex)
+		{
+			System.err.println("Preferences window: Can't load the globals!");
+			ex.printStackTrace();
+		}
+		
+		// Next we need to know how many extruders we've got.
+		
+		try{
+			extruderCount = Integer.parseInt(loadString("ExtruderCount"));
+		} catch (Exception ex)
+		{
+			System.err.println("Preferences window: Can't load the extruder count!");
+			ex.printStackTrace();
+		}
+		
+		// Now build a set of arrays for each extruder in turn.
+		
+		extruders= new JLabel[extruderCount][];
+		extruderValues= new JTextField[extruderCount][];
+		longestExtruders = new int[extruderCount];
+		longestExtruderVals = new int[extruderCount];
+		extruderCats = new Category[extruderCount][];
+		try {
+			for(int i = 0; i < extruderCount; i++)
+			{
+				String[] a = org.reprap.Preferences.startsWith("Extruder" + i);
+				Arrays.sort(a);
+				extruders[i] = makeLabels(a);
+				longestExtruders[i] = jLabelListLongest(extruders[i]);
+				extruderValues[i]= makeValues(extruders[i]);
+				extruderCats[i] = categorise(extruderValues[i]);
+				longestExtruderVals[i] = jTextFieldListLongest(extruderValues[i]);
+			}
+		}catch (Exception ex)
+		{
+			System.err.println("Preferences window: Can't load extruder(s)!");
+			ex.printStackTrace();
+		}
+		
+		// Paint the lot on the screen...
+		
 		initGUI();
-		loadPreferences();
         Utility.centerWindowOnParent(this, frame);
 	}
 	
-	private void initGUI() {
+	/**
+	 * Set up the panels with all the right boxes in
+	 *
+	 */
+	private void initGUI() 
+	{
+		JButton jButtonOK;     // Save and exit
+		JButton jButtonCancel; // Exit without save
+
+		// Work out overall dimensions
+
+		int xall = xAll() + 3*gx;
+		int ypane = yAll();
+		int yall = ypane + by + 3*gy + taby;
+
+		// Put it all together
+
 		try {
+			// Start with the buttons
+
+			jButtonOK = new JButton();
+			getContentPane().add(jButtonOK);
+			jButtonOK.setText("OK");
+			jButtonOK.setBounds(xall - (3*gx + bx), ypane + by + 2*gy, bx, by);
+			jButtonOK.addMouseListener(new MouseAdapter() 
 			{
-				jButtonOK = new JButton();
-				getContentPane().add(jButtonOK);
-				jButtonOK.setText("OK");
-				jButtonOK.setBounds(357, 274, 77, 28);
-				jButtonOK.addMouseListener(new MouseAdapter() {
-					public void mouseClicked(MouseEvent evt) {
-						jButtonOKMouseClicked(evt);
-					}
-				});
-			}
+				public void mouseClicked(MouseEvent evt) 
+				{
+					jButtonOKMouseClicked(evt);
+				}
+			});
+
+
+			jButtonCancel = new JButton();
+			getContentPane().add(jButtonCancel);
+			jButtonCancel.setText("Cancel");
+			jButtonCancel.setBounds(3*gx, ypane + by + 2*gy, bx, by);
+			jButtonCancel.addMouseListener(new MouseAdapter() 
 			{
-				jButtonCancel = new JButton();
-				getContentPane().add(jButtonCancel);
-				jButtonCancel.setText("Cancel");
-				jButtonCancel.setBounds(266, 274, 77, 28);
-				jButtonCancel.addMouseListener(new MouseAdapter() {
-					public void mouseClicked(MouseEvent evt) {
-						jButtonCancelMouseClicked(evt);
-					}
-				});
-			}
+				public void mouseClicked(MouseEvent evt) 
+				{
+					jButtonCancelMouseClicked(evt);
+				}
+			});
+
+			// We'll have a tab for the globals, then one 
+			// for each extruder
+
+			JTabbedPane jTabbedPane1 = new JTabbedPane();
+			getContentPane().add(jTabbedPane1);
+			jTabbedPane1.setBounds(gx, gy, xall, yall);
+
+			// Start top left
+
+			int x = gx;
+			int y = gy;
+			int xw;     // X coordinate of the edit boxes
+
+			// Do the global panel
+
+			JPanel jPanelGeneral = new JPanel();
+			jTabbedPane1.addTab("Globals", null, jPanelGeneral, null);
+			jPanelGeneral.setPreferredSize(new java.awt.Dimension(xall, ypane));
+			jPanelGeneral.setLayout(null);
+
+			xw = longestGlobal*tx + 2*gx;
+			for(int i = 0; i < globals.length; i++)
 			{
-				jTabbedPane1 = new JTabbedPane();
-				getContentPane().add(jTabbedPane1);
-				jTabbedPane1.setBounds(7, 7, 427, 264);
-				{
-					jPanelGeneral = new JPanel();
-					jTabbedPane1.addTab("General", null, jPanelGeneral, null);
-					jPanelGeneral.setPreferredSize(new java.awt.Dimension(373, 198));
-					jPanelGeneral.setLayout(null);
-					{
-						jLabel1 = new JLabel();
-						jPanelGeneral.add(jLabel1);
-						jLabel1.setText("Serial port");
-						jLabel1.setBounds(7, 14, 84, 28);
-					}
-					{
-						serialPort = new JTextField();
-						jPanelGeneral.add(serialPort);
-						serialPort.setBounds(91, 14, 154, 28);
-					}
-					{
-						jTextPane1 = new JTextPane();
-						jPanelGeneral.add(jTextPane1);
-						jTextPane1.setText("For linux use a number such as \"0\", \"1\" or alternatively use the full path to your serial device.  For Windows use \"COM1\", \"COM2\" etc.");
-						jTextPane1.setBounds(91, 49, 273, 63);
-						jTextPane1.setEnabled(false);
-						jTextPane1.setEditable(false);
-						jTextPane1.setOpaque(false);
-					}
-					/*{
-						rememberWindowPosition = new JCheckBox();
-						jPanelGeneral.add(rememberWindowPosition);
-						rememberWindowPosition.setText("Remember window position at startup");
-						rememberWindowPosition.setBounds(35, 105, 260, 28);
-					}*/
-				}
-				{
-					jPanelMotors = new JPanel();
-					jTabbedPane1.addTab("Axes", null, jPanelMotors, null);
-					jPanelMotors.setLayout(null);
-					{
-						String [] geometryList = new String[geometries.length];
-						for(int i = 0; i < geometries.length; i++)
-							geometryList[i] = geometries[i][1];
-						ComboBoxModel geometryModel = new DefaultComboBoxModel(
-								geometryList);
-						geometry = new JComboBox();
-						jPanelMotors.add(geometry);
-						geometry.setModel(geometryModel);
-						geometry.setBounds(91, 14, 182, 28);
-					}
-					{
-						jLabel2 = new JLabel();
-						jPanelMotors.add(jLabel2);
-						jLabel2.setText("Geometry");
-						jLabel2.setBounds(14, 14, 63, 28);
-					}
-					{
-						jLabel3 = new JLabel();
-						jPanelMotors.add(jLabel3);
-						jLabel3.setText("Motor 1 (X)");
-						jLabel3.setBounds(14, 81, 84, 28);
-					}
-					{
-						jLabel4 = new JLabel();
-						jPanelMotors.add(jLabel4);
-						jLabel4.setText("Motor 2 (Y)");
-						jLabel4.setBounds(14, 109, 84, 28);
-					}
-					{
-						speedLbl = new JLabel();
-						jPanelMotors.add(speedLbl);
-						speedLbl.setText("Speed (XY)");
-						speedLbl.setBounds(14, 168, 70, 28);
-					}
-					{
-						speedLbl = new JLabel();
-						jPanelMotors.add(speedLbl);
-						speedLbl.setText("Speed  (Z)");
-						speedLbl.setBounds(14, 198, 70, 28);
-					}
-					{
-						jLabel16 = new JLabel();
-						jPanelMotors.add(jLabel16);
-						jLabel16.setText("Motor 3 (Z)");
-						jLabel16.setBounds(14, 137, 84, 28);
-					}
-					{
-						jLabel6 = new JLabel();
-						jPanelMotors.add(jLabel6);
-						jLabel6.setText("Address");
-						jLabel6.setBounds(105, 56, 63, 28);
-						jLabel6.setHorizontalAlignment(SwingConstants.CENTER);
-					}
-					{
-						jLabel22 = new JLabel();
-						jPanelMotors.add(jLabel22);
-						jLabel22.setText("Max torque");
-						jLabel22.setBounds(182, 56, 77, 28);
-					}
-					{
-						jLabel7 = new JLabel();
-						jPanelMotors.add(jLabel7);
-						jLabel7.setText("Scale (steps/mm)");
-						jLabel7.setBounds(259, 56, 177, 28);
-					}
-					{
-						motorAddress3 = new JTextField();
-						jPanelMotors.add(motorAddress3);
-						motorAddress3.setBounds(112, 140, 49, 21);
-					}
-					{
-						motorAddress1 = new JTextField();
-						jPanelMotors.add(motorAddress1);
-						motorAddress1.setBounds(112, 84, 49, 21);
-					}
-					{
-						motorAddress2 = new JTextField();
-						jPanelMotors.add(motorAddress2);
-						motorAddress2.setBounds(112, 112, 49, 21);
-					}
-					{
-						motorTorque1 = new JTextField();
-						jPanelMotors.add(motorTorque1);
-						motorTorque1.setBounds(182, 84, 35, 21);
-					}
-					{
-						motorTorque3 = new JTextField();
-						jPanelMotors.add(motorTorque3);
-						motorTorque3.setBounds(182, 140, 35, 21);
-					}
-					{
-						motorTorque2 = new JTextField();
-						jPanelMotors.add(motorTorque2);
-						motorTorque2.setBounds(182, 112, 35, 21);
-					}
-					{
-						motorScale1 = new JTextField();
-						jPanelMotors.add(motorScale1);
-						motorScale1.setBounds(259, 84, 91, 21);
-					}
-					{
-						motorScale2 = new JTextField();
-						jPanelMotors.add(motorScale2);
-						motorScale2.setBounds(259, 112, 91, 21);
-					}
-					{
-						motorScale3 = new JTextField();
-						jPanelMotors.add(motorScale3);
-						motorScale3.setBounds(259, 140, 91, 21);
-					}
-					{
-						jLabel8 = new JLabel();
-						jPanelMotors.add(jLabel8);
-						jLabel8.setText("%");
-						jLabel8.setBounds(224, 140, 21, 21);
-					}
-					{
-						jLabel9 = new JLabel();
-						jPanelMotors.add(jLabel9);
-						jLabel9.setText("%");
-						jLabel9.setBounds(224, 84, 21, 21);
-					}
-					{
-						jLabel10 = new JLabel();
-						jPanelMotors.add(jLabel10);
-						jLabel10.setText("%");
-						jLabel10.setBounds(224, 112, 21, 21);
-					}
-					{
-						movementSpeedXY = new JTextField();
-						jPanelMotors.add(movementSpeedXY);
-						movementSpeedXY.setBounds(112, 170, 105, 21);
-					}
-					{
-						movementSpeedZ = new JTextField();
-						jPanelMotors.add(movementSpeedZ);
-						movementSpeedZ.setBounds(112, 200, 105, 21);
-					}
-				}
-				{
-					jPanelExtruders = new JPanel();
-					jTabbedPane1.addTab("Extruders", null, jPanelExtruders, null);
-					jPanelExtruders.setLayout(null);
-					jPanelExtruders.setPreferredSize(new java.awt.Dimension(
-						420,
-						196));
-					{
-						jLabel11 = new JLabel();
-						jPanelExtruders.add(jLabel11);
-						jLabel11.setText("Extruder");
-						jLabel11.setBounds(7, 7, 56, 21);
-						jLabel11.setHorizontalAlignment(SwingConstants.RIGHT);
-					}
-					{
-						jLabel14 = new JLabel();
-						jPanelExtruders.add(jLabel14);
-						jLabel14.setText("Rz");
-						jLabel14.setBounds(224, 7, 42, 21);
-					}
-					{
-						jLabel12 = new JLabel();
-						jPanelExtruders.add(jLabel12);
-						jLabel12.setText("1");
-						jLabel12.setBounds(35, 28, 21, 28);
-						jLabel12.setHorizontalAlignment(SwingConstants.RIGHT);
-					}
-					{
-						jLabel15 = new JLabel();
-						jPanelExtruders.add(jLabel15);
-						jLabel15.setText("Beta");
-						jLabel15.setBounds(154, 7, 42, 21);
-					}
-					{
-						jLabel13 = new JLabel();
-						jPanelExtruders.add(jLabel13);
-						jLabel13.setText("Address");
-						jLabel13.setBounds(77, 7, 63, 21);
-					}
-					{
-						extruderBeta1 = new JTextField();
-						jPanelExtruders.add(extruderBeta1);
-						extruderBeta1.setBounds(140, 28, 63, 28);
-					}
-					{
-						extruderAddress1 = new JTextField();
-						jPanelExtruders.add(extruderAddress1);
-						extruderAddress1.setBounds(70, 28, 63, 28);
-					}
-					{
-						extruderRz1 = new JTextField();
-						jPanelExtruders.add(extruderRz1);
-						extruderRz1.setBounds(210, 28, 63, 28);
-					}
-					{
-						jLabel19 = new JLabel();
-						jPanelExtruders.add(jLabel19);
-						jLabel19.setText("Extrusion size");
-						jLabel19.setBounds(14, 105, 105, 28);
-					}
-					{
-						jLabel24 = new JLabel();
-						jPanelExtruders.add(jLabel24);
-						jLabel24.setText("t0");
-						jLabel24.setBounds(357, 7, 35, 21);
-					}
-					{
-						extruderMaxSpeed1 = new JTextField();
-						jPanelExtruders.add(extruderMaxSpeed1);
-						extruderMaxSpeed1.setBounds(280, 28, 63, 28);
-					}
-					{
-						jLabel31 = new JLabel();
-						jPanelExtruders.add(jLabel31);
-						jLabel31.setText("Max Speed");
-						jLabel31.setBounds(280, 7, 77, 21);
-					}
-					{
-						extrudert01 = new JTextField();
-						jPanelExtruders.add(extrudert01);
-						extrudert01.setBounds(350, 28, 63, 28);
-					}
-					{
-						extrusionSize = new JTextField();
-						jPanelExtruders.add(extrusionSize);
-						extrusionSize.setBounds(119, 105, 70, 21);
-					}
-					{
-						extrusionInfillWidth = new JTextField();
-						jPanelExtruders.add(extrusionInfillWidth);
-						extrusionInfillWidth.setBounds(119, 215, 70, 21);
-					}
-					{
-						jLabel36 = new JLabel();
-						jPanelExtruders.add(jLabel36);
-						jLabel36.setText("Infill");
-						jLabel36.setBounds(14, 215, 84, 28);
-					}
-					{
-						jLabel37 = new JLabel();
-						jPanelExtruders.add(jLabel37);
-						jLabel37.setText("mm");
-						jLabel37.setBounds(196, 215, 84, 28);
-					}
-					
-					{
-						jLabel18 = new JLabel();
-						jPanelExtruders.add(jLabel18);
-						jLabel18.setText("Temperature");
-						jLabel18.setBounds(14, 130, 84, 28);
-					}
-					{
-						extrusionHeight = new JTextField();
-						jPanelExtruders.add(extrusionHeight);
-						extrusionHeight.setBounds(266, 105, 70, 21);
-					}
-					{
-						extrusionOverRun = new JTextField();
-						jPanelExtruders.add(extrusionOverRun);
-						extrusionOverRun.setBounds(119, 190, 70, 21);
-					}
-					{
-						jLabel32 = new JLabel();
-						jPanelExtruders.add(jLabel32);
-						jLabel32.setText("Overrun");
-						jLabel32.setBounds(14, 190, 84, 28);
-					}
-					{
-						jLabel33 = new JLabel();
-						jPanelExtruders.add(jLabel33);
-						jLabel33.setText("mm");
-						jLabel33.setBounds(196, 190, 84, 28);
-					}
-					{
-						extrusionDelay = new JTextField();
-						jPanelExtruders.add(extrusionDelay);
-						extrusionDelay.setBounds(266, 190, 70, 21);
-					}
-					{
-						jLabel34 = new JLabel();
-						jPanelExtruders.add(jLabel34);
-						jLabel34.setText("Delay");
-						jLabel34.setBounds(220, 190, 84, 28);
-					}
-					{
-						jLabel35 = new JLabel();
-						jPanelExtruders.add(jLabel35);
-						jLabel35.setText("ms");
-						jLabel35.setBounds(340, 190, 84, 28);
-					}
-					{
-						extrusionTemp = new JTextField();
-						jPanelExtruders.add(extrusionTemp);
-						extrusionTemp.setBounds(119, 133, 70, 21);
-					}
-					{
-						jLabel17 = new JLabel();
-						jPanelExtruders.add(jLabel17);
-						jLabel17.setText("Speed");
-						jLabel17.setBounds(14, 158, 84, 28);
-					}
-					{
-						extrusionSpeed = new JTextField();
-						jPanelExtruders.add(extrusionSpeed);
-						extrusionSpeed.setBounds(119, 161, 70, 21);
-					}
-					{
-						jLabel20 = new JLabel();
-						jPanelExtruders.add(jLabel20);
-						jLabel20.setText("mm high");
-						jLabel20.setBounds(343, 105, 63, 21);
-					}
-					{
-						jLabel21 = new JLabel();
-						jPanelExtruders.add(jLabel21);
-						jLabel21.setText("C");
-						jLabel21.setBounds(196, 133, 28, 21);
-					}
-					{
-						jLabel23 = new JLabel();
-						jPanelExtruders.add(jLabel23);
-						jLabel23.setText("mm  by");
-						jLabel23.setBounds(196, 105, 49, 21);
-					}
-					{
-						hm = new JTextField();
-						jPanelExtruders.add(hm);
-						hm.setBounds(266, 133, 70, 21);
-					}
-					{
-						jLabel26 = new JLabel();
-						jPanelExtruders.add(jLabel26);
-						jLabel26.setText("hb");
-						jLabel26.setHorizontalAlignment(SwingConstants.RIGHT);
-						jLabel26.setBounds(217, 161, 42, 21);
-					}
-					{
-						hb = new JTextField();
-						jPanelExtruders.add(hb);
-						hb.setBounds(266, 161, 70, 21);
-					}
-					{
-						jLabel25 = new JLabel();
-						jPanelExtruders.add(jLabel25);
-						jLabel25.setText("hm");
-						jLabel25.setBounds(217, 133, 42, 21);
-						jLabel25.setHorizontalAlignment(SwingConstants.RIGHT);
-					}
-					{
-						jLabel27 = new JLabel();
-						jPanelExtruders.add(jLabel27);
-						jLabel27.setText("Offsets:   X");
-						jLabel27.setBounds(7, 70, 98, 21);
-						jLabel27.setHorizontalAlignment(SwingConstants.RIGHT);
-					}
-					{
-						extruderOffsetX1 = new JTextField();
-						jPanelExtruders.add(extruderOffsetX1);
-						extruderOffsetX1.setBounds(119, 70, 49, 21);
-					}
-					{
-						extruderOffsetZ1 = new JTextField();
-						jPanelExtruders.add(extruderOffsetZ1);
-						extruderOffsetZ1.setBounds(273, 70, 49, 21);
-					}
-					{
-						jLabel28 = new JLabel();
-						jPanelExtruders.add(jLabel28);
-						jLabel28.setText("Z");
-						jLabel28.setBounds(245, 70, 21, 21);
-						jLabel28.setHorizontalAlignment(SwingConstants.RIGHT);
-					}
-					{
-						extruderOffsetY1 = new JTextField();
-						jPanelExtruders.add(extruderOffsetY1);
-						extruderOffsetY1.setBounds(196, 70, 49, 21);
-					}
-					{
-						jLabel29 = new JLabel();
-						jPanelExtruders.add(jLabel29);
-						jLabel29.setText("Y");
-						jLabel29.setHorizontalAlignment(SwingConstants.RIGHT);
-						jLabel29.setBounds(168, 70, 21, 21);
-					}
-					{
-						jLabel30 = new JLabel();
-						jPanelExtruders.add(jLabel30);
-						jLabel30.setText("mm");
-						jLabel30.setBounds(329, 70, 35, 21);
-					}
-				}
-				{
-					jPanelProduction = new JPanel();
-					jTabbedPane1.addTab("Production", null, jPanelProduction, null);
-					jPanelProduction.setLayout(null);
-					{
-						jLabel5 = new JLabel();
-						jPanelProduction.add(jLabel5);
-						jLabel5.setText("Cooling period");
-						jLabel5.setBounds(14, 35, 98, 28);
-						jLabel5.setHorizontalAlignment(SwingConstants.RIGHT);
-					}
-					{
-						coolingPeriod = new JTextField();
-						jPanelProduction.add(coolingPeriod);
-						coolingPeriod.setBounds(126, 35, 63, 28);
-					}
-					{
-						idleZMotor = new JCheckBox();
-						jPanelProduction.add(idleZMotor);
-						idleZMotor.setText("Idle Z motor between layers");
-						idleZMotor.setBounds(35, 77, 203, 28);
-					}
-				}
+				globals[i].setBounds(gx, y, longestGlobal*tx, ty);
+				jPanelGeneral.add(globals[i]);
+				globalValues[i].setBounds(xw, y, longestGlobalVal*tx, ty);
+				jPanelGeneral.add(globalValues[i]);
+				y = y + ty + gy;
 			}
+
+			// Do all the extruder panels
+
+			for(int j = 0; j < extruderCount; j++)
 			{
-				getContentPane().setLayout(null);
-				this.setTitle("RepRap Preferences");
-			}
-			this.setSize(449, 338);
+				y = gy;
+				JLabel[] keys = extruders[j];
+				JTextField[] values = extruderValues[j];
+				xw = longestExtruders[j]*tx + 2*gx;
+
+				JPanel jPanelExtruder = new JPanel();
+				jTabbedPane1.addTab("Extruder" + j, null, jPanelExtruder, null);
+				jPanelExtruder.setLayout(null);
+				jPanelExtruder.setPreferredSize(new java.awt.Dimension(xall, ypane));
+
+				for(int i = 0; i < keys.length; i++)
+				{
+					keys[i].setBounds(gx, y, longestExtruders[j]*tx, ty);
+					jPanelExtruder.add(keys[i]);
+
+					values[i].setBounds(xw, y, longestExtruderVals[j]*tx, ty);
+					jPanelExtruder.add(values[i]);
+					y = y + ty + gy;
+				}
+			}	
+
+			// Wrap it all up
+
+			getContentPane().setLayout(null);
+			setTitle("RepRap Preferences");
+			setSize(xall, yall);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 	}
 	
+	/**
+	 * What to do when OK is clicked
+	 * @param evt
+	 */
 	private void jButtonOKMouseClicked(MouseEvent evt) {
 		// Update all preferences
 		savePreferences();
 		dispose();
 	}
 	
+	/**
+	 * What to do when Cancel is clicked
+	 * @param evt
+	 */
 	private void jButtonCancelMouseClicked(MouseEvent evt) {
 		// Close without saving
 		dispose();
 	}
 	
+	/**
+	 * Find the character count of the longest string in a label (key)
+	 * @param a
+	 * @return
+	 */
+	private int jLabelListLongest(JLabel[] a)
+	{
+		int result = 0;
+		for(int i = 0; i < a.length; i++)
+		{
+			int len = a[i].getText().length();
+			if(len > result)
+				result = len;
+		}
+		return result;
+	}
+	
+	/**
+	 * Find the character count of the longest string in a value 
+	 * @param a
+	 * @return
+	 */
+	private int jTextFieldListLongest(JTextField[] a)
+	{
+		int result = 0;
+		for(int i = 0; i < a.length; i++)
+		{
+			int len = a[i].getText().length();
+			if(len > result)
+				result = len;
+		}
+		return result;
+	}
+
+	/**
+	 * Work out the pixel width of a key + value pair
+	 * @param longestLab
+	 * @param longestVal
+	 * @return
+	 */
+	private int xSize(int longestLab, int longestVal)
+	{	
+		return tx*(longestLab + longestVal) + 3*gx;
+	}
+	
+	/**
+	 * Work out the pixel height of an array of values and keys
+	 * @param listLen
+	 * @return
+	 */
+	private int ySize(int listLen)
+	{	
+		return (gy + ty)*listLen + gy;
+	}
+	
+	/**
+	 * Work out the widest width of all the lists
+	 * @return
+	 */
+	private int xAll()
+	{
+		int result = xSize(longestGlobal, longestGlobalVal);
+		for(int i = 0; i < extruderCount; i++)
+		{
+			int x = xSize(longestExtruders[i], longestExtruderVals[i]);
+			if(x > result) 
+				result = x;
+		}
+		return result;
+	}
+	
+	/**
+	 * Work out the heighest height of all the lists
+	 * @return
+	 */
+	private int yAll()
+	{
+		int result = ySize(globals.length);
+		for(int i = 0; i < extruderCount; i++)
+		{
+			int y = ySize(extruders[i].length);
+			if(y > result) 
+				result = y;
+		}		
+		return result;
+	}
+	
+	/**
+	 * Take an array of strings and turn them into labels (right justified).
+	 * @param a
+	 * @return
+	 */
+	private JLabel[] makeLabels(String[] a)
+	{
+		JLabel[] result = new JLabel[a.length];
+		for(int i = 0; i < a.length; i++)
+		{
+			result[i] = new JLabel();
+			result[i].setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+			result[i].setText(a[i]);
+		}
+		return result;
+	}	
+	
+	/**
+	 * Take an array of labels and use their string values as keys to look up
+	 * the corresponding values.  Make those into an array of editable boxes.
+	 * @param a
+	 * @return
+	 */
+	private JTextField[] makeValues(JLabel[] a)
+	{
+		JTextField[] result = new JTextField[a.length];
+		for(int i = 0; i < a.length; i++)
+		{
+			try{
+				result[i] = new JTextField();
+				result[i].setText(loadString(a[i].getText()));
+			} catch (Exception ex)
+			{
+				ex.printStackTrace();
+			}
+		}
+		return result;
+	}
+	
+	/**
+	 * Is a string saying a boolean?
+	 * @param s
+	 * @return
+	 */
+	private boolean isBoolean(String s)
+	{
+		if(s.equalsIgnoreCase("true"))
+			return true;
+		if(s.equalsIgnoreCase("false"))
+			return true;
+		return false;
+	}
+	
+	/**
+	 * Is a string a number (int or double)?
+	 * 
+	 * There must be a better way to do this; also this doesn't allow
+	 * for 1.3e-5...
+	 * 
+	 * @param s
+	 * @return
+	 */
+	private boolean isNumber(String s)
+	{
+		int start = 0;
+		
+		while(Character.isSpaceChar(s.charAt(start)))
+			start++;
+		
+		if(s.charAt(start) == '-' || s.charAt(start) == '+')
+			start++;
+		
+		int dotCount = 0;
+		for(int i = start; i < s.length(); i++)
+		{
+			char c = s.charAt(i);
+			if(!Character.isDigit(c))
+			{
+				 if(c != '.')
+					return false;
+				 else
+				 {
+					 dotCount++;
+					 if(dotCount > 1)
+						 return false;
+				 }
+			}
+		}
+		return true;
+	}
+	
+	/**
+	 * Find if a string is a boolean, a number, or a string
+	 * @param s
+	 * @return
+	 */
+	private Category category(String s)
+	{
+		if(isBoolean(s))
+			return Category.bool;
+		
+		if(isNumber(s))
+			return Category.number;		
+		
+		return Category.string;
+	}
+	
+	/**
+	 * Generate an array of categories corresponsing to the text in 
+	 * an array of edit boxes so they can be checked later.
+	 * @param a
+	 * @return
+	 */
+	private Category[] categorise(JTextField[] a)
+	{
+		Category[] result = new Category[a.length];
+		for(int i = 0; i < a.length; i++)
+			result[i] = category(a[i].getText());
+		
+		return result;
+	}
 }

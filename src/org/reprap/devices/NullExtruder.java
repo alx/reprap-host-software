@@ -51,11 +51,11 @@ public class NullExtruder implements Extruder{
 	private int coolingPeriod; ///< The number of s to cool between layers
 	private int xySpeed; ///< The speed of movement in XY when depositing
 	private int t0;        ///< Zero torque speed
-	private double iSpeed;///< Infill speed [0,1]*maxSpeed
-	private double oSpeed;///< Outline speed [0,1]*maxSpeed	
-	private double asLength;///< Length (mm) to speed up round corners
-	private double asFactor;///< Factor by which to speed up round corners
-	private String materialType;  ///< The name of this extruder's material
+	private double iSpeed; ///< Infill speed [0,1]*maxSpeed
+	private double oSpeed; ///< Outline speed [0,1]*maxSpeed	
+	private double asLength; ///< Length (mm) to speed up round corners
+	private double asFactor; ///< Factor by which to speed up round corners
+	private String materialType; ///< The name of this extruder's material
 	private double offsetX, offsetY, offsetZ; ///< Where to put the nozzle
 	private long lastTemperatureUpdate = 0;
 	
@@ -67,32 +67,32 @@ public class NullExtruder implements Extruder{
 	
 	public NullExtruder(Preferences prefs, int extruderId) {
 
-		String prefName = "Extruder" + extruderId;
+		String prefName = "Extruder" + extruderId + "_";
 		
-		beta = prefs.loadDouble(prefName + "Beta");
-		rz = prefs.loadDouble(prefName + "Rz");
-		cap = prefs.loadDouble(prefName + "Capacitor");
-		hm = prefs.loadDouble(prefName + "hm");
-		hb = prefs.loadDouble(prefName + "hb");
-		maxExtruderSpeed = prefs.loadInt(prefName + "MaxSpeed");
-		extrusionSpeed = prefs.loadInt(prefName + "ExtrusionSpeed");
-		extrusionTemp = prefs.loadDouble(prefName + "ExtrusionTemp");
-		extrusionSize = prefs.loadDouble(prefName + "ExtrusionSize");
-		extrusionHeight = prefs.loadDouble(prefName + "ExtrusionHeight");
-		extrusionInfillWidth = prefs.loadDouble(prefName + "ExtrusionInfillWidth");
-		extrusionOverRun = prefs.loadDouble(prefName + "ExtrusionOverRun");
-		extrusionDelay = prefs.loadInt(prefName + "ExtrusionDelay");
-		coolingPeriod = prefs.loadInt(prefName + "CoolingPeriod");
-		xySpeed = prefs.loadInt(prefName + "XYSpeed");
-		t0 = prefs.loadInt(prefName + "t0");
-		iSpeed = prefs.loadDouble(prefName + "InfillSpeed");
-		oSpeed = prefs.loadDouble(prefName + "OutlineSpeed");
-		asLength = prefs.loadDouble(prefName + "AngleSpeedLength");
-		asFactor = prefs.loadDouble(prefName + "AngleSpeedFactor");
-		materialType = prefs.loadString(prefName + "MaterialType");
-		offsetX = prefs.loadDouble(prefName + "OffsetX");
-		offsetY = prefs.loadDouble(prefName + "OffsetY");
-		offsetZ = prefs.loadDouble(prefName + "OffsetZ");
+		beta = prefs.loadDouble(prefName + "Beta(K)");
+		rz = prefs.loadDouble(prefName + "Rz(ohms)");
+		cap = prefs.loadDouble(prefName + "Capacitor(F)");
+		hm = prefs.loadDouble(prefName + "hm(C/pwr)");
+		hb = prefs.loadDouble(prefName + "hb(C)");
+		maxExtruderSpeed = prefs.loadInt(prefName + "MaxSpeed(0..255)");
+		extrusionSpeed = prefs.loadInt(prefName + "ExtrusionSpeed(0..255)");
+		extrusionTemp = prefs.loadDouble(prefName + "ExtrusionTemp(C)");
+		extrusionSize = prefs.loadDouble(prefName + "ExtrusionSize(mm)");
+		extrusionHeight = prefs.loadDouble(prefName + "ExtrusionHeight(mm)");
+		extrusionInfillWidth = prefs.loadDouble(prefName + "ExtrusionInfillWidth(mm)");
+		extrusionOverRun = prefs.loadDouble(prefName + "ExtrusionOverRun(mm)");
+		extrusionDelay = prefs.loadInt(prefName + "ExtrusionDelay(ms)");
+		coolingPeriod = prefs.loadInt(prefName + "CoolingPeriod(s)");
+		xySpeed = prefs.loadInt(prefName + "XYSpeed(0..255)");
+		t0 = prefs.loadInt(prefName + "t0(0..255)");
+		iSpeed = prefs.loadDouble(prefName + "InfillSpeed(0..1)");
+		oSpeed = prefs.loadDouble(prefName + "OutlineSpeed(0..1)");
+		asLength = prefs.loadDouble(prefName + "AngleSpeedLength(mm)");
+		asFactor = prefs.loadDouble(prefName + "AngleSpeedFactor(0..1)");
+		materialType = prefs.loadString(prefName + "MaterialType(name)");
+		offsetX = prefs.loadDouble(prefName + "OffsetX(mm)");
+		offsetY = prefs.loadDouble(prefName + "OffsetY(mm)");
+		offsetZ = prefs.loadDouble(prefName + "OffsetZ(mm)");
 		
 		
 		isCommsAvailable = true;

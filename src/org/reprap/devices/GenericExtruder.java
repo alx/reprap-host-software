@@ -13,11 +13,6 @@ import org.reprap.comms.IncomingMessage.InvalidPayloadException;
 import org.reprap.comms.messages.OutgoingBlankMessage;
 import org.reprap.comms.messages.OutgoingByteMessage;
 
-//TODO: make all extruder properties ExtruderN... like Extruder1Address; at the moment some of them
-// are Extrusion... (like ExtrusionHeight).  That way we can have multiple extruders each with
-// their own properties.  Also, all the rest of the code should get this information from the
-// current extruder, rather than directly from the properties file.
-
 public class GenericExtruder extends Device implements Extruder{
 
 	public static final byte MSG_SetActive = 1;
@@ -73,6 +68,7 @@ public class GenericExtruder extends Device implements Extruder{
 	private String materialType;  ///< The name of this extruder's material
 	private double offsetX, offsetY, offsetZ; ///< Where to put the nozzle
 	private long lastTemperatureUpdate = 0;
+	private int myExtruderID;
 	
 	/// TODO hb should probably be ambient temperature measured at this point
 	
@@ -83,33 +79,34 @@ public class GenericExtruder extends Device implements Extruder{
 	public GenericExtruder(Communicator communicator, Address address, Preferences prefs, int extruderId) {
 		
 		super(communicator, address);
-
-		String prefName = "Extruder" + extruderId;
 		
-		beta = prefs.loadDouble(prefName + "Beta");
-		rz = prefs.loadDouble(prefName + "Rz");
-		cap = prefs.loadDouble(prefName + "Capacitor");
-		hm = prefs.loadDouble(prefName + "hm");
-		hb = prefs.loadDouble(prefName + "hb");
-		maxExtruderSpeed = prefs.loadInt(prefName + "MaxSpeed");
-		extrusionSpeed = prefs.loadInt(prefName + "ExtrusionSpeed");
-		extrusionTemp = prefs.loadDouble(prefName + "ExtrusionTemp");
-		extrusionSize = prefs.loadDouble(prefName + "ExtrusionSize");
-		extrusionHeight = prefs.loadDouble(prefName + "ExtrusionHeight");
-		extrusionInfillWidth = prefs.loadDouble(prefName + "ExtrusionInfillWidth");
-		extrusionOverRun = prefs.loadDouble(prefName + "ExtrusionOverRun");
-		extrusionDelay = prefs.loadInt(prefName + "ExtrusionDelay");
-		coolingPeriod = prefs.loadInt(prefName + "CoolingPeriod");
-		xySpeed = prefs.loadInt(prefName + "XYSpeed");
-		t0 = prefs.loadInt(prefName + "t0");
-		iSpeed = prefs.loadDouble(prefName + "InfillSpeed");
-		oSpeed = prefs.loadDouble(prefName + "OutlineSpeed");
-		asLength = prefs.loadDouble(prefName + "AngleSpeedLength");
-		asFactor = prefs.loadDouble(prefName + "AngleSpeedFactor");
-		materialType = prefs.loadString(prefName + "MaterialType");
-		offsetX = prefs.loadDouble(prefName + "OffsetX");
-		offsetY = prefs.loadDouble(prefName + "OffsetY");
-		offsetZ = prefs.loadDouble(prefName + "OffsetZ");
+		myExtruderID = extruderId;
+		String prefName = "Extruder" + extruderId + "_";
+		
+		beta = prefs.loadDouble(prefName + "Beta(K)");
+		rz = prefs.loadDouble(prefName + "Rz(ohms)");
+		cap = prefs.loadDouble(prefName + "Capacitor(F)");
+		hm = prefs.loadDouble(prefName + "hm(C/pwr)");
+		hb = prefs.loadDouble(prefName + "hb(C)");
+		maxExtruderSpeed = prefs.loadInt(prefName + "MaxSpeed(0..255)");
+		extrusionSpeed = prefs.loadInt(prefName + "ExtrusionSpeed(0..255)");
+		extrusionTemp = prefs.loadDouble(prefName + "ExtrusionTemp(C)");
+		extrusionSize = prefs.loadDouble(prefName + "ExtrusionSize(mm)");
+		extrusionHeight = prefs.loadDouble(prefName + "ExtrusionHeight(mm)");
+		extrusionInfillWidth = prefs.loadDouble(prefName + "ExtrusionInfillWidth(mm)");
+		extrusionOverRun = prefs.loadDouble(prefName + "ExtrusionOverRun(mm)");
+		extrusionDelay = prefs.loadInt(prefName + "ExtrusionDelay(ms)");
+		coolingPeriod = prefs.loadInt(prefName + "CoolingPeriod(s)");
+		xySpeed = prefs.loadInt(prefName + "XYSpeed(0..255)");
+		t0 = prefs.loadInt(prefName + "t0(0..255)");
+		iSpeed = prefs.loadDouble(prefName + "InfillSpeed(0..1)");
+		oSpeed = prefs.loadDouble(prefName + "OutlineSpeed(0..1)");
+		asLength = prefs.loadDouble(prefName + "AngleSpeedLength(mm)");
+		asFactor = prefs.loadDouble(prefName + "AngleSpeedFactor(0..1)");
+		materialType = prefs.loadString(prefName + "MaterialType(name)");
+		offsetX = prefs.loadDouble(prefName + "OffsetX(mm)");
+		offsetY = prefs.loadDouble(prefName + "OffsetY(mm)");
+		offsetZ = prefs.loadDouble(prefName + "OffsetZ(mm)");
 		
 		// Check Extruder is available
 		try {

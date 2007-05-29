@@ -66,7 +66,25 @@ public class StepperPanel extends JPanel implements ChangeListener {
 	public StepperPanel(String name, int motorId, JSlider externalSpeedSlider, Communicator communicator) throws IOException {
 		super();
 		
-		int address = Preferences.loadGlobalInt("Axis" + motorId + "Address");
+
+		String axis;
+		switch(motorId)
+		{
+		case 1:
+			axis = "X";
+			break;
+		case 2:
+			axis = "Y";
+			break;
+		case 3:
+			axis = "Z";
+			break;
+		default:
+			axis = "X";
+			System.err.println("StepperPanel - dud axis id: " + motorId);
+				
+		}
+		int address = Preferences.loadGlobalInt(axis + "Axis" + "Address");
 		
 		updateTimer = new Timer();
 		

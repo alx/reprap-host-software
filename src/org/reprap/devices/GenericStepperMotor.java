@@ -51,7 +51,25 @@ public class GenericStepperMotor extends Device {
 		
 		//Address address, int maxTorque
 		super(communicator, address);
-		this.maxTorque = prefs.loadInt("Axis" + motorId + "Torque");
+		
+		String axis;
+		switch(motorId)
+		{
+		case 1:
+			axis = "X";
+			break;
+		case 2:
+			axis = "Y";
+			break;
+		case 3:
+			axis = "Z";
+			break;
+		default:
+			axis = "X";
+			System.err.println("GenericStepperMotor - dud axis id: " + motorId);
+				
+		}
+		this.maxTorque = prefs.loadInt(axis + "Axis" + "Torque(%)");
 	}
 
 	private void initialiseIfNeeded() throws IOException {

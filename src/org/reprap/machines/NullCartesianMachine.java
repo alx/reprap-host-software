@@ -25,11 +25,21 @@ public class NullCartesianMachine implements CartesianPrinter {
 
 	private long startTime;
 	
-	private Extruder extruder;
+	private Extruder extruders[];
+	private int extruder;
+	private int extruderCount;
 
 	public NullCartesianMachine(Preferences config) {
 		startTime = System.currentTimeMillis();
-		extruder = new NullExtruder(config, 1);
+		
+		extruderCount = config.loadInt("ExtruderCount");
+		extruders = new NullExtruder[extruderCount];
+		for(int i = 0; i < extruderCount; i++)
+		{
+			String prefix = "Extruder" + i;
+			extruders[i] = new NullExtruder(config, i);
+		}
+		extruder = 0;
 
 		currentX = 0;
 		currentY = 0;
@@ -79,8 +89,8 @@ public class NullCartesianMachine implements CartesianPrinter {
 	public void selectMaterial(int materialIndex) {
 		if (isCancelled()) return;
 		if (previewer != null)
-			previewer.setMaterial(materialIndex, extruder.getExtrusionSize(), 
-					extruder.getExtrusionHeight());
+			previewer.setMaterial(materialIndex, extruders[extruder].getExtrusionSize(), 
+					extruders[extruder].getExtrusionHeight());
 	}
 
 	public void terminate() throws IOException {
@@ -260,6 +270,6 @@ public class NullCartesianMachine implements CartesianPrinter {
 	
 	public Extruder getExtruder()
 	{
-		return extruder;
+		return extruders[extruder];
 	}
 }

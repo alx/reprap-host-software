@@ -7,6 +7,9 @@ import java.io.IOException;
 import java.io.OutputStream;
 import java.net.URL;
 import java.util.Properties;
+import java.util.Enumeration;
+import java.util.List;
+import java.util.ArrayList;
 
 /**
  * A single centralised repository of the current preference settings.  This also
@@ -176,6 +179,47 @@ public class Preferences {
 	 */
 	private void setString(String name, String value) {
 		mainPreferences.setProperty(name, value);
+	}
+	
+	public static String[] startsWith(String prefix) throws IOException 
+	{
+		initIfNeeded();
+		Enumeration allOfThem = globalPrefs.mainPreferences.propertyNames();
+		List r = new ArrayList();
+		
+		while(allOfThem.hasMoreElements())
+		{
+			String next = (String)allOfThem.nextElement();
+			if(next.startsWith(prefix))
+				r.add(next);
+		}
+		String[] result = new String[r.size()];
+		
+		for(int i = 0; i < r.size(); i++)
+			result[i] = (String)r.get(i);
+		
+		return result;		
+	}
+	
+	public static String[] notStartsWith(String prefix) throws IOException 
+	{
+		initIfNeeded();
+		Enumeration allOfThem = globalPrefs.mainPreferences.propertyNames();
+		List r = new ArrayList();
+		
+		while(allOfThem.hasMoreElements())
+		{
+			String next = (String)allOfThem.nextElement();
+			if(!next.startsWith(prefix))
+				r.add(next);
+		}
+		
+		String[] result = new String[r.size()];
+		
+		for(int i = 0; i < r.size(); i++)
+			result[i] = (String)r.get(i);
+		
+		return result;
 	}
 	
 }

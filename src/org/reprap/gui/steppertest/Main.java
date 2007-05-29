@@ -56,12 +56,12 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 		super(frame);
 
 		SNAPAddress myAddress = new SNAPAddress(localNodeNumber); 
-		communicator = new SNAPCommunicator(Preferences.loadGlobalString("Port"),
+		communicator = new SNAPCommunicator(Preferences.loadGlobalString("Port(name)"),
 				baudRate, myAddress);
 		
 		extruder = new GenericExtruder(communicator,
-				new SNAPAddress(Preferences.loadGlobalString("Extruder1Address")),
-				Preferences.getGlobalPreferences(), 1);
+				new SNAPAddress(Preferences.loadGlobalString("Extruder0_Address")),
+				Preferences.getGlobalPreferences(), 0);
 		
 		initGUI();
         Utility.centerWindowOnScreen(this);
