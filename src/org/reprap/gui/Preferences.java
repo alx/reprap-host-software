@@ -33,6 +33,7 @@ import javax.swing.JTextField;
  * the preferences file.
  * 
  * TODO: make booleans use check boxes, not "true" or "false".
+ *       If a menu hase more than ~ 30 entries, split it into two columns.
  */
 
 //Boxes must contain one of three types:
@@ -47,12 +48,13 @@ public class Preferences extends javax.swing.JDialog {
 	// Pixel dimensions of boxes and things
 	
 	static private final int gx = 10;    // Horizontal gap
-	static private final int gy = 5;     // Veryical gap
+	static private final int gy = 5;     // Vertical gap
 	static private final int tx = 9;     // Character X width (average)
 	static private final int ty = 20;    // Character Y height
 	static private final int bx = 80;    // Button X width
 	static private final int by = 20;    // Button Y height
 	static private final int taby = 50;  // Tab Y height
+	static private final int maxy = 700; // Maximum Y height
 	
 	// Load of arrays for all the stuff...
 	
@@ -67,6 +69,7 @@ public class Preferences extends javax.swing.JDialog {
 	int longestGlobalVal;          // The longest value in the global list
 	int longestExtruders[];        // The longest strings in the extuder lists
 	int longestExtruderVals[];     // The longest strings in the extuder lists
+	int columns;                   // The number of menu columns to use
 
 	// Get the show on the road...
 	
@@ -143,6 +146,8 @@ public class Preferences extends javax.swing.JDialog {
 	{
 		super(frame);
 		
+		columns = 1; // Default
+		
 		// Start with everything that isn't an extruder value.
 		
 		try {
@@ -210,8 +215,13 @@ public class Preferences extends javax.swing.JDialog {
 
 		// Work out overall dimensions
 
-		int xall = xAll() + 3*gx;
-		int ypane = yAll();
+		int ypane = yAll();		
+		if(ypane > maxy)
+		{
+			columns = 1 + ypane/maxy;
+			ypane = yAll();
+		}
+		int xall = (xAll() + 2*gx)*columns + gx;
 		int yall = ypane + by + 3*gy + taby;
 
 		// Put it all together
@@ -251,11 +261,6 @@ public class Preferences extends javax.swing.JDialog {
 			getContentPane().add(jTabbedPane1);
 			jTabbedPane1.setBounds(gx, gy, xall, yall);
 
-			// Start top left
-
-			int x = gx;
-			int y = gy;
-			int xw;     // X coordinate of the edit boxes
 
 			// Do the global panel
 
@@ -264,39 +269,71 @@ public class Preferences extends javax.swing.JDialog {
 			jPanelGeneral.setPreferredSize(new java.awt.Dimension(xall, ypane));
 			jPanelGeneral.setLayout(null);
 
+			// Start top left
+
+			int x = 0;
+			int y = gy;
+			int xw;     // X coordinate of the edit boxes
 			xw = longestGlobal*tx + 2*gx;
-			for(int i = 0; i < globals.length; i++)
+			int i = 0;
+			int lim;
+			
+			for(int c = 1; c <= columns; c++)
 			{
-				globals[i].setBounds(gx, y, longestGlobal*tx, ty);
-				jPanelGeneral.add(globals[i]);
-				globalValues[i].setBounds(xw, y, longestGlobalVal*tx, ty);
-				jPanelGeneral.add(globalValues[i]);
-				y = y + ty + gy;
+				if(c == columns)
+					lim = globals.length%(1 + globals.length/columns);
+				else
+					lim = 1 + globals.length/columns;
+				y = gy;
+				for(int d = 0; d < lim; d++)
+				{
+					globals[i].setBounds(x + gx, y, longestGlobal*tx, ty);
+					jPanelGeneral.add(globals[i]);
+					globalValues[i].setBounds(x + xw, y, longestGlobalVal*tx, ty);
+					jPanelGeneral.add(globalValues[i]);
+					y = y + ty + gy;
+					i++;
+				}
+				x += (longestGlobal + longestGlobalVal)*tx + 3*gx;
 			}
 
 			// Do all the extruder panels
 
 			for(int j = 0; j < extruderCount; j++)
 			{
-				y = gy;
 				JLabel[] keys = extruders[j];
 				JTextField[] values = extruderValues[j];
-				xw = longestExtruders[j]*tx + 2*gx;
 
 				JPanel jPanelExtruder = new JPanel();
 				jTabbedPane1.addTab("Extruder" + j, null, jPanelExtruder, null);
 				jPanelExtruder.setLayout(null);
 				jPanelExtruder.setPreferredSize(new java.awt.Dimension(xall, ypane));
-
-				for(int i = 0; i < keys.length; i++)
+				
+				
+				x = 0;
+				y = gy;
+				xw = longestExtruders[j]*tx + 2*gx;
+				i = 0;
+				
+				for(int c = 1; c <= columns; c++)
 				{
-					keys[i].setBounds(gx, y, longestExtruders[j]*tx, ty);
-					jPanelExtruder.add(keys[i]);
-
-					values[i].setBounds(xw, y, longestExtruderVals[j]*tx, ty);
-					jPanelExtruder.add(values[i]);
-					y = y + ty + gy;
+					if(c == columns)
+						lim = keys.length%(1 + keys.length/columns);
+					else
+						lim = 1 + keys.length/columns;
+					y = gy;
+					for(int d = 0; d < lim; d++)
+					{
+						keys[i].setBounds(x + gx, y, longestExtruders[j]*tx, ty);
+						jPanelExtruder.add(keys[i]);
+						values[i].setBounds(x + xw, y, longestExtruderVals[j]*tx, ty);
+						jPanelExtruder.add(values[i]);
+						y = y + ty + gy;
+						i++;
+					}
+					x += (longestExtruders[j] + longestExtruderVals[j])*tx + 3*gx;
 				}
+
 			}	
 
 			// Wrap it all up
@@ -405,10 +442,10 @@ public class Preferences extends javax.swing.JDialog {
 	 */
 	private int yAll()
 	{
-		int result = ySize(globals.length);
+		int result = ySize(1 + globals.length/columns);
 		for(int i = 0; i < extruderCount; i++)
 		{
-			int y = ySize(extruders[i].length);
+			int y = ySize(1 + extruders[i].length/columns);
 			if(y > result) 
 				result = y;
 		}		

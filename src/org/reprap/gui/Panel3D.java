@@ -57,10 +57,10 @@ abstract public class Panel3D extends JPanel {
 
 	// Factors for front and back clipping planes and so on
 	
-	protected double RADFAC = 0.7;
-	protected double BACKFAC = 2.0;
-	protected double FRONTFAC = 0.001;
-	protected double BOUNDFAC = 3.0;
+	protected double RadiusFactor = 0.7;
+	protected double BackFactor = 2.0;
+	protected double FrontFactor = 0.001;
+	protected double BoundFactor = 3.0;
 	
 	protected String worldName = "RepRap World";
 	protected Vector3d wv_offset = new Vector3d(-17.3, -24.85, -2);
@@ -116,24 +116,42 @@ abstract public class Panel3D extends JPanel {
 
 		// Translate and zoom scaling factors
 		
-		mouse_tf = 50;
-		mouse_zf = 50;
+		mouse_tf = Preferences.loadGlobalDouble("MouseTranslationFactor");
+		mouse_zf = Preferences.loadGlobalDouble("MouseZoomFactor");
+		
+		RadiusFactor = Preferences.loadGlobalDouble("RadiusFactor");
+		BackFactor = Preferences.loadGlobalDouble("BackFactor");
+		FrontFactor = Preferences.loadGlobalDouble("FrontFactor");
+		BoundFactor = Preferences.loadGlobalDouble("BoundFactor");
 
-		xwv = 300; // The RepRap machine...
-		ywv = 300; // ...working volume in mm.
-		zwv = 300;
+		xwv = Preferences.loadGlobalDouble("WorkingX(mm)"); // The RepRap machine...
+		ywv = Preferences.loadGlobalDouble("WorkingY(mm)"); // ...working volume in mm.
+		zwv = Preferences.loadGlobalDouble("WorkingZ(mm)");
 
 		// Factors for front and back clipping planes and so on
 		
-		worldName = "RepRap World";
-		wv_offset = new Vector3d(-17.3, -24.85, -2);
+		worldName = Preferences.loadGlobalString("WorldName");
+		wv_offset = new Vector3d(Preferences.loadGlobalDouble("WorkingOffsetX(mm)"),
+				Preferences.loadGlobalDouble("WorkingOffsetY(mm)"),
+				Preferences.loadGlobalDouble("WorkingOffsetZ(mm)"));
 
 		// The background, and other colours
 
-		bgColour = new Color3f(0.9f, 0.9f, 0.9f);
-		selectedColour = new Color3f(0.6f, 0.2f, 0.2f);
-		machineColour = new Color3f(0.3f, 0.4f, 0.3f);
-		unselectedColour = new Color3f(0.3f, 0.3f, 0.3f);
+		bgColour = new Color3f((float)Preferences.loadGlobalDouble("BackColourR(0..1)"), 
+				(float)Preferences.loadGlobalDouble("BackColourG(0..1)"), 
+				(float)Preferences.loadGlobalDouble("BackColourB(0..1)"));
+		
+		selectedColour = new Color3f((float)Preferences.loadGlobalDouble("SelectedColourR(0..1)"), 
+				(float)Preferences.loadGlobalDouble("SelectedColourG(0..1)"), 
+				(float)Preferences.loadGlobalDouble("SelectedColourB(0..1)"));
+
+		machineColour = new Color3f((float)Preferences.loadGlobalDouble("MachineColourR(0..1)"), 
+				(float)Preferences.loadGlobalDouble("MachineColourG(0..1)"), 
+				(float)Preferences.loadGlobalDouble("MachineColourB(0..1)"));
+			
+		unselectedColour = new Color3f((float)Preferences.loadGlobalDouble("UnselectedColourR(0..1)"), 
+				(float)Preferences.loadGlobalDouble("UnselectedColourG(0..1)"), 
+				(float)Preferences.loadGlobalDouble("UnselectedColourB(0..1)"));
 				
 		// End of stuff from the preferences file
 		
@@ -156,25 +174,25 @@ abstract public class Panel3D extends JPanel {
 
 	// How far away is the back?
 	protected double getBackClipDistance() {
-		return BACKFAC * getViewPlatformActivationRadius();
+		return BackFactor * getViewPlatformActivationRadius();
 	}
 
 	// How close is the front?
 	protected double getFrontClipDistance() {
-		return FRONTFAC * getViewPlatformActivationRadius();
+		return FrontFactor * getViewPlatformActivationRadius();
 	}
 	
 	// Set up the size of the world
 	protected Bounds createApplicationBounds() {
 		applicationBounds = new BoundingSphere(new Point3d(xwv * 0.5,
-				ywv * 0.5, zwv * 0.5), BOUNDFAC
+				ywv * 0.5, zwv * 0.5), BoundFactor
 				* getViewPlatformActivationRadius());
 		return applicationBounds;
 	}
 
 	// (About) how big is the world?
 	protected float getViewPlatformActivationRadius() {
-		return (float) (RADFAC * Math.sqrt(xwv * xwv + ywv * ywv + zwv * zwv));
+		return (float) (RadiusFactor * Math.sqrt(xwv * xwv + ywv * ywv + zwv * zwv));
 	}
 
 	// Where are we in the file system?

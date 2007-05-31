@@ -65,6 +65,13 @@ public class Preferences {
 		
 		if (mainUrl != null)
 			mainPreferences.load(mainUrl.openStream());
+		else
+		{
+			// If we don't have a local preferences file copy the default
+			// file into it.
+			mainPreferences.load(fallbackUrl.openStream());
+			save();
+		}
 
 	}
 

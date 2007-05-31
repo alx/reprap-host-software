@@ -3,32 +3,32 @@
 
 # User interface settings
 WorkingLocation=reprap-wv.stl
-WorkingX=300
-WorkingY=300
-WorkingZ=300
-WorkingOffsetX=-17.3
-WorkingOffsetY=-24.85
-WorkingOffsetZ=-2
+WorkingX(mm)=300
+WorkingY(mm)=300
+WorkingZ(mm)=300
+WorkingOffsetX(mm)=-17.3
+WorkingOffsetY(mm)=-24.85
+WorkingOffsetZ(mm)=-2
 WorldName=RepRap-World
-FrontF=0.025
-RadiusF=0.7
-BoundF=3.0
-MouseZoomF=50
-BackF=2.0
-MouseTranslationF=50
+FrontFactor=0.001
+RadiusFactor=0.7
+BoundFactor=3.0
+MouseZoomFactor=50
+BackFactor=2.0
+MouseTranslationFactor=50
 # User interface colours
-UnselectedColourR=0.3
-UnselectedColourG=0.3
-UnselectedColourB=0.3
-SelectedColourR=0.6
-SelectedColourG=0.2
-SelectedColourB=0.2
-BackColourR=0.9
-BackColourG=0.9
-BackColourB=0.9
-MachineColourR=0.3
-MachineColourG=0.4
-MachineColourB=0.3
+UnselectedColourR(0..1)=0.3
+UnselectedColourG(0..1)=0.3
+UnselectedColourB(0..1)=0.3
+SelectedColourR(0..1)=0.6
+SelectedColourG(0..1)=0.2
+SelectedColourB(0..1)=0.2
+BackColourR(0..1)=0.9
+BackColourG(0..1)=0.9
+BackColourB(0..1)=0.9
+MachineColourR(0..1)=0.3
+MachineColourG(0..1)=0.4
+MachineColourB(0..1)=0.3
 
 # General settings
 Port(name)=/dev/ttyS0
