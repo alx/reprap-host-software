@@ -258,7 +258,7 @@ public class LayerProducer {
 		{
 			if (printer.isCancelled())
 				break;
-			plot(borderPolygons.polygon(i));
+			plot(borderPolygons.polygon(i).randomStart());
 		}
 		
 		printer.setSpeed(infillSpeed);

@@ -78,6 +78,7 @@ import org.reprap.Preferences;
  */
 public class RrPolygon
 {
+	private static Random rangen = new Random(918273);
 	public List points;
 	public List flags;
 	public RrBox box;
@@ -238,6 +239,24 @@ public class RrPolygon
 			else
 				f = flag(size() - 1);
 			result.add(point(i), f);
+		}
+		return result;
+	}
+	
+	/**
+	 * Same polygon starting at a random vertex.
+	 * @return
+	 */
+	public RrPolygon randomStart()
+	{
+		RrPolygon result = new RrPolygon();
+		int i = rangen.nextInt(size());
+		for(int j = 0; j < size(); j++)
+		{
+			result.add(new Rr2Point(point(i)), new Integer((flag(i))));
+			i++;
+			if(i >= size())
+				i = 0;
 		}
 		return result;
 	}

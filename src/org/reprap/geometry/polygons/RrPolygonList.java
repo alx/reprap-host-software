@@ -185,6 +185,18 @@ public class RrPolygonList
 	}
 	
 	/**
+	 * Deep copy
+	 * @param lst
+	 */
+	public RrPolygonList randomStart()
+	{
+		RrPolygonList result = new RrPolygonList();
+		for(int i = 0; i < size(); i++)
+			result.add(polygon(i).randomStart());
+		return result;
+	}
+	
+	/**
 	 * Negate one of the polygons (also swaps a couple of flags)
 	 * @param i
 	 */
