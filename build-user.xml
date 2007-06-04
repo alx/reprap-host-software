@@ -7,7 +7,6 @@
 
 <target name="properties" depends="build">
     <copy file="lib/reprap.properties.dist" tofile="bin/reprap.properties.dist"/>
-    <copy file="lib/reprap.properties.dist" tofile="bin/reprap.properties"/>
 </target>
 
 <target name="backgroundstl" depends="build">
