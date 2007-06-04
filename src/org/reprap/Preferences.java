@@ -19,6 +19,7 @@ import java.util.ArrayList;
 public class Preferences {
 	
 	private static final String propsFile = "reprap.properties";
+	private static final String propsFolder = ".reprap";
 	private static final String propsFileDist = "reprap.properties.dist";
 	
 	private static Preferences globalPrefs = null; 
@@ -55,15 +56,20 @@ public class Preferences {
 		fallbackPreferences = new Properties();
 		mainPreferences = new Properties();
 		URL fallbackUrl = ClassLoader.getSystemResource(propsFileDist);
-		URL mainUrl = ClassLoader.getSystemResource(propsFile);
+
+		// Construct URL of user properties file
+		String path = new String(System.getProperty("user.home") + File.separatorChar + 
+			propsFolder + File.separatorChar + propsFile);
+		File mainFile = new File(path);
+		URL mainUrl = mainFile.toURL();
 		
-		if (fallbackUrl == null && mainUrl == null)
+		if (fallbackUrl == null && !mainFile.exists())
 			throw new IOException("Cannot load RepRap properties file or default "+propsFileDist);
 		
 		if (fallbackUrl != null)
 			fallbackPreferences.load(fallbackUrl.openStream());
 		
-		if (mainUrl != null)
+		if (mainFile.exists())
 			mainPreferences.load(mainUrl.openStream());
 		else
 		{
@@ -76,30 +82,20 @@ public class Preferences {
 	}
 
 	public void save() throws FileNotFoundException, IOException {
-		URL url = ClassLoader.getSystemResource(propsFile);
-		if (url == null) {
+		String savePath = new String(System.getProperty("user.home") + File.separatorChar + 
+			propsFolder + File.separatorChar);
+		File f = new File(savePath + File.separatorChar + propsFile);
+		if (!f.exists()) {
 			// No properties file exists, so we will create one and try again
-			// First find the dist file.  We'll put the properties
-			// file in the same location.
-			URL disturl = ClassLoader.getSystemResource(propsFileDist);
-			String path = disturl.getPath();
-			int ending = path.lastIndexOf(File.separatorChar);
-			if (ending >= 0)
-				path = path.substring(0, ending + 1) + propsFile;
-			else
-				path = propsFile;
-			File f = new File(path);
-			url = f.toURL();
+			// We'll put the properties file in the .reprap folder,
+			// under the user's home folder.
+			File p = new File(savePath);
+			if (!p.isDirectory())		// Create .reprap folder if necessary
+				   p.mkdirs();
 		}
 		
-		String savePath = url.getPath();
-		
-		/// @todo This is a temporary fix for Windows, but it should be done properly. 
-		savePath = savePath.replaceAll("%20", " ");
-		
-		OutputStream output = new FileOutputStream(savePath);
+		OutputStream output = new FileOutputStream(f);
 		mainPreferences.store(output, "Reprap properties http://reprap.org/");
-		
 	}
 		
 	public String loadString(String name) {
