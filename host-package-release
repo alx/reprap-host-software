@@ -1,0 +1,25 @@
+#!/bin/bash
+# host-package-release -- Packages Reprap host software into a .zip file
+
+# init
+RELEASE=${1:-`date +%Y%m%d`}
+FILENAME="reprap-host-$RELEASE"
+FILELIST="jar/Reprap.jar lib/reprap-wv.stl \
+    reprap-host.sh reprap-host.bat README LICENSE"
+
+# Create temporary package directory
+mkdir -p "$FILENAME"
+
+# Copy the files into package directory
+for F in $FILELIST
+do
+  cp -p $F $FILENAME
+done
+
+# Create zip archive
+zip -qr "$FILENAME.zip" "$FILENAME"
+
+# Cleanup
+rm -rf "$FILENAME"
+
+echo "RepRap Host Software Release $RELEASE created as ${FILENAME}.zip"

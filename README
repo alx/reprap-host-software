@@ -1,0 +1,33 @@
+README
+
+Date: 03 June 2007
+Author: Jonathan Marsden
+
+reprap-host-20070603
+
+This is a very early attempt at a quick package of the Reprap host
+software.  It should run on Linux, Windows, and Macintosh.
+
+DOCUMENTATION:
+
+See http://www.reprap.org for project details.
+
+See http://www.reprap.org/bin/view/Main/DriverSoftware for the closest
+thing we have to a user namual for this host software at this stage.
+
+Please use http://forums.reprap.org to ask about this package.
+
+NOTES:
+
+(1) You need a working Java 1.5.0 or later JRE to run this.
+(2) You need to manually install the Java3D libraries.
+(3) You need to manually install the rxtx libraries ( http://www.rxtx.org )
+
+KNOWN BUGS:
+
+(1) This software uses way too much memory and so cannot build complex
+    objects, including some of the Reprap parts.
+
+(2) Probably many other bugs, less serious than (1) above!  See
+    http://sourceforge.net/tracker/?group_id=159590 for more.
+
