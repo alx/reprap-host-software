@@ -2,10 +2,16 @@
 # host-package-release -- Packages Reprap host software into a .zip file
 
 # init
-RELEASE=${1:-`date +%Y%m%d`}
+RELEASE=${1:-`date -u +%Y%m%d`}
 FILENAME="reprap-host-$RELEASE"
 FILELIST="jar/Reprap.jar lib/reprap-wv.stl \
-    reprap-host.sh reprap-host.bat README LICENSE"
+    reprap-host.sh reprap-host.bat LICENSE"
+
+# Remove any old jar directory
+[ -d jar ] && rm -rf jar
+
+# Recompile java files and create Reprap.jar
+ant clean jar || exit 1
 
 # Create temporary package directory
 mkdir -p "$FILENAME"
@@ -15,6 +21,11 @@ for F in $FILELIST
 do
   cp -p $F $FILENAME
 done
+
+# Copy README into package dir, substituting release string for RELEASE
+#   and the current UTC date for DATE
+NOW=`date -u +'%d %B %Y'`
+sed -e "s/RELEASE/$RELEASE/g" -e "s/DATE/$NOW/g" README >$FILENAME/README
 
 # Create zip archive
 zip -qr "$FILENAME.zip" "$FILENAME"
