@@ -1,9 +1,10 @@
+
 Reprap Host Software README
 
 Date: DATE
 Author: Jonathan Marsden
 
-RELEASE
+Version: RELEASE
 
 This is a very early attempt at a quick package of the Reprap host
 software.  It should run on Linux, Windows, and Macintosh.
