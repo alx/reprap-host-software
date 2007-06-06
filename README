@@ -23,6 +23,12 @@ NOTES:
 (1) You need a working Java 1.5.0 or later JRE to run this.
 (2) You need to manually install the Java3D libraries.
 (3) You need to manually install the rxtx libraries ( http://www.rxtx.org )
+(4) You need to manually install the .jar file from j3d.org, which
+    you can download from
+
+    http://reprap.svn.sourceforge.net/viewvc/*checkout*/reprap/trunk/reprap/host/lib/j3d-org-java3d-all.jar
+
+    until we have a better idea of where this can be obtained!    
 
 KNOWN BUGS:
 
