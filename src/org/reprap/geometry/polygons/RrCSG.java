@@ -63,8 +63,8 @@ public class RrCSG
 	private static final RrCSG n = new RrCSG(false); ///< Null set 
 	
 	private RrHalfPlane hp;    ///< Leaf half plane
-	//private RrCSGOp op;      ///< Type of set
-	private int op;			   ///< Will go at Java 1.5
+	private RrCSGOp op;      ///< Type of set
+	//private int op;			   ///< Will go at Java 1.5
 	private RrCSG c1, c2;      ///< Non-leaf child operands
 	private RrCSG comp;        ///< The complement (if there is one)
 	private int complexity;    ///< How much is in here (leaf count)?
@@ -148,8 +148,8 @@ public class RrCSG
 	
 	public RrCSG c_1() { return c1; }
 	public RrCSG c_2() { return c2; }
-	//public RrCSGOp operator() { return op; }
-	public int operator() { return op; }
+	public RrCSGOp operator() { return op; }
+	//public int operator() { return op; }
 	public RrHalfPlane plane() { return hp; }
 	public int complexity() { return complexity; }
 	
@@ -163,26 +163,26 @@ public class RrCSG
 	{
 		switch(op)
 		{
-		case RrCSGOp.LEAF:
+		case LEAF:
 			result = result + white + hp.toString() + "\n";
 			break;
 			
-		case RrCSGOp.NULL:
+		case NULL:
 			result = result + white + "0\n";
 			break;
 			
-		case RrCSGOp.UNIVERSE:
+		case UNIVERSE:
 			result = result + white + "U\n";
 			break;
 			
-		case RrCSGOp.UNION:
+		case UNION:
 			result = result + white + "+\n";
 			white = white + " ";
 			result = c1.toString_r(result, white);
 			result = c2.toString_r(result, white);
 			break;
 			
-		case RrCSGOp.INTERSECTION:
+		case INTERSECTION:
 			result = result + white + "&\n";
 			white = white + " ";
 			result = c1.toString_r(result, white);
@@ -283,21 +283,21 @@ public class RrCSG
 		
 		switch(op)
 		{
-		case RrCSGOp.LEAF:
+		case LEAF:
 			result = new RrCSG(hp.complement());
 			break;
 			
-		case RrCSGOp.NULL:
+		case NULL:
 			return universe();
 			
-		case RrCSGOp.UNIVERSE:
+		case UNIVERSE:
 			return nothing();
 			
-		case RrCSGOp.UNION:
+		case UNION:
 			result = intersection(c1.complement(), c2.complement());
 			break;
 			
-		case RrCSGOp.INTERSECTION:
+		case INTERSECTION:
 			result = union(c1.complement(), c2.complement());
 			break;
 			
@@ -600,14 +600,14 @@ public class RrCSG
 	{	
 		switch(op)
 		{
-		case RrCSGOp.LEAF:
-		case RrCSGOp.NULL:   
-		case RrCSGOp.UNIVERSE:
+		case LEAF:
+		case NULL:   
+		case UNIVERSE:
 			//System.out.println("replace_all_same_leaves(): at a leaf!");
 			break;
 			
-		case RrCSGOp.UNION:
-		case RrCSGOp.INTERSECTION:    
+		case UNION:
+		case INTERSECTION:    
 			RrHalfPlane hp = leaf.hp;
 			if(c1.op == RrCSGOp.LEAF)
 			{
@@ -639,14 +639,14 @@ public class RrCSG
 	{
 		switch(op)
 		{
-		case RrCSGOp.LEAF:
-		case RrCSGOp.NULL:   
-		case RrCSGOp.UNIVERSE:
+		case LEAF:
+		case NULL:   
+		case UNIVERSE:
 			//System.out.println("simplify_r(): at a leaf!");
 			break;
 			
-		case RrCSGOp.UNION:
-		case RrCSGOp.INTERSECTION:    
+		case UNION:
+		case INTERSECTION:    
 			if(c1.op == RrCSGOp.LEAF)
 				root.replace_all_same_leaves(c1, tolerance);
 			else
@@ -722,20 +722,20 @@ public class RrCSG
 		
 		switch(op)
 		{
-		case RrCSGOp.LEAF:
+		case LEAF:
 			result = new RrCSG(hp.offset(d));
 			break;
 			
-		case RrCSGOp.NULL:
-		case RrCSGOp.UNIVERSE:
+		case NULL:
+		case UNIVERSE:
 			result = this;
 			break;
 			
-		case RrCSGOp.UNION:
+		case UNION:
 			result = union(c1.offset(d), c2.offset(d));
 			break;
 			
-		case RrCSGOp.INTERSECTION:
+		case INTERSECTION:
 			result = intersection(c1.offset(d), c2.offset(d));
 			break;
 			
@@ -758,19 +758,19 @@ public class RrCSG
 		
 		switch(op)
 		{
-		case RrCSGOp.LEAF:
+		case LEAF:
 			result = this;
 			break;
 			
-		case RrCSGOp.NULL:
+		case NULL:
 			result = this;
 			break;
 			
-		case RrCSGOp.UNIVERSE:
+		case UNIVERSE:
 			result = this;
 			break;
 			
-		case RrCSGOp.UNION:
+		case UNION:
 			r1 = c1.leaf(p);
 			r2 = c2.leaf(p);
 			if(r1.value(p) < r2.value(p))
@@ -778,7 +778,7 @@ public class RrCSG
 			else
 				return r2;
 			
-		case RrCSGOp.INTERSECTION:
+		case INTERSECTION:
 			r1 = c1.leaf(p);
 			r2 = c2.leaf(p);
 			if(r1.value(p) > r2.value(p))
@@ -806,20 +806,20 @@ public class RrCSG
 		RrCSG c = leaf(p);
 		switch(c.op)
 		{
-		case RrCSGOp.LEAF:
+		case LEAF:
 			result = c.hp.value(p);
 			break;
 			
-		case RrCSGOp.NULL:
+		case NULL:
 			result = 1;
 			break;
 			
-		case RrCSGOp.UNIVERSE:
+		case UNIVERSE:
 			result = -1;
 			break;
 			
-		case RrCSGOp.UNION:
-		case RrCSGOp.INTERSECTION:
+		case UNION:
+		case INTERSECTION:
 			
 		default:
 			System.err.println("value(Rr2Point): non-leaf operator.");
@@ -838,23 +838,23 @@ public class RrCSG
 		
 		switch(op)
 		{
-		case RrCSGOp.LEAF:
+		case LEAF:
 			result = hp.value(b);
 			break;
 			
-		case RrCSGOp.NULL:
+		case NULL:
 			result = new RrInterval(1, 1.01);  // Is this clever?  Or dumb?
 			break;
 			
-		case RrCSGOp.UNIVERSE:
+		case UNIVERSE:
 			result = new RrInterval(-1.01, -1);  // Ditto.
 			break;
 			
-		case RrCSGOp.UNION:
+		case UNION:
 			result = RrInterval.min(c1.value(b), c2.value(b));
 			break;
 			
-		case RrCSGOp.INTERSECTION:
+		case INTERSECTION:
 			result = RrInterval.max(c1.value(b), c2.value(b));
 			break;
 			
@@ -877,7 +877,7 @@ public class RrCSG
 		
 		switch(op)
 		{
-		case RrCSGOp.LEAF:            
+		case LEAF:            
 			RrInterval i = hp.value(b);
 			if (i.empty())
 				System.err.println("RrCSG.prune(RrBox): empty interval!");
@@ -887,15 +887,15 @@ public class RrCSG
 				result = nothing();
 			break;
 			
-		case RrCSGOp.NULL:
-		case RrCSGOp.UNIVERSE:
+		case NULL:
+		case UNIVERSE:
 			break;
 			
-		case RrCSGOp.UNION:
+		case UNION:
 			result =  union(c1.prune(b), c2.prune(b));
 			break;
 			
-		case RrCSGOp.INTERSECTION:
+		case INTERSECTION:
 			result = intersection(c1.prune(b), c2.prune(b));
 			break;
 			

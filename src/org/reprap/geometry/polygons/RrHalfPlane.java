@@ -324,15 +324,15 @@ public class RrHalfPlane
 	{		
 		switch(q.csg().operator())
 		{
-		case RrCSGOp.NULL:
-		case RrCSGOp.UNIVERSE:
+		case NULL:
+		case UNIVERSE:
 			return false;
 		
-		case RrCSGOp.LEAF:
+		case LEAF:
 			return maybeAdd(q.csg().plane(), q, range, false);
 			
-		case RrCSGOp.INTERSECTION:
-		case RrCSGOp.UNION:	
+		case INTERSECTION:
+		case UNION:	
 			if(q.csg().complexity() != 2)
 			{
 				System.err.println("RrHalfPlane.maybeAdd(): too complex: " + q.csg().complexity());

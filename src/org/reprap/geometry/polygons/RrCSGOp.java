@@ -52,7 +52,7 @@ http://www.gnu.org/
  * First version 6 March 2006
  */
 package org.reprap.geometry.polygons;
-/*
+
 
 // This is the proper one for Java 1.5...
  
@@ -72,15 +72,15 @@ public enum RrCSGOp
     }
     
     public String toString() { return name; }
-}*/
-
-// This is the nasty one for Java 1.4
-
-public class RrCSGOp {
-	public static final int LEAF = 0;
-	public static final int NULL = 1;
-	public static final int UNIVERSE = 2;
-	public static final int UNION = 3;
-	public static final int INTERSECTION = 4; 
-	}
+}
+//
+//// This is the nasty one for Java 1.4
+//
+//public class RrCSGOp {
+//	public static final int LEAF = 0;
+//	public static final int NULL = 1;
+//	public static final int UNIVERSE = 2;
+//	public static final int UNION = 3;
+//	public static final int INTERSECTION = 4; 
+//	}
 

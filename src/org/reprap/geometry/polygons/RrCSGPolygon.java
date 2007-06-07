@@ -277,13 +277,13 @@ public class RrCSGPolygon
 		
 		switch(csg.operator())
 		{
-		case RrCSGOp.NULL:
-		case RrCSGOp.UNIVERSE:	
+		case NULL:
+		case UNIVERSE:	
 			return;
 			
 			// One half-plane in the box:
 			
-		case RrCSGOp.LEAF:
+		case LEAF:
 			i1 = RrInterval.big_interval();
 			i1 = box.wipe(csg.plane().pLine(), i1);
 			if(i1.empty()) 
@@ -293,8 +293,8 @@ public class RrCSGPolygon
 			
 			// Two - maybe a corner, or they may not intersect
 			
-		case RrCSGOp.UNION:
-		case RrCSGOp.INTERSECTION:
+		case UNION:
+		case INTERSECTION:
 			if(csg.complexity() != 2)
 			{
 				System.err.println("RrCSGPolygon.evaluate(): complexity: " + 
@@ -583,16 +583,16 @@ public class RrCSGPolygon
 		{			
 			switch(csg.operator())
 			{
-			case RrCSGOp.NULL:
-			case RrCSGOp.UNIVERSE:	
+			case NULL:
+			case UNIVERSE:	
 				break;
 				
-			case RrCSGOp.LEAF:
+			case LEAF:
 				hp.maybeAdd(this, range);
 				break;
 				
-			case RrCSGOp.INTERSECTION:
-			case RrCSGOp.UNION:
+			case INTERSECTION:
+			case UNION:
 				if(csg.complexity() != 2)
 				{
 					System.err.println("intersect_r(): comlexity = " + csg.complexity());
