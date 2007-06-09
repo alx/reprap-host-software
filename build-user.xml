@@ -13,7 +13,7 @@
     <copy file="lib/reprap-wv.stl" tofile="bin/reprap-wv.stl"/>
 </target>
 
-<target name="jar" depends="properties,backgroundstl">
+<target name="jar" depends="clean,properties,backgroundstl">
     <mkdir dir="${jar.dir}"/>
     <jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="bin">
         <manifest>
@@ -23,5 +23,10 @@
 </target>
 
 <target name="run" depends="jar">
-    <java jar="${jar.dir}/${ant.project.name}.jar" fork="true"/>
+    <java fork="true" classname="${main-class}">
+        <classpath>
+            <path refid="project.classpath"/>
+            <path location="${jar.dir}/${ant.project.name}.jar"/>
+        </classpath>
+    </java>
 </target>
