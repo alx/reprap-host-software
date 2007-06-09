@@ -8,7 +8,8 @@ FILELIST="jar/Reprap.jar lib/reprap-wv.stl \
     reprap-host.sh reprap-host.bat LICENSE"
 
 SRCFILENAME="reprap-host-src-$RELEASE"
-SRCFILELIST="src/* LICENSE build.xml build-user.xml .classpath .project"
+SRCFILELIST="src/* LICENSE build.xml build-user.xml .classpath .project \
+	host-package-release README"
 LIBFILES="lib/*"
 
 # Remove any old jar directory
@@ -52,10 +53,6 @@ done
 
 # Omit all .svn subdirs
 find $SRCFILENAME -type d -name .svn |xargs rm -rf
-
-# Copy README into src package dir, substituting release string for RELEASE
-#   and the current UTC date for DATE
-sed -e "s/RELEASE/$RELEASE/g" -e "s/DATE/$NOW/g" README >$SRCFILENAME/README
 
 # Create src zip archive
 [ -f "$SRCFILENAME".zip ] && rm "$SRCFILENAME".zip
