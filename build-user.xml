@@ -23,10 +23,5 @@
 </target>
 
 <target name="run" depends="jar">
-    <java fork="true" classname="${main-class}">
-        <classpath>
-            <path refid="project.classpath"/>
-            <path location="${jar.dir}/${ant.project.name}.jar"/>
-        </classpath>
-    </java>
+    <java jar="${jar.dir}/${ant.project.name}.jar" fork="true"/>
 </target>
