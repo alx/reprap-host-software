@@ -48,32 +48,64 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 	public static void main(String[] args) throws Exception {
 		Thread.currentThread().setName("Stepper Exerciser");
 		JFrame frame = new JFrame();
-		Main inst = new Main(frame);
-		inst.setVisible(true);
+		
+		try {
+			Main inst = new Main(frame);
+		}
+		catch (Exception e){
+			
+			JOptionPane.showMessageDialog(null, e.getMessage());
+			
+			return;
+		}
+		
+		//inst.setVisible(true);	
 	}
 	
 	public Main(JFrame frame) throws Exception {
 		super(frame);
 
-		SNAPAddress myAddress = new SNAPAddress(localNodeNumber); 
-		communicator = new SNAPCommunicator(Preferences.loadGlobalString("Port(name)"),
-				baudRate, myAddress);
+		SNAPAddress myAddress = new SNAPAddress(localNodeNumber);
 		
-		extruder = new GenericExtruder(communicator,
-				new SNAPAddress(Preferences.loadGlobalString("Extruder0_Address")),
-				Preferences.getGlobalPreferences(), 0);
+		String port = Preferences.loadGlobalString("Port(name)");
+		String err = "";
 		
-		initGUI();
-        Utility.centerWindowOnScreen(this);
+		try {
+			communicator = new SNAPCommunicator(port,baudRate, myAddress);
+		}
+		catch (gnu.io.NoSuchPortException e)
+		{
+			err = "There was an error opening " + port + ".\n\n";
+			err += "Check to make sure that is the right path.\n";
+			err += "Check that you have your serial connector plugged in.";
+			
+			throw new Exception(err);
+		}
+		
+		if (err.length() == 0)
+		{
+			extruder = new GenericExtruder(communicator,
+					new SNAPAddress(Preferences.loadGlobalString("Extruder0_Address")),
+					Preferences.getGlobalPreferences(), 0);
+		
+			initGUI();
+	        Utility.centerWindowOnScreen(this);
+		}
 	}
 	
 	public void dispose() {
+
 		super.dispose();
-		if (extruder != null) extruder.dispose();
-		motorX.dispose();
-		motorY.dispose();
-		motorZ.dispose();
-		communicator.dispose();
+		if (extruder != null)
+			extruder.dispose();
+		if (motorX != null)
+			motorX.dispose();
+		if (motorY != null)
+			motorY.dispose();
+		if (motorZ != null)
+			motorZ.dispose();
+		if (communicator != null)
+			communicator.dispose();
 	}
 	
 	private void initGUI() throws Exception {
