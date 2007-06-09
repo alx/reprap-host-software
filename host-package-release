@@ -7,16 +7,21 @@ FILENAME="reprap-host-$RELEASE"
 FILELIST="jar/Reprap.jar lib/reprap-wv.stl \
     reprap-host.sh reprap-host.bat LICENSE"
 
+SRCFILENAME="reprap-host-src-$RELEASE"
+SRCFILELIST="src/* LICENSE build.xml build-user.xml .classpath .project"
+LIBFILES="lib/*"
+
 # Remove any old jar directory
 [ -d jar ] && rm -rf jar
 
 # Recompile java files and create Reprap.jar
 ant clean jar || exit 1
 
-# Create temporary package directory
-mkdir -p "$FILENAME"
+# Delete and then create temporary package directories
+rm -rf "$FILENAME" "$SRCFILENAME"
+mkdir "$FILENAME" "$SRCFILENAME"
 
-# Copy the files into package directory
+# Copy files into binary package directory
 for F in $FILELIST
 do
   cp -p $F $FILENAME
@@ -28,9 +33,36 @@ NOW=`date -u +'%d %B %Y'`
 sed -e "s/RELEASE/$RELEASE/g" -e "s/DATE/$NOW/g" README >$FILENAME/README
 
 # Create zip archive
+[ -f "$FILENAME".zip ] && rm "$FILENAME".zip
 zip -qr "$FILENAME.zip" "$FILENAME"
 
-# Cleanup
-rm -rf "$FILENAME"
-
 echo "RepRap Host Software Release $RELEASE created as ${FILENAME}.zip"
+
+# Now create the src archive
+for F in $SRCFILELIST
+do
+  cp -rp $F $SRCFILENAME
+done
+
+mkdir -p "$SRCFILENAME"/lib
+for F in $LIBFILES
+do
+  cp -pr $F "$SRCFILENAME"/lib
+done
+
+# Omit all .svn subdirs
+find $SRCFILENAME -type d -name .svn |xargs rm -rf
+
+# Copy README into src package dir, substituting release string for RELEASE
+#   and the current UTC date for DATE
+sed -e "s/RELEASE/$RELEASE/g" -e "s/DATE/$NOW/g" README >$SRCFILENAME/README
+
+# Create src zip archive
+[ -f "$SRCFILENAME".zip ] && rm "$SRCFILENAME".zip
+zip -qr "$SRCFILENAME.zip" "$SRCFILENAME"
+
+echo "RepRap Host Software source Release $RELEASE created as ${SRCFILENAME}.zip"
+
+# Cleanup
+rm -rf "$FILENAME" "$SRCFILENAME"
+
