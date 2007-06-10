@@ -103,7 +103,7 @@ public class Main {
         filePrefs.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				Preferences prefs = new Preferences(mainFrame);
-				prefs.show();
+				prefs.setVisible(true);	// prefs.show();
 			}});
         fileMenu.add(filePrefs);
 
