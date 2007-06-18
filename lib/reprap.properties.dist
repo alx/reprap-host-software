@@ -50,7 +50,7 @@ YAxisTorque(%)=50
 ZAxisTorque(%)=50
 
 # Extruder settings
-ExtruderCount=1
+NumberOfExtruders=1
 Extruder0_XYSpeed(0..255)=230
 Extruder0_ExtrusionSpeed(0..255)=150
 Extruder0_ExtrusionTemp(C)=40

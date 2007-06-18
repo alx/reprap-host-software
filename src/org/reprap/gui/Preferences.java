@@ -33,7 +33,6 @@ import javax.swing.JTextField;
  * the preferences file.
  * 
  * TODO: make booleans use check boxes, not "true" or "false".
- *       If a menu hase more than ~ 30 entries, split it into two columns.
  */
 
 //Boxes must contain one of three types:
@@ -167,7 +166,7 @@ public class Preferences extends javax.swing.JDialog {
 		// Next we need to know how many extruders we've got.
 		
 		try{
-			extruderCount = Integer.parseInt(loadString("ExtruderCount"));
+			extruderCount = Integer.parseInt(loadString("NumberOfExtruders"));
 		} catch (Exception ex)
 		{
 			System.err.println("Preferences window: Can't load the extruder count!");

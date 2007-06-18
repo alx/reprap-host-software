@@ -76,7 +76,7 @@ public class Reprap implements CartesianPrinter {
 				new SNAPAddress(prefs.loadInt("ZAxisAddress")), prefs, 3);
 		
 		
-		extruderCount = prefs.loadInt("ExtruderCount");
+		extruderCount = prefs.loadInt("NumberOfExtruders");
 		extruders = new GenericExtruder[extruderCount];
 		if (extruderCount < 1)
 			throw new Exception("A Reprap printer must contain at least one extruder");
