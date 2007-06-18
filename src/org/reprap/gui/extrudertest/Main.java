@@ -39,19 +39,23 @@ public class Main extends javax.swing.JDialog {
 	private JLabel jLabel1;
 	private JLabel jLabel2;
 	private JLabel jLabel4;
+	private JLabel jLabel5;	
 	private JCheckBox reverseCheckbox;
 	private JCheckBox coolerActive;
 	private JCheckBox materialEmpty;
 	private JButton extrudeButton;
-	private JLabel jLabel5;
+	private JLabel jLabel6;
 	private JSlider extruderSpeed;
 	private JCheckBox heaterActive;
 	private JTextField currentTemperature;
 	private JLabel jLabel3;
 	private JTextField desiredTemperature;
-
+	private JTextField desiredExtruder;
+	
 	private Communicator communicator;
-	private GenericExtruder extruder;
+	private GenericExtruder extruders[];
+	private int extruderCount;
+	private int extruder;
 	
 	private final int localNodeNumber = 0;
 	private final int baudRate = 19200;
@@ -80,10 +84,22 @@ public class Main extends javax.swing.JDialog {
 		this.setResizable(false);
 		communicator = new SNAPCommunicator(Preferences.loadGlobalString("Port(name)"),
 				baudRate, myAddress);
+		
+		extruderCount = Preferences.loadGlobalInt("NumberOfExtruders");
+		extruders = new GenericExtruder[extruderCount];
+		if (extruderCount < 1)
+			throw new Exception("A Reprap printer must contain at least one extruder");
+		
+		for(int i = 0; i < extruderCount; i++)
+		{
+			String prefix = "Extruder" + i + "_";
+			extruders[i] = new GenericExtruder(communicator,
+				new SNAPAddress(Preferences.loadGlobalInt(prefix + "Address")), 
+				Preferences.getGlobalPreferences(), i);
+		}
+		
+		extruder=0;
 
-		extruder = new GenericExtruder(communicator,
-				new SNAPAddress(Preferences.loadGlobalString("Extruder0_Address")),
-				Preferences.getGlobalPreferences(), 0);
 		initGUI();
 		
 		extruderSpeed.setMinimum(0);
@@ -92,7 +108,7 @@ public class Main extends javax.swing.JDialog {
 		extruderSpeed.setMajorTickSpacing(64);
 		extruderSpeed.setMinorTickSpacing(16);
 
-		if (!extruder.isAvailable()) {
+		if (!extruders[extruder].isAvailable()) {
 			extrudeButton.setEnabled(false);
 			extruderSpeed.setEnabled(false);
 			currentTemperature.setEnabled(false);
@@ -123,12 +139,12 @@ public class Main extends javax.swing.JDialog {
 	}
 	
 	protected void RefreshTemperature() {
-		int temperature = (int)Math.round(extruder.getTemperature());
+		int temperature = (int)Math.round(extruders[extruder].getTemperature());
 		currentTemperature.setText(Integer.toString(temperature));
 	}
 	
 	protected void RefreshMaterialSensor() {
-		boolean empty = extruder.isEmpty();
+		boolean empty = extruders[extruder].isEmpty();
 		materialEmpty.setSelected(empty);
 	}
 
@@ -137,13 +153,20 @@ public class Main extends javax.swing.JDialog {
 			pollThreadExiting = true;
 			pollThread.interrupt();
 		}
-		extruder.dispose();
+		extruders[extruder].dispose();
 		communicator.dispose();
 		super.dispose();
 	}
 	
 	private void initGUI() {
 		try {
+			{
+				jLabel6 = new JLabel();
+				getContentPane().add(jLabel6);
+				jLabel6.setText("Extruder");
+				jLabel6.setHorizontalAlignment(SwingConstants.RIGHT);
+				jLabel6.setBounds(5, 14, 100, 28);
+			}
 			{
 				jLabel3 = new JLabel();
 				getContentPane().add(jLabel3);
@@ -168,6 +191,19 @@ public class Main extends javax.swing.JDialog {
 				desiredTemperature.addActionListener(new ActionListener() {
 					public void actionPerformed(ActionEvent evt) {
 						desiredTemperatureActionPerformed(evt);
+					}
+				});
+			}
+			{
+				desiredExtruder = new JTextField();
+				getContentPane().add(desiredExtruder);
+				desiredExtruder.setText(Integer.valueOf(extruder).toString());
+				desiredExtruder.setBounds(110, 14, 30, 28);
+				desiredExtruder.setHorizontalAlignment(SwingConstants.RIGHT);
+				desiredExtruder.setEnabled(true);
+				desiredExtruder.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent evt) {
+						desiredExtruderActionPerformed(evt);
 					}
 				});
 			}
@@ -274,7 +310,7 @@ public class Main extends javax.swing.JDialog {
 	
 	protected void coolerActiveActionPerformed(ActionEvent evt) {
 		try {
-			extruder.setCooler(coolerActive.isSelected());
+			extruders[extruder].setCooler(coolerActive.isSelected());
 		}
 		catch (Exception ex) {
 			JOptionPane.showMessageDialog(null, "Exception setting cooler: " + ex);
@@ -286,6 +322,10 @@ public class Main extends javax.swing.JDialog {
 		setTemperature();
 	}
 	
+	private void desiredExtruderActionPerformed(ActionEvent evt) {
+		setExtruder();
+	}
+	
 	private void heaterActiveActionPerformed(ActionEvent evt) {
 		desiredTemperature.setEnabled(heaterActive.isSelected());
 		setTemperature();
@@ -294,12 +334,27 @@ public class Main extends javax.swing.JDialog {
 	private void setTemperature() {
 		try {
 			if (heaterActive.isSelected())
-				extruder.setTemperature(Integer.parseInt(desiredTemperature.getText()));
+				extruders[extruder].setTemperature(Integer.parseInt(desiredTemperature.getText()));
 			else
-				extruder.setTemperature(0);
+				extruders[extruder].setTemperature(0);
 		}
 		catch (Exception ex) {
 			JOptionPane.showMessageDialog(null, "Exception setting temperature: " + ex);
+			ex.printStackTrace();
+		}
+	}
+	
+	private void setExtruder() {
+		try {
+				extruder= Integer.parseInt(desiredExtruder.getText());
+				if(extruder < 0)
+					extruder = 0;
+				if(extruder >= extruderCount)
+					extruder = extruderCount - 1;
+				desiredExtruder.setText(Integer.valueOf(extruder).toString());
+		}
+		catch (Exception ex) {
+			JOptionPane.showMessageDialog(null, "Exception setting extruder: " + ex);
 			ex.printStackTrace();
 		}
 	}
@@ -323,7 +378,7 @@ public class Main extends javax.swing.JDialog {
 
 	private void setExtruderSpeed() {
 		try {
-			extruder.setExtrusion(extruding?extruderSpeed.getValue():0, reverse);
+			extruders[extruder].setExtrusion(extruding?extruderSpeed.getValue():0, reverse);
 		} catch (Exception ex) {
 			JOptionPane.showMessageDialog(null, "Extruder exception: " + ex);
 			ex.printStackTrace();
