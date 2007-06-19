@@ -32,7 +32,7 @@ public class NullCartesianMachine implements CartesianPrinter {
 	public NullCartesianMachine(Preferences config) {
 		startTime = System.currentTimeMillis();
 		
-		extruderCount = config.loadInt("ExtruderCount");
+		extruderCount = config.loadInt("NumberOfExtruders");
 		extruders = new NullExtruder[extruderCount];
 		for(int i = 0; i < extruderCount; i++)
 		{
