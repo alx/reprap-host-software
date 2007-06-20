@@ -25,6 +25,8 @@ import javax.swing.JSplitPane;
 import javax.swing.KeyStroke;
 import javax.swing.WindowConstants;
 
+import javax.vecmath.*;
+
 import org.reprap.geometry.EstimationProducer;
 import org.reprap.geometry.Producer;
 import org.reprap.gui.Preferences;

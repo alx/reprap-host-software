@@ -195,6 +195,10 @@ abstract public class Panel3D extends JPanel {
 		return (float) (RadiusFactor * Math.sqrt(xwv * xwv + ywv * ywv + zwv * zwv));
 	}
 
+	public Color3f getObjectColour()
+	{
+		return unselectedColour;
+	}
 	// Where are we in the file system?
 
 	public static URL getWorkingDirectory() {

@@ -660,8 +660,11 @@ public class STLSlice
 	 * @param z
 	 * @return a CSG representation of all the polygons in the slice
 	 */
-	public RrCSGPolygon slice(double z, int fg, int fs)
+	public RrCSGPolygon slice(double z, int fg, int fs, Color3f baseColour)
 	{
+		Point3d p, q, r;
+		Vector3f a, b, c, normal;
+		
 		if(stls == null)
 		{
 			System.err.println("slice(): no STL list loaded!");
@@ -703,9 +706,31 @@ public class STLSlice
 		
 		if(triangles.size() > 0)
 		{
-			TriangleArray t = new TriangleArray(triangles.size(), GeometryArray.COORDINATES);
-			for(int i = 0; i < triangles.size(); i++)
-				t.setCoordinate(i, (Point3d)triangles.get(i));
+			
+			TriangleArray t = new TriangleArray(triangles.size(), GeometryArray.COORDINATES | GeometryArray.COLOR_3 | GeometryArray.NORMALS);
+			for(int i = 0; i < triangles.size(); i = i + 3)
+			{
+				p = (Point3d)triangles.get(i);
+				q = (Point3d)triangles.get(i+1);
+				r = (Point3d)triangles.get(i+2);
+				
+				t.setCoordinate(i, p);
+				t.setColor(i, baseColour);
+				t.setCoordinate(i+1, q);
+				t.setColor(i+1, baseColour);
+				t.setCoordinate(i+2, r);
+				t.setColor(i+2, baseColour);
+				q.sub(p);
+				r.sub(p);
+				a = new Vector3f(q);
+				b = new Vector3f(r);
+				normal = a;
+				normal.cross(a, b);
+				normal.normalize();
+				t.setNormal(i, normal);
+				t.setNormal(i+1, normal);
+				t.setNormal(i+2, normal);
+			}
 			below = new Shape3D(t);
 			triangles = new ArrayList();
 		}
