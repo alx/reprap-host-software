@@ -51,6 +51,7 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 		
 		try {
 			Main inst = new Main(frame);
+			inst.setVisible(true);
 		}
 		catch (Exception e){
 			
@@ -58,8 +59,6 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 			
 			return;
 		}
-		
-		//inst.setVisible(true);	
 	}
 	
 	public Main(JFrame frame) throws Exception {
