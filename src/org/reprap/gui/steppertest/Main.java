@@ -34,7 +34,7 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 	
 	private final int intialSpeed = 236;
 	
-	//private ShapePanel shapePanel;
+	//private ShapePanel  shapePanel;
 	private ExtruderPanel extruderPanel;
 	
 	JSlider speedX, speedY, speedZ;
