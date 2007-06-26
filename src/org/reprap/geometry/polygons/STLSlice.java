@@ -57,6 +57,8 @@ import java.util.*;
 import java.io.*;
 import javax.media.j3d.*;
 import javax.vecmath.*;
+import com.sun.j3d.utils.geometry.GeometryInfo;
+import com.sun.j3d.utils.geometry.NormalGenerator;
 import org.reprap.gui.STLObject;
 import org.reprap.Preferences;
 
@@ -256,9 +258,9 @@ public class STLSlice
 		case 0:
 			return;
 		case 7:
-			triangles.add(p);
-			triangles.add(q);
-			triangles.add(r);
+			triangles.add(new Point3d(p));
+			triangles.add(new Point3d(q));
+			triangles.add(new Point3d(r));
 			return;
 		case 6:
 			twoBelow = true;
@@ -271,8 +273,8 @@ public class STLSlice
 			twoBelow = true;
 		case 2:
 			odd = q;
-			even1 = p;
-			even2 = r;
+			even1 = r;
+			even2 = p;
 			break;
 		case 3:
 			twoBelow = true;
@@ -308,17 +310,17 @@ public class STLSlice
 		{
 			even1.add((Tuple3d)odd);
 			even2.add((Tuple3d)odd);
-			triangles.add(even1);
-			triangles.add(even2);
-			triangles.add(e3_1);
-			triangles.add(e3_2);
-			triangles.add(e3_1);
-			triangles.add(even2);
+			triangles.add(new Point3d(even1));
+			triangles.add(new Point3d(even2));
+			triangles.add(new Point3d(e3_1));
+			triangles.add(new Point3d(e3_2));
+			triangles.add(new Point3d(e3_1));
+			triangles.add(new Point3d(even2));
 		} else
 		{
-			triangles.add(odd);
-			triangles.add(e3_1);
-			triangles.add(e3_2);
+			triangles.add(new Point3d(odd));
+			triangles.add(new Point3d(e3_1));
+			triangles.add(new Point3d(e3_2));
 		}
 	}
 	
@@ -340,6 +342,7 @@ public class STLSlice
         Point3d q1 = new Point3d();
         Point3d q2 = new Point3d();
         Point3d q3 = new Point3d();
+        
         if(g.getVertexCount()%3 != 0)
         {
         	System.err.println("addAllEdges(): shape3D with vertices not a multiple of 3!");
@@ -623,7 +626,7 @@ public class STLSlice
 				pg.add(vertex, fg);
 				edge = newEdge;
 				corner = newCorner;
-			} while (corner != startCorner);
+			} while (corner != startCorner && corner != null);
 			if(pg.size() > 2)  // Throw away "noise"...
 			{
 				pg.flag(pg.size() - 1, fs);
@@ -663,7 +666,7 @@ public class STLSlice
 	public RrCSGPolygon slice(double z, int fg, int fs, Color3f baseColour)
 	{
 		Point3d p, q, r;
-		Vector3f a, b, c, normal;
+		Vector3d a, b;
 		
 		if(stls == null)
 		{
@@ -706,32 +709,23 @@ public class STLSlice
 		
 		if(triangles.size() > 0)
 		{
-			
-			TriangleArray t = new TriangleArray(triangles.size(), GeometryArray.COORDINATES | GeometryArray.COLOR_3 | GeometryArray.NORMALS);
-			for(int i = 0; i < triangles.size(); i = i + 3)
-			{
-				p = (Point3d)triangles.get(i);
-				q = (Point3d)triangles.get(i+1);
-				r = (Point3d)triangles.get(i+2);
+			GeometryInfo gi = new GeometryInfo(GeometryInfo.TRIANGLE_ARRAY);
+			Point3d t_array[] = new Point3d[triangles.size()];
+
+			for(int i = 0; i < triangles.size(); i++)
+				t_array[i] = (Point3d)triangles.get(i);
 				
-				t.setCoordinate(i, p);
-				t.setColor(i, baseColour);
-				t.setCoordinate(i+1, q);
-				t.setColor(i+1, baseColour);
-				t.setCoordinate(i+2, r);
-				t.setColor(i+2, baseColour);
-				q.sub(p);
-				r.sub(p);
-				a = new Vector3f(q);
-				b = new Vector3f(r);
-				normal = a;
-				normal.cross(a, b);
-				normal.normalize();
-				t.setNormal(i, normal);
-				t.setNormal(i+1, normal);
-				t.setNormal(i+2, normal);
-			}
-			below = new Shape3D(t);
+			gi.setCoordinates(t_array);
+			
+			NormalGenerator normalGenerator = new NormalGenerator();
+		    normalGenerator.generateNormals(gi);
+		    
+		    Appearance ap = new Appearance();
+		    Color3f black = new Color3f(0, 0, 0);
+		    ap.setMaterial(new Material(baseColour, black, baseColour, black, 0f));
+		    
+			below = new Shape3D(gi.getGeometryArray(), ap);
+			
 			triangles = new ArrayList();
 		}
 		

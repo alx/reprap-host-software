@@ -80,14 +80,12 @@ public class LayerProducer {
 	 */
 	public LayerProducer(Printer printer, double zValue, RrCSGPolygon csgPol, Shape3D ls, RrHalfPlane hatchDirection) {
 		this.printer = printer;
+		lowerShell = ls;
 		baseSpeed = printer.getExtruder().getXYSpeed();
 		outlineSpeed = (int)Math.round(baseSpeed*printer.getExtruder().getOutlineSpeed());
 		infillSpeed = (int)Math.round(baseSpeed*printer.getExtruder().getInfillSpeed());
 		currentSpeed= outlineSpeed; // Always start with an outline
 		z = zValue;
-		
-		// Uncomment the next line to replace lower layers with shell triangles.
-		//printer.setLowerShell(ls);
 		
 		RrCSGPolygon offBorder = csgPol.offset(-0.5*printer.getExtruder().getExtrusionSize());
 		RrCSGPolygon offHatch = csgPol.offset(-1.5*printer.getExtruder().getExtrusionSize());
@@ -247,7 +245,6 @@ public class LayerProducer {
 	 */
 	public void plot() throws ReprapException, IOException
 	{
-		printer.setLowerShell(lowerShell);
 		int i;
 		
 		printer.setSpeed(outlineSpeed);
@@ -273,7 +270,9 @@ public class LayerProducer {
 		}
 		
 		printer.setSpeed(outlineSpeed);
-		currentSpeed = outlineSpeed;		
-	}
+		currentSpeed = outlineSpeed;
+		// Uncomment the next line to replace lower layers with shell triangles.
+		printer.setLowerShell(lowerShell);
+	}		
 	
 }

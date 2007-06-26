@@ -11,8 +11,9 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	private double previousZ = Double.NaN;
 	private JCheckBoxMenuItem layerPauseCheckbox = null, segmentPauseCheckbox = null;
 	private BranchGroup extrusionsNew;
-	private BranchGroup extrusionsOld;
-
+	private BranchGroup extrusionsOld = null;
+    private BranchGroup lowerShell = null;
+    
 	private StatusMessage statusWindow;
 	
 	private double extrusionSize = 1.0;
@@ -25,6 +26,7 @@ public class PreviewPanel extends Panel3D implements Previewer {
 		initialise();
 		statusWindow = new StatusMessage(new JFrame());
 		extrusionsOld = null;
+		lowerShell = null;
 	}
 
 	/**
@@ -86,6 +88,7 @@ public class PreviewPanel extends Panel3D implements Previewer {
 		extrusionsNew = new BranchGroup();
 		extrusionsNew.setCapability(Group.ALLOW_CHILDREN_EXTEND);
 		extrusionsNew.setCapability(Group.ALLOW_CHILDREN_WRITE);
+		extrusionsNew.setCapability(BranchGroup.ALLOW_DETACH);
 		wv_and_stls.addChild(extrusionsNew);
 		
 		// Load the STL file for the working volume
@@ -144,6 +147,14 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	 */
 	public void reset() {
 		extrusionsNew.removeAllChildren();
+		if(extrusionsOld != null)
+			extrusionsOld.removeAllChildren();
+		
+		if(lowerShell != null)
+			lowerShell.removeAllChildren();
+
+		extrusionsOld = null;
+		lowerShell = null;
 		previousZ = Double.NaN;
 		setCancelled(false);
 	}
@@ -232,23 +243,31 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	public void setLowerShell(Shape3D ls)
 	{
 		if(extrusionsOld != null)
-		{
 			extrusionsOld.removeAllChildren();
-		}
-		extrusionsOld = extrusionsNew;
 		
-		BranchGroup bg = new BranchGroup();
+		if(lowerShell != null)
+			lowerShell.removeAllChildren();
+
+		extrusionsOld = extrusionsNew;	
+		
+		lowerShell = new BranchGroup();
+		BranchGroup subLower = new BranchGroup();
 		if(ls != null)
 		{
 			ls.setAppearance(extrusion_app);
-			bg.addChild(ls);
+			subLower.addChild(ls);
+			lowerShell.addChild(subLower);
 		}
-		bg.setCapability(BranchGroup.ALLOW_DETACH);
+		lowerShell.setCapability(BranchGroup.ALLOW_DETACH);
+		lowerShell.setCapability(Group.ALLOW_CHILDREN_WRITE);
+		subLower.setCapability(BranchGroup.ALLOW_DETACH);
+		subLower.setCapability(Group.ALLOW_CHILDREN_WRITE);
 		
 		extrusionsNew = new BranchGroup();
 		extrusionsNew.setCapability(Group.ALLOW_CHILDREN_EXTEND);
 		extrusionsNew.setCapability(Group.ALLOW_CHILDREN_WRITE);
-		extrusionsNew.addChild(bg);
+		extrusionsNew.setCapability(BranchGroup.ALLOW_DETACH);
 		wv_and_stls.addChild(extrusionsNew);
+		wv_and_stls.addChild(lowerShell);
 	}
 }
