@@ -38,46 +38,46 @@ RememberWindowPosition=false
 
 # Motor settings
 AxisCount=3
-FastSpeed(0..255)=230
+FastSpeed(0..255)=200
 XAxisAddress=2
 YAxisAddress=3
 ZAxisAddress=4
-XAxisScale(steps/mm)=400
-YAxisScale(steps/mm)=400
-ZAxisScale(steps/mm)=400
-XAxisTorque(%)=50
-YAxisTorque(%)=50
-ZAxisTorque(%)=50
+XAxisScale(steps/mm)=11.4855
+YAxisScale(steps/mm)=11.4855
+ZAxisScale(steps/mm)=320
+XAxisTorque(%)=100
+YAxisTorque(%)=100
+ZAxisTorque(%)=100
 
 # Extruder settings
 NumberOfExtruders=1
 Extruder0_XYSpeed(0..255)=230
-Extruder0_ExtrusionSpeed(0..255)=150
-Extruder0_ExtrusionTemp(C)=40
-Extruder0_ExtrusionSize(mm)=0.5
-Extruder0_ExtrusionHeight(mm)=0.4
-Extruder0_ExtrusionInfillWidth(mm)=0.5
+Extruder0_ExtrusionSpeed(0..255)=180
+Extruder0_ExtrusionTemp(C)=130
+Extruder0_ExtrusionSize(mm)=0.7
+Extruder0_ExtrusionHeight(mm)=0.8
+Extruder0_ExtrusionInfillWidth(mm)=0.7
 Extruder0_MaterialType(name)=CAPA
 Extruder0_Address=8
 Extruder0_InfillSpeed(0..1)=1.0
-Extruder0_OutlineSpeed(0..1)=1.0
+Extruder0_OutlineSpeed(0..1)=0.6
 Extruder0_AngleSpeedLength(mm)=2.5
-Extruder0_AngleSpeedFactor(0..1)=0.3
+Extruder0_AngleSpeedFactor(0..1)=0.5
 
 # The maximum permitted motor speed.  This is useful if driving
 # a motor with a voltage beyond it's design limits (eg running
 # a 6V motor from the 12V supply).
-Extruder0_MaxSpeed(0..255)=255
+Extruder0_MaxSpeed(0..255)=250
 
 # The extruder speed setting at which extrusion torque becomes zero
 # while extruding (ie the point below which the motor stops).
-Extruder0_t0(0..255)=150
+Extruder0_t0(0..255)=0
 
 # Extruder thermistor characteristics.  If these are unknown, see
 # http://reprapdoc.voodoo.co.nz/bin/view/Main/MeasuringThermistorBeta
-Extruder0_Beta(K)=5000
-Extruder0_Rz(ohms)=500000
-Extruder0_Capacitor(F)=0.000001
+Extruder0_Beta(K)=3480
+Extruder0_Rz(ohms)=29000
+Extruder0_Capacitor(F)=0.0000001
 
 # Extruder heater characteristics.  This defines an approximate relationship
 # between power input and heater temperature:
@@ -85,7 +85,7 @@ Extruder0_Capacitor(F)=0.000001
 # Where power is the heater output setting (0 to 255).
 # It can be determined by using the Extruder Heater Profiler tool
 # and linear regression.
-Extruder0_hm(C/pwr)=1.1
+Extruder0_hm(C/pwr)=1.7
 Extruder0_hb(C)=20
 
 # Offset of extruder to accomodate the extruder size, in order to
@@ -93,18 +93,18 @@ Extruder0_hb(C)=20
 # the extruder will most likely be driven through the floor.
 Extruder0_OffsetX(mm)=0
 Extruder0_OffsetY(mm)=0
-Extruder0_OffsetZ(mm)=500
+Extruder0_OffsetZ(mm)=0
 
 #The number of mm to turn off the extruder before the end of its path
 #And the number of ms to wait between turning it on and moving it.
-Extruder0_ExtrusionOverRun(mm)=8
-Extruder0_ExtrusionDelay(ms)=5000
+Extruder0_ExtrusionOverRun(mm)=2
+Extruder0_ExtrusionDelay(ms)=1000
 
 # Period between layers to drive cooling system (in seconds)
-Extruder0_CoolingPeriod(s)=0
+Extruder0_CoolingPeriod(s)=40
 
 # Whether or not to idle the Z axis motors between levels
-IdleZAxis=false
+IdleZAxis=true
 
 # Whether or not subtractive construction is being used.  If true, this
 # causes the production to start at the top and work down.

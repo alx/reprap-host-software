@@ -40,7 +40,6 @@ import org.reprap.devices.GenericStepperMotor;
 /// consequences for normal software driven operation, just interactive use.
 
 public class StepperPanel extends JPanel implements ChangeListener {
-	private static final int startingPosition = 5000;
 
 	private static final long serialVersionUID = 6262697694879478425L;
 
@@ -60,6 +59,7 @@ public class StepperPanel extends JPanel implements ChangeListener {
 	
 	private int minValue = 0;
 	private int maxValue = 30000;
+	private int startingPosition = 5000;
 	
 	private boolean monitoring = false;
 	
@@ -85,6 +85,11 @@ public class StepperPanel extends JPanel implements ChangeListener {
 				
 		}
 		int address = Preferences.loadGlobalInt(axis + "Axis" + "Address");
+		
+		double stepsPerMM = Preferences.loadGlobalDouble(axis + "AxisScale(steps/mm)");
+		double axisLength = Preferences.loadGlobalDouble("Working" + axis + "(mm)");
+		maxValue = (int)Math.round(stepsPerMM*axisLength);
+		startingPosition = maxValue/6;
 		
 		updateTimer = new Timer();
 		
@@ -168,7 +173,7 @@ public class StepperPanel extends JPanel implements ChangeListener {
         add(torque, c);
         
 		try {
-			motor.setPosition(5000);
+			motor.setPosition(startingPosition);
 		} catch (Exception ex) {
 			motor.dispose();
 			motor = null;
@@ -195,9 +200,9 @@ public class StepperPanel extends JPanel implements ChangeListener {
 		positionActual.setMinimum(minValue);
 		positionActual.setMaximum(maxValue);
 		
-        //int range = maxValue - minValue;
-        positionRequest.setMajorTickSpacing(4000);  // Ten circles
-        positionRequest.setMinorTickSpacing(400);   // A full circle
+        int range = maxValue - minValue;
+        positionRequest.setMajorTickSpacing(range/8);  // Ten circles
+        positionRequest.setMinorTickSpacing(range/80);   // A full circle
         positionRequest.setPaintTicks(true);
 	}
 
