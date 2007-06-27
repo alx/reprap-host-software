@@ -122,7 +122,7 @@ public class LayerProducer {
 		return new Rr2Point(printer.getX(), printer.getY());
 	}
 	
-	private void plot(Rr2Point first, Rr2Point second) throws ReprapException, IOException
+	private void plot(Rr2Point first, Rr2Point second, boolean turnOff) throws ReprapException, IOException
 	{
 		if (printer.isCancelled()) return;
 		
@@ -134,22 +134,22 @@ public class LayerProducer {
 			if(ss.abandon)
 				return;
 
-			printer.printTo(ss.p1.x(), ss.p1.y(), z);
+			printer.printTo(ss.p1.x(), ss.p1.y(), z, false);
 
 			if(ss.plotMiddle)
 			{
 				int straightSpeed = (int)Math.round((double)currentSpeed*(1 - 
 						printer.getExtruder().getAngleSpeedFactor()));
 				printer.setSpeed(straightSpeed);
-				printer.printTo(ss.p2.x(), ss.p2.y(), z);
+				printer.printTo(ss.p2.x(), ss.p2.y(), z, false);
 			}
 
 			printer.setSpeed(ss.speed(currentSpeed, printer.getExtruder().getAngleSpeedFactor()));
-			printer.printTo(ss.p3.x(), ss.p3.y(), z);
+			printer.printTo(ss.p3.x(), ss.p3.y(), z, turnOff);
 			pos = ss.p3;
 		// Leave speed set for the start of the next line.
 		} else
-			printer.printTo(first.x(), first.y(), z);
+			printer.printTo(first.x(), first.y(), z, turnOff);
 	}
 
 	private void move(Rr2Point first, Rr2Point second, boolean startUp, boolean endUp) 
@@ -208,7 +208,7 @@ public class LayerProducer {
 		printer.setSpeed(printer.getFastSpeed());
 		move(p.point(0), p.point(1), true, false);
 		printer.setSpeed(outlineSpeed);
-		plot(p.point(0), p.point(1));
+		plot(p.point(0), p.point(1), false);
 		// Print any lead-in.
 		printer.printStartDelay(printer.getExtruder().getExtrusionDelay());
 		
@@ -221,9 +221,10 @@ public class LayerProducer {
 			if (printer.isCancelled()) return;
 			
 			if(f != gapMaterial && j <= stopExtruding)
-				plot(p.point(i), next);
+				plot(p.point(i), next, false);
 			else
 			{
+				printer.stopExtruding();
 				if(f == gapMaterial)
 				{
 					if(j == leng)

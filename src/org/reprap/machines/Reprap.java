@@ -183,7 +183,8 @@ public class Reprap implements CartesianPrinter {
 		} 
 	}
 	
-	public void printTo(double x, double y, double z) throws ReprapException, IOException {
+	public void printTo(double x, double y, double z, boolean turnOff) 
+		throws ReprapException, IOException {
 		if (isCancelled()) return;
 		EnsureNotEmpty();
 		if (isCancelled()) return;
@@ -224,9 +225,14 @@ public class Reprap implements CartesianPrinter {
 		double distance = segmentLength(deltaX, deltaY);
 		totalDistanceExtruded += distance;
 		totalDistanceMoved += distance;
-		layerPrinter.printTo(stepperX, stepperY, currentSpeedXY, extruders[extruder].getExtruderSpeed());
+		layerPrinter.printTo(stepperX, stepperY, currentSpeedXY, extruders[extruder].getExtruderSpeed(), turnOff);
 		currentX = x;
 		currentY = y;
+	}
+	
+	public void stopExtruding() throws IOException
+	{
+		layerPrinter.stopExtruding();
 	}
 
 	// Move to zero stop on X axis.
@@ -406,10 +412,14 @@ public class Reprap implements CartesianPrinter {
 	}
 	
 	private void EnsureHot() throws ReprapException, IOException {
+		if(extruders[extruder].getTemperatureTarget() < Preferences.absoluteZero())
+			return;
+		
 		double threshold = extruders[extruder].getTemperatureTarget() * 0.65;	// Changed from 0.95 by Vik.
 		
 		if (extruders[extruder].getTemperature() >= threshold)
 			return;
+		
 
 		double x = currentX;
 		double y = currentY;
@@ -417,6 +427,11 @@ public class Reprap implements CartesianPrinter {
 		temperatureReminder();
 		System.out.println("Moving to heating zone");
 		int oldSpeed = currentSpeedXY;
+		
+		// Ensure the extruder is off
+		
+		extruders[extruder].setExtrusion(0);
+				
 		moveToHeatingZone();
 		while(extruders[extruder].getTemperature() < threshold && !isCancelled()) {
 			if (previewer != null) previewer.setMessage("Waiting for extruder to reach working temperature (" + 
@@ -444,6 +459,8 @@ public class Reprap implements CartesianPrinter {
 	 * Vik
 	 */
 	private void temperatureReminder() {
+		if(extruders[extruder].getTemperatureTarget() < Preferences.absoluteZero())
+			return;
 		System.out.println("Reminding it of the temperature");
 		try {
 			extruders[extruder].setTemperature(extruders[extruder].getTemperatureTarget());

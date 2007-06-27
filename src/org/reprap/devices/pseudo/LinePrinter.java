@@ -93,7 +93,8 @@ public class LinePrinter {
 		return (int)Math.round((movementSpeed*longSide)/length);
 	}
 
-	public void printTo(int endX, int endY, int movementSpeed, int extruderSpeed) throws IOException {
+	public void printTo(int endX, int endY, int movementSpeed, 
+			int extruderSpeed, boolean turnOff) throws IOException {
 		// Determine the extruder speed, based on the geometry of the line
 		// to be printed
 		double dx = endX - currentX;
@@ -108,12 +109,19 @@ public class LinePrinter {
 		//extruder.setExtrusion((int)Math.round(extruderSpeed * speedFraction));
 		extruder.setExtrusion(extruderSpeed);
 		moveTo(endX, endY, angleSpeed(movementSpeed, dx, dy));
+		if(turnOff)
+			extruder.setExtrusion(0);
+	}
+	
+	public void stopExtruding() throws IOException
+	{
 		extruder.setExtrusion(0);
 	}
 	
-	public void printLine(int startX, int startY, int endX, int endY, int movementSpeed, int extruderSpeed) throws IOException {
+	public void printLine(int startX, int startY, int endX, int endY, 
+			int movementSpeed, int extruderSpeed, boolean turnOff) throws IOException {
 		moveTo(startX, startY, movementSpeed);
-		printTo(endX, endY, movementSpeed, extruderSpeed);
+		printTo(endX, endY, movementSpeed, extruderSpeed, turnOff);
 	}
 
 	/**

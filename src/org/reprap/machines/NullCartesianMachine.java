@@ -51,12 +51,14 @@ public class NullCartesianMachine implements CartesianPrinter {
 	public void calibrate() {
 	}
 
-	public void printSegment(double startX, double startY, double startZ, double endX, double endY, double endZ) throws ReprapException, IOException {
+	public void printSegment(double startX, double startY, double startZ, 
+			double endX, double endY, double endZ, boolean turnOff) throws ReprapException, IOException {
 		moveTo(startX, startY, startZ, true, true);
-		printTo(endX, endY, endZ);
+		printTo(endX, endY, endZ, turnOff);
 	}
 
-	public void moveTo(double x, double y, double z, boolean startUp, boolean endUp) throws ReprapException, IOException {
+	public void moveTo(double x, double y, double z, boolean startUp, 
+			boolean endUp) throws ReprapException, IOException {
 		if (isCancelled()) return;
 
 		totalDistanceMoved += segmentLength(x - currentX, y - currentY);
@@ -70,7 +72,8 @@ public class NullCartesianMachine implements CartesianPrinter {
 	}
 
 
-	public void printTo(double x, double y, double z) throws ReprapException, IOException {
+	public void printTo(double x, double y, double z, 
+			boolean turnOff) throws ReprapException, IOException {
 		if (previewer != null)
 			previewer.addSegment(currentX, currentY, currentZ, x, y, z);
 		if (isCancelled()) return;
@@ -95,6 +98,8 @@ public class NullCartesianMachine implements CartesianPrinter {
 
 	public void terminate() throws IOException {
 	}
+	
+	public void stopExtruding() {}
 
 	public int getSpeed() {
 		return 200;

@@ -28,8 +28,8 @@ public class Preferences {
 	Properties mainPreferences;
 	
 	/*
-	 * This section deals with internal (i.e. not RepRap machine, but this code)
-	 * precisions and accuracies - it should probably
+	 * This section deals with internal (i.e. not RepRap machine, but this code or
+	 * physics) precisions and accuracies - it should probably
 	 * get its data from the properties file...
 	 */
 	
@@ -40,6 +40,8 @@ public class Preferences {
 	private static final double swell = 1.01;        // Quad tree swell factor
 	private static final double machineResolution = 0.1; // RepRap step size in mm - should 
 	                                                     // derive this from Axis1Scale and Axis2Scale
+
+	private static final double absoluteZero = -273;
 	
 	public static int grid() { return grid; }
 	public static double gridRes() { return gridRes; }
@@ -48,7 +50,7 @@ public class Preferences {
 	public static double swell() { return swell; }
 	public static double inchesToMillimetres() { return 25.4; }
 	public static double machineResolution() { return machineResolution; }
-	
+	public static double absoluteZero() { return absoluteZero; }	
 	
 	// Main preferences constructor
 	

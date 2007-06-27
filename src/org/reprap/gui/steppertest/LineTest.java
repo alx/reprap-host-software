@@ -190,7 +190,7 @@ public class LineTest extends javax.swing.JDialog {
 		int y2 = Integer.parseInt(endY.getText()); 
 		
 		try {
-			line.printLine(x1, y1, x2, y2, motorSpeed, extruderSpeed);
+			line.printLine(x1, y1, x2, y2, motorSpeed, extruderSpeed, true);
 		} catch (Exception ex) {
 			JOptionPane.showMessageDialog(null, "Plot exception: " + ex);
 			ex.printStackTrace();

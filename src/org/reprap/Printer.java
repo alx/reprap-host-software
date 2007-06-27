@@ -13,7 +13,7 @@ public interface Printer {
 //			double startZ, double endX, double endY, double endZ) throws ReprapException, IOException;
 	
 	public void moveTo(double x, double y, double z, boolean startUp, boolean endUp) throws ReprapException, IOException;
-	public void printTo(double x, double y, double z) throws ReprapException, IOException;
+	public void printTo(double x, double y, double z, boolean turnOff) throws ReprapException, IOException;
 	public void printStartDelay(long msDelay);	// Fire up the extruder for a lead-in
 	public void homeToZeroX() throws ReprapException, IOException;	// Sync to zero location.
 	public void homeToZeroY() throws ReprapException, IOException;	// Sync to zero location.
@@ -49,6 +49,7 @@ public interface Printer {
 	public double getY();
 	public double getZ();
 	public Extruder getExtruder();
+	public void stopExtruding() throws IOException;
 
 	/**
 	 * Allow the user to manually calibrate the Z axis position to deal

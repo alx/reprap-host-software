@@ -149,11 +149,11 @@ public class Producer {
 			reprap.moveTo(0, 5, reprap.getExtruder().getExtrusionHeight(), true, false);
 			reprap.setSpeed(reprap.getExtruder().getXYSpeed());
 			System.out.println("Printing warmup segments, printing to (0,20)");
-			reprap.printTo(0, 20, reprap.getExtruder().getExtrusionHeight());
+			reprap.printTo(0, 20, reprap.getExtruder().getExtrusionHeight(), false);
 			System.out.println("Printing warmup segments, printing to (2,20)");
-			reprap.printTo(2, 20, reprap.getExtruder().getExtrusionHeight());
+			reprap.printTo(2, 20, reprap.getExtruder().getExtrusionHeight(), false);
 			System.out.println("Printing warmup segments, printing to (2,5)");
-			reprap.printTo(2, 5, reprap.getExtruder().getExtrusionHeight());
+			reprap.printTo(2, 5, reprap.getExtruder().getExtrusionHeight(), true);
 			reprap.setSpeed(reprap.getFastSpeed());
 		}
 		
