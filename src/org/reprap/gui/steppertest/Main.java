@@ -80,6 +80,12 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 			
 			throw new Exception(err);
 		}
+		catch (gnu.io.PortInUseException e)
+		{
+			err = "The " + port + " port is already in use by another program.";
+			
+			throw new Exception(err);
+		}
 		
 		if (err.length() == 0)
 		{
