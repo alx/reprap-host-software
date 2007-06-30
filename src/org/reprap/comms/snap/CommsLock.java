@@ -1,11 +1,19 @@
 package org.reprap.comms.snap;
 
-// A temporary class to allow locking of comms while waiting
-// for the asynchronous context delivery mechanism to be implemented
+/**
+ * A temporary class to allow locking of comms while waiting
+ * for the asynchronous context delivery mechanism to be implemented
+ */
 public class CommsLock {
 
+	/**
+	 * indicates if the comms is locked or not
+	 */
 	private boolean locked = false;
 	
+	/**
+	 * Lock the comms
+	 */
 	synchronized public void lock() {
 		while(locked) {
 			//System.out.println("Lock: " + Thread.currentThread().getName() + " waiting");
@@ -19,6 +27,9 @@ public class CommsLock {
 		//System.out.println("Lock: " + Thread.currentThread().getName() + " acquired");
 	}
 	
+	/**
+	 * Unlock the comms
+	 */
 	synchronized public void unlock() {
 		if (!locked)
 			System.out.println("Warning: Calling unlock from an already unlocked state!");

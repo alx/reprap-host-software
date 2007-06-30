@@ -60,16 +60,28 @@ package org.reprap.geometry.polygons;
  */
 public class RrBox
 {
-	// Compass directions
-	
+	/**
+	 * Compass directions
+	 */
 	public static final byte rr_N = 0x01;
 	public static final byte rr_E = 0x02;
 	public static final byte rr_S = 0x04;
 	public static final byte rr_W = 0x08;
 	
-	private RrInterval x;   ///< X interval
-	private RrInterval y;   ///< Y interval
-	private boolean empty;  ///< Anyone home?
+	/**
+	 * X interval
+	 */
+	private RrInterval x;
+	
+	/**
+	 * Y interval
+	 */
+	private RrInterval y;
+	
+	/**
+	 * Anyone home?
+	 */
+	private boolean empty;
 	
 	/**
 	 * Default is empty
@@ -113,14 +125,14 @@ public class RrBox
 	}
 	
 	/**
-	 * Return the x interval
+	 * @return Return the x interval
 	 */
 	public RrInterval x() { return x; }
 	
 	
 	/**
-	 * Return the y interval
-	 * @return
+	 * @return Return the y interval
+	 * 
 	 */
 	public RrInterval y() { return y; }
 	
@@ -145,6 +157,9 @@ public class RrBox
 		}
 	}
 	
+	/**
+	 * @param a
+	 */
 	public void expand(Rr2Point a)
 	{
 		if(empty)
@@ -161,27 +176,40 @@ public class RrBox
 	
 	/**
 	 * Corner points and center
+	 * @return NE cornerpoint
 	 */
 	public Rr2Point ne()
 	{
 		return new Rr2Point(x.high(), y.high());
 	}
 	
+	/**
+	 * @return SW cornerpoint
+	 */
 	public Rr2Point sw()
 	{
 		return new Rr2Point(x.low(), y.low());
 	}
 	
+	/**
+	 * @return SE cornerpoint
+	 */
 	public Rr2Point se()
 	{
 		return new Rr2Point(x.high(), y.low());
 	}
 	
+	/**
+	 * @return NW cornerpoint
+	 */
 	public Rr2Point nw()
 	{
 		return new Rr2Point(x.low(), y.high());
 	}   
 	
+	/**
+	 * @return Centre point(?)
+	 */
 	public Rr2Point centre()
 	{
 		return ((Rr2Point.mul(Rr2Point.add(ne(), sw()), 0.5)));
@@ -190,7 +218,7 @@ public class RrBox
 	/**
 	 * Scale the box by a factor about its center
 	 * @param f
-	 * @return
+	 * @return scaled box object
 	 */
 	public RrBox scale(double f)
 	{
@@ -215,10 +243,9 @@ public class RrBox
 		return "<BOX x:" + x.toString() + ", y: " + y.toString() + ">";
 	}
 	
-	
 	/**
 	 * Squared diagonal
-	 * @return
+	 * @return squared diagonal of the box
 	 */
 	public double d_2()
 	{
@@ -229,7 +256,7 @@ public class RrBox
 
 	/**
 	 * Squared distance to a point
-	 * @return
+	 * @return minimal squared distance to a point from one of the corners of the box
 	 */
 	public double d_2(Rr2Point p)
 	{
@@ -289,8 +316,8 @@ public class RrBox
      * the intersection of that range with the part of the line
      * (if any) in the box.
 	 * @param a
-	 * @param range
-	 * @return
+	 * @param oldRange
+	 * @return itersection interval
 	 */
 	public RrInterval wipe(RrLine a, RrInterval oldRange)
 	{
@@ -317,8 +344,8 @@ public class RrBox
 	
 	/**
 	 * Where is a point relative to a box?
-	 * @param p
-	 * @return
+	 * @param p 
+	 * @return relative position of a point p (E, W, N or S)
 	 */
 	public byte point_relative(Rr2Point p)
 	{

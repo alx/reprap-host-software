@@ -14,6 +14,10 @@ import org.reprap.machines.NullCartesianMachine;
  */
 public class EstimationProducer extends Producer {
 
+	/**
+	 * @param builder
+	 * @throws Exception
+	 */
 	public EstimationProducer(RepRapBuild builder) throws Exception {
 		super(null, builder);
 		

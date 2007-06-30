@@ -5,10 +5,24 @@ import java.io.IOException;
 import org.reprap.Device;
 import org.reprap.ReprapException;
 
+/**
+ *
+ */
 public abstract class IncomingMessage {
-	private byte [] payload; // The actual content portion of a packet, not the frilly bits
+
+	/**
+	 * The actual content portion of a packet, not the frilly bits
+	 */
+	private byte [] payload;
+	
+	/**
+	 * 
+	 */
 	IncomingContext incomingContext;
 	
+	/**
+	 *
+	 */
 	public class InvalidPayloadException extends ReprapException {
 		private static final long serialVersionUID = -5403970405132990115L;
 		public InvalidPayloadException() {
@@ -66,10 +80,13 @@ public abstract class IncomingMessage {
 	 * understand or expect a given packetType.  This is used to
 	 * decide if a received packet should be accepted or possibly discarded. 
 	 * @param packetType the type of packet to receive
-	 * @return
+	 * @return true if the packetType matches what is expected
 	 */
 	protected abstract boolean isExpectedPacketType(byte packetType);
 	
+	/**
+	 * @return payload
+	 */
 	public byte[] getPayload() {
 		return payload;
 	}

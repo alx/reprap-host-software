@@ -4,6 +4,10 @@ import java.io.IOException;
 import org.reprap.Device;
 public interface Extruder {
 
+	
+	/**
+	 * Dispose of the extruder object 
+	 */
 	public void dispose(); 
 
 	/**
@@ -26,9 +30,19 @@ public interface Extruder {
 	 * @throws IOException
 	 */
 	public void setExtrusion(int speed, boolean reverse) throws IOException; 
-
+	
+	/**
+	 * Turn the heater of the extruder on. Inital temperatur is defined by ???
+	 * @throws Exception
+	 */
 	public void heatOn() throws Exception; 
 
+	/**
+	 * Set the temperature of the extruder at a given height. This height is given
+	 * in centigrades, i.e. 100 equals 100 centigrades. 
+	 * @param temperature The temperature of the extruder in centigrades
+	 * @throws Exception
+	 */
 	public void setTemperature(double temperature) throws Exception; 
 	
 	/**
@@ -47,21 +61,33 @@ public interface Extruder {
 	 */
 	public boolean isEmpty(); 
 	
+	/**
+	 * @return the target temperature of the extruder
+	 */
 	public double getTemperatureTarget(); 
 
+	/**
+	 * @return the default temperature of the extruder
+	 */
 	public double getDefaultTemperature();
 
+	/**
+	 * @return the current temperature of the extruder 
+	 */
 	public double getTemperature(); 
 
 	/**
-	 * The the outline speed and the infill speed [0,1]
+	 * @return the infill speed as a value between [0,1]
 	 */
 	public double getInfillSpeed();
 
+	/**
+	 * @return the outline speed as a avlue between [0,1]
+	 */
 	public double getOutlineSpeed();
 	
 	/**
-	 * The length in mm to speed up when going round corners
+	 * @return The length in mm to speed up when going round corners
 	 */
 	public double getAngleSpeedUpLength();
 
@@ -71,32 +97,77 @@ public interface Extruder {
 	 * where ca is the cos of the angle between the lines.  So it goes fastest when
 	 * the line doubles back on itself (returning 1), and slowest when it 
 	 * continues straight (returning 1 - getAngleSpeedFactor()).
-	 */	
+	 * @return the angle-speed factor 
+	 */
 	public double getAngleSpeedFactor();
 	
+	
+	/**
+	 * Turn the cooler (fan?) on or off
+	 * @param f true if the cooler is to be turned on, false to turn off
+	 * @throws IOException
+	 */
 	public void setCooler(boolean f) throws IOException ;
 	
+	/**
+	 * Check if the extruder is available, which is determined by ???
+	 * @return true if the extruder is available
+	 */
 	public boolean isAvailable(); 
 
+    /**
+     * The speed of X and Y movement
+     * @return the XY speed
+     */
     public int getXYSpeed();
  
+    /**
+     * @return the extruder speeds
+     */
     public int getExtruderSpeed();
 
+    /**
+     * @return the extrusion size in millimeters
+     */
     public double getExtrusionSize();
  
+    /**
+     * @return the extrusion height in millimeters
+     */
     public double getExtrusionHeight();
 
+    /**
+     * @return the extrusion infill width in millimeters
+     */
     public double getExtrusionInfillWidth();
  
+    /**
+     * @return the extrusion overrun in millimeters
+     */
     public double getExtrusionOverRun();
  
+    /**
+     * @return the extrusion delay in seconds
+     */
     public long getExtrusionDelay();
 
+    /**
+     * @return the cooling period in seconds
+     */
     public int getCoolingPeriod();
  
+    /**
+     * @return the X offset in millimeters
+     */
     public double getOffsetX();
  
+    /**
+     * @return the Y offset in millimeters
+     */
     public double getOffsetY();
  
+    /**
+     * @return the Z offset in millimeters
+     */
     public double getOffsetZ();
 }

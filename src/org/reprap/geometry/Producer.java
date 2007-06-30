@@ -12,11 +12,31 @@ import org.reprap.machines.NullCartesianMachine;
 
 public class Producer {
 	
+	/**
+	 * 
+	 */
 	protected Printer reprap;
+	
+	/**
+	 * 
+	 */
 	protected RrHalfPlane oddHatchDirection;
+	
+	/**
+	 * 
+	 */
 	protected RrHalfPlane evenHatchDirection;
+	
+	/**
+	 * 
+	 */
 	protected RepRapBuild bld;
 	
+	/**
+	 * @param preview
+	 * @param builder
+	 * @throws Exception
+	 */
 	public Producer(PreviewPanel preview, RepRapBuild builder) throws Exception {
 		reprap = MachineFactory.create();
 		reprap.setPreviewer(preview);
@@ -25,6 +45,9 @@ public class Producer {
 		evenHatchDirection = new RrHalfPlane(new Rr2Point(0.0, 1.0), new Rr2Point(1.0, 0.0));
 	}
 	
+	/**
+	 * @return simple polygon object that represents a 2D square
+	 */
 	public RrPolygon square()
 	{
 		RrPolygon a = new RrPolygon();
@@ -39,6 +62,9 @@ public class Producer {
 		return a;
 	}
 	
+	/**
+	 * @return hexagonal object
+	 */
 	public RrCSGPolygon hex()
 	{
 		double hexSize = 20;
@@ -61,6 +87,9 @@ public class Producer {
 				new Rr2Point(hexX + hexSize*0.537, hexY + hexSize*0.623)));
 	}
 	
+	/**
+	 * @return Adrian's testshape; a 3D object
+	 */
 	public RrCSGPolygon adriansTestShape()
 	{
 		Rr2Point p = new Rr2Point(3, 5);
@@ -108,6 +137,10 @@ public class Producer {
 		return result;
 	}
 	
+	/**
+	 * @param testPiece
+	 * @throws Exception
+	 */
 	public void produce(boolean testPiece) throws Exception {
 
         // Fallback defaults
@@ -264,24 +297,43 @@ public class Producer {
 
 	}
 
+	/**
+	 * The total distance moved is the total distance extruded plus 
+	 * plus additional movements of the extruder when no materials 
+	 * was deposited
+	 * 
+	 * @return total distance the extruder has moved 
+	 */
 	public double getTotalDistanceMoved() {
 		return reprap.getTotalDistanceMoved();
 	}
 	
+	/**
+	 * @return total distance that has been extruded in millimeters
+	 */
 	public double getTotalDistanceExtruded() {
 		return reprap.getTotalDistanceExtruded();
 	}
 	
-	// This figure needs to get added up as we go along to allow for different extruders
+	/**
+	 * TODO: This figure needs to get added up as we go along to allow for different extruders
+	 * @return total volume that has been extruded
+	 */
 	public double getTotalVolumeExtruded() {
 		return reprap.getTotalDistanceExtruded() * reprap.getExtruder().getExtrusionHeight() * 
 		reprap.getExtruder().getExtrusionSize();
 	}
 	
+	/**
+	 * 
+	 */
 	public void dispose() {
 		reprap.dispose();
 	}
 
+	/**
+	 * @return total elapsed time in seconds between start and end of building the 3D object
+	 */
 	public double getTotalElapsedTime() {
 		return reprap.getTotalElapsedTime();
 	}

@@ -18,23 +18,69 @@ import org.reprap.comms.IncomingContext;
 import org.reprap.comms.IncomingMessage;
 import org.reprap.comms.OutgoingMessage;
 
+/**
+ *
+ */
 public class SNAPCommunicator implements Communicator {
 
+	/**
+	 * Timeout in milliseconds before a timeout exception is thrown
+	 * when waiting for an ACK from a device
+	 */
 	private final static int ackTimeout = 300;
+	
+	/**
+	 * 
+	 */
 	private final static int messageTimeout = 300;
     
+	/**
+	 * 
+	 */
 	private Address localAddress;
 	
+	/**
+	 * Serial port used for comms
+	 * Controlled via the properties (@link) 
+	 */
 	private SerialPort port;
+	
+	/**
+	 * 
+	 */
 	private OutputStream writeStream;
+	
+	/**
+	 * 
+	 */
 	private InputStream readStream;
 	
 	//private ReceiveThread receiveThread = null;
 	
+	/**
+	 * Boolean to turn debugging on or off on SNAP messages
+	 * True indicates additional debugging messages will be printed
+	 * Managed in the properties file @link{Preferences.loadGlobalBool("CommsDebug")}
+	 */
 	private boolean debugMode;
 	
+	
+	/**
+	 * Lock for comms
+	 * @link CommsLock
+	 */
 	private CommsLock lock = new CommsLock();
 		
+	/**
+	 * Construct a new SNAP communicator
+	 * @param portName port used for comms
+	 * @param baudRate Speeds of communication (set via properties @link??)
+	 * @param localAddress 
+	 * @throws NoSuchPortException exception thrown when the port does not exist @see
+	 * @throws PortInUseException exception thrown when the port is in use @see
+	 * @throws IOException
+	 * @throws UnsupportedCommOperationException
+	 */
 	public SNAPCommunicator(String portName, int baudRate, Address localAddress)
 			throws NoSuchPortException, PortInUseException, IOException, UnsupportedCommOperationException {
 		this.localAddress = localAddress;
@@ -45,7 +91,7 @@ public class SNAPCommunicator implements Communicator {
 		
 		// Workround for javax.comm bug.
 		// See http://forum.java.sun.com/thread.jspa?threadID=673793
-		
+		// FIXME: jvandewiel: is this workaround also needed when using the RXTX library?
 		try {
 			port.setSerialPortParams(baudRate,
 					SerialPort.DATABITS_8,

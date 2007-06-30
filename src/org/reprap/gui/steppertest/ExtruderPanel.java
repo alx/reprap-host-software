@@ -16,13 +16,34 @@ import javax.swing.event.ChangeListener;
 
 import org.reprap.devices.GenericExtruder;
 
+/**
+ *
+ */
 public class ExtruderPanel extends JPanel {
 	
+	/**
+	 * 
+	 */
 	private GenericExtruder extruder;
+	
+	/**
+	 * 
+	 */
 	private boolean extruding = false;
+	
+	/**
+	 * 
+	 */
 	private JButton extrudeButton;
+	
+	/**
+	 * Slider to control the extrusion speed 
+	 */
 	private JSlider speed;
 	
+	/**
+	 * @param extruder
+	 */
 	public ExtruderPanel(GenericExtruder extruder) {
 		super();
 		this.extruder = extruder;
@@ -63,11 +84,17 @@ public class ExtruderPanel extends JPanel {
 		
 	}
 	
+	/**
+	 * 
+	 */
 	protected void onExtrudeSpeed() {
 		if (extruding)
 			setExtruderSpeed();
 	}
 
+	/**
+	 * 
+	 */
 	private void setExtruderSpeed() {
 		try {
 			extruder.setExtrusion(extruding?speed.getValue():0);
@@ -77,6 +104,9 @@ public class ExtruderPanel extends JPanel {
 		}
 	}
 
+	/**
+	 * 
+	 */
 	protected void onExtrudeButton() {
 		if (extruding) {
 			extruding = false;
@@ -89,6 +119,9 @@ public class ExtruderPanel extends JPanel {
 		setExtruderSpeed();
 	}
 
+	/**
+	 * @return speed of the extruder
+	 */
 	public int getSpeed() {
 		return speed.getValue();
 	}

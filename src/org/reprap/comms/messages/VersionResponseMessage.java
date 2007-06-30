@@ -5,12 +5,23 @@ import java.io.IOException;
 import org.reprap.comms.IncomingContext;
 import org.reprap.comms.IncomingMessage;
 
+/**
+ *
+ */
 public class VersionResponseMessage extends IncomingMessage {
 
+	/**
+	 * @param incomingContext
+	 * @throws IOException
+	 */
 	public VersionResponseMessage(IncomingContext incomingContext) throws IOException {
 		super(incomingContext);
 	}
 	
+	/**
+	 * @return version number
+	 * @throws InvalidPayloadException
+	 */
 	public int getVersion() throws InvalidPayloadException {
 	    byte [] reply = getPayload();
 	    if (reply == null || reply.length != 3)
@@ -18,6 +29,9 @@ public class VersionResponseMessage extends IncomingMessage {
 	    return reply[1] + reply[2] << 8;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.reprap.comms.IncomingMessage#isExpectedPacketType(byte)
+	 */
 	protected boolean isExpectedPacketType(byte packetType) {
 		return packetType == VersionRequestMessage.MSG_GetVersion;
 	}

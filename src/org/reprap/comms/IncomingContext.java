@@ -4,7 +4,14 @@ package org.reprap.comms;
 
 public class IncomingContext {
 	
+	/**
+	 * 
+	 */
 	private Communicator communicator;
+	
+	/**
+	 * 
+	 */
 	private Address expectedAddress;
 
 	/**
@@ -17,10 +24,16 @@ public class IncomingContext {
 		this.communicator = communicator;
 	}
 
+	/**
+	 * @return communicator
+	 */
 	public Communicator getCommunicator() {
 		return communicator;
 	}
 
+	/**
+	 * @return expectedAddress
+	 */
 	public Address getExpectedAddress() {
 		return expectedAddress;
 	}

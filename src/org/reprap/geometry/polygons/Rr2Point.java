@@ -62,65 +62,87 @@ package org.reprap.geometry.polygons;
  */
 public class Rr2Point
 {
+	/**
+	 * 
+	 */
 	private double x, y;
 	
-	// Default to the origin
-	
+	/**
+	 * Default to the origin
+	 */
 	public Rr2Point()
 	{
 		x = 0;
 		y = 0;
 	}
 	
-	// Usual constructor
-	
+	/**
+	 * Usual constructor
+	 * @param a
+	 * @param b
+	 */
 	public Rr2Point(double a, double b)
 	{
 		x = a;
 		y = b;
 	}
 	
-	// Copy
-	
+	/**
+	 * Copy
+	 * @param r Rr2Point to copy from
+	 */
 	public Rr2Point(Rr2Point r)
 	{
 		x = r.x;
 		y = r.y;
 	}
 	
-	// Overwrite
-	
+	/**
+	 * Overwrite
+	 * @param p Rr2Point containing values to take
+	 */
 	public void set(Rr2Point p)
 	{
 		x = p.x;
 		y = p.y;
 	}
 	
-	
-	// Convert to a string
-	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	public String toString()
 	{
 		return Double.toString(x) + " " + Double.toString(y);
 	}
 	
-	// Coordinates
-	
+	/**
+	 * Coordinates
+	 */
 	public double x() { return x; }
 	public double y() { return y; }
 	
-	// Arithmetic
-	
+	/**
+	 * Arithmetic
+	 * @return neg of point
+	 */
 	public Rr2Point neg()
 	{
 		return new Rr2Point(-x, -y);
 	}
 	
+	/**
+	 * @return orthogonal of (this) point
+	 */
 	public Rr2Point orthogonal()
 	{
 		return new Rr2Point(y, -x);
 	}
 	
+	/**
+	 * @param a
+	 * @param b
+	 * @return a new point based on a vector addition of points a and b
+	 */
 	public static Rr2Point add(Rr2Point a, Rr2Point b)
 	{
 		Rr2Point r = new Rr2Point(a);
@@ -129,6 +151,11 @@ public class Rr2Point
 		return r;
 	}
 	
+	/**
+	 * @param a
+	 * @param b
+	 * @return a new point based on a vector subtraction of a - b
+	 */
 	public static Rr2Point sub(Rr2Point a, Rr2Point b)
 	{
 		return add(a, b.neg());
@@ -139,13 +166,18 @@ public class Rr2Point
 	 * Scale a point
 	 * @param b An R2rPoint
 	 * @param factor A scale factor
-	 * @return The point Rr2Point scaled by a factor of a
+	 * @return The point Rr2Point scaled by a factor of factor
 	 */
 	public static Rr2Point mul(Rr2Point b, double factor)
 	{
 		return new Rr2Point(b.x*factor, b.y*factor);
 	}
 	
+	/**
+	 * @param a
+	 * @param b
+	 * @return the point Rr2Point scaled by a factor of a
+	 */
 	public static Rr2Point mul(double a, Rr2Point b)
 	{
 		return mul(b, a);
@@ -166,7 +198,7 @@ public class Rr2Point
 	 * Inner product
 	 * @param a
 	 * @param b
-	 * @return
+	 * @return The point Rr2Point scaled by a factor of point b (?)
 	 */
 	public static double mul(Rr2Point a, Rr2Point b)
 	{
@@ -176,7 +208,7 @@ public class Rr2Point
 	
 	/**
 	 * Modulus
-	 * @return
+	 * @return modulus
 	 */
 	public double mod()
 	{
@@ -186,7 +218,7 @@ public class Rr2Point
 	
 	/**
 	 * Unit length normalization
-	 * @return
+	 * @return normalized unit lenght 
 	 */
 	public Rr2Point norm()
 	{
@@ -198,7 +230,7 @@ public class Rr2Point
 	 * Outer product
 	 * @param a
 	 * @param b
-	 * @return
+	 * @return oute product
 	 */
 	public static double op(Rr2Point a, Rr2Point b)
 	{
@@ -207,8 +239,7 @@ public class Rr2Point
 	
 	/**
 	 * Gradient
-	 * @param a
-	 * @return
+	 * @return gradient
 	 */
 	public double gradient()
 	{
@@ -228,7 +259,7 @@ public class Rr2Point
 	 * Squared distance
 	 * @param a
 	 * @param b
-	 * @return
+	 * @return squared distance
 	 */
 	public static double d_2(Rr2Point a, Rr2Point b)
 	{
@@ -241,7 +272,8 @@ public class Rr2Point
 	 * @param a
 	 * @param b
 	 * @param tol_2
-	 * @return
+	 * @return true if the squared distance between points a and b 
+	 * is within tolerance tol_2, otherwise false
 	 */
 	public static boolean same(Rr2Point a, Rr2Point b, double tol_2)
 	{

@@ -4,28 +4,73 @@ import java.io.IOException;
 
 public class SNAPPacket {
 	
+	/**
+	 * 
+	 */
 	private final int offset_sync = 0;
+	
+	/**
+	 * 
+	 */
 	private final int offset_hdb2 = 1;
+	
+	/**
+	 * 
+	 */
 	private final int offset_hdb1 = 2;
+	
+	/**
+	 * 
+	 */
 	private final int offset_dab = 3;
+	
+	/**
+	 * 
+	 */
 	private final int offset_sab = 4;
+	
+	/**
+	 * 
+	 */
 	private final int offset_payload = 5;
 	
+	/**
+	 * 
+	 */
 	private final byte syncMarker = 0x54;
 	
+	/**
+	 * 
+	 */
 	private final int maxSize = 64;
 	
-	// Full raw packet contents including all headers
+	/**
+	 * Full raw packet contents including all headers 
+	 */
 	private byte [] buffer;
 
+	/**
+	 * 
+	 */
 	private int receiveLength = 0;
 	
+	/**
+	 * 
+	 */
 	private boolean complete = false;
 	
+	/**
+	 * 
+	 */
 	SNAPPacket() {
 		buffer = new byte[maxSize];
 	}
 	
+	/**
+	 * @param srcAddress
+	 * @param destAddress
+	 * @param payload
+	 */
 	SNAPPacket(SNAPAddress srcAddress, SNAPAddress destAddress, byte [] payload) {
 		buffer = new byte[payload.length + offset_payload + 1];
 		buffer[offset_sync] = syncMarker;
@@ -40,6 +85,9 @@ public class SNAPPacket {
 		complete = true;
 	}
 
+	/**
+	 * 
+	 */
 	private void generateChecksum() {
 		int length = getLength() + offset_payload;
 		SNAPChecksum crc = new SNAPChecksum();
@@ -48,10 +96,16 @@ public class SNAPPacket {
 		buffer[length] = crc.getResult();
 	}
 	
+	/**
+	 * @return the packet type
+     */
 	public byte getPacketType() {
 		return buffer[0]; // TODO fix offset
 	}
 	
+    /**
+     * @return the payload
+     */
     public byte [] getPayload() {
     	int length = getLength();
     	byte [] payload = new byte[length];
@@ -60,6 +114,9 @@ public class SNAPPacket {
 		return payload;
 	}
 	
+	/**
+	 * @return the raw data of the packet
+	 */
 	public byte [] getRawData() {
 		return buffer;
 	}
@@ -86,6 +143,9 @@ public class SNAPPacket {
 		return false;
 	}
 	
+	/**
+	 * @return true if the packet passed validation
+	 */
 	public boolean validate() {
 		if (receiveLength < offset_payload)
 			return false;
@@ -101,19 +161,31 @@ public class SNAPPacket {
 		return crc.getResult() == expectedCRC;
 	}
 	
+	/**
+	 * @return the source address of the packet
+	 */
 	public SNAPAddress getSourceAddress() {
 		return new SNAPAddress(buffer[offset_sab]);
 	}
 	
+	/**
+	 * @return the destination address for the packet
+	 */
 	public SNAPAddress getDestinationAddress() {
 		return new SNAPAddress(buffer[offset_dab]);
 	}
 
+	/**
+	 * @param length
+	 */
 	private void setLength(int length) {
 		buffer[offset_hdb1] = (byte)((buffer[offset_hdb1] & 0xf0) |
 				(length > 7 ? 8 : length));
 	}
 	
+	/**
+	 * @return the lenght of the packet
+	 */
 	public int getLength() {
 		int l = buffer[offset_hdb1] & 0x0f;
 		if ((l & 8) != 0)
@@ -121,6 +193,9 @@ public class SNAPPacket {
 		return l;
 	}
 
+	/**
+	 * @return NAK packet
+	 */
 	public SNAPPacket generateNAK() {
 		SNAPPacket resp = new SNAPPacket(getDestinationAddress(), getSourceAddress(), new byte [] {});
 		resp.buffer[offset_hdb2] = (byte)((resp.buffer[offset_hdb2] & 0xfc) | 3);
@@ -128,6 +203,9 @@ public class SNAPPacket {
 		return resp;
 	}
 
+	/**
+	 * @return ACK packet
+	 */
 	public SNAPPacket generateACK() {
 		SNAPPacket resp = new SNAPPacket(getDestinationAddress(), getSourceAddress(), new byte [] {});
 		resp.buffer[offset_hdb2] = (byte)((resp.buffer[offset_hdb2] & 0xfc) | 2);

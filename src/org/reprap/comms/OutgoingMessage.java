@@ -2,6 +2,9 @@ package org.reprap.comms;
 
 import org.reprap.Device;
 
+/**
+ *
+ */
 public abstract class OutgoingMessage {
 		
 	/**

@@ -13,69 +13,238 @@ import org.reprap.comms.IncomingMessage.InvalidPayloadException;
 import org.reprap.comms.messages.OutgoingBlankMessage;
 import org.reprap.comms.messages.OutgoingByteMessage;
 
+/**
+ * @author jwiel
+ *
+ */
 public class GenericExtruder extends Device implements Extruder{
 
-	public static final byte MSG_SetActive = 1;
-	public static final byte MSG_SetActiveReverse = 2;
-	public static final byte MSG_IsEmpty = 8;
-	public static final byte MSG_SetHeat = 9;
-	public static final byte MSG_GetTemp = 10;
-	public static final byte MSG_SetCooler = 11;
-	public static final byte MSG_SetVRef = 52;
-	public static final byte MSG_SetTempScaler = 53;
 	
-	/// Offset of 0 degrees centigrade from absolute zero
+	/**
+	 * API for firmware
+	 * Activate the extruder motor in forward direction 
+	 */
+	public static final byte MSG_SetActive = 1;
+	
+	/**
+	 *  Activate the extruder motor in reverse direction
+	 */
+	public static final byte MSG_SetActiveReverse = 2;
+	
+	/**
+	 * There is no material left to extrude 
+	 */
+	public static final byte MSG_IsEmpty = 8;
+	
+	/**
+	 * Set the temperature of the extruder
+	 */
+	public static final byte MSG_SetHeat = 9;
+	
+	/**
+	 * Get the temperature of the extruder 
+	 */
+	public static final byte MSG_GetTemp = 10;
+		
+	/**
+	 * Turn the cooler/fan on 
+	 */
+	public static final byte MSG_SetCooler = 11;
+	
+	/**
+	 * Set Vref 
+	 */
+	public static final byte MSG_SetVRef = 52;
+	
+	/**
+	 * Set the Tempscaler 
+	 */
+	public static final byte MSG_SetTempScaler = 53;
+	 
+	/**
+	 * Offset of 0 degrees centigrade from absolute zero
+	 */
 	private static final double absZero = 273.15;
 	
-	/// The temperature to maintain
+	/**
+	 * The temperature to maintain 
+	 */
 	private double requestedTemperature = 0;
 	
-	/// The temperature most recently read from the device
+	/**
+	 * The temperature most recently read from the device 
+	 */
 	private double currentTemperature = 0;
 	
+	/**
+	 * Is a material-out sensor connected to the exteruder or not. 
+	 * If this is the case, TODO: impact?
+	 */
 	private boolean currentMaterialOutSensor = false;
 	
-	/// Indicates when polled values are first ready
+	
+	/**
+	 * Indicates when polled values are first ready 
+	 */
 	private boolean sensorsInitialised = false;
 	
+	/**
+	 * 
+	 */
 	private Thread pollThread = null;
+	
+	/**
+	 * 
+	 */
 	private boolean pollThreadExiting = false;
-
+	
+	/**
+	 * 
+	 */
 	private int vRefFactor = 7;
+	
+	/**
+	 * 
+	 */
 	private int tempScaler = 4;
 	
-	private double beta;   ///< Thermistor beta
-	private double rz;     ///< Thermistor resistance at 0C
-	private double cap;    ///< Thermistor timing capacitor in farads
-	private double hm;     ///< Heater power gradient
-	private double hb;     ///< Heater power intercept
-	private int maxExtruderSpeed;  ///< Maximum motor speed (0-255)
-	private int extrusionSpeed; ///< The actual extrusion speed
-	private double extrusionTemp; ///< The extrusion temperature
-	private double extrusionSize; ///< The extrusion width in XY
-	private double extrusionHeight; ///< The extrusion height in Z
-	                                 // Should this be a machine-wide constant? - AB
-	private double extrusionInfillWidth; ///< The step between infill tracks
-	private double extrusionOverRun; ///< The number of mm to stop extruding before the end of a track
-	private int extrusionDelay; ///< The number of ms to wait before starting a track
-	private int coolingPeriod; ///< The number of s to cool between layers
-	private int xySpeed; ///< The speed of movement in XY when depositing
-	private int t0;        ///< Zero torque speed
-	private double iSpeed;///< Infill speed [0,1]*maxSpeed
-	private double oSpeed;///< Outline speed [0,1]*maxSpeed	
-	private double asLength;///< Length (mm) to speed up round corners
-	private double asFactor;///< Factor by which to speed up round corners
-	private String materialType;  ///< The name of this extruder's material
-	private double offsetX, offsetY, offsetZ; ///< Where to put the nozzle
+	
+	/**
+	 * Thermistor beta
+	 */
+	private double beta; 
+	
+	/**
+	 * Thermistor resistance at 0C
+	 */
+	private double rz;  
+	
+	/**
+	 * Thermistor timing capacitor in farads
+	 */
+	private double cap;    
+
+	/**
+	 * Heater power gradient
+	 */
+	private double hm;   
+
+	/**
+	 * Heater power intercept
+	 * TODO: hb should probably be ambient temperature measured at this point
+	 */
+	private double hb;    
+
+	/**
+	 * Maximum motor speed (value between 0-255)
+	 */
+	private int maxExtruderSpeed; 
+	
+	/**
+	 * The actual extrusion speed
+	 */
+	private int extrusionSpeed;
+	
+	/**
+	 * The extrusion temperature
+	 */
+	private double extrusionTemp; 
+	
+	/**
+	 * The extrusion width in XY
+	 */
+	private double extrusionSize;
+	
+	/**
+	 * The extrusion height in Z
+	 * TODO: Should this be a machine-wide constant? - AB
+	 */
+	private double extrusionHeight; 
+	                                
+	/**
+	 * The step between infill tracks
+	 */
+	private double extrusionInfillWidth; 
+	
+	/**
+	 * The number of mm to stop extruding before the end of a track
+	 */
+	private double extrusionOverRun; 
+	
+	/**
+	 * The number of milliseconds to wait before starting a track
+	 */
+	private int extrusionDelay;
+	
+	/**
+	 * The number of seconds to cool between layers
+	 */
+	private int coolingPeriod;
+	
+	/**
+	 * The speed of movement in XY when depositing
+	 */
+	private int xySpeed; 
+	
+	/**
+	 * Zero torque speed 
+	 */
+	private int t0;
+	
+	/**
+	 * Infill speed [0,1]*maxSpeed
+	 */
+	private double iSpeed;
+	
+	/**
+	 * Outline speed [0,1]*maxSpeed
+	 */
+	private double oSpeed;
+	
+	/**
+	 * Length (mm) to speed up round corners
+	 */
+	private double asLength;
+	
+	/**
+	 * Factor by which to speed up round corners
+	 */
+	private double asFactor;
+	
+	/**
+	 * The name of this extruder's material
+	 */
+	private String materialType;  
+	
+	/**
+	 * Where to put the nozzle
+	 */
+	private double offsetX, offsetY, offsetZ; 
+	
+	/**
+	 * 
+	 */
 	private long lastTemperatureUpdate = 0;
+	
+	/**
+	 * Identifier of and extruder
+	 * TODO: which values mean what? 
+	 */
 	private int myExtruderID;
 	
-	/// TODO hb should probably be ambient temperature measured at this point
 	
-	/// Flag indicating if initialisation succeeded.  Usually this
-	/// indicates if the extruder is present in the network.
+	/**
+	 * Flag indicating if initialisation succeeded.  Usually this
+	 * indicates if the extruder is present in the network. 
+	 */
 	private boolean isCommsAvailable = false;
 	
+	/**
+	 * @param communicator
+	 * @param address
+	 * @param prefs
+	 * @param extruderId
+	 */
 	public GenericExtruder(Communicator communicator, Address address, Preferences prefs, int extruderId) {
 		
 		super(communicator, address);
@@ -147,6 +316,9 @@ public class GenericExtruder extends Device implements Extruder{
 	
 	}
 
+	/* (non-Javadoc)
+	 * @see org.reprap.Extruder#dispose()
+	 */
 	public void dispose() {
 		if (pollThread != null) {
 			pollThreadExiting = true;
@@ -197,8 +369,7 @@ public class GenericExtruder extends Device implements Extruder{
 	}
 
 	/**
-	 * Set extruder temperature
-	 * @param temperature
+	 * Turn the extruder on using the extrusionTemp property
 	 * @throws Exception
 	 */
 	
@@ -207,10 +378,18 @@ public class GenericExtruder extends Device implements Extruder{
 		setTemperature(extrusionTemp);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.reprap.Extruder#setTemperature(double)
+	 */
 	public void setTemperature(double temperature) throws Exception {
 		setTemperature(temperature, true);
 	}
 	
+	/**
+	 * @param temperature
+	 * @param lock
+	 * @throws Exception
+	 */
 	private void setTemperature(double temperature, boolean lock) throws Exception {
 		requestedTemperature = temperature;
 		if(Math.abs(requestedTemperature - extrusionTemp) > 5)
@@ -341,6 +520,9 @@ public class GenericExtruder extends Device implements Extruder{
 		return currentMaterialOutSensor;
 	}
 	
+	/**
+	 * 
+	 */
 	private void awaitSensorsInitialised() {
 		// Simple minded wait to let sensors become valid
 		//while(!sensorsInitialised) {
@@ -390,10 +572,16 @@ public class GenericExtruder extends Device implements Extruder{
 		}
 	}
 
+	/* (non-Javadoc)
+	 * @see org.reprap.Extruder#getTemperatureTarget()
+	 */
 	public double getTemperatureTarget() {
 		return requestedTemperature;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.reprap.Extruder#getDefaultTemperature()
+	 */
 	public double getDefaultTemperature() {
 		return extrusionTemp;
 	}	
@@ -413,6 +601,9 @@ public class GenericExtruder extends Device implements Extruder{
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.reprap.Extruder#getTemperature()
+	 */
 	public double getTemperature() {
 		awaitSensorsInitialised();
 		TEMPpollcheck();
@@ -426,6 +617,10 @@ public class GenericExtruder extends Device implements Extruder{
 	{
 		return iSpeed;
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.reprap.Extruder#getOutlineSpeed()
+	 */
 	public double getOutlineSpeed()
 	{
 		return oSpeed;
@@ -433,6 +628,8 @@ public class GenericExtruder extends Device implements Extruder{
 	
 	/**
 	 * The length in mm to speed up when going round corners
+	 * (non-Javadoc)
+	 * @see org.reprap.Extruder#getAngleSpeedUpLength()
 	 */
 	public double getAngleSpeedUpLength()
 	{
@@ -445,13 +642,18 @@ public class GenericExtruder extends Device implements Extruder{
 	 * where ca is the cos of the angle between the lines.  So it goes fastest when
 	 * the line doubles back on itself (returning 1), and slowest when it 
 	 * continues straight (returning 1 - getAngleSpeedFactor()).
-	 */	
+	 * (non-Javadoc)
+	 * @see org.reprap.Extruder#getAngleSpeedFactor()
+	 */
 	public double getAngleSpeedFactor()
 	{
 		return asFactor;
 	}	
 	
 	
+	/* (non-Javadoc)
+	 * @see org.reprap.Extruder#setCooler(boolean)
+	 */
 	public void setCooler(boolean f) throws IOException {
 		lock();
 		try {
@@ -464,6 +666,9 @@ public class GenericExtruder extends Device implements Extruder{
 		}
 	}
 	
+	/**
+	 * @throws Exception
+	 */
 	private void RefreshTemperature() throws Exception {
 		//System.out.println(materialType + " extruder refreshing temperature");
 		getDeviceTemperature();
@@ -545,6 +750,10 @@ public class GenericExtruder extends Device implements Extruder{
 		return (1.0 / (1.0 / absZero + Math.log(resistance/rz) / beta)) - absZero;
 	}
 	
+	/**
+	 * @param temperature
+	 * @return
+	 */
 	private double calculateResistanceForTemperature(double temperature) {
 		return rz * Math.exp(beta * (1/(temperature + absZero) - 1/absZero));
 	}
@@ -593,20 +802,40 @@ public class GenericExtruder extends Device implements Extruder{
 		tempScaler = scale;
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.reprap.Extruder#isAvailable()
+	 */
 	public boolean isAvailable() {
 		return isCommsAvailable;
 	}
 
 	
+	/**
+	 *
+	 */
 	protected class RequestTemperatureResponse extends IncomingMessage {
+		
+		/**
+		 * @param device
+		 * @param message
+		 * @param timeout
+		 * @throws IOException
+		 */
 		public RequestTemperatureResponse(Device device, OutgoingMessage message, long timeout) throws IOException {
 			super(device, message, timeout);
 		}
 		
+		/* (non-Javadoc)
+		 * @see org.reprap.comms.IncomingMessage#isExpectedPacketType(byte)
+		 */
 		protected boolean isExpectedPacketType(byte packetType) {
 			return packetType == MSG_GetTemp; 
 		}
 		
+		/**
+		 * @return
+		 * @throws InvalidPayloadException
+		 */
 		public int getHeat() throws InvalidPayloadException {
 		    byte [] reply = getPayload();
 		    if (reply == null || reply.length != 3)
@@ -614,6 +843,10 @@ public class GenericExtruder extends Device implements Extruder{
 		    return reply[1] < 0 ? reply[1] + 256 : reply[1];
 		}
 
+		/**
+		 * @return
+		 * @throws InvalidPayloadException
+		 */
 		public int getCalibration() throws InvalidPayloadException {
 		    byte [] reply = getPayload();
 		    if (reply == null || reply.length != 3)
@@ -623,29 +856,62 @@ public class GenericExtruder extends Device implements Extruder{
 		
 	}
 
+	/**
+	 *
+	 */
 	protected class RequestSetHeat extends OutgoingMessage {
+		
+		/**
+		 * 
+		 */
 		byte [] message;
 		
+		/**
+		 * @param heat
+		 * @param cutoff
+		 */
 		RequestSetHeat(byte heat, byte cutoff) {
 			message = new byte [] { MSG_SetHeat, heat, heat, cutoff, cutoff }; 
 		}
 
+		/**
+		 * @param heat0
+		 * @param heat1
+		 * @param t0
+		 * @param t1
+		 */
 		RequestSetHeat(byte heat0, byte heat1, byte t0, byte t1) {
 			message = new byte [] { MSG_SetHeat, heat0, heat1, t0, t1}; 
 		}
 		
+		/* (non-Javadoc)
+		 * @see org.reprap.comms.OutgoingMessage#getBinary()
+		 */
 		public byte[] getBinary() {
 			return message;
 		}
 		
 	}
 	
+	/**
+	 *
+	 */
 	protected class RequestIsEmptyResponse extends IncomingMessage {
 
+		/**
+		 * @param device
+		 * @param message
+		 * @param timeout
+		 * @throws IOException
+		 */
 		public RequestIsEmptyResponse(Device device, OutgoingMessage message, long timeout) throws IOException {
 			super(device, message, timeout);
 		}
 		
+		/**
+		 * @return
+		 * @throws InvalidPayloadException
+		 */
 		public byte getValue() throws InvalidPayloadException {
 			byte [] reply = getPayload();
 			if (reply == null || reply.length != 2)
@@ -653,6 +919,9 @@ public class GenericExtruder extends Device implements Extruder{
 			return reply[1];
 		}
 		
+		/* (non-Javadoc)
+		 * @see org.reprap.comms.IncomingMessage#isExpectedPacketType(byte)
+		 */
 		protected boolean isExpectedPacketType(byte packetType) {
 			return packetType == MSG_IsEmpty;
 		}
@@ -660,54 +929,89 @@ public class GenericExtruder extends Device implements Extruder{
 	}
 
     
+    /* (non-Javadoc)
+     * @see org.reprap.Extruder#getXYSpeed()
+     */
     public int getXYSpeed()
     {
     	return xySpeed;
     }
     
+    /* (non-Javadoc)
+     * @see org.reprap.Extruder#getExtruderSpeed()
+     */
     public int getExtruderSpeed()
     {
     	return extrusionSpeed;
     } 
     
+    /* (non-Javadoc)
+     * @see org.reprap.Extruder#getExtrusionSize()
+     */
     public double getExtrusionSize()
     {
     	return extrusionSize;
     } 
     
+    /* (non-Javadoc)
+     * @see org.reprap.Extruder#getExtrusionHeight()
+     */
     public double getExtrusionHeight()
     {
     	return extrusionHeight;
     } 
     
+    /* (non-Javadoc)
+     * @see org.reprap.Extruder#getExtrusionInfillWidth()
+     */
     public double getExtrusionInfillWidth()
     {
     	return extrusionInfillWidth;
     } 
     
+    /* (non-Javadoc)
+     * @see org.reprap.Extruder#getExtrusionOverRun()
+     */
     public double getExtrusionOverRun()
     {
     	return extrusionOverRun;
     } 
     
+    /* (non-Javadoc)
+     * @see org.reprap.Extruder#getExtrusionDelay()
+     */
     public long getExtrusionDelay()
     {
     	return extrusionDelay;
     } 
     
+    /* (non-Javadoc)
+     * @see org.reprap.Extruder#getCoolingPeriod()
+     */
     public int getCoolingPeriod()
     {
     	return coolingPeriod;
     } 
     
+    /* (non-Javadoc)
+     * @see org.reprap.Extruder#getOffsetX()
+     */
     public double getOffsetX()
     {
     	return offsetX;
     }    
+    
+    /* (non-Javadoc)
+     * @see org.reprap.Extruder#getOffsetY()
+     */
     public double getOffsetY()
     {
     	return offsetY;
     }
+    
+    /* (non-Javadoc)
+     * @see org.reprap.Extruder#getOffsetZ()
+     */
     public double getOffsetZ()
     {
     	return offsetZ;

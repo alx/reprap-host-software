@@ -64,13 +64,22 @@ public enum RrCSGOp
     UNION("UNION"), 
     INTERSECTION("INTERSECTION");
     
+    /**
+     * 
+     */
     private String name;
     
+    /**
+     * @param name
+     */
     RrCSGOp(String name)
     {
         this.name = name;
     }
     
+    /* (non-Javadoc)
+     * @see java.lang.Enum#toString()
+     */
     public String toString() { return name; }
 }
 //

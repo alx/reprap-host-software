@@ -66,7 +66,14 @@ import org.reprap.Preferences;
 
 class LineSegment
 {
+	/**
+	 * 
+	 */
 	public Rr2Point a, b;
+	
+	/**
+	 * 
+	 */
 	public STLSlice qa, qb;
 	
 	/**
@@ -118,20 +125,54 @@ class LineSegment
 	}
 }
 
+/**
+ *
+ */
 public class STLSlice 
 {
-	List stls;                     ///< The STL objects in 3D
-	private List edges;            ///< List of the edges with points in this one
-	private RrBox box;             ///< Its enclosing box
-	private STLSlice q1,           ///< Quad tree division - NW
-	q2,                            ///< NE 
-	q3,                            ///< SE
-	q4;                            ///< SW
-	private double resolution_2;   ///< Squared diagonal of the smallest box to go to
-	private double sFactor;        ///< Swell factor for division
-	private boolean visited;       ///< Flag to indicate the quad's been dealt with
-	private static List triangles; ///< All the STL triangles and part-triangles below Z
-	private Shape3D below;         ///< Made from the below-Z triangles
+	/**
+	 * The STL objects in 3D
+	 */
+	List stls;
+	
+	/**
+	 * List of the edges with points in this one
+	 */
+	private List edges;
+	/**
+	 * Its enclosing box
+	 */
+	private RrBox box;
+	
+	/**
+	 * Quad tree division - NW, NE, SE, SW
+	 */
+	private STLSlice q1,q2,q3,q4;
+	
+	/**
+	 * Squared diagonal of the smallest box to go to 
+	 */
+	private double resolution_2;
+	
+	/**
+	 * Swell factor for division
+	 */
+	private double sFactor;
+	
+	/**
+	 * Flag to indicate the quad's been dealt with 
+	 */
+	private boolean visited;
+	
+	/**
+	 * All the STL triangles and part-triangles below Z 
+	 */
+	private static List triangles;
+	
+	/**
+	 * Made from the below-Z triangles 
+	 */
+	private Shape3D below;
 	
 	/**
 	 * Null constructor just initialises a few things.
@@ -181,13 +222,18 @@ public class STLSlice
 		resolution_2 = r*r;
 	}
 	
-	// Return the contents
-	
+	/**
+	 * Return the contents
+	 * @return contents of the STL slice
+	 */
 	public RrBox box()
 	{
 		return box;
 	}
 	
+	/**
+	 * @return the edges of the STL slice
+	 */
 	public List edges()
 	{
 		return edges;
@@ -205,15 +251,21 @@ public class STLSlice
 	{
 		return q3;
 	}
+	
 	public STLSlice c_4()
 	{
 		return q4;
 	}
 	
+	/**
+	 * @param i index of line segement
+	 * @return Linesegment object of the STL slice at index i
+	 */
 	public LineSegment segment(int i)
 	{
 		return (LineSegment)edges.get(i);
 	}
+	
 	
 	public Shape3D getShape3D()
 	{
@@ -222,7 +274,7 @@ public class STLSlice
 	}
 	
 	/**
-	 * Not sure about this - at the moment it clicks all points
+	 * FIXME: Not sure about this - at the moment it clicks all points
 	 * onto an 0.01 mm grid.
 	 * @param x
 	 * @return grid value nearest x
@@ -529,7 +581,6 @@ public class STLSlice
 
     /**
      * Useful for debugging - plot a bit of the quad tree.
-     *
      */
     private void quickPlot()
     {
@@ -549,7 +600,7 @@ public class STLSlice
 //    
 //    /**
 //     * Useful for debugging - print statistics
-//     *
+//     * TODO: rewrite so log4j can be used
 //     */
 //    public void reportStats()
 //    {
@@ -657,7 +708,6 @@ public class STLSlice
 	
 	
 	/**
-	 * 
 	 * build a 2D polygon list of all edges in the plane z
 	 * from all the objects in stls then turn it to CSG.
 	 * @param z

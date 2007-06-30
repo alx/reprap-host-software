@@ -36,9 +36,9 @@ import org.reprap.gui.Utility;
 
 /**
  *
- * @mainpage RepRap Host Controller Software
+ * mainpage RepRap Host Controller Software
  * 
- * @section overview Overview
+ * section overview Overview
  * 
  * Please see http://reprap.org/ for more details.
  *  

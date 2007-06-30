@@ -7,8 +7,15 @@ package org.reprap.comms.snap;
  * 
  */
 public class SNAPChecksum {
+	
+	/**
+	 * 
+	 */
 	byte crc;
 	
+	/**
+	 * 
+	 */
 	SNAPChecksum() {
 		crc = 0;
 	}
@@ -42,6 +49,9 @@ public class SNAPChecksum {
 		return data;
 	}
 	
+	/**
+	 * @return
+	 */
 	byte getResult() {
 		return crc;
 	}

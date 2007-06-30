@@ -60,12 +60,31 @@ import java.util.ArrayList;
 import java.util.List;
 import org.reprap.Preferences;
 
+/**
+ *
+ */
 class snakeEnd
 {
+	/**
+	 * 
+	 */
 	public RrPolygon p;
+	
+	/**
+	 * 
+	 */
 	public RrHalfPlane h;
+	
+	/**
+	 * 
+	 */
 	public int index;
 	
+	/**
+	 * @param pl
+	 * @param hs
+	 * @param i
+	 */
 	snakeEnd(RrPolygon pl, RrHalfPlane hs, int i)
 	{
 		p = pl;
@@ -78,23 +97,60 @@ class snakeEnd
  * Polygons as  CSG combinations of half spaces with recursive quad-tree
  * division of their containing boxes.
  * 
- * TO DO: Change the quad tree to a BSP tree?
+ * TODO: Change the quad tree to a BSP tree?
  */
 public class RrCSGPolygon
 {
-	private RrCSG csg;              ///< The polygon
-	private RrBox box;              ///< Its enclosing box
-	private RrCSGPolygon q1,        ///< Quad tree division - NW
-	q2,                             ///< NE 
-	q3,                             ///< SE
-	q4;                             ///< SW
-	private double resolution_2;    ///< Squared diagonal of the smallest box to go to
-	private boolean visit1, visit2; ///< Used by the edge-generation software.
-	private double sFactor;         ///< Swell factor for division
-	private int edgeCount;          ///< Number of edges in the box
-	private boolean corner;         ///< Is this box a vertex?
-	private RrInterval i1, i2;      ///< Edge parametric intervals
-	private Rr2Point vertex;        ///< The vertex, if it exists
+	
+	/**
+	 * The polygon 
+	 */
+	private RrCSG csg;
+	
+	/**
+	 * Its enclosing box
+	 */
+	private RrBox box;   
+	
+	/**
+	 * Quad tree division, respectively: NW, NE, SE, SW 
+	 */
+	private RrCSGPolygon q1, q2, q3, q4;                             
+	
+	/**
+	 * Squared diagonal of the smallest box to go to 
+	 */
+	private double resolution_2; 
+	
+	/**
+	 * Used by the edge-generation software. 
+	 */
+	private boolean visit1, visit2;
+	
+	/**
+	 * Swell factor for division 
+	 */
+	private double sFactor;         
+	
+	/**
+	 * Number of edges in the box 
+	 */
+	private int edgeCount;          
+	
+	/**
+	 * Is this box a vertex? 
+	 */
+	private boolean corner;         
+	
+	/**
+	 * Edge parametric intervals
+	 */
+	private RrInterval i1, i2;     
+	
+	/**
+	 * The vertex, if it exists
+	 */
+	private Rr2Point vertex;
 	
 	/**
 	 * Set one up
@@ -119,9 +175,11 @@ public class RrCSGPolygon
 		i1 = new RrInterval();
 		i2 = new RrInterval();
 	}
-		
-	// get children etc
 	
+	/**
+	 * Get children etc
+	 * @return children
+	 */
 	public RrCSGPolygon c_1() { return q1; }
 	public RrCSGPolygon c_2() { return q2; }
 	public RrCSGPolygon c_3() { return q3; }
@@ -358,7 +416,7 @@ public class RrCSGPolygon
 	/**
 	 * Find the quad containing a point
 	 * @param p
-	 * @return
+	 * @return quad containing point p
 	 */
 	public RrCSGPolygon quad(Rr2Point p)
 	{
@@ -389,11 +447,11 @@ public class RrCSGPolygon
 	
 	
 	/**
-	 * Find the RrCSG expression that gives the potentaial at point p.
+	 * Find the RrCSG expression that gives the potential at point p.
 	 * Note this does NOT find the closest half-plane unless the point
 	 * is on a surface.
 	 * @param p
-	 * @return
+	 * @return CSG object 
 	 */
 	public RrCSG leaf(Rr2Point p)
 	{
@@ -404,7 +462,7 @@ public class RrCSGPolygon
 	/**
 	 * Find the potential at point p.
 	 * @param p
-	 * @return
+	 * @return potential of point p
 	 */	
 	public double value(Rr2Point p)
 	{
@@ -417,7 +475,7 @@ public class RrCSGPolygon
 	 * If the old polygon was divided, the new one will be too.
 	 * If we shrink out of existence, a standard null object is returned.
 	 * @param d
-	 * @return
+	 * @return offset polygon object by distance d
 	 */
 	public RrCSGPolygon offset(double d)
 	{
@@ -437,7 +495,7 @@ public class RrCSGPolygon
 		return result;
 	}
 	  
-	 /**
+	/**
 	 * Walk the tree setting visited flags false
      */
     private void clearVisited(boolean v1, boolean v2)
@@ -456,7 +514,7 @@ public class RrCSGPolygon
     	}
     }
     
-	 /**
+	/**
 	 * Walk the tree to find an unvisited corner
      */
     private RrCSGPolygon findCorner(boolean v1, boolean v2)
@@ -611,9 +669,9 @@ public class RrCSGPolygon
      * Intersect a half-plane line and a polygon, storing the sorted list
      * with the half-plane.
      * @param hp
-     * @param big_wipe
-     * @param up
-     */
+	 * @param range
+	 * @param up
+	 */
 	public void lineIntersect(RrHalfPlane hp, RrInterval range, boolean up)
 	{
 		hp.removeCrossings();
@@ -629,7 +687,7 @@ public class RrCSGPolygon
      * @param originPlane
      * @param targetPlane
      * @param flag
-     * @return
+     * @return polygon edge between start/originaPlane and targetPlane
      */
     public snakeEnd megGoToPlane(Rr2Point start, RrHalfPlane modelEdge, RrHalfPlane originPlane,
     		RrHalfPlane targetPlane, int flag)
@@ -709,7 +767,7 @@ public class RrCSGPolygon
      * @param thisPt
      * @param fg
      * @param fs
-     * @return
+     * @return zigzag hatch polygon
      */
 	private RrPolygon snakeGrow(List hatches, int thisHatch, int thisPt, int fg, int fs)
 	{

@@ -50,6 +50,8 @@
 
 package org.reprap.geometry.polygons;
 
+import javax.media.j3d.Link;
+
 /**
  * RepRap Constructive Solid Geometry class
  * 
@@ -59,15 +61,42 @@ package org.reprap.geometry.polygons;
 public class RrCSG
 {
 	
-	private static final RrCSG u = new RrCSG(true);  ///< Universal set
-	private static final RrCSG n = new RrCSG(false); ///< Null set 
+	/**
+	 * Universal set 
+	 */
+	private static final RrCSG u = new RrCSG(true);  
 	
-	private RrHalfPlane hp;    ///< Leaf half plane
-	private RrCSGOp op;      ///< Type of set
+	/**
+	 * Null set  
+	 */
+	private static final RrCSG n = new RrCSG(false); 
+	
+	/**
+	 * Leaf half plane 
+	 */
+	private RrHalfPlane hp;
+	
+	/**
+	 * Type of set
+	 */
+	private RrCSGOp op;
+
 	//private int op;			   ///< Will go at Java 1.5
-	private RrCSG c1, c2;      ///< Non-leaf child operands
-	private RrCSG comp;        ///< The complement (if there is one)
-	private int complexity;    ///< How much is in here (leaf count)?
+	
+	/**
+	 * Non-leaf child operands 
+	 */
+	private RrCSG c1, c2; 
+	
+	/**
+	 * The complement (if there is one) 
+	 */
+	private RrCSG comp;        
+	
+	/**
+	 * How much is in here (leaf count)?
+	 */
+	private int complexity;
 	
 	/**
 	 * Make a leaf from a single half-plane
@@ -102,13 +131,16 @@ public class RrCSG
 	
 	/**
 	 * Universal or null set
-	 * @return
+	 * @return universal or null set
 	 */
 	public static RrCSG universe()
 	{
 		return u;
 	}
 	
+	/**
+	 * @return nothing/null set
+	 */
 	public static RrCSG nothing()
 	{
 		return n;
@@ -144,8 +176,10 @@ public class RrCSG
 		complexity = c.complexity;
 	}
 	
-	// get children, operator etc
-	
+	/**
+	 * Get children, operator etc
+	 * @return children
+	 */
 	public RrCSG c_1() { return c1; }
 	public RrCSG c_2() { return c2; }
 	public RrCSGOp operator() { return op; }
@@ -157,7 +191,7 @@ public class RrCSG
 	 * Convert to a string
 	 * @param result
 	 * @param white
-	 * @return
+	 * @return string representation
 	 */
 	private String toString_r(String result, String white)
 	{
@@ -195,6 +229,9 @@ public class RrCSG
 		return result;
 	}
 	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	public String toString()
 	{
 		String result = "RrCSG: complexity = " + 
@@ -228,7 +265,7 @@ public class RrCSG
 	 * Boolean operations, with de Morgan simplifications
 	 * @param a
 	 * @param b
-	 * @return
+	 * @return union of passed CSG objects a and b
 	 */
 	public static RrCSG union(RrCSG a, RrCSG b)
 	{
@@ -250,6 +287,12 @@ public class RrCSG
 		return r;
 	}
 	
+	/**
+	 * Boolean operation to perform an intersection
+	 * @param a
+	 * @param b
+	 * @return intersection of passed CSG objects a and b
+	 */
 	public static RrCSG intersection(RrCSG a, RrCSG b)
 	{
 		if(a == b)
@@ -272,7 +315,7 @@ public class RrCSG
 	
 	/**
 	 * Lazy evaluation for complement.
-	 * @return
+	 * @return completent ?
 	 */
 	public RrCSG complement()
 	{		
@@ -321,7 +364,7 @@ public class RrCSG
 	 * Set difference is intersection with complement
 	 * @param a
 	 * @param b
-	 * @return
+	 * @return set difference as CSG object base don input CSG objects a and b
 	 */		
 	public static RrCSG difference(RrCSG a, RrCSG b)
 	{
@@ -332,7 +375,7 @@ public class RrCSG
 	/**
 	 * Regularise a set with a contents of 3
 	 * This assumes simplify has been run over this set
-	 * @return
+	 * @return regularised CSG object
 	 */	
 	private RrCSG reg_3()
 	{
@@ -408,11 +451,12 @@ public class RrCSG
 		return result;
 	}
 	
-	// TO DO - there's a bug in reg_4 somewhere.  So it's not called at present.
+	
 	/**
+	 * FIXME: there's a bug in reg_4 somewhere.  So it's not called at present.
 	 * Regularise a set with a contents of 4
 	 * This assumes simplify has been run over the set
-	 * @return
+	 * @return regularised CSG object
 	 */	
 	private RrCSG reg_4()
 	{            
@@ -557,7 +601,7 @@ public class RrCSG
 	/**
 	 * Regularise a set with simple contents ( < 4 )
 	 * This assumes simplify has been run over the set
-	 * @return
+	 * @return regularised CSG object
 	 */	
 	public RrCSG regularise()
 	{
@@ -590,9 +634,9 @@ public class RrCSG
 		return result;
 	}
 	
-	// TO DO - this should also use known complements
 	/**
 	 * Replace duplicate of leaf with leaf itself
+	 * TODO: this should also use known complements
 	 * @param leaf
 	 * @param tolerance
 	 */		
@@ -633,7 +677,7 @@ public class RrCSG
 	 * Replace duplicate of all leaves with the last instance of each
 	 * @param root
 	 * @param tolerance
-	 * @return
+	 * @return simplified CSG object
 	 */		
 	private void simplify_r(RrCSG root, double tolerance)
 	{
@@ -668,7 +712,7 @@ public class RrCSG
 	/**
 	 * Replace duplicate of all leaves with the last instance of each
 	 * @param tolerance
-	 * @return
+	 * @return simplified CSG object
 	 */		
 	public RrCSG simplify(double tolerance)
 	{
@@ -710,11 +754,11 @@ public class RrCSG
     	}	
     }
 	
-    // TO DO: this should keep track of complements
 	/**
 	 * Offset by a distance (+ve or -ve)
+	 * TODO: this should keep track of complements
 	 * @param d
-	 * @return
+	 * @return offset CSG object by distance d
 	 */
 	public RrCSG offset(double d)
 	{
@@ -750,7 +794,7 @@ public class RrCSG
 	/**
 	 * leaf find the half-plane that generates the value for a point
 	 * @param p
-	 * @return
+	 * @return leaf?
 	 */
 	public RrCSG leaf(Rr2Point p)
 	{
@@ -793,12 +837,12 @@ public class RrCSG
 		return result;
 	}
 	
-	// TO DO - this should work independently of a call to leaf(); that's more efficient
 	/**
 	 * "Potential" value of a point; i.e. a membership test
 	 * -ve means inside; 0 means on the surface; +ve means outside
+	 * TODO - this should work independently of a call to leaf(); that's more efficient
 	 * @param p
-	 * @return
+	 * @return value of a point
 	 */
 	public double value(Rr2Point p)
 	{
@@ -830,7 +874,7 @@ public class RrCSG
 	/**
 	 * The interval value of a box (analagous to point)
 	 * @param b
-	 * @return
+	 * @return value of a box
 	 */
 	public RrInterval value(RrBox b)
 	{
@@ -869,7 +913,7 @@ public class RrCSG
 	/**
 	 * Prune the set to a box
 	 * @param b
-	 * @return
+	 * @return pruned box as new CSG object
 	 */
 	public RrCSG prune(RrBox b)
 	{

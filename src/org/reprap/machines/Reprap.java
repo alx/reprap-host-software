@@ -21,41 +21,109 @@ import org.reprap.gui.Previewer;
  *
  */
 public class Reprap implements CartesianPrinter {
+	
+	/**
+	 * 
+	 */
 	private final int localNodeNumber = 0;
+	
+	/**
+	 * comms speed
+	 */
 	private final int baudRate = 19200;
 
+	/**
+	 * 
+	 */
 	private Communicator communicator;
+	
+	/**
+	 * 
+	 */
 	private Previewer previewer = null;
 
+	/**
+	 * Stepper motors for the 3 axis 
+	 */
 	private GenericStepperMotor motorX;
 	private GenericStepperMotor motorY;
 	private GenericStepperMotor motorZ;
 	
+	/**
+	 * Total distance the carriage has moved in mm
+	 */
 	double totalDistanceMoved = 0.0;
+	
+	/**
+	 * Total distance the extruder has printed in mm
+	 */
 	double totalDistanceExtruded = 0.0;
 
+	/**
+	 * 
+	 */
 	private LinePrinter layerPrinter;
 	
+	/**
+	 * 
+	 */
 	double scaleX, scaleY, scaleZ;
 	
+	/**
+	 * Current X, Y and Z position of the extruder (?)
+	 */
 	double currentX, currentY, currentZ;
 	
-	private int currentSpeedXY = 200;  			// Initial default speed
-	private int fastSpeedXY = 230;
-	private int speedZ = 230;  			// Initial default speed
+	/**
+	 * Initial default speed
+	 */
+	private int currentSpeedXY = 200;
 	
+	/**
+	 * 
+	 */
+	private int fastSpeedXY = 230;
+	
+	/**
+	 * Initial default speed
+	 */
+	private int speedZ = 230;  			
+	
+	/**
+	 * Number of extruders on the 3D printer
+	 */
 	private int extruderCount;
 	
+	/**
+	 * Array containing the extruders on the 3D printer
+	 */
 	private GenericExtruder extruders[];
 
+	/**
+	 * Current extruder?
+	 */
 	private int extruder;
 
-	private boolean excludeZ = false;  ///< Don't perform Z operations.  Should be removed later.
+	/**
+	 * Don't perform Z operations.  
+	 * FIXME: Should be removed later.
+	 */
+	private boolean excludeZ = false;
 	
+	/**
+	 * 
+	 */
 	private long startTime;
 	
+	/**
+	 * 
+	 */
 	private boolean idleZ;
 	
+	/**
+	 * @param prefs
+	 * @throws Exception
+	 */
 	public Reprap(Preferences prefs) throws Exception {
 		startTime = System.currentTimeMillis();
 		
@@ -116,9 +184,15 @@ public class Reprap implements CartesianPrinter {
 		
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#calibrate()
+	 */
 	public void calibrate() {
 	}
 
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#moveTo(double, double, double, boolean, boolean)
+	 */
 	public void moveTo(double x, double y, double z, boolean startUp, boolean endUp) throws ReprapException, IOException {
 		
 		if (isCancelled()) return;
@@ -183,6 +257,9 @@ public class Reprap implements CartesianPrinter {
 		} 
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#printTo(double, double, double, boolean)
+	 */
 	public void printTo(double x, double y, double z, boolean turnOff) 
 		throws ReprapException, IOException {
 		if (isCancelled()) return;
@@ -235,18 +312,27 @@ public class Reprap implements CartesianPrinter {
 		layerPrinter.stopExtruding();
 	}
 
-	// Move to zero stop on X axis.
+	/* Move to zero stop on X axis.
+	 * (non-Javadoc)
+	 * @see org.reprap.Printer#homeToZeroX() 
+	 */
 	public void homeToZeroX() throws ReprapException, IOException {
 		motorX.homeReset(fastSpeedXY);
 		currentX=0;
 	}
 	
-	// Move to zero stop on Y axis.
+	/* Move to zero stop on Y axis.
+	 * (non-Javadoc)
+	 * @see org.reprap.Printer#homeToZeroY()
+	 */
 	public void homeToZeroY() throws ReprapException, IOException {
 		motorY.homeReset(fastSpeedXY);
 		currentY=0;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#selectMaterial(int)
+	 */
 	public void selectMaterial(int materialIndex) {
 		if (isCancelled()) return;
 
@@ -259,27 +345,51 @@ public class Reprap implements CartesianPrinter {
 		// TODO Load new x/y/z offsets for the new extruder
 	}
 
-	// Why don't these use round()? - AB.
+	/**
+	 * FIXME: Why don't these use round()? - AB.
+	 * @param n
+	 * @return
+	 */
 	protected int convertToStepX(double n) {
 		return (int)((n + extruders[extruder].getOffsetX()) * scaleX);
 	}
 
+	/**
+	 * @param n
+	 * @return
+	 */
 	protected int convertToStepY(double n) {
 		return (int)((n + extruders[extruder].getOffsetY()) * scaleY);
 	}
 
+	/**
+	 * @param n
+	 * @return
+	 */
 	protected int convertToStepZ(double n) {
 		return (int)((n + extruders[extruder].getOffsetZ()) * scaleZ);
 	}
 
+	/**
+	 * @param n
+	 * @return
+	 */
 	protected double convertToPositionX(int n) {
 		return n / scaleX - extruders[extruder].getOffsetX();
 	}
 
+	/**
+	 * @param n
+	 * @return
+	 */
 	protected double convertToPositionY(int n) {
 		return n / scaleY - extruders[extruder].getOffsetY();
 	}
 
+	/**
+	 * @param n
+	 * @return
+	 */
 	protected double convertToPositionZ(int n) {
 		return n / scaleZ - extruders[extruder].getOffsetZ();
 	}
@@ -295,6 +405,9 @@ public class Reprap implements CartesianPrinter {
 		extruders[extruder].setTemperature(0);
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#dispose()
+	 */
 	public void dispose() {
 		motorX.dispose();
 		motorY.dispose();
@@ -311,6 +424,7 @@ public class Reprap implements CartesianPrinter {
 //	public int getSpeed() {
 //		return currentSpeedXY;
 //	}
+	
 	/**
 	 * @return Returns the maximum speed for the X & Y axes in air movement.
 	 */
@@ -346,18 +460,21 @@ public class Reprap implements CartesianPrinter {
 	}
 
 	/**
-	 * @return Returns the speedExtruder.
+	 * Returns the speedExtruder.
 	 */
 //	public int getExtruderSpeed() {
 //		return speedExtruder;
 //	}
 	/**
-	 * @param speedExtruder The speedExtruder to set.
+	 * The speedExtruder to set.
 	 */
 //	public void setExtruderSpeed(int speedExtruder) {
 //		this.speedExtruder = speedExtruder;
 //	}
 	
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#setPreviewer(org.reprap.gui.Previewer)
+	 */
 	public void setPreviewer(Previewer previewer) {
 		this.previewer = previewer;
 	}
@@ -397,6 +514,9 @@ public class Reprap implements CartesianPrinter {
 //		return extruder.getAngleSpeedFactor();
 //	}
 
+	/**
+	 * 
+	 */
 	private void EnsureNotEmpty() {
 		if (!extruders[extruder].isEmpty()) return;
 		
@@ -411,6 +531,10 @@ public class Reprap implements CartesianPrinter {
 		if (previewer != null) previewer.setMessage(null);
 	}
 	
+	/**
+	 * @throws ReprapException
+	 * @throws IOException
+	 */
 	private void EnsureHot() throws ReprapException, IOException {
 		if(extruders[extruder].getTemperatureTarget() < Preferences.absoluteZero())
 			return;
@@ -480,12 +604,18 @@ public class Reprap implements CartesianPrinter {
 		moveTo(5, 5, currentZ, true, false);
 	}
 
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#isCancelled()
+	 */
 	public boolean isCancelled() {
 		if (previewer == null)
 			return false;
 		return previewer.isCancelled();
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#initialise()
+	 */
 	public void initialise() throws Exception {
 		if (previewer != null)
 			previewer.reset();
@@ -495,14 +625,23 @@ public class Reprap implements CartesianPrinter {
 		currentX = currentY = currentZ = 0.0;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#getX()
+	 */
 	public double getX() {
 		return currentX;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#getY()
+	 */
 	public double getY() {
 		return currentY;
 	}
 
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#getZ()
+	 */
 	public double getZ() {
 		return currentZ;
 	}
@@ -521,6 +660,11 @@ public class Reprap implements CartesianPrinter {
 		return totalDistanceExtruded;
 	}
 	
+	/**
+	 * @param x
+	 * @param y
+	 * @return segment length in millimeters
+	 */
 	public double segmentLength(double x, double y) {
 		return Math.sqrt(x*x + y*y);
 	}
@@ -537,6 +681,10 @@ public class Reprap implements CartesianPrinter {
 //		return infillWidth;
 //	}
 	
+	/**
+	 * @param enable
+	 * @throws IOException
+	 */
 	public void setCooling(boolean enable) throws IOException {
 		extruders[extruder].setCooler(enable);
 	}
@@ -544,17 +692,18 @@ public class Reprap implements CartesianPrinter {
 	/**
 	 * Get the length before the end of a track to turn the extruder off
 	 * to allow for the delay in the stream stopping.
-	 * @return
 	 */
 //	public double getOverRun() { return overRun; }
 	
 	/**
 	 * Get the number of milliseconds to wait between turning an 
 	 * extruder on and starting to move it.
-	 * @return
 	 */
 //	public long getDelay() { return delay; }
 	
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#getTotalElapsedTime()
+	 */
 	public double getTotalElapsedTime() {
 		long now = System.currentTimeMillis();
 		return (now - startTime) / 1000.0;
@@ -576,6 +725,9 @@ public class Reprap implements CartesianPrinter {
 		}
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#setLowerShell(javax.media.j3d.Shape3D)
+	 */
 	public void setLowerShell(Shape3D ls)
 	{
 		previewer.setLowerShell(ls);
@@ -607,6 +759,9 @@ public class Reprap implements CartesianPrinter {
 		motorZ.setPosition(convertToStepZ(zeroPoint));
 	}
 	
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#getExtruder()
+	 */
 	public GenericExtruder getExtruder()
 	{
 		return extruders[extruder];

@@ -65,9 +65,20 @@ import org.reprap.Preferences;
  */
 class chPair
 {
+	/**
+	 * 
+	 */
 	public int polygon;
+	
+	/**
+	 * 
+	 */
 	public int vertex;
 	
+	/**
+	 * @param p
+	 * @param v
+	 */
 	chPair(int p, int v)
 	{
 		polygon = p;
@@ -77,29 +88,42 @@ class chPair
 
 /**
  * RrPolygonList: A collection of 2D polygons
- * 
  * List of polygons class.  This too maintains a maximum enclosing rectangle.
  */
 public class RrPolygonList
 {
+	/**
+	 * 
+	 */
 	public List polygons;
+	
+	/**
+	 * 
+	 */
 	public RrBox box;
 	
-	// Empty constructor
-	
+	/**
+	 * Empty constructor
+	 */
 	public RrPolygonList()
 	{
 		polygons = new ArrayList();
 		box = new RrBox();
 	}
 	
-	// Get the data
-	
+	/**
+	 * Get the data
+	 * @param i index of polygon to return
+	 * @return polygon at index i
+	 */
 	public RrPolygon polygon(int i)
 	{
 		return (RrPolygon)polygons.get(i);
 	}
 	
+	/**
+	 * @return number of polygons in the list
+	 */
 	public int size()
 	{
 		return polygons.size();
@@ -107,8 +131,8 @@ public class RrPolygonList
 	
 	/**
 	 * Overwrite one of the polygons
-	 * @param i
-	 * @param p
+	 * @param i index of polygon to overwrite
+	 * @param p polygon to set at index i
 	 */
 	public void set(int i, RrPolygon p)
 	{
@@ -117,7 +141,7 @@ public class RrPolygonList
 	
 	/**
 	 * Remove one from the list
-	 * @param i
+	 * @param i index of polygon to remove
 	 */
 	public void remove(int i)
 	{
@@ -126,7 +150,7 @@ public class RrPolygonList
 	
 	/**
 	 * Deep copy
-	 * @param lst
+	 * @param lst list of polygons to copy
 	 */
 	public RrPolygonList(RrPolygonList lst)
 	{
@@ -138,7 +162,7 @@ public class RrPolygonList
 	
 	/**
 	 * Put a new list on the end
-	 * @param lst
+	 * @param lst list to append to existing polygon list
 	 */
 	public void add(RrPolygonList lst)
 	{
@@ -151,7 +175,7 @@ public class RrPolygonList
 	
 	/**
 	 * Add one new polygon to the list
-	 * @param p
+	 * @param p polygon to add to the list
 	 */
 	public void add(RrPolygon p)
 	{
@@ -173,7 +197,7 @@ public class RrPolygonList
 	
 	/**
 	 * Negate all the polygons
-	 * @return
+	 * @return negated polygons
 	 */
 	public RrPolygonList negate()
 	{
@@ -185,8 +209,9 @@ public class RrPolygonList
 	}
 	
 	/**
-	 * Deep copy
-	 * @param lst
+	 * Create a new polygon list with a random start vertex for each 
+	 * polygon in the list
+	 * @return new polygonlist
 	 */
 	public RrPolygonList randomStart()
 	{
@@ -211,7 +236,7 @@ public class RrPolygonList
 	
 	/**
 	 * As a string
-	 * @return
+	 * @return string representation of polygon list
 	 */
 	public String toString()
 	{
@@ -253,7 +278,7 @@ public class RrPolygonList
 	 * Simplify all polygons by length d
 	 * N.B. this may throw away small ones completely
 	 * @param d
-	 * @return
+	 * @return simplified polygon list
 	 */
 	public RrPolygonList simplify(double d)
 	{
@@ -274,7 +299,7 @@ public class RrPolygonList
 	 * Re-order and (if need be) reverse the order of the polygons
 	 * in a list so the end of the first is near the start of the second and so on.
 	 * This is a heuristic - it does not do a full travelling salesman...
-	 * @return
+	 * @return new ordered polygon list
 	 */
 	public RrPolygonList nearEnds()
 	{
@@ -336,8 +361,7 @@ public class RrPolygonList
 	 *   polygons in the list if those edges are preceeded 
 	 *   by gap material.  
 	 * @param tiny
-	 * @param flag
-	 * @return
+	 * @return filtered polygon list
 	 */
 	public RrPolygonList filterShorts(double tiny)
 	{
@@ -360,7 +384,7 @@ public class RrPolygonList
 	 * @param i
 	 * @param j
 	 * @param csgPols
-	 * @return
+	 * @return true if the polygon is inside the CSG polygon, false if otherwise
 	 */
 	private boolean inside(int i, int j, List csgPols)
 	{
@@ -406,8 +430,8 @@ public class RrPolygonList
 	
 	/**
 	 * Count the non-null entries in a list.
-	 * @param a
-	 * @return
+	 * @param a list with entries to be checked
+	 * @return number non-null entries in list a
 	 */
 	private int activeCount(List a)
 	{
@@ -422,7 +446,7 @@ public class RrPolygonList
 	 * Take a list of CSG polygons, classify each as being inside other(s)
 	 * (or not), and hence form a single CSG expression representing them all.
 	 * @param csgPols
-	 * @return
+	 * @return single CSG expression based on csgPols list 
 	 */
 	private RrCSG resolveInsides(List csgPols)
 	{

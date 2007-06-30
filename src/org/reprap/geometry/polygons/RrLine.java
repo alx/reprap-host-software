@@ -61,7 +61,14 @@ package org.reprap.geometry.polygons;
  */
 public class RrLine
 {
+	/**
+	 * direction 
+	 */
 	private Rr2Point direction;
+	
+	/**
+	 * origin
+	 */
 	private Rr2Point origin;
 	
 	/**
@@ -86,8 +93,7 @@ public class RrLine
 	}
 	
 	/**
-	 * Make fron an implicit half-plane
-	 * @param p
+	 * Make from an implicit half-plane
 	 */
 //	public RrLine(RrHalfPlane p)
 //	{
@@ -98,21 +104,25 @@ public class RrLine
 ////		direction = new Rr2Point(p.normal().y(), -p.normal().x());
 //	}
 	
-	// Convert to a string
+	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	public String toString()
 	{
 		return "<" + origin.toString() + ", " + direction.toString() + ">";
 	}
 	
-	// Return the contents
-	
+	/**
+	 * @return Return the contents
+	 */
 	public Rr2Point direction() { return direction; }
 	public Rr2Point origin() { return origin; }
 	
 	/**
 	 * The point at a given parameter value
 	 * @param t
-	 * @return
+	 * @return point at parameter value t
 	 */
 	public Rr2Point point(double t)
 	{
@@ -131,7 +141,7 @@ public class RrLine
 	
 	/**
 	 * Arithmetic
-	 * @return
+	 * @return inverted direction of this line
 	 */
 	public RrLine neg()
 	{
@@ -143,7 +153,7 @@ public class RrLine
 	/**
 	 * Move the origin
 	 * @param b
-	 * @return
+	 * @return translated line by value b
 	 */
 	public RrLine add(Rr2Point b)
 	{
@@ -152,6 +162,10 @@ public class RrLine
 		return r;
 	}
 	
+	/**
+	 * @param b
+	 * @return ??
+	 */
 	public RrLine sub(Rr2Point b)
 	{
 		Rr2Point a = Rr2Point.sub(origin, b);
@@ -162,7 +176,7 @@ public class RrLine
 	/**
 	 * Offset by a distance
 	 * @param d
-	 * @return
+	 * @return translated line by distance d
 	 */
 	public RrLine offset(double d)
 	{
@@ -171,10 +185,11 @@ public class RrLine
 		result.origin = Rr2Point.add(origin, n);
 		return result;
 	}
+	
 	/**
 	 * The parameter value where another line crosses
 	 * @param a
-	 * @return
+	 * @return parameter value
 	 * @throws rr_ParallelLineException
 	 */
 	public double cross_t(RrLine a) throws RrParallelLineException 
@@ -190,7 +205,7 @@ public class RrLine
 	/**
 	 * The point where another line crosses
 	 * @param a
-	 * @return
+	 * @return crossing point 
 	 * @throws rr_ParallelLineException
 	 */
 	public Rr2Point cross_point(RrLine a) throws RrParallelLineException
@@ -198,11 +213,10 @@ public class RrLine
 		return point(cross_t(a));
 	}
 	
-	
 	/**
 	 * The nearest point on a line to another as a line parameter
 	 * @param p
-	 * @return
+	 * @return nearest point on the eline
 	 */
 	public double nearest(Rr2Point p)
 	{
@@ -212,7 +226,7 @@ public class RrLine
 	/**
 	 * The squared distance of a point from a line
 	 * @param p
-	 * @return
+	 * @return squared distance between point p and the line
 	 */
 	public Rr2Point d_2(Rr2Point p)
 	{

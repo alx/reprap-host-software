@@ -13,13 +13,37 @@ import org.reprap.Preferences;
 import org.reprap.ReprapException;
 import org.reprap.geometry.polygons.*;
 
+/**
+ *
+ */
 class segmentSpeeds
 {
+	/**
+	 * 
+	 */
 	public Rr2Point p1, p2, p3;
+	
+	/**
+	 * 
+	 */
 	public double ca;
+	
+	/**
+	 * 
+	 */
 	public boolean plotMiddle;
+	
+	/**
+	 * 
+	 */
 	public boolean abandon;
 	
+	/**
+	 * @param before
+	 * @param now
+	 * @param after
+	 * @param fastLength
+	 */
 	public segmentSpeeds(Rr2Point before, Rr2Point now, Rr2Point after, double fastLength)
 	{
 		Rr2Point a = Rr2Point.sub(now, before);
@@ -51,31 +75,101 @@ class segmentSpeeds
 	}
 }
 
+/**
+ *
+ */
 public class LayerProducer {
+	
+	/**
+	 * Identifier for the "filler" material
+	 */
 	private static int gapMaterial = 0;
+	
+	/**
+	 * Identifier for the actual depositing material
+	 */
 	private static int solidMaterial = 1;
+	
+	/**
+	 * @return the gap material identifier
+	 */
 	public static int gapMaterial() { return gapMaterial; }
+	
+	/**
+	 * @return the filler material identifier
+	 */
 	public static int solidMaterial() { return solidMaterial; }
 
+	/**
+	 * 
+	 */
 	private Shape3D lowerShell;
 
+	/**
+	 * 
+	 */
 	private Printer printer;
+	
+	/**
+	 * 
+	 */
 	private RrPolygonList hatchedPolygons;
+	
+	/**
+	 * 
+	 */
 	private RrPolygonList borderPolygons;
 	
+	/**
+	 * 
+	 */
 	private RrCSGPolygon csg_p;
+	
+	/**
+	 * 
+	 */
 	private double scale;
+	
+	/**
+	 * 
+	 */
 	private double z;
+	
+	/**
+	 * 
+	 */
 	private int baseSpeed;
+	
+	/**
+	 * 
+	 */
 	private int infillSpeed;
+	
+	/**
+	 * 
+	 */
 	private int outlineSpeed;
+	
+	/**
+	 * 
+	 */
 	private int currentSpeed;
+	
+	/**
+	 * 
+	 */
 	private Rr2Point p_0;
+	
+	/**
+	 * 
+	 */
 	private Rr2Point pos;
 		
 	/**
-	 * @param reprap
-	 * @param list 
+	 * @param printer
+	 * @param zValue
+	 * @param csgPol
+	 * @param ls
 	 * @param hatchDirection
 	 */
 	public LayerProducer(Printer printer, double zValue, RrCSGPolygon csgPol, Shape3D ls, RrHalfPlane hatchDirection) {
@@ -117,11 +211,21 @@ public class LayerProducer {
 		double height = big.y().length();
 	}
 	
+	/**
+	 * @return current X and Y position of the printer
+	 */
 	private Rr2Point posNow()
 	{
 		return new Rr2Point(printer.getX(), printer.getY());
 	}
 	
+	/**
+	 * @param first First point, the start of the line segment to be plotted.
+	 * @param second Second point, the end of the line segment to be plotted.
+	 * @param turnOff True if the extruder should be turned off at the end of this segment.
+	 * @throws ReprapException
+	 * @throws IOException
+	 */
 	private void plot(Rr2Point first, Rr2Point second, boolean turnOff) throws ReprapException, IOException
 	{
 		if (printer.isCancelled()) return;
@@ -152,6 +256,14 @@ public class LayerProducer {
 			printer.printTo(first.x(), first.y(), z, turnOff);
 	}
 
+	/**
+	 * @param first
+	 * @param second
+	 * @param startUp
+	 * @param endUp
+	 * @throws ReprapException
+	 * @throws IOException
+	 */
 	private void move(Rr2Point first, Rr2Point second, boolean startUp, boolean endUp) 
 		throws ReprapException, IOException
 	{

@@ -78,9 +78,24 @@ import org.reprap.Preferences;
  */
 public class RrPolygon
 {
+	/**
+	 * 
+	 */
 	private static Random rangen = new Random(918273);
+	
+	/**
+	 * 
+	 */
 	public List points;
+	
+	/**
+	 * 
+	 */
 	public List flags;
+	
+	/**
+	 * 
+	 */
 	public RrBox box;
 	
 	/**
@@ -93,12 +108,20 @@ public class RrPolygon
 		box = new RrBox();
 	}
 	
-	// Get the data
-	
+	/**
+	 * Get the data
+	 * @param i
+	 * @return i-th point object of polygon
+	 */
 	public Rr2Point point(int i)
 	{
 		return new Rr2Point((Rr2Point)points.get(i));
 	}
+	
+	/**
+	 * @param i
+	 * @return i-th flag
+	 */
 	public int flag(int i)
 	{
 		return ((Integer)flags.get(i)).intValue();
@@ -106,7 +129,7 @@ public class RrPolygon
 	
 	/**
 	 * As a string
-	 * @return
+	 * @return string representation of polygon
 	 */
 	public String toString()
 	{
@@ -132,7 +155,7 @@ public class RrPolygon
 	
 	/**
 	 * Length
-	 * @return
+	 * @return number of points in polygon
 	 */
 	public int size()
 	{
@@ -154,7 +177,6 @@ public class RrPolygon
 			flags.add(new Integer((p.flag(i)))); 
 		}		
 	}
-	
 	
 	/**
 	 * Add a new point and its flag value to the polygon
@@ -183,7 +205,6 @@ public class RrPolygon
 		}
 		box.expand(p.box);
 	}
-	
 	
 	/**
 	 * Remove a point.
@@ -226,7 +247,7 @@ public class RrPolygon
 		
 	/**
 	 * Negate (i.e. reverse cyclic order)
-	 * @return
+	 * @return reversed polygon object
 	 */
 	public RrPolygon negate()
 	{
@@ -245,7 +266,7 @@ public class RrPolygon
 	
 	/**
 	 * Same polygon starting at a random vertex.
-	 * @return
+	 * @return same polygon starting at a random vertex
 	 */
 	public RrPolygon randomStart()
 	{
@@ -263,7 +284,7 @@ public class RrPolygon
 	
 	/**
 	 * Signed area (-ve result means polygon goes anti-clockwise)
-	 * @return
+	 * @return ?
 	 */
 	public double area()
 	{
@@ -283,7 +304,7 @@ public class RrPolygon
 	/**
 	 * Backtrack a given distance, inserting a new point there and returning its index
 	 * @param d
-	 * @return
+	 * @return ??
 	 */
 	public int backStep(double d)
 	{
@@ -324,6 +345,11 @@ public class RrPolygon
 		return 0;
 	}
 	
+	/**
+	 * @param v1
+	 * @param d2
+	 * @return ??
+	 */
 	private int findAngleStart(int v1, double d2)
 	{
 		int leng = size();
@@ -347,7 +373,7 @@ public class RrPolygon
 	 * Simplify a polygon by deleting points from it that
 	 * are closer than d to lines joining other points
 	 * @param d
-	 * @return
+	 * @return simplified polygon object
 	 */
 	public RrPolygon simplify(double d)
 	{
@@ -370,10 +396,9 @@ public class RrPolygon
 	
 	/**
 	 * Remove solitary edges that are shorter than tiny from the
-	 *   polygon if they are preceeded and followed by gap material.
+	 * polygon if they are preceeded and followed by gap material.
 	 * @param tiny
-	 * @param fg
-	 * @return
+	 * @return filtered polygon object
 	 */
 	public RrPolygon filterShort(double tiny)
 	{
@@ -429,7 +454,7 @@ public class RrPolygon
 		
 	/**
 	 * find a flag from a list of polygon points
-	 * @Param i
+	 * @Param i 
 	 * @param a
 	 * @return the point
 	 */
@@ -786,7 +811,7 @@ public class RrPolygon
 	/**
 	 * Convert a polygon to CSG representation
 	 * @param tolerance
-	 * @return
+	 * @return CSG polygon object based on polygon and tolerance 
 	 */
 	public RrCSGPolygon toCSG(double tolerance)
 	{

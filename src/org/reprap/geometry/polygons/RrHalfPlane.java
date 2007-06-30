@@ -65,16 +65,34 @@ import java.util.List;
  */
 class lineIntersection
 {
-	private double t;          // The line's parameter
-	private RrCSGPolygon quad; // Quad containing hit plane
+	/**
+	 * The line's parameter 
+	 */
+	private double t;
 	
+	/**
+	 * Quad containing hit plane 
+	 */
+	private RrCSGPolygon quad;
+	
+	/**
+	 * @param v
+	 * @param q
+	 */
 	public lineIntersection(double v, RrCSGPolygon q)
 	{
 		t = v;
 		quad = q;
 	}
 	
+	/**
+	 * @return
+	 */
 	public double parameter() { return t; }
+	
+	/**
+	 * @return
+	 */
 	public RrCSGPolygon quad() { return quad; }
 }
 
@@ -85,12 +103,21 @@ class lineIntersection
 public class RrHalfPlane
 {
 	
-	// The half-plane is normal*(x, y) + offset <= 0
-	
+	/**
+	 * The half-plane is normal*(x, y) + offset <= 0 
+	 */
 	private Rr2Point normal; 
 	private double offset;
-	private RrLine p;  // Keep the parametric equivalent to save computing it
-	private List crossings;  // List of intersections with others
+	
+	/**
+	 * Keep the parametric equivalent to save computing it
+	 */
+	private RrLine p;
+	
+	/**
+	 * List of intersections with others
+	 */
+	private List crossings;
 	
 	/**
 	 * Convert a parametric line
@@ -104,7 +131,6 @@ public class RrHalfPlane
 		offset = -Rr2Point.mul(l.origin(), normal());
 		crossings = new ArrayList();
 	}
-	
 	
 	/**
 	 * Make one from two points on its edge
@@ -131,7 +157,7 @@ public class RrHalfPlane
 	
 	/**
 	 * Get the parametric equivalent
-	 * @return
+	 * @return parametric equivalent of a line
 	 */
 	public RrLine pLine()
 	{
@@ -140,7 +166,7 @@ public class RrHalfPlane
 	
 	/**
 	 * The number of crossings
-	 * @return
+	 * @return number of crossings
 	 */
 	public int size()
 	{
@@ -150,7 +176,7 @@ public class RrHalfPlane
 	/**
 	 * Get the i-th crossing parameter
 	 * @param i
-	 * @return
+	 * @return i-th crossing parameter
 	 */
 	public double getParameter(int i)
 	{
@@ -160,7 +186,7 @@ public class RrHalfPlane
 	/**
 	 * i-th point from the crossing list
 	 * @param i
-	 * @return
+	 * @return i-th point
 	 */
 	public Rr2Point getPoint(int i)
 	{
@@ -170,7 +196,7 @@ public class RrHalfPlane
 	/**
 	 * Get the i-th quad
 	 * @param i
-	 * @return
+	 * @return i-th quad
 	 */
 	public RrCSGPolygon getQuad(int i)
 	{
@@ -180,7 +206,7 @@ public class RrHalfPlane
 	/**
 	 * Get the i-th CSG for the plane
 	 * @param i
-	 * @return
+	 * @return i-th CSG
 	 */
 	public RrCSG getCSG(int i)
 	{
@@ -209,21 +235,20 @@ public class RrHalfPlane
 	/**
 	 * Get the i-th plane.
 	 * @param i
-	 * @return
+	 * @return i-th plane
 	 */
 	public RrHalfPlane getPlane(int i)
 	{
 		return getCSG(i).plane();
 	}
 	
-
 	/**
 	 * Take the sorted list of parameter values and a shape, and
 	 * make sure they alternate solid/void/solid etc.  Insert
 	 * duplicate parameter values if need be to ensure this,
 	 * or - if two are very close - delete one. 
-	 * @param t
-	 * @param l0
+	 * @param p
+
 	 */
 	public void solidSet(RrCSGPolygon p)
 	{
@@ -269,11 +294,12 @@ public class RrHalfPlane
 
 	
 	/**
-	 * Add a crossing
+	 * Add ??? if it contains ??? with a parameter within bounds.
 	 * @param p
 	 * @param q
-	 * @param bounds
-	 * @return
+	 * @param range
+	 * @param me
+	 * @return true if ??? may be added, otherwise false
 	 */
 	private boolean maybeAdd(RrHalfPlane p, RrCSGPolygon q, RrInterval range, boolean me)
 	{	
@@ -317,8 +343,8 @@ public class RrHalfPlane
 	 * Add quad q if it contains a half-plane with an 
 	 * intersection with a parameter within bounds.
 	 * @param q
-	 * @param bounds
-	 * @return
+	 * @param range
+	 * @return true if quad q may be added, otherwise false
 	 */
 	public boolean maybeAdd(RrCSGPolygon q, RrInterval range)
 	{		
@@ -393,7 +419,7 @@ public class RrHalfPlane
 	/**
 	 * Find the index of a crossing plane
 	 * @param h
-	 * @return
+	 * @return index of the plane
 	 */
 	public int find(RrHalfPlane h)
 	{	
@@ -408,29 +434,24 @@ public class RrHalfPlane
 	
 	/**
 	 * Remove all crossings
-	 * @param a
-	 * @param t
 	 */
 	public void removeCrossings()
 	{
 		crossings = new ArrayList();
 	}
 		
-	
 	/**
 	 * Remove a crossing from the list
-	 * @param i
+	 * @param i identifier of the crossing to be removed from the list 
 	 */
 	public void remove(int i)
 	{
 		crossings.remove(i);
 	}
 	
-	
-	
 	/**
 	 * Sort on ascending parameter value.
-	 * @param up
+	 * @param up use an ascending sort when true, descending when false
 	 */
 	public void sort(boolean up, RrCSGPolygon q)
 	{
@@ -481,25 +502,28 @@ public class RrHalfPlane
 	
 	/**
 	 * Return the plane as a string
-	 * @return
+	 * @return string representation
 	 */
 	public String toString()
 	{
 		return "|" + normal.toString() + ", " + Double.toString(offset) + "|";
 	} 
 	
-	// Get the components
 	
+	/**
+	 * Get the components
+	 * @return components?
+	 */
 	public Rr2Point normal() { return normal; }
 	public double offset() { return offset; }
 	
-	// TO DO: make this spot complements too.
 	/**
+	 * TODO: make this spot complements too.
 	 * Is another line the same within a tolerance?
 	 * @param a
 	 * @param b
 	 * @param tolerance
-	 * @return
+	 * @return true if the distance between halfplane a and b is less then the tolerance, otherwise false
 	 */
 	public static boolean same(RrHalfPlane a, RrHalfPlane b, double tolerance)
 	{
@@ -517,7 +541,7 @@ public class RrHalfPlane
 	
 	/**
 	 * Change the sense
-	 * @return
+	 * @return complent of half plane
 	 */
 	public RrHalfPlane complement()
 	{
@@ -531,7 +555,7 @@ public class RrHalfPlane
 	/**
 	 * Move
 	 * @param d
-	 * @return
+	 * @return offset halfplane
 	 */
 	public RrHalfPlane offset(double d)
 	{
@@ -545,7 +569,7 @@ public class RrHalfPlane
 	/**
 	 * Find the potential value of a point
 	 * @param p
-	 * @return
+	 * @return potential value of point p
 	 */
 	public double value(Rr2Point p)
 	{
@@ -556,7 +580,7 @@ public class RrHalfPlane
 	/**
 	 * Find the potential interval of a box
 	 * @param b
-	 * @return
+	 * @return potential interval of box b
 	 */
 	public RrInterval value(RrBox b)
 	{
@@ -567,7 +591,7 @@ public class RrHalfPlane
 	/**
 	 * The point where another line crosses
 	 * @param a
-	 * @return
+	 * @return cross point
 	 * @throws RrParallelLineException
 	 */
 	public Rr2Point cross_point(RrHalfPlane a) throws RrParallelLineException
@@ -584,7 +608,7 @@ public class RrHalfPlane
 	/**
 	 * Parameter value where a line crosses
 	 * @param a
-	 * @return
+	 * @return parameter value
 	 * @throws RrParallelLineException
 	 */
 	public double cross_t(RrLine a) throws RrParallelLineException 
@@ -598,7 +622,7 @@ public class RrHalfPlane
 	/**
 	 * Point where a parametric line crosses
 	 * @param a
-	 * @return
+	 * @return cross point
 	 * @throws RrParallelLineException
 	 */
 	public Rr2Point cross_point(RrLine a) throws RrParallelLineException
@@ -612,7 +636,7 @@ public class RrHalfPlane
 	 * (if any) on the solid side of the half-plane.
 	 * @param a
 	 * @param range
-	 * @return
+	 * @return intersection interval
 	 */
 	public RrInterval wipe(RrLine a, RrInterval range)
 	{

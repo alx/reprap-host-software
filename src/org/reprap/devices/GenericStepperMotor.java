@@ -17,36 +17,114 @@ import org.reprap.comms.messages.OutgoingBlankMessage;
 import org.reprap.comms.messages.OutgoingByteMessage;
 import org.reprap.comms.messages.OutgoingIntMessage;
 
+/**
+ *
+ */
 public class GenericStepperMotor extends Device {
 
-	public static final byte MSG_SetForward = 1;		
+	/**
+	 * API for firmware
+	 * Activate the stepper motor in forward direction 
+	 */
+	public static final byte MSG_SetForward = 1;
+	
+	/**
+	 * Activate the stepper motor in reverse direction 
+	 */
 	public static final byte MSG_SetReverse = 2;
+	
+	/**
+	 *  Set the stepper motor position (how?)
+	 */
 	public static final byte MSG_SetPosition = 3;
+	
+	/**
+	 * Get the current stepper motor position
+	 */
 	public static final byte MSG_GetPosition = 4;
+	
+	/**
+	 * 
+	 */
 	public static final byte MSG_Seek = 5;	
+	
+	/**
+	 * Set the motor to idle; this turns the torque off whereas speed = 0 keeps torque on 
+	 */
 	public static final byte MSG_SetIdle = 6;		
-	public static final byte MSG_SetNotification = 7;		
-	public static final byte MSG_SetSyncMode = 8;		
-	public static final byte MSG_Calibrate = 9;		
+	
+	/**
+	 * Set notification (?) 
+	 */
+	public static final byte MSG_SetNotification = 7;
+	
+	/**
+	 * Set the sync mode (?)
+	 */
+	public static final byte MSG_SetSyncMode = 8;
+	
+	/**
+	 * Calibrate (?) 
+	 */
+	public static final byte MSG_Calibrate = 9;
+	
+	/**
+	 * Get the range (?)  
+	 */
 	public static final byte MSG_GetRange = 10;
+	
+	/**
+	 * DDAMaster ?
+	 */
 	public static final byte MSG_DDAMaster = 11;
+	
+	/**
+	 * Move on step in forward direction 
+	 */
 	public static final byte MSG_StepForward = 12;
+	
+	/**
+	 * Move on step in backward direction
+	 */
 	public static final byte MSG_StepBackward = 13;	
+	
+	/**
+	 * Set the power to the stepper motor 
+	 */
 	public static final byte MSG_SetPower = 14;
+	
+	/**
+	 * Homereset(?? 
+	 */
 	public static final byte MSG_HomeReset = 16;
 
 
+	/**
+	 * 
+	 */
 	public static final byte SYNC_NONE = 0;
 	public static final byte SYNC_SEEK = 1;
 	public static final byte SYNC_INC = 2;
 	public static final byte SYNC_DEC = 3;
 	
+	/**
+	 * 
+	 */
 	private boolean haveInitialised = false;
 	private boolean haveSetNotification = false;
 	private boolean haveCalibrated = false;
 	
-	private int maxTorque; ///< Power output limiting (0-100 percent)
+	/**
+	 * Power output limiting (0-100 percent)
+	 */
+	private int maxTorque; 
 	
+	/**
+	 * @param communicator
+	 * @param address
+	 * @param prefs
+	 * @param motorId
+	 */
 	public GenericStepperMotor(Communicator communicator, Address address, Preferences prefs, int motorId) {
 		
 		//Address address, int maxTorque
@@ -72,6 +150,9 @@ public class GenericStepperMotor extends Device {
 		this.maxTorque = prefs.loadInt(axis + "Axis" + "Torque(%)");
 	}
 
+	/**
+	 * @throws IOException
+	 */
 	private void initialiseIfNeeded() throws IOException {
 		if (!haveInitialised) {
 			haveInitialised = true;
@@ -79,6 +160,9 @@ public class GenericStepperMotor extends Device {
 		}
 	}
 	
+	/**
+	 * Dispose of this object
+	 */
 	public void dispose() {
 	}
 	
@@ -100,6 +184,9 @@ public class GenericStepperMotor extends Device {
 		}
 	}
 
+	/**
+	 * @throws IOException
+	 */
 	public void setIdle() throws IOException {
 		initialiseIfNeeded();
 		lock();
@@ -112,6 +199,9 @@ public class GenericStepperMotor extends Device {
 		}
 	}
 	
+	/**
+	 * @throws IOException
+	 */
 	public void stepForward() throws IOException {
 		initialiseIfNeeded();
 		lock();
@@ -124,6 +214,9 @@ public class GenericStepperMotor extends Device {
 		}
 	}
 	
+	/**
+	 * @throws IOException
+	 */
 	public void stepBackward() throws IOException {
 		initialiseIfNeeded();
 		lock();
@@ -136,10 +229,17 @@ public class GenericStepperMotor extends Device {
 		}
 	}
 	
+	/**
+	 * @throws IOException
+	 */
 	public void resetPosition() throws IOException {
 		setPosition(0);
 	}
 	
+	/**
+	 * @param position
+	 * @throws IOException
+	 */
 	public void setPosition(int position) throws IOException {
 		initialiseIfNeeded();
 		lock();
@@ -151,6 +251,10 @@ public class GenericStepperMotor extends Device {
 		}
 	}
 	
+	/**
+	 * @return current position of the motor
+	 * @throws IOException
+	 */
 	public int getPosition() throws IOException {
 		//System.out.println("get enter");
 		int value;
@@ -175,6 +279,11 @@ public class GenericStepperMotor extends Device {
 		return value;
 	}
 	
+	/**
+	 * @param speed
+	 * @param position
+	 * @throws IOException
+	 */
 	public void seek(int speed, int position) throws IOException {
 		//System.out.println("seek enter");
 		initialiseIfNeeded()	;
@@ -188,6 +297,11 @@ public class GenericStepperMotor extends Device {
 		}
 	}
 
+	/**
+	 * @param speed
+	 * @param position
+	 * @throws IOException
+	 */
 	public void seekBlocking(int speed, int position) throws IOException {
 		initialiseIfNeeded();
 		lock();
@@ -203,6 +317,12 @@ public class GenericStepperMotor extends Device {
 		}
 	}
 
+	/**
+	 * @param speed
+	 * @return range of the motor
+	 * @throws IOException
+	 * @throws InvalidPayloadException
+	 */
 	public Range getRange(int speed) throws IOException, InvalidPayloadException {
 		initialiseIfNeeded()	;
 		lock();
@@ -226,6 +346,11 @@ public class GenericStepperMotor extends Device {
 		}
 	}
 	
+	/**
+	 * @param speed
+	 * @throws IOException
+	 * @throws InvalidPayloadException
+	 */
 	public void homeReset(int speed) throws IOException, InvalidPayloadException {
 		initialiseIfNeeded()	;
 		lock();
@@ -238,6 +363,10 @@ public class GenericStepperMotor extends Device {
 		}
 	}
 	
+	/**
+	 * @param syncType
+	 * @throws IOException
+	 */
 	public void setSync(byte syncType) throws IOException {
 		initialiseIfNeeded()	;
 		lock();
@@ -251,6 +380,12 @@ public class GenericStepperMotor extends Device {
 		
 	}
 	
+	/**
+	 * @param speed
+	 * @param x1
+	 * @param deltaY
+	 * @throws IOException
+	 */
 	public void dda(int speed, int x1, int deltaY) throws IOException {
 		initialiseIfNeeded()	;
 		lock();
@@ -266,6 +401,9 @@ public class GenericStepperMotor extends Device {
 		}
 	}
 	
+	/**
+	 * @throws IOException
+	 */
 	private void setNotification() throws IOException {
 		initialiseIfNeeded()	;
 		if (!haveSetNotification) {
@@ -275,6 +413,9 @@ public class GenericStepperMotor extends Device {
 		}
 	}
 
+	/**
+	 * @throws IOException
+	 */
 	private void setNotificationOff() throws IOException {
 		initialiseIfNeeded()	;
 		if (haveSetNotification) {
@@ -305,27 +446,57 @@ public class GenericStepperMotor extends Device {
 	}
 	
 	
+	/**
+	 *
+	 */
 	protected class RequestPositionResponse extends IncomingIntMessage {
+		
+		/**
+		 * @param incomingContext
+		 * @throws IOException
+		 */
 		public RequestPositionResponse(IncomingContext incomingContext) throws IOException {
 			super(incomingContext);
 		}
 		
+		/* (non-Javadoc)
+		 * @see org.reprap.comms.messages.IncomingIntMessage#isExpectedPacketType(byte)
+		 */
 		protected boolean isExpectedPacketType(byte packetType) {
 			return packetType == MSG_GetPosition; 
 		}
 	}
 
+	/**
+	 *
+	 */
 	protected class RequestSeekResponse extends IncomingIntMessage {
+		
+		/**
+		 * @param device
+		 * @param message
+		 * @param timeout
+		 * @throws IOException
+		 */
 		public RequestSeekResponse(Device device, OutgoingMessage message, long timeout) throws IOException {
 			super(device, message, timeout);
 		}
 		
+		/* (non-Javadoc)
+		 * @see org.reprap.comms.messages.IncomingIntMessage#isExpectedPacketType(byte)
+		 */
 		protected boolean isExpectedPacketType(byte packetType) {
 			return packetType == MSG_Seek; 
 		}
 	}
 	
+	/**
+	 *
+	 */
 	protected class RequestSetPosition extends OutgoingIntMessage {
+		/**
+		 * @param position
+		 */
 		public RequestSetPosition(int position) {
 			super(MSG_SetPosition, position);
 		}
@@ -333,6 +504,9 @@ public class GenericStepperMotor extends Device {
 
 	protected class RequestSetSpeed extends OutgoingMessage {
 
+		/**
+		 * 
+		 */
 		byte [] message;
 		
 		/**
@@ -362,16 +536,28 @@ public class GenericStepperMotor extends Device {
 				
 		}
 		
+		/* (non-Javadoc)
+		 * @see org.reprap.comms.OutgoingMessage#getBinary()
+		 */
 		public byte[] getBinary() {
 			return message;
 		}
 		
 	}
 	
+	/**
+	 *
+	 */
 	protected class RequestOneStep extends OutgoingMessage
 	{
+		/**
+		 * 
+		 */
 		byte [] message;
 		
+		/**
+		 * @param forward
+		 */
 		RequestOneStep(boolean forward) {
 			byte command;
 			if (forward)
@@ -382,13 +568,27 @@ public class GenericStepperMotor extends Device {
 				
 		}
 		
+		/* (non-Javadoc)
+		 * @see org.reprap.comms.OutgoingMessage#getBinary()
+		 */
 		public byte[] getBinary() {
 			return message;
 		}
 	}
 	
+	/**
+	 *
+	 */
 	protected class RequestSeekPosition extends OutgoingMessage {
+		/**
+		 * 
+		 */
 		byte [] message;
+		
+		/**
+		 * @param speed
+		 * @param position
+		 */
 		RequestSeekPosition(int speed, int position) {
 			message = new byte[] { MSG_Seek,
 					(byte)speed,
@@ -396,14 +596,26 @@ public class GenericStepperMotor extends Device {
 					(byte)((position >> 8) & 0xff)};
 		}
 		
+		/* (non-Javadoc)
+		 * @see org.reprap.comms.OutgoingMessage#getBinary()
+		 */
 		public byte[] getBinary() {
 			return message;
 		}
 		
 	}
 
+	/**
+	 *
+	 */
 	protected class RequestDDAMaster extends OutgoingMessage {
 		byte [] message;
+		
+		/**
+		 * @param speed
+		 * @param x1
+		 * @param deltaY
+		 */
 		RequestDDAMaster(int speed, int x1, int deltaY) {
 			message = new byte[] { MSG_DDAMaster,
 					(byte)speed,
@@ -414,31 +626,64 @@ public class GenericStepperMotor extends Device {
 				};
 		}
 		
+		/* (non-Javadoc)
+		 * @see org.reprap.comms.OutgoingMessage#getBinary()
+		 */
 		public byte[] getBinary() {
 			return message;
 		}
 		
 	}
 
+	/**
+	 *
+	 */
 	protected class RequestDDAMasterResponse extends IncomingIntMessage {
+		
+		/**
+		 * @param device
+		 * @param message
+		 * @param timeout
+		 * @throws IOException
+		 */
 		public RequestDDAMasterResponse(Device device, OutgoingMessage message, long timeout) throws IOException {
 			super(device, message, timeout);
 		}
 		
+		/* (non-Javadoc)
+		 * @see org.reprap.comms.messages.IncomingIntMessage#isExpectedPacketType(byte)
+		 */
 		protected boolean isExpectedPacketType(byte packetType) {
 			return packetType == MSG_DDAMaster;
 		}
 	}
 	
+	/**
+	 *
+	 */
 	protected class RequestRangeResponse extends IncomingIntMessage {
+		
+		/**
+		 * @param incomingContext
+		 * @throws IOException
+		 */
 		public RequestRangeResponse(IncomingContext incomingContext) throws IOException {
 			super(incomingContext);
 		}
+		
+		/* (non-Javadoc)
+		 * @see org.reprap.comms.messages.IncomingIntMessage#isExpectedPacketType(byte)
+		 */
 		protected boolean isExpectedPacketType(byte packetType) {
 			// We could get this either as an asynchronous notification
 			// from calibration or by explicit request
 			return packetType == MSG_GetRange || packetType == MSG_Calibrate; 
 		}
+		
+		/**
+		 * @return
+		 * @throws InvalidPayloadException
+		 */
 		public Range getRange() throws InvalidPayloadException {
 		    byte [] reply = getPayload();
 		    if (reply == null || reply.length != 3)
@@ -451,17 +696,42 @@ public class GenericStepperMotor extends Device {
 
 	}
 	
+	/**
+	 *
+	 */
 	protected class RequestHomeResetResponse extends IncomingMessage {
+		
+		/**
+		 * @param device
+		 * @param message
+		 * @param timeout
+		 * @throws IOException
+		 */
 		public RequestHomeResetResponse(Device device, OutgoingMessage message, long timeout) throws IOException {
 			super(device, message, timeout);
 		}
+		
+		/* (non-Javadoc)
+		 * @see org.reprap.comms.IncomingMessage#isExpectedPacketType(byte)
+		 */
 		protected boolean isExpectedPacketType(byte packetType) {
 			return packetType == MSG_HomeReset; 
 		}
 	}
 	
+	/**
+	 *
+	 */
 	public class Range {
+		
+		/**
+		 * 
+		 */
 		public int minimum;
+		
+		/**
+		 * 
+		 */
 		public int maximum;
 	}
 

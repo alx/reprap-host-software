@@ -1,6 +1,9 @@
 
 package org.reprap.geometry.polygons;
 
+/**
+ * Testing class
+ */
 public class TestMain
 {
 	public static void rrpTest()

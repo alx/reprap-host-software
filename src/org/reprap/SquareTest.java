@@ -3,6 +3,9 @@ package org.reprap;
 import org.reprap.gui.PreviewWindow;
 import org.reprap.machines.MachineFactory;
 
+/**
+ * Class to execute a test where a square is printed
+ */
 public class SquareTest {
 	
 	public static void main(String[] args) throws Exception {

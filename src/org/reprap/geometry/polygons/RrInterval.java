@@ -94,29 +94,31 @@ public class RrInterval
 		empty = i.empty;
 	}
 	
-	// Return contents
-	
+	/**
+	 * @return Return contents
+	 */
 	public double low() { return low; }
 	public double high() { return high; }
 	public boolean empty() { return empty; }
 	
 	/**
 	 * The biggest possible
-	 * @return
+	 * @return biggest possible interval
 	 */
 	public static RrInterval big_interval()
 	{
 		return new RrInterval(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 	}
 	
-	// Convert to a string
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	public String toString()
 	{
 		if(empty)
 			return "[empty]";
 		return "[" + Double.toString(low) + ", " + Double.toString(high) + "]";
 	}
-	
 	
 	/**
 	 * Accomodate v
@@ -149,7 +151,7 @@ public class RrInterval
 	
 	/**
 	 * Size
-	 * @return
+	 * @return size
 	 */
 	public double length()
 	{
@@ -161,7 +163,7 @@ public class RrInterval
 	 * Interval addition
 	 * @param a
 	 * @param b
-	 * @return
+	 * @return new interval based on addition of intervals a and b
 	 */
 	public static RrInterval add(RrInterval a, RrInterval b)
 	{
@@ -170,6 +172,11 @@ public class RrInterval
 		return new RrInterval(a.low + b.low, a.high + b.high);
 	}
 	
+	/**
+	 * @param a
+	 * @param b
+	 * @return new interval based on addition of interval a and value b
+	 */
 	public static RrInterval add(RrInterval a, double b)
 	{
 		if(a.empty)
@@ -177,6 +184,11 @@ public class RrInterval
 		return new RrInterval(a.low + b, a.high + b);
 	}
 	
+	/**
+	 * @param b
+	 * @param a
+	 * @return new interval based on addition of interval a and value b
+	 */
 	public static RrInterval add(double b, RrInterval a)
 	{	    
 		return add(a, b);
@@ -187,7 +199,7 @@ public class RrInterval
 	 * Interval subtraction
 	 * @param a
 	 * @param b
-	 * @return
+	 * @return new interval based on subtraction of interval a and value b
 	 */
 	public static RrInterval sub(RrInterval a, RrInterval b)
 	{
@@ -196,6 +208,11 @@ public class RrInterval
 		return new RrInterval(a.low - b.high, a.high - b.low);
 	}
 	
+	/**
+	 * @param a
+	 * @param b
+	 * @return new interval based on subtraction of interval a and value b
+	 */
 	public static RrInterval sub(RrInterval a, double b)
 	{
 		if(a.empty)
@@ -203,6 +220,11 @@ public class RrInterval
 		return new RrInterval(a.low - b, a.high - b);
 	}
 	
+	/**
+	 * @param b
+	 * @param a
+	 * @return new interval based on subtraction of interval a and value b
+	 */
 	public static RrInterval sub(double b, RrInterval a)
 	{
 		if(a.empty)
@@ -214,7 +236,7 @@ public class RrInterval
 	 * Interval multiplication
 	 * @param a
 	 * @param b
-	 * @return
+	 * @return new interval based on interval multiplication of intervals a and b
 	 */
 	public static RrInterval mul(RrInterval a, RrInterval b)
 	{
@@ -228,6 +250,11 @@ public class RrInterval
 		return r;
 	}
 	
+	/**
+	 * @param a
+	 * @param f
+	 * @return new interval based on interval multiplication of interval a by factor f
+	 */
 	public static RrInterval mul(RrInterval a, double f)
 	{
 		if(a.empty)
@@ -238,6 +265,11 @@ public class RrInterval
 			return new RrInterval(a.high*f, a.low*f);	    
 	}
 	
+	/**
+	 * @param f
+	 * @param a
+	 * @return new interval based on interval multiplication of interval a by factor f
+	 */
 	public static RrInterval mul(double f, RrInterval a)
 	{
 		return mul(a, f);	    
@@ -245,13 +277,16 @@ public class RrInterval
 	
 	/**
 	 * Negative, zero, or positive?
-	 * @return
+	 * @return true if interval is negative (?)
 	 */
 	public boolean neg()
 	{
 		return high < 0;
 	}
 	
+	/**
+	 * @return true if intervale is positive (?)
+	 */
 	public boolean pos()
 	{
 		return low >= 0;
@@ -259,7 +294,7 @@ public class RrInterval
 	
 	/**
 	 * Does the interval _contain_ zero?
-	 * @return
+	 * @return true if zero is within the interval
 	 */
 	public boolean zero()
 	{
@@ -269,7 +304,7 @@ public class RrInterval
 	/**
 	 * In or out
 	 * @param v
-	 * @return
+	 * @return true if v is within the interval
 	 */
 	public boolean in(double v)
 	{
@@ -281,7 +316,7 @@ public class RrInterval
 	 * @param a
 	 * @param b
 	 * @param tolerance
-	 * @return
+	 * @return true if intervals a and b are identical within the tolerance
 	 */
 	public static boolean same(RrInterval a, RrInterval b, double tolerance)
 	{
@@ -297,7 +332,7 @@ public class RrInterval
 	
 	/**
 	 * Absolute value of an interval
-	 * @return
+	 * @return absolute value of the interval
 	 */
 	public RrInterval abs()
 	{
@@ -322,7 +357,7 @@ public class RrInterval
 	/**
 	 * Sign of an interval
 	 * @param x
-	 * @return
+	 * @return sign of the interval
 	 */
 	public static double sign(double x) 
 	{ 
@@ -331,6 +366,9 @@ public class RrInterval
 		else return 0;
 	}
 	
+	/**
+	 * @return new interval object based on ?
+	 */
 	public RrInterval sign()
 	{
 		return( new RrInterval(sign(low), sign(high)) );
@@ -340,7 +378,7 @@ public class RrInterval
 	 * Max
 	 * @param a
 	 * @param b
-	 * @return
+	 * @return max value of the interval
 	 */
 	public static RrInterval max(RrInterval a, RrInterval b)
 	{
@@ -354,7 +392,7 @@ public class RrInterval
 	 * Min
 	 * @param a
 	 * @param b
-	 * @return
+	 * @return minimal value of the interval
 	 */
 	public static RrInterval min(RrInterval a, RrInterval b)
 	{

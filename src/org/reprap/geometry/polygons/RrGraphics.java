@@ -61,18 +61,64 @@ import javax.swing.*;
 
 public class RrGraphics 
 {
-	private final int frame = 600; // Pixels
+	/**
+	 * Pixels 
+	 */
+	private final int frame = 600;
+	
+	/**
+	 * 
+	 */
 	private int frameWidth;
+	
+	/**
+	 * 
+	 */
 	private int frameHeight;
+	
+	/**
+	 * 
+	 */
 	private RrPolygonList p_list;
+	
+	/**
+	 * 
+	 */
 	private RrCSGPolygon csg_p;
+	
+	/**
+	 * 
+	 */
 	private STLSlice stlc;
+	
+	/**
+	 * 
+	 */
 	private double scale;
+	
+	/**
+	 * 
+	 */
 	private Rr2Point p_0;
+	
+	/**
+	 * 
+	 */
 	private Rr2Point pos;
+	
+	/**
+	 * 
+	 */
 	private Graphics2D g2d;
+	
+	/**
+	 * 
+	 */
 	private boolean plot_box;
 	
+	/**
+	 * @param b
+	 */
 	private void setScales(RrBox b)
 	{
 		RrBox big = b.scale(1.2);
@@ -109,8 +155,11 @@ public class RrGraphics
 		frame.setVisible(true);
 	}
 	
-	// Constructor for point-list polygon
-	
+	/**
+	 * Constructor for point-list polygon
+	 * @param pl
+	 * @param pb
+	 */
 	public RrGraphics(RrPolygonList pl, boolean pb) 
 	{
 		if(pl.size() <= 0)
@@ -127,8 +176,11 @@ public class RrGraphics
 		setScales(pl.box);
 	}
 	
-	// Constructor for CSG polygon
-	
+	/**
+	 * Constructor for CSG polygon
+	 * @param cp
+	 * @param pb
+	 */
 	public RrGraphics(RrCSGPolygon cp, boolean pb) 
 	{
 		p_list = null;
@@ -139,8 +191,11 @@ public class RrGraphics
 		setScales(csg_p.box());
 	}
 	
-// Constructor for STL polygons
-	
+	/**
+	 * Constructor for STL polygons
+	 * @param s
+	 * @param pb
+	 */
 	public RrGraphics(STLSlice s, boolean pb) 
 	{
 		p_list = null;
@@ -151,9 +206,11 @@ public class RrGraphics
 		setScales(stlc.box());
 	}
 	
-	
-	// Constructor for just a box - add stuff later
-	
+	/**
+	 * Constructor for just a box - add stuff later
+	 * @param b
+	 * @param pb
+	 */
 	public RrGraphics(RrBox b, boolean pb) 
 	{
 		p_list = null;
@@ -164,38 +221,54 @@ public class RrGraphics
 		setScales(b);
 	}
 	
+	/**
+	 * @param pl
+	 */
 	public void addPol(RrPolygonList pl)
 	{
 		p_list = pl;
 	}
 	
+	/**
+	 * @param cp
+	 */
 	public void addCSG(RrCSGPolygon cp)
 	{
 		csg_p = cp;
 	}
 	
+	/**
+	 * @param s
+	 */
 	public void addSTL(STLSlice s)
 	{
 		stlc = s;
 	}
 	
-	// Real-world coordinates to pixels
-	
+	/**
+	 * Real-world coordinates to pixels
+	 * @param p
+	 * @return
+	 */
 	private Rr2Point transform(Rr2Point p)
 	{
 		return new Rr2Point(p_0.x() + scale*p.x(), (double)frameHeight - 
 				(p_0.y() + scale*p.y()));
 	}
 	
-	// Move invisibly to a point
-	
+	/**
+	 * Move invisibly to a point
+	 * @param p
+	 */
 	private void move(Rr2Point p)
 	{
 		pos = transform(p);
 	}
-	
-	// Draw a straight line to a point
-	
+		
+	/**
+	 * Draw a straight line to a point
+	 * @param p
+	 */
 	private void plot(Rr2Point p)
 	{
 		Rr2Point a = transform(p);
@@ -204,8 +277,10 @@ public class RrGraphics
 		pos = a;
 	}
 	
-	// Set the plotting colour
-	
+	/**
+	 * Set the plotting colour
+	 * @param c
+	 */
 	private void colour(int c)
 	{
 		switch(c)
@@ -247,8 +322,10 @@ public class RrGraphics
 		}
 	}
 	
-	// Plot a box
-	
+	/**
+	 * Plot a box
+	 * @param b
+	 */
 	private void plot(RrBox b)
 	{
 		move(b.sw());
@@ -258,8 +335,10 @@ public class RrGraphics
 		plot(b.sw());
 	}
 	
-	// Plot a polygon
-	
+	/**
+	 * Plot a polygon
+	 * @param p
+	 */
 	private void plot(RrPolygon p)
 	{
 		if(plot_box)
@@ -292,8 +371,11 @@ public class RrGraphics
 
 	}
 	
-	// Plot a section of parametric line
-	
+	/**
+	 * Plot a section of parametric line
+	 * @param a
+	 * @param i
+	 */
 	private void plot(RrLine a, RrInterval i)
 	{
 		if(i.empty()) return;
@@ -301,8 +383,10 @@ public class RrGraphics
 		plot(a.point(i.high()));
 	}
 	
-	// Plot a set in a box
-	
+	/**
+	 * Plot a set in a box
+	 * @param q
+	 */
 	private void plotLeaf(RrCSGPolygon q)
 	{
 		if(plot_box)
@@ -322,8 +406,10 @@ public class RrGraphics
 		}
 	}
 	
-	// Plot a divided CSG polygon recursively
-	
+	/**
+	 * Plot a divided CSG polygon recursively
+	 * @param p
+	 */
 	private void plot(RrCSGPolygon p)
 	{
 		if(p.c_1() == null)
@@ -338,8 +424,10 @@ public class RrGraphics
 		}
 	}
 	
-// Plot a divided STL recursively
-	
+	/**
+	 * Plot a divided STL recursively
+	 * @param s
+	 */
 	private void plot(STLSlice s)
 	{
 		if(s.c_1() == null)
@@ -364,9 +452,9 @@ public class RrGraphics
 		}
 	}
 	
-	
-	// Master plot function - draw everything
-	
+	/**
+	 * Master plot function - draw everything
+	 */
 	private void plot()
 	{
 		if(csg_p != null)
@@ -383,6 +471,9 @@ public class RrGraphics
 		}
 	}
 	
+	/**
+	 * Canvas to paint on 
+	 */
 	class MyComponent extends JComponent 
 	{
 		// This method is called whenever the contents needs to be painted

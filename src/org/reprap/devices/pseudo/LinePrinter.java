@@ -6,24 +6,43 @@ import org.reprap.devices.GenericExtruder;
 import org.reprap.devices.GenericStepperMotor;
 
 /**
- * This is pseudo device that provides an apparent single device
+ * This is a pseudo device that provides an apparent single device
  * for plotting lines.
  */
 public class LinePrinter {
 
+	
+	/**
+	 * Stepper motors
+	 */
 	private GenericStepperMotor motorX;
 	private GenericStepperMotor motorY;
 	private GenericExtruder extruder;
 
+	/**
+	 * 
+	 */
 	private boolean initialisedXY = false;
+	
+	/**
+	 * 
+	 */
 	private int currentX, currentY;
 	
+	/**
+	 * @param motorX
+	 * @param motorY
+	 * @param extruder
+	 */
 	public LinePrinter(GenericStepperMotor motorX, GenericStepperMotor motorY, GenericExtruder extruder) {
 		this.motorX = motorX;
 		this.motorY = motorY;
 		this.extruder = extruder;
 	}
 	
+	/**
+	 * @throws IOException
+	 */
 	public void initialiseXY() throws IOException {
 		if (!initialisedXY) {
 			currentX = motorX.getPosition();
@@ -35,6 +54,10 @@ public class LinePrinter {
 	/**
 	 * Move to a 2-space point in a direct line.  At the moment this is just the pure 2D Bresenham algorithm.
 	 * It would be good to generalise this to a 3D DDA.
+	 * @param endX
+	 * @param endY
+	 * @param movementSpeed
+	 * @throws IOException
 	 */
 	public void moveTo(int endX, int endY, int movementSpeed) throws IOException {
 		initialiseXY();
@@ -83,9 +106,15 @@ public class LinePrinter {
 		currentY = endY;
 	}
 	
-	// Correct the speed for the angle of the line to the axes
-	private int angleSpeed(int movementSpeed, double dx, double dy)
-	{
+
+	/**
+	 * Correct the speed for the angle of the line to the axes
+	 * @param movementSpeed
+	 * @param dx
+	 * @param dy
+	 * @return
+	 */
+	private int angleSpeed(int movementSpeed, double dx, double dy)	{
 		double length = Math.sqrt(dx*dx + dy*dy);
 		if(length == 0)
 			return movementSpeed;
@@ -93,6 +122,14 @@ public class LinePrinter {
 		return (int)Math.round((movementSpeed*longSide)/length);
 	}
 
+	/**
+	 * @param endX
+	 * @param endY
+	 * @param movementSpeed
+	 * @param extruderSpeed
+	 * @param turnOff True if extruder should be turned off after this segment is printed.
+	 * @throws IOException
+	 */
 	public void printTo(int endX, int endY, int movementSpeed, 
 			int extruderSpeed, boolean turnOff) throws IOException {
 		// Determine the extruder speed, based on the geometry of the line
@@ -118,6 +155,16 @@ public class LinePrinter {
 		extruder.setExtrusion(0);
 	}
 	
+	/**
+	 * @param startX
+	 * @param startY
+	 * @param endX
+	 * @param endY
+	 * @param movementSpeed
+	 * @param extruderSpeed
+	 * @param turnOff True if the extruder should be turned off at the end of this segment.
+	 * @throws IOException
+	 */
 	public void printLine(int startX, int startY, int endX, int endY, 
 			int movementSpeed, int extruderSpeed, boolean turnOff) throws IOException {
 		moveTo(startX, startY, movementSpeed);

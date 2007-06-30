@@ -12,21 +12,68 @@ import java.util.*;
  */
 class bop 
 {
+	/**
+	 * 
+	 */
 	public static final int ZERO = 0;
+	
+	/**
+	 * 
+	 */
 	public static final int ONE = 1;
+	
+	/**
+	 * 
+	 */
 	public static final int LEAF = 2;
+	
+	/**
+	 * 
+	 */
 	public static final int LEFT = 3;
+	
+	/**
+	 * 
+	 */
 	public static final int RIGHT = 4;
+	
+	/**
+	 * 
+	 */
 	public static final int AND = 5;
+	
+	/**
+	 * 
+	 */
 	public static final int OR = 6;
+	
+	/**
+	 * 
+	 */
 	public static final int XOR = 7;
 }
 
+/**
+ * @author adrian
+ *
+ */
 class variables
 {
+	
+	/**
+	 * 
+	 */
 	private boolean[] v;
+	
+	/**
+	 * 
+	 */
 	private int i, max;
 	
+	/**
+	 * @param n
+	 * @param values
+	 */
 	public variables(int n, int values)
 	{
 		i = -1;
@@ -39,6 +86,9 @@ class variables
 		}		
 	}
 	
+	/**
+	 * @return
+	 */
 	public boolean next()
 	{
 		i++;
@@ -47,11 +97,19 @@ class variables
 		return v[i];
 	}
 	
+	/**
+	 * @param j
+	 * @return
+	 */
 	public boolean get(int j)
 	{
 		return v[j];
 	}
 	
+	/**
+	 * @param b
+	 * @return
+	 */
 	public String toString(int b)
 	{
 		String result = "";
@@ -68,11 +126,19 @@ class variables
 		return result;
 	}
 	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	public String toString()
 	{
 		return toString(0);
 	}
 	
+	/**
+	 * @param a
+	 * @param b
+	 * @return
+	 */
 	static boolean same(variables a, variables b)
 	{
 		if(a.max != b.max)
@@ -84,11 +150,27 @@ class variables
 	}
 }
 
+/**
+ * @author adrian
+ *
+ */
 class BooleanExpression
 {
+	/**
+	 * 
+	 */
 	private BooleanExpression c1, c2;
+	
+	/**
+	 * 
+	 */
 	private int leafOp;
 	
+	/**
+	 * @param a
+	 * @param b
+	 * @param op
+	 */
 	public BooleanExpression(BooleanExpression a, BooleanExpression b, int op)
 	{
 		c1 = a;
@@ -98,6 +180,9 @@ class BooleanExpression
 		leafOp = op;
 	}
 	
+	/**
+	 * @param v
+	 */
 	public BooleanExpression(boolean v)
 	{
 		c1 = null;
@@ -108,6 +193,9 @@ class BooleanExpression
 			leafOp = bop.ZERO;
 	}
 	
+	/**
+	 * 
+	 */
 	public BooleanExpression()
 	{
 		c1 = null;
@@ -115,6 +203,9 @@ class BooleanExpression
 		leafOp = bop.LEAF;
 	}
 	
+	/**
+	 * @return
+	 */
 	public int leafCount()
 	{
 		if(leafOp == bop.LEAF || leafOp == bop.ZERO || leafOp == bop.ONE)
@@ -123,8 +214,12 @@ class BooleanExpression
 			return c1.leafCount()+c2.leafCount();
 	}
 	
-	public boolean generateValue(variables v)
-	{
+	/**
+	 * @param v
+	 * @return
+	 */
+	public boolean generateValue(variables v){
+		
 		boolean r;
 		
 		switch(leafOp)
@@ -166,13 +261,35 @@ class BooleanExpression
 	}	
 }
 
+/**
+ * @author adrian
+ *
+ */
 class FunctionTable
 {
+	/**
+	 * 
+	 */
 	private int inputs, entries;
+	
+	/**
+	 * 
+	 */
 	boolean[] table;
+	
+	/**
+	 * 
+	 */
 	variables[] vs;
+	
+	/**
+	 * 
+	 */
 	int equal_2;
 	
+	/**
+	 * @param b
+	 */
 	public FunctionTable(BooleanExpression b)
 	{
 		equal_2 = 0;
@@ -190,6 +307,11 @@ class FunctionTable
 		}
 	}
 	
+	/**
+	 * @param b
+	 * @param a
+	 * @param equal_a
+	 */
 	public FunctionTable(BooleanExpression b, int a, int equal_a)
 	{
 		equal_2 = equal_a;
@@ -225,6 +347,11 @@ class FunctionTable
 		}
 	}
 	
+	/**
+	 * @param a
+	 * @param b
+	 * @return
+	 */
 	static boolean same(FunctionTable a, FunctionTable b)
 	{
 		if(a.entries != b.entries)
@@ -235,6 +362,9 @@ class FunctionTable
 		return true;
 	}
 	
+	/* (non-Javadoc)
+	 * @see java.lang.Object#toString()
+	 */
 	public String toString()
 	{
 		String result = "";
@@ -250,6 +380,10 @@ class FunctionTable
 	}
 }
 
+/**
+ * @author adrian
+ *
+ */
 public class CodeGenerator 
 {
 
