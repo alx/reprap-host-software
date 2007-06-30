@@ -32,9 +32,11 @@ NOTES:
 
 KNOWN BUGS:
 
-(1) This software uses way too much memory and so cannot build complex
-    objects, including some of the Reprap parts.
+(1) This software still uses too much memory, but is a lot better than
+    it used to be.
 
-(2) Probably many other bugs, less serious than (1) above!  See
+(2) Installing the libraries by hand is a bit awkward.
+
+(3) Probably many other bugs, less serious than (1) above!  See
     http://sourceforge.net/tracker/?group_id=159590 for more.
 
