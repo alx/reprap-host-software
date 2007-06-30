@@ -1,4 +1,5 @@
 package org.reprap.gui;
+import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import javax.swing.JButton;
@@ -46,7 +47,8 @@ public class StatusMessage extends javax.swing.JDialog {
 				getContentPane().add(message);
 				message.setBounds(0, 0, 280, 77);
 				message.setEditable(false);
-				message.setBackground(getBackground());
+				message.setBackground(Color.blue);
+				message.setForeground(Color.yellow);
 				message.setEnabled(false);
 				SimpleAttributeSet set = new SimpleAttributeSet();
 				StyleConstants.setAlignment(set, StyleConstants.ALIGN_CENTER);
