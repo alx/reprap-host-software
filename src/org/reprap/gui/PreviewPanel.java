@@ -254,7 +254,7 @@ public class PreviewPanel extends Panel3D implements Previewer {
 		BranchGroup subLower = new BranchGroup();
 		if(ls != null)
 		{
-			ls.setAppearance(extrusion_app);
+			ls.setAppearance(shell_app);
 			subLower.addChild(ls);
 			lowerShell.addChild(subLower);
 		}
