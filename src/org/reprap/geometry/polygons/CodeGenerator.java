@@ -10,47 +10,30 @@ import java.util.*;
  * the simplification of CSG expressions.
  *
  */
-class bop 
+
+/**
+ * Boolean operators and similar
+ * 
+ */
+enum bop 
 {
-	/**
-	 * 
-	 */
-	public static final int ZERO = 0;
+	ZERO("zero"),
+	ONE("one"),
+	LEAF("leaf"),
+	LEFT("left"),
+	RIGHT("right"),
+	AND("and"),
+	OR("or"),
+	XOR("xor");
 	
-	/**
-	 * 
-	 */
-	public static final int ONE = 1;
-	
-	/**
-	 * 
-	 */
-	public static final int LEAF = 2;
-	
-	/**
-	 * 
-	 */
-	public static final int LEFT = 3;
-	
-	/**
-	 * 
-	 */
-	public static final int RIGHT = 4;
-	
-	/**
-	 * 
-	 */
-	public static final int AND = 5;
-	
-	/**
-	 * 
-	 */
-	public static final int OR = 6;
-	
-	/**
-	 * 
-	 */
-	public static final int XOR = 7;
+    private String name;
+    
+    bop(String name)
+    {
+        this.name = name;
+    }
+    
+    public String toString() { return name; }
 }
 
 /**
@@ -160,18 +143,15 @@ class BooleanExpression
 	 * 
 	 */
 	private BooleanExpression c1, c2;
-	
-	/**
-	 * 
-	 */
-	private int leafOp;
-	
+
+	private bop leafOp;
+
 	/**
 	 * @param a
 	 * @param b
 	 * @param op
 	 */
-	public BooleanExpression(BooleanExpression a, BooleanExpression b, int op)
+	public BooleanExpression(BooleanExpression a, BooleanExpression b, bop op)
 	{
 		c1 = a;
 		c2 = b;
@@ -224,33 +204,33 @@ class BooleanExpression
 		
 		switch(leafOp)
 		{
-		case bop.LEAF:
+		case LEAF:
 			return v.next();
 		
-		case bop.ZERO:
+		case ZERO:
 			return false;
 			
-		case bop.ONE:
+		case ONE:
 			return true;
 			
-		case bop.LEFT:
+		case LEFT:
 			r = c1.generateValue(v);
 			c2.generateValue(v);
 			return r;
 			
-		case bop.RIGHT:
+		case RIGHT:
 			r = c1.generateValue(v);
 			return c2.generateValue(v);
 			
-		case bop.AND:
+		case AND:
 			r = c1.generateValue(v);
 			return r && c2.generateValue(v);
 			
-		case bop.OR:
+		case OR:
 			r = c1.generateValue(v); 
 			return r || c2.generateValue(v);
 			
-		case bop.XOR:
+		case XOR:
 			r = c1.generateValue(v); 
 			return r ^ c2.generateValue(v);
 			
@@ -392,12 +372,12 @@ public class CodeGenerator
 	 */
 	public static void main(String[] args) 
 	{
-		BooleanExpression a = new BooleanExpression(true);
+		BooleanExpression a = new BooleanExpression();
 		BooleanExpression b = new BooleanExpression();
-		BooleanExpression c = new BooleanExpression(a, b, bop.AND);
+		BooleanExpression c = new BooleanExpression(a, b, bop.OR);
 		BooleanExpression d = new BooleanExpression();
 		BooleanExpression e = new BooleanExpression(d, c, bop.AND);
-		FunctionTable f = new FunctionTable(e, 0, -2);
+		FunctionTable f = new FunctionTable(e); //, 0, -2);
 		System.out.println(f.toString());
 	}
 }
