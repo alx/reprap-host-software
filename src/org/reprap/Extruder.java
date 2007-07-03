@@ -1,5 +1,6 @@
 package org.reprap;
 import java.io.IOException;
+import javax.vecmath.Color3f;
 
 import org.reprap.Device;
 public interface Extruder {
@@ -170,4 +171,9 @@ public interface Extruder {
      * @return the Z offset in millimeters
      */
     public double getOffsetZ();
+    
+    /**
+     * @return the colour to use in the simulation window for this material
+     */
+    public Color3f getColour();
 }

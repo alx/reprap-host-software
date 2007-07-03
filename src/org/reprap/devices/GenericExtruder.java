@@ -12,6 +12,7 @@ import org.reprap.comms.OutgoingMessage;
 import org.reprap.comms.IncomingMessage.InvalidPayloadException;
 import org.reprap.comms.messages.OutgoingBlankMessage;
 import org.reprap.comms.messages.OutgoingByteMessage;
+import javax.vecmath.Color3f;
 
 /**
  * @author jwiel
@@ -240,6 +241,11 @@ public class GenericExtruder extends Device implements Extruder{
 	private boolean isCommsAvailable = false;
 	
 	/**
+	 *  The colour of the material to use in the simulation windows 
+	 */	
+	private Color3f materialColour;
+	
+	/**
 	 * @param communicator
 	 * @param address
 	 * @param prefs
@@ -276,6 +282,10 @@ public class GenericExtruder extends Device implements Extruder{
 		offsetX = prefs.loadDouble(prefName + "OffsetX(mm)");
 		offsetY = prefs.loadDouble(prefName + "OffsetY(mm)");
 		offsetZ = prefs.loadDouble(prefName + "OffsetZ(mm)");
+		
+		materialColour = new Color3f((float)prefs.loadDouble(prefName + "ColourR(0..1)"), 
+				(float)prefs.loadDouble(prefName + "ColourG(0..1)"), 
+				(float)prefs.loadDouble(prefName + "ColourB(0..1)"));
 		
 		// Check Extruder is available
 		try {
@@ -1016,4 +1026,12 @@ public class GenericExtruder extends Device implements Extruder{
     {
     	return offsetZ;
     }
+    
+    /* (non-Javadoc)
+     * @see org.reprap.Extruder#getColour()
+     */    
+    public Color3f getColour()
+    {
+    	return materialColour;
+    }  
 }

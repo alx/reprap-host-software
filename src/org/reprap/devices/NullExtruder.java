@@ -7,6 +7,7 @@ import java.io.IOException;
 import org.reprap.Device;
 import org.reprap.Extruder;
 import org.reprap.Preferences;
+import javax.vecmath.Color3f;
 
 /**
  * @author Adrian
@@ -186,6 +187,11 @@ public class NullExtruder implements Extruder{
 	private boolean isCommsAvailable = false;
 	
 	/**
+	 *  The colour of the material to use in the simulation windows 
+	 */	
+	private Color3f materialColour;
+	
+	/**
 	 * @param prefs
 	 * @param extruderId
 	 */
@@ -217,7 +223,9 @@ public class NullExtruder implements Extruder{
 		offsetX = prefs.loadDouble(prefName + "OffsetX(mm)");
 		offsetY = prefs.loadDouble(prefName + "OffsetY(mm)");
 		offsetZ = prefs.loadDouble(prefName + "OffsetZ(mm)");
-		
+		materialColour = new Color3f((float)prefs.loadDouble(prefName + "ColourR(0..1)"), 
+				(float)prefs.loadDouble(prefName + "ColourG(0..1)"), 
+				(float)prefs.loadDouble(prefName + "ColourB(0..1)"));		
 		
 		isCommsAvailable = true;
 	
@@ -455,5 +463,12 @@ public class NullExtruder implements Extruder{
     {
     	return offsetZ;
     }
-
+    
+    /* (non-Javadoc)
+     * @see org.reprap.Extruder#getColour()
+     */     
+    public Color3f getColour()
+    {
+    	return materialColour;
+    }  
 }

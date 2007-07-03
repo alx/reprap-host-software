@@ -63,6 +63,9 @@ Extruder0_InfillSpeed(0..1)=1.0
 Extruder0_OutlineSpeed(0..1)=0.6
 Extruder0_AngleSpeedLength(mm)=2.5
 Extruder0_AngleSpeedFactor(0..1)=0.5
+Extruder0_ColourR(0..1)=0.3
+Extruder0_ColourG(0..1)=0.3
+Extruder0_ColourB(0..1)=0.6
 
 # The maximum permitted motor speed.  This is useful if driving
 # a motor with a voltage beyond it's design limits (eg running
