@@ -12,7 +12,9 @@ import org.reprap.comms.OutgoingMessage;
 import org.reprap.comms.IncomingMessage.InvalidPayloadException;
 import org.reprap.comms.messages.OutgoingBlankMessage;
 import org.reprap.comms.messages.OutgoingByteMessage;
+import javax.media.j3d.Appearance;
 import javax.vecmath.Color3f;
+import javax.media.j3d.Material;
 
 /**
  * @author jwiel
@@ -241,9 +243,14 @@ public class GenericExtruder extends Device implements Extruder{
 	private boolean isCommsAvailable = false;
 	
 	/**
+	 *  The colour black
+	 */	
+	protected static final Color3f black = new Color3f(0, 0, 0);
+	
+	/**
 	 *  The colour of the material to use in the simulation windows 
 	 */	
-	private Color3f materialColour;
+	private Appearance materialColour;
 	
 	/**
 	 * @param communicator
@@ -283,9 +290,11 @@ public class GenericExtruder extends Device implements Extruder{
 		offsetY = prefs.loadDouble(prefName + "OffsetY(mm)");
 		offsetZ = prefs.loadDouble(prefName + "OffsetZ(mm)");
 		
-		materialColour = new Color3f((float)prefs.loadDouble(prefName + "ColourR(0..1)"), 
+		Color3f col = new Color3f((float)prefs.loadDouble(prefName + "ColourR(0..1)"), 
 				(float)prefs.loadDouble(prefName + "ColourG(0..1)"), 
 				(float)prefs.loadDouble(prefName + "ColourB(0..1)"));
+		materialColour = new Appearance();
+		materialColour.setMaterial(new Material(col, black, col, black, 101f));
 		
 		// Check Extruder is available
 		try {
@@ -1030,7 +1039,7 @@ public class GenericExtruder extends Device implements Extruder{
     /* (non-Javadoc)
      * @see org.reprap.Extruder#getColour()
      */    
-    public Color3f getColour()
+    public Appearance getAppearance()
     {
     	return materialColour;
     }  

@@ -2,6 +2,7 @@ package org.reprap.gui;
 import java.awt.BorderLayout;
 import javax.media.j3d.*;
 import javax.swing.WindowConstants;
+import org.reprap.Extruder;
 
 public class PreviewWindow extends javax.swing.JFrame implements Previewer {
 
@@ -25,8 +26,8 @@ public class PreviewWindow extends javax.swing.JFrame implements Previewer {
 		}
 	}
 	
-	public void setMaterial(int index, double extrusionSize, double extrusionHeight) {
-		panel.setMaterial(index, extrusionSize, extrusionHeight);
+	public void setMaterial(Extruder extruder) {
+		panel.setMaterial(extruder);
 	}
 	
 	public void addSegment(double x1, double y1, double z1,

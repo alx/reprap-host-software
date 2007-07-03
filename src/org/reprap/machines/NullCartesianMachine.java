@@ -79,7 +79,7 @@ public class NullCartesianMachine implements CartesianPrinter {
 			String prefix = "Extruder" + i;
 			extruders[i] = new NullExtruder(config, i);
 		}
-		extruder = 0;
+		extruder = 1;
 
 		currentX = 0;
 		currentY = 0;
@@ -152,9 +152,12 @@ public class NullCartesianMachine implements CartesianPrinter {
 	 */
 	public void selectMaterial(int materialIndex) {
 		if (isCancelled()) return;
+		if(materialIndex < 0 || materialIndex >= extruderCount)
+			System.err.println("Selected material (" + materialIndex + ") is out of range.");
+		else
+			extruder = materialIndex;
 		if (previewer != null)
-			previewer.setMaterial(materialIndex, extruders[extruder].getExtrusionSize(), 
-					extruders[extruder].getExtrusionHeight());
+			previewer.setMaterial(extruders[extruder]);
 	}
 
 	/* (non-Javadoc)

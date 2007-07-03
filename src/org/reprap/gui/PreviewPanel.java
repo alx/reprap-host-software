@@ -4,10 +4,11 @@ import javax.media.j3d.*;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.vecmath.Color3f;
+import org.reprap.Extruder;
 //import javax.vecmath.Vector3d;
 
 public class PreviewPanel extends Panel3D implements Previewer {
-	private int material = 0;
+	private Extruder extruder = null;
 	private double previousZ = Double.NaN;
 	private JCheckBoxMenuItem layerPauseCheckbox = null, segmentPauseCheckbox = null;
 	private BranchGroup extrusionsNew;
@@ -16,8 +17,8 @@ public class PreviewPanel extends Panel3D implements Previewer {
     
 	private StatusMessage statusWindow;
 	
-	private double extrusionSize = 1.0;
-	private double extrusionHeight = 1.0;
+//	private double extrusionSize = 1.0;
+//	private double extrusionHeight = 1.0;
 		
 	/**
 	 * Constructor
@@ -112,10 +113,8 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	/**
 	 * Set the current extrusion material (or equivalently, the extruder head)
 	 */
-	public void setMaterial(int index, double extrusionSize, double extrusionHeight) {
-		material = index;
-		this.extrusionSize = extrusionSize;
-		this.extrusionHeight = extrusionHeight;
+	public void setMaterial(Extruder ext) {
+		extruder = ext;
 	}
 
 	/**
@@ -133,10 +132,10 @@ public class PreviewPanel extends Panel3D implements Previewer {
 		
 		BranchGroup group = new BranchGroup();
 		group.setCapability(BranchGroup.ALLOW_DETACH);
-		addBlock(group, extrusion_app,
+		addBlock(group, extruder.getAppearance(),
 				x1, y1, z1,
 				x2, y2, z2,
-				(float)(extrusionSize * 0.5), (float)(extrusionHeight * 0.5));
+				(float)(extruder.getExtrusionSize() * 0.5), (float)(extruder.getExtrusionHeight() * 0.5));
 		extrusionsNew.addChild(group);
 		previousZ = z2;
 	}
@@ -254,7 +253,7 @@ public class PreviewPanel extends Panel3D implements Previewer {
 		BranchGroup subLower = new BranchGroup();
 		if(ls != null)
 		{
-			ls.setAppearance(shell_app);
+			ls.setAppearance(extruder.getAppearance());
 			subLower.addChild(ls);
 			lowerShell.addChild(subLower);
 		}

@@ -7,7 +7,9 @@ import java.io.IOException;
 import org.reprap.Device;
 import org.reprap.Extruder;
 import org.reprap.Preferences;
+import javax.media.j3d.Appearance;
 import javax.vecmath.Color3f;
+import javax.media.j3d.Material;
 
 /**
  * @author Adrian
@@ -185,12 +187,19 @@ public class NullExtruder implements Extruder{
 	 * indicates if the extruder is present in the network.
 	 */
 	private boolean isCommsAvailable = false;
+
+	
+	/**
+	 *  The colour black
+	 */	
+	protected static final Color3f black = new Color3f(0, 0, 0);
 	
 	/**
 	 *  The colour of the material to use in the simulation windows 
 	 */	
-	private Color3f materialColour;
+	private Appearance materialColour;
 	
+
 	/**
 	 * @param prefs
 	 * @param extruderId
@@ -223,10 +232,13 @@ public class NullExtruder implements Extruder{
 		offsetX = prefs.loadDouble(prefName + "OffsetX(mm)");
 		offsetY = prefs.loadDouble(prefName + "OffsetY(mm)");
 		offsetZ = prefs.loadDouble(prefName + "OffsetZ(mm)");
-		materialColour = new Color3f((float)prefs.loadDouble(prefName + "ColourR(0..1)"), 
+
+		Color3f col = new Color3f((float)prefs.loadDouble(prefName + "ColourR(0..1)"), 
 				(float)prefs.loadDouble(prefName + "ColourG(0..1)"), 
-				(float)prefs.loadDouble(prefName + "ColourB(0..1)"));		
-		
+				(float)prefs.loadDouble(prefName + "ColourB(0..1)"));
+		materialColour = new Appearance();
+		materialColour.setMaterial(new Material(col, black, col, black, 101f));		
+			
 		isCommsAvailable = true;
 	
 	}
@@ -467,7 +479,7 @@ public class NullExtruder implements Extruder{
     /* (non-Javadoc)
      * @see org.reprap.Extruder#getColour()
      */     
-    public Color3f getColour()
+    public Appearance getAppearance()
     {
     	return materialColour;
     }  

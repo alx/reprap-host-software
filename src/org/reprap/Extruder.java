@@ -1,8 +1,9 @@
 package org.reprap;
 import java.io.IOException;
-import javax.vecmath.Color3f;
+import javax.media.j3d.Appearance;
 
 import org.reprap.Device;
+
 public interface Extruder {
 
 	
@@ -173,7 +174,7 @@ public interface Extruder {
     public double getOffsetZ();
     
     /**
-     * @return the colour to use in the simulation window for this material
+     * @return the appearance (colour) to use in the simulation window for this material
      */
-    public Color3f getColour();
+    public Appearance getAppearance();
 }

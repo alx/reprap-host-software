@@ -13,6 +13,7 @@ import org.reprap.devices.GenericStepperMotor;
 import org.reprap.devices.pseudo.LinePrinter;
 import org.reprap.gui.CalibrateZAxis;
 import org.reprap.gui.Previewer;
+import org.reprap.Extruder;
 
 /**
  * 
@@ -97,7 +98,7 @@ public class Reprap implements CartesianPrinter {
 	/**
 	 * Array containing the extruders on the 3D printer
 	 */
-	private GenericExtruder extruders[];
+	private Extruder extruders[];
 
 	/**
 	 * Current extruder?
@@ -335,10 +336,14 @@ public class Reprap implements CartesianPrinter {
 	 */
 	public void selectMaterial(int materialIndex) {
 		if (isCancelled()) return;
-
+		
+		if(materialIndex < 0 || materialIndex >= extruderCount)
+			System.err.println("Selected material (" + materialIndex + ") is out of range.");
+		else
+			extruder = materialIndex;
+		
 		if (previewer != null)
-			previewer.setMaterial(materialIndex, extruders[extruder].getExtrusionSize(), 
-					extruders[extruder].getExtrusionHeight());
+			previewer.setMaterial(extruders[extruder]);
 
 		if (isCancelled()) return;
 		// TODO Select new material
@@ -762,7 +767,7 @@ public class Reprap implements CartesianPrinter {
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#getExtruder()
 	 */
-	public GenericExtruder getExtruder()
+	public Extruder getExtruder()
 	{
 		return extruders[extruder];
 	}
