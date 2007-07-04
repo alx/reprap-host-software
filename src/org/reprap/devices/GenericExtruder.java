@@ -1043,4 +1043,12 @@ public class GenericExtruder extends Device implements Extruder{
     {
     	return materialColour;
     }  
+    
+    /**
+     * @return the name of the material
+     */
+    public String toString()
+    {
+    	return materialType;
+    }
 }

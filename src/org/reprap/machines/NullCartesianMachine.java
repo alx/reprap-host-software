@@ -156,8 +156,8 @@ public class NullCartesianMachine implements CartesianPrinter {
 			System.err.println("Selected material (" + materialIndex + ") is out of range.");
 		else
 			extruder = materialIndex;
-		if (previewer != null)
-			previewer.setMaterial(extruders[extruder]);
+//		if (previewer != null)
+//			previewer.setMaterial(extruders[extruder]);
 	}
 
 	/* (non-Javadoc)

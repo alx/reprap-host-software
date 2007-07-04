@@ -2,20 +2,22 @@ package org.reprap.gui;
 import java.awt.BorderLayout;
 import javax.media.j3d.*;
 import javax.swing.WindowConstants;
-import org.reprap.Extruder;
+//import org.reprap.Extruder;
+import org.reprap.Printer;
 
 public class PreviewWindow extends javax.swing.JFrame implements Previewer {
 
 	private PreviewPanel panel;
 	
-	public PreviewWindow() {
+	public PreviewWindow(Printer p) {
 		super();
-		initGUI();
+		initGUI(p);
 	}
 	
-	private void initGUI() {
+	private void initGUI(Printer p) {
 		try {
 			panel = new PreviewPanel();
+			panel.setMachine(p);
 			getContentPane().add(panel, BorderLayout.CENTER);
 			setDefaultCloseOperation(WindowConstants.EXIT_ON_CLOSE);
 			pack();
@@ -26,8 +28,8 @@ public class PreviewWindow extends javax.swing.JFrame implements Previewer {
 		}
 	}
 	
-	public void setMaterial(Extruder extruder) {
-		panel.setMaterial(extruder);
+	public void setMachine(Printer p) {
+		panel.setMachine(p);
 	}
 	
 	public void addSegment(double x1, double y1, double z1,

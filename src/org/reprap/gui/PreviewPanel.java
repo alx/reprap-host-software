@@ -5,10 +5,13 @@ import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.vecmath.Color3f;
 import org.reprap.Extruder;
+import org.reprap.Printer;
+
 //import javax.vecmath.Vector3d;
 
 public class PreviewPanel extends Panel3D implements Previewer {
-	private Extruder extruder = null;
+	private Printer reprap;
+//	private Extruder extruder = null;
 	private double previousZ = Double.NaN;
 	private JCheckBoxMenuItem layerPauseCheckbox = null, segmentPauseCheckbox = null;
 	private BranchGroup extrusionsNew;
@@ -29,7 +32,12 @@ public class PreviewPanel extends Panel3D implements Previewer {
 		extrusionsOld = null;
 		lowerShell = null;
 	}
-
+	
+	/**
+	 *
+	 */
+	public void setMachine(Printer p) { reprap = p; }
+	
 	/**
 	 * Set bg light grey
 	 */
@@ -113,9 +121,9 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	/**
 	 * Set the current extrusion material (or equivalently, the extruder head)
 	 */
-	public void setMaterial(Extruder ext) {
-		extruder = ext;
-	}
+//	public void setMaterial(Extruder ext) {
+//		extruder = ext;
+//	}
 
 	/**
 	 * Called to add a new segment of extruded material to the preview
@@ -132,10 +140,10 @@ public class PreviewPanel extends Panel3D implements Previewer {
 		
 		BranchGroup group = new BranchGroup();
 		group.setCapability(BranchGroup.ALLOW_DETACH);
-		addBlock(group, extruder.getAppearance(),
+		addBlock(group, reprap.getExtruder().getAppearance(),
 				x1, y1, z1,
 				x2, y2, z2,
-				(float)(extruder.getExtrusionSize() * 0.5), (float)(extruder.getExtrusionHeight() * 0.5));
+				(float)(reprap.getExtruder().getExtrusionSize() * 0.5), (float)(reprap.getExtruder().getExtrusionHeight() * 0.5));
 		extrusionsNew.addChild(group);
 		previousZ = z2;
 	}
@@ -253,7 +261,7 @@ public class PreviewPanel extends Panel3D implements Previewer {
 		BranchGroup subLower = new BranchGroup();
 		if(ls != null)
 		{
-			ls.setAppearance(extruder.getAppearance());
+			ls.setAppearance(reprap.getExtruder().getAppearance());
 			subLower.addChild(ls);
 			lowerShell.addChild(subLower);
 		}

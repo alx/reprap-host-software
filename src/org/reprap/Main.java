@@ -131,7 +131,7 @@ public class Main {
 			}});
         viewMenu.add(viewToggle);
         
-        viewBuilder = new JCheckBoxMenuItem("Builder");
+        viewBuilder = new JCheckBoxMenuItem("Setup build");
         viewBuilder.setSelected(true);
         viewBuilder.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -139,7 +139,7 @@ public class Main {
 			}});
         viewMenu.add(viewBuilder);
         
-        viewPreview = new JCheckBoxMenuItem("Preview");
+        viewPreview = new JCheckBoxMenuItem("Progress");
         viewPreview.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
 				onViewPreview();
@@ -191,19 +191,19 @@ public class Main {
 			}});
         manipMenu.add(deleteSTL);
 
-        JMenu produceMenu = new JMenu("Produce");
+        JMenu produceMenu = new JMenu("Build");
         produceMenu.setMnemonic(KeyEvent.VK_P);
         menubar.add(produceMenu);
 
-        produceProduceT = new JMenuItem("Produce test piece...", KeyEvent.VK_T);
-        produceProduceT.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.CTRL_MASK));
-        produceProduceT.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				onProduceT();
-			}});
-        produceMenu.add(produceProduceT);
+//        produceProduceT = new JMenuItem("Produce test piece...", KeyEvent.VK_T);
+//        produceProduceT.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_T, ActionEvent.CTRL_MASK));
+//        produceProduceT.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent arg0) {
+//				onProduceT();
+//			}});
+//        produceMenu.add(produceProduceT);
         
-        produceProduceB = new JMenuItem("Produce build...", KeyEvent.VK_B);
+        produceProduceB = new JMenuItem("Start build...", KeyEvent.VK_B);
         produceProduceB.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_B, ActionEvent.CTRL_MASK));
         produceProduceB.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
@@ -229,12 +229,12 @@ public class Main {
 
         produceMenu.addSeparator();
 
-        JMenuItem estimateMenuItemT = new JMenuItem("Estimate test-piece resources...", KeyEvent.VK_E);
-        estimateMenuItemT.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				estimateResourcesT();
-			}});
-        produceMenu.add(estimateMenuItemT);
+//        JMenuItem estimateMenuItemT = new JMenuItem("Estimate test-piece resources...", KeyEvent.VK_E);
+//        estimateMenuItemT.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent arg0) {
+//				estimateResourcesT();
+//			}});
+//        produceMenu.add(estimateMenuItemT);
         
         JMenuItem estimateMenuItemB = new JMenuItem("Estimate build resources...", KeyEvent.VK_E);
         estimateMenuItemB.addActionListener(new ActionListener() {
@@ -287,18 +287,18 @@ public class Main {
         toolsMenu.add(toolsExtruderProfiler);
 
         
-        JMenuItem toolsSquareTest = new JMenuItem("Square Test", KeyEvent.VK_Q);
-        toolsSquareTest.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				try {
-					org.reprap.SquareTest.main(null);
-				}
-              	catch (Exception ex) {
-             		JOptionPane.showMessageDialog(null, "Square Test exception: " + ex);
-         			ex.printStackTrace();
-             	}
-			}});
-        toolsMenu.add(toolsSquareTest);
+//        JMenuItem toolsSquareTest = new JMenuItem("Square Test", KeyEvent.VK_Q);
+//        toolsSquareTest.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent arg0) {
+//				try {
+//					org.reprap.SquareTest.main(null);
+//				}
+//              	catch (Exception ex) {
+//             		JOptionPane.showMessageDialog(null, "Square Test exception: " + ex);
+//         			ex.printStackTrace();
+//             	}
+//			}});
+//        toolsMenu.add(toolsSquareTest);
         
         JMenu diagnosticsMenu = new JMenu("Diagnostics");
         toolsMenu.add(diagnosticsMenu);
@@ -311,7 +311,7 @@ public class Main {
         // which may be invisible.
 
         Box builderFrame = new Box(BoxLayout.Y_AXIS);
-        builderFrame.add(new JLabel("Builder"));
+        builderFrame.add(new JLabel("Setup build"));
         builder = new RepRapBuild();
         builderFrame.setMinimumSize(new Dimension(0,0));
         builderFrame.add(builder);
@@ -344,7 +344,7 @@ public class Main {
 		splitter.setDividerLocation(1.0);*/
 		
         Box pane = new Box(BoxLayout.Y_AXIS);
-        pane.add(new JLabel("Progress Preview"));
+        pane.add(new JLabel("Build progress"));
 		preview = new PreviewPanel();
 		pane.setMinimumSize(new Dimension(0,0));
 		pane.add(preview);
@@ -391,7 +391,7 @@ public class Main {
 					preview.setLayerPause(layerPause);
 					
 					Producer producer = new Producer(preview, builder);
-					producer.produce(true);
+					producer.produce();
 					String usage = getResourceMessage(producer);
 					producer.dispose();
 			        cancelMenuItem.setEnabled(false);
@@ -426,7 +426,7 @@ public class Main {
 					preview.setLayerPause(layerPause);
 					
 					Producer producer = new Producer(preview, builder);
-					producer.produce(false);
+					producer.produce();
 					String usage = getResourceMessage(producer);
 					producer.dispose();
 			        cancelMenuItem.setEnabled(false);
@@ -512,7 +512,7 @@ public class Main {
 	    	EstimationProducer producer = null;
 	    	try {
 	    		producer = new EstimationProducer(builder);
-	    		producer.produce(true);
+	    		producer.produce();
 	    		JOptionPane.showMessageDialog(mainFrame,
 	    				"Expected " + getResourceMessage(producer));
 	    		
@@ -528,7 +528,7 @@ public class Main {
     	EstimationProducer producer = null;
     	try {
     		producer = new EstimationProducer(builder);
-    		producer.produce(false);
+    		producer.produce();
     		JOptionPane.showMessageDialog(mainFrame,
     				"Expected " + getResourceMessage(producer));
     		

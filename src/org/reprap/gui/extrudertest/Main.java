@@ -45,6 +45,7 @@ public class Main extends javax.swing.JDialog {
 	private JCheckBox materialEmpty;
 	private JButton extrudeButton;
 	private JLabel jLabel6;
+	private JLabel jLabel7;	
 	private JSlider extruderSpeed;
 	private JCheckBox heaterActive;
 	private JTextField currentTemperature;
@@ -167,6 +168,7 @@ public class Main extends javax.swing.JDialog {
 				jLabel6.setHorizontalAlignment(SwingConstants.RIGHT);
 				jLabel6.setBounds(5, 14, 100, 28);
 			}
+			
 			{
 				jLabel3 = new JLabel();
 				getContentPane().add(jLabel3);
@@ -207,6 +209,14 @@ public class Main extends javax.swing.JDialog {
 					}
 				});
 			}
+			{
+				jLabel7 = new JLabel();
+				getContentPane().add(jLabel7);
+				jLabel7.setText(extruders[extruder].toString());
+				jLabel7.setHorizontalAlignment(SwingConstants.RIGHT);
+				jLabel7.setBounds(110, 28, 30, 42);
+			}
+			
 			{
 				jLabel2 = new JLabel();
 				getContentPane().add(jLabel2);
@@ -352,6 +362,7 @@ public class Main extends javax.swing.JDialog {
 				if(extruder >= extruderCount)
 					extruder = extruderCount - 1;
 				desiredExtruder.setText(Integer.valueOf(extruder).toString());
+				jLabel7.setText(extruders[extruder].toString());
 		}
 		catch (Exception ex) {
 			JOptionPane.showMessageDialog(null, "Exception setting extruder: " + ex);

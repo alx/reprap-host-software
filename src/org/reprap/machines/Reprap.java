@@ -342,8 +342,8 @@ public class Reprap implements CartesianPrinter {
 		else
 			extruder = materialIndex;
 		
-		if (previewer != null)
-			previewer.setMaterial(extruders[extruder]);
+//		if (previewer != null)
+//			previewer.setMaterial(extruders[extruder]);
 
 		if (isCancelled()) return;
 		// TODO Select new material

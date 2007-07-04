@@ -82,7 +82,7 @@ abstract public class Panel3D extends JPanel {
 //	protected Appearance shell_app = null; // Colour for the lower shell during print.
 	protected Appearance picked_app = null; // Colour for the selected part
 	protected Appearance wv_app = null; // Colour for the working volume
-	protected Appearance extrusion_app = null; // Colour for extruded material
+//	protected Appearance extrusion_app = null; // Colour for extruded material
 	protected BranchGroup wv_and_stls = new BranchGroup(); // Where in the scene
 
 	// the
@@ -165,8 +165,8 @@ abstract public class Panel3D extends JPanel {
 		picked_app = new Appearance();
 		picked_app.setMaterial(new Material(selectedColour, black, selectedColour, black, 0f));
 		
-		extrusion_app = new Appearance();
-		extrusion_app.setMaterial(new Material(unselectedColour, black, unselectedColour, black, 101f));
+//		extrusion_app = new Appearance();
+//		extrusion_app.setMaterial(new Material(unselectedColour, black, unselectedColour, black, 101f));
 		
 //		shell_app = new Appearance();
 //		shell_app.setMaterial(new Material(shellColour, black, shellColour, black, 101f));

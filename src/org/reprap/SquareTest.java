@@ -14,7 +14,7 @@ public class SquareTest {
 
 		// Comment out the following three
 		// lines if you don't have java3d or don't want to preview
-		PreviewWindow preview = new PreviewWindow();
+		PreviewWindow preview = new PreviewWindow(reprap);
 		preview.setVisible(true);
 		reprap.setPreviewer(preview);
 

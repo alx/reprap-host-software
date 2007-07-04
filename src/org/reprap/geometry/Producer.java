@@ -40,6 +40,7 @@ public class Producer {
 	public Producer(PreviewPanel preview, RepRapBuild builder) throws Exception {
 		reprap = MachineFactory.create();
 		reprap.setPreviewer(preview);
+		preview.setMachine(reprap);
 		bld = builder;
 		oddHatchDirection = new RrHalfPlane(new Rr2Point(0.0, 0.0), new Rr2Point(1.0, 1.0));
 		evenHatchDirection = new RrHalfPlane(new Rr2Point(0.0, 1.0), new Rr2Point(1.0, 0.0));
@@ -62,86 +63,86 @@ public class Producer {
 		return a;
 	}
 	
-	/**
-	 * @return hexagonal object
-	 */
-	public RrCSGPolygon hex()
-	{
-		double hexSize = 20;
-		double hexX = 15, hexY = 15;
-		
-		RrCSG r = RrCSG.universe();
-		Rr2Point pold = new Rr2Point(hexX + hexSize/2, hexY);
-		Rr2Point p;
-		double theta = 0; 
-		for(int i = 0; i < 6; i++)
-		{
-			theta += Math.PI * 60. / 180.0;
-			p = new Rr2Point(hexX + Math.cos(theta)*hexSize/2, hexY + Math.sin(theta)*hexSize/2);
-			r = RrCSG.intersection(r, new RrCSG(new RrHalfPlane(p, pold)));
-			pold = p;
-		}
-		
-		// Horrid hacks in multipliers next...
-		return new RrCSGPolygon(r, new RrBox(new Rr2Point(hexX - hexSize*0.57, hexY - hexSize*0.61), 
-				new Rr2Point(hexX + hexSize*0.537, hexY + hexSize*0.623)));
-	}
+//	/**
+//	 * @return hexagonal object
+//	 */
+//	public RrCSGPolygon hex()
+//	{
+//		double hexSize = 20;
+//		double hexX = 15, hexY = 15;
+//		
+//		RrCSG r = RrCSG.universe();
+//		Rr2Point pold = new Rr2Point(hexX + hexSize/2, hexY);
+//		Rr2Point p;
+//		double theta = 0; 
+//		for(int i = 0; i < 6; i++)
+//		{
+//			theta += Math.PI * 60. / 180.0;
+//			p = new Rr2Point(hexX + Math.cos(theta)*hexSize/2, hexY + Math.sin(theta)*hexSize/2);
+//			r = RrCSG.intersection(r, new RrCSG(new RrHalfPlane(p, pold)));
+//			pold = p;
+//		}
+//		
+//		// Horrid hacks in multipliers next...
+//		return new RrCSGPolygon(r, new RrBox(new Rr2Point(hexX - hexSize*0.57, hexY - hexSize*0.61), 
+//				new Rr2Point(hexX + hexSize*0.537, hexY + hexSize*0.623)));
+//	}
+	
+//	/**
+//	 * @return Adrian's testshape; a 3D object
+//	 */
+//	public RrCSGPolygon adriansTestShape()
+//	{
+//		Rr2Point p = new Rr2Point(3, 5);
+//		Rr2Point q = new Rr2Point(7, 27);
+//		Rr2Point r = new Rr2Point(32, 30);
+//		Rr2Point s = new Rr2Point(31, 1);
+//		
+//		Rr2Point pp = new Rr2Point(12, 21);
+//		Rr2Point qq = new Rr2Point(18, 32);
+//		Rr2Point rr = new Rr2Point(15, 17);    
+//		
+//		RrHalfPlane ph = new RrHalfPlane(p, q);
+//		RrHalfPlane qh = new RrHalfPlane(q, r);
+//		RrHalfPlane rh = new RrHalfPlane(r, s);
+//		RrHalfPlane sh = new RrHalfPlane(s, p);
+//		
+//		RrHalfPlane pph = new RrHalfPlane(pp, qq);
+//		RrHalfPlane qqh = new RrHalfPlane(qq, rr);
+//		RrHalfPlane rrh = new RrHalfPlane(rr, pp);
+//		
+//		RrCSG pc = new RrCSG(ph);
+//		RrCSG qc = new RrCSG(qh);
+//		RrCSG rc = new RrCSG(rh);
+//		RrCSG sc = new RrCSG(sh);
+//		
+//		pc = RrCSG.intersection(pc, qc);
+//		rc = RrCSG.intersection(sc, rc);		
+//		pc = RrCSG.intersection(pc, rc);
+//		
+//		RrCSG ppc = new RrCSG(pph);
+//		RrCSG qqc = new RrCSG(qqh);
+//		RrCSG rrc = new RrCSG(rrh);
+//		
+//		ppc = RrCSG.intersection(ppc, qqc);
+//		ppc = RrCSG.intersection(ppc, rrc);
+//		ppc = RrCSG.difference(pc, ppc);
+//		
+//		pc = ppc.offset(-5);
+//		ppc = RrCSG.difference(ppc, pc);
+//		
+//		RrCSGPolygon result = new RrCSGPolygon(ppc, new 
+//				RrBox(new Rr2Point(0,0), new Rr2Point(110,110)));
+////		result.divide(1.0e-6, 1);
+////		new RrGraphics(result, true);
+//		return result;
+//	}
 	
 	/**
-	 * @return Adrian's testshape; a 3D object
-	 */
-	public RrCSGPolygon adriansTestShape()
-	{
-		Rr2Point p = new Rr2Point(3, 5);
-		Rr2Point q = new Rr2Point(7, 27);
-		Rr2Point r = new Rr2Point(32, 30);
-		Rr2Point s = new Rr2Point(31, 1);
-		
-		Rr2Point pp = new Rr2Point(12, 21);
-		Rr2Point qq = new Rr2Point(18, 32);
-		Rr2Point rr = new Rr2Point(15, 17);    
-		
-		RrHalfPlane ph = new RrHalfPlane(p, q);
-		RrHalfPlane qh = new RrHalfPlane(q, r);
-		RrHalfPlane rh = new RrHalfPlane(r, s);
-		RrHalfPlane sh = new RrHalfPlane(s, p);
-		
-		RrHalfPlane pph = new RrHalfPlane(pp, qq);
-		RrHalfPlane qqh = new RrHalfPlane(qq, rr);
-		RrHalfPlane rrh = new RrHalfPlane(rr, pp);
-		
-		RrCSG pc = new RrCSG(ph);
-		RrCSG qc = new RrCSG(qh);
-		RrCSG rc = new RrCSG(rh);
-		RrCSG sc = new RrCSG(sh);
-		
-		pc = RrCSG.intersection(pc, qc);
-		rc = RrCSG.intersection(sc, rc);		
-		pc = RrCSG.intersection(pc, rc);
-		
-		RrCSG ppc = new RrCSG(pph);
-		RrCSG qqc = new RrCSG(qqh);
-		RrCSG rrc = new RrCSG(rrh);
-		
-		ppc = RrCSG.intersection(ppc, qqc);
-		ppc = RrCSG.intersection(ppc, rrc);
-		ppc = RrCSG.difference(pc, ppc);
-		
-		pc = ppc.offset(-5);
-		ppc = RrCSG.difference(ppc, pc);
-		
-		RrCSGPolygon result = new RrCSGPolygon(ppc, new 
-				RrBox(new Rr2Point(0,0), new Rr2Point(110,110)));
-//		result.divide(1.0e-6, 1);
-//		new RrGraphics(result, true);
-		return result;
-	}
-	
-	/**
-	 * @param testPiece
 	 * @throws Exception
 	 */
-	public void produce(boolean testPiece) throws Exception {
+//	public void produce(boolean testPiece) throws Exception {
+	public void produce() throws Exception {
 
         // Fallback defaults
 		//int extrusionSpeed = 200;
@@ -169,7 +170,7 @@ public class Producer {
 //		reprap.setSpeedZ(movementSpeedZ);
 		System.out.println("Intialising reprap");
 		reprap.initialise();
-		System.out.println("Selecting material");
+		System.out.println("Selecting material 0");
 		reprap.selectMaterial(0);
 		//reprap.setExtruderSpeed(extrusionSpeed);
 		System.out.println("Setting temperature");
@@ -196,17 +197,17 @@ public class Producer {
 		boolean isEvenLayer = true;
 		STLSlice stlc;
 		double zMax;
-		if(testPiece)
-		{
-			stlc = null;
-			zMax = 5;
-		} else
-		{
+//		if(testPiece)
+//		{
+//			stlc = null;
+//			zMax = 5;
+//		} else
+//		{
 			bld.mouseToWorld();
 			stlc = new STLSlice(bld.getSTLs());
 			zMax = stlc.maxZ();
 			// zMax = 1.6;  // For testing.
-		}
+//		}
 		
 		double startZ;
 		double endZ;
@@ -265,12 +266,12 @@ public class Producer {
 				break;
 
 			LayerProducer layer;
-			if(testPiece)
-			{
-				layer = new LayerProducer(reprap, z, hex(), null,
-						isEvenLayer?evenHatchDirection:oddHatchDirection);
-			} else
-			{
+//			if(testPiece)
+//			{
+//				layer = new LayerProducer(reprap, z, hex(), null,
+//						isEvenLayer?evenHatchDirection:oddHatchDirection);
+//			} else
+//			{
 				RrCSGPolygon slice = stlc.slice(z+reprap.getExtruder().getExtrusionHeight()*0.5, 
 						LayerProducer.solidMaterial(), LayerProducer.gapMaterial(), bld.getObjectColour());
 				Shape3D lowerShell = stlc.getShape3D();
@@ -280,7 +281,7 @@ public class Producer {
 				else
 					layer = null;
 
-			}
+//			}
 			
 			if(layer != null)
 				layer.plot();
