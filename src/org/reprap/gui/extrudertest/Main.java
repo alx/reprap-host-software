@@ -214,7 +214,7 @@ public class Main extends javax.swing.JDialog {
 				getContentPane().add(jLabel7);
 				jLabel7.setText(extruders[extruder].toString());
 				jLabel7.setHorizontalAlignment(SwingConstants.RIGHT);
-				jLabel7.setBounds(110, 28, 30, 42);
+				jLabel7.setBounds(40, 42, 100, 28);
 			}
 			
 			{

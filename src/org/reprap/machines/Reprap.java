@@ -157,7 +157,7 @@ public class Reprap implements CartesianPrinter {
 				new SNAPAddress(prefs.loadInt(prefix + "Address")), prefs, i);
 		}
 		
-		extruder=0;
+		extruder=1;
 		
 		layerPrinter = new LinePrinter(motorX, motorY, extruders[extruder]);
 
