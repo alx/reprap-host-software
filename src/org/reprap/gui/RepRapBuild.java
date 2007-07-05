@@ -112,13 +112,13 @@ import com.sun.j3d.utils.picking.PickTool;
 import org.reprap.Preferences;
 
 class MaterialRadioButtons extends JPanel{
-	
-	JPanel radioPanel;
 	private static STLObject stl;
+	private static JFrame frame;
 	
 	private MaterialRadioButtons()
 	{
 		super(new BorderLayout());
+		JPanel radioPanel;
 		ButtonGroup bGroup = new ButtonGroup();
 		String[] names;
 		radioPanel = new JPanel(new GridLayout(0, 1));
@@ -131,6 +131,7 @@ class MaterialRadioButtons extends JPanel{
 		try
 		{
 			names = Preferences.allMaterials();
+			stl.setMaterial(names[0]);
 			for(int i = 0; i < names.length; i++)
 			{
 				JRadioButton b = new JRadioButton(names[i]);
@@ -140,23 +141,19 @@ class MaterialRadioButtons extends JPanel{
 							stl.setMaterial(e.getActionCommand());
 					}});
 		        if(i == 0)
-		        {
-		        	stl.setMaterial(names[i]);
 		        	b.setSelected(true);
-		        }
 		        bGroup.add(b);
 		        radioPanel.add(b);
 			}
 			
-//			JButton okButton = new JButton();
-//			radioPanel.add(okButton);
-//			okButton.setText("OK");
-//			okButton.setSize(30, 30);
-//			okButton.addActionListener(new ActionListener() {
-//				public void actionPerformed(ActionEvent evt) {
-//					
-//				}
-//			});
+			JButton okButton = new JButton();
+			radioPanel.add(okButton);
+			okButton.setText("OK");
+			okButton.addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent evt) {
+					frame.dispose();
+				}
+			});
 			
 			add(radioPanel, BorderLayout.LINE_START);
 			setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
@@ -170,7 +167,7 @@ class MaterialRadioButtons extends JPanel{
     public static void createAndShowGUI(STLObject s) {
     	stl = s;
         //Create and set up the window.
-        JFrame frame = new JFrame("Material selector");
+    	frame = new JFrame("Material selector");
         frame.setLocation(500, 400);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
@@ -210,8 +207,8 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 	}
 	
 	/**
-	 * @return one of the names of the materials for the extruders
-	 * in the preferences file.
+	 * Set the material to make an STL object from.
+	 * @param stl 
 	 */
 	private void getMaterialName(STLObject stl)
 	{
@@ -219,7 +216,7 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 			MaterialRadioButtons.createAndShowGUI(stl);
 		}
       	catch (Exception ex) {
-     		JOptionPane.showMessageDialog(null, "Stepper exerciser exception: " + ex);
+     		JOptionPane.showMessageDialog(null, "RepRapBuild material select exception: " + ex);
  			ex.printStackTrace();
      	}
 	}
@@ -313,7 +310,7 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 					if (picked != null) {
 						picked.setAppearance(picked_app); // Highlight it
 						if (lastPicked != null)
-							lastPicked.setAppearance(default_app); // lowlight
+							lastPicked.restoreAppearance(); // lowlight
 						// the last
 						// one
 						mouse.move(picked, true); // Set the mouse to move it
@@ -329,7 +326,7 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 	public void mouseToWorld()
 	{
 		if (lastPicked != null)
-			lastPicked.setAppearance(default_app);
+			lastPicked.restoreAppearance();
 		mouse.move(world, false); // ...switch the mouse to moving the world
 		lastPicked = null;
 	}
@@ -415,6 +412,22 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 	public void inToMM() {
 		if (lastPicked != null)
 			lastPicked.inToMM();
+	}
+	
+	public void materialSTL()
+	{
+		if (lastPicked == null)
+			return;
+		STLObject stl;
+		for(int i = 0; i < stls.size(); i++)
+		{
+			stl = (STLObject)stls.get(i);
+			if(stl == lastPicked)
+			{
+				getMaterialName(stl);
+				break;
+			}
+		}
 	}
 	
 	// Callback to delete one of the loaded objects

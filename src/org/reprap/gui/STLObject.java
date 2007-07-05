@@ -76,6 +76,7 @@ public class STLObject
     public String name = null;         // Name is the file name plus a digit indicating
                                        // the order of loading
     private String material = null;	   // The name of the material in the extruder for this object
+    private Appearance app;			   // The appearance of the extruded material from which this will be made
     
     // Load an STL object from a file with a known offset (set that null to put
     // the object bottom-left-at-origin), an index count in the scene, 
@@ -239,8 +240,8 @@ public class STLObject
     {
     	//System.out.println("Material selected = " + s);
     	material = s;
-    	Appearance a = NullExtruder.getAppearanceFromNumber(NullExtruder.getNumberFromMaterial(s));
-    	setAppearance(a);
+    	app = NullExtruder.getAppearanceFromNumber(NullExtruder.getNumberFromMaterial(s));
+    	setAppearance(app);
     }
     
     /**
@@ -476,6 +477,14 @@ public class STLObject
     public void setAppearance(Appearance a)
     {
         setAppearance_r(stl, a);     
+    }
+    
+    /**
+     * Restore the appearance to the correct colour.
+     */
+    public void restoreAppearance()
+    {
+        setAppearance_r(stl, app);     
     }
     
     // Why the !*$! aren't these in Vector3d???
