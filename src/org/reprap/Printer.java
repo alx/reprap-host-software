@@ -238,4 +238,11 @@ public interface Printer {
 	 * @param ls
 	 */
 	public void setLowerShell(Shape3D ls);
+	
+	/**
+	 * @param name
+	 * @return the extruder for the material called name; null if not found.
+	 */
+	public Extruder getExtruder(String name);
+
 }

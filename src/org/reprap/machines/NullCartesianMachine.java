@@ -424,4 +424,16 @@ public class NullCartesianMachine implements CartesianPrinter {
 	{
 		return extruders[extruder];
 	}
+	
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#getExtruder(String)
+	 */
+	public Extruder getExtruder(String name)
+	{
+		for(int i = 0; i < extruderCount; i++)
+			if(name.equals(extruders[i].toString()))
+				return extruders[i];
+		return null;
+	}
+	
 }

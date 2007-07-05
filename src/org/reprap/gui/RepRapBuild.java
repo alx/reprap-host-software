@@ -85,10 +85,13 @@
 
 package org.reprap.gui;
 
-import java.awt.BorderLayout;
-import java.awt.Cursor;
-import java.awt.event.MouseEvent;
-import java.awt.event.MouseListener;
+import java.awt.*;
+import java.awt.event.*;
+import javax.swing.*;
+//import java.awt.BorderLayout;
+//import java.awt.Cursor;
+//import java.awt.event.MouseEvent;
+//import java.awt.event.MouseListener;
 import java.util.ArrayList;
 
 import javax.media.j3d.AmbientLight;
@@ -106,6 +109,63 @@ import javax.vecmath.Color3f;
 import com.sun.j3d.utils.picking.PickCanvas;
 import com.sun.j3d.utils.picking.PickResult;
 import com.sun.j3d.utils.picking.PickTool;
+import org.reprap.Preferences;
+
+class MaterialRadioButtons extends JPanel{
+	
+	JPanel radioPanel;
+	private static STLObject stl;
+	
+	private MaterialRadioButtons()
+	{
+		super(new BorderLayout());
+		ButtonGroup bGroup = new ButtonGroup();
+		String[] names;
+		radioPanel = new JPanel(new GridLayout(0, 1));
+		try
+		{
+			names = Preferences.allMaterials();
+			for(int i = 0; i < names.length; i++)
+			{
+				JRadioButton b = new JRadioButton(names[i]);
+		        b.setActionCommand(names[i]);
+		        b.addActionListener(new ActionListener() {
+					public void actionPerformed(ActionEvent e) {
+							stl.setMaterial(e.getActionCommand());
+					}});
+		        if(i == 0)
+		        {
+		        	stl.setMaterial(names[i]);
+		        	b.setSelected(true);
+		        }
+		        bGroup.add(b);
+		        radioPanel.add(b);
+			}
+			add(radioPanel, BorderLayout.LINE_START);
+			setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
+		} catch (Exception ex)
+		{
+			System.err.println(ex.toString());
+		}	
+	}
+    
+    public static void createAndShowGUI(STLObject s) {
+    	stl = s;
+        //Create and set up the window.
+        JFrame frame = new JFrame("Material selector");
+        frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+
+        //Create and set up the content pane.
+        JComponent newContentPane = new MaterialRadioButtons();
+        newContentPane.setOpaque(true); //content panes must be opaque
+        frame.setContentPane(newContentPane);
+
+        //Display the window.
+        frame.pack();
+        frame.setVisible(true);
+    }	   
+	
+}
 
 //************************************************************************
 
@@ -129,7 +189,22 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 	{
 		return stls;
 	}
-
+	
+	/**
+	 * @return one of the names of the materials for the extruders
+	 * in the preferences file.
+	 */
+	private void getMaterialName(STLObject stl)
+	{
+		try {
+			MaterialRadioButtons.createAndShowGUI(stl);
+		}
+      	catch (Exception ex) {
+     		JOptionPane.showMessageDialog(null, "Stepper exerciser exception: " + ex);
+ 			ex.printStackTrace();
+     	}
+	}
+	
 	// Set bg light grey
 	protected Background createBackground() {
 		Background back = new Background(bgColour);
@@ -274,6 +349,7 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 		if (stl != null) {
 			wv_and_stls.addChild(stl.top);
 			stls.add(stl);
+			getMaterialName(stl);
 		}
 	}
 

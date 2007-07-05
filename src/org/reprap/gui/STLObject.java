@@ -74,6 +74,7 @@ public class STLObject
     public Vector3d size = null;       // X, Y and Z extent
     public String name = null;         // Name is the file name plus a digit indicating
                                        // the order of loading
+    private String material = null;	   // The name of the material in the extruder for this object
     
     // Load an STL object from a file with a known offset (set that null to put
     // the object bottom-left-at-origin), an index count in the scene, 
@@ -227,6 +228,24 @@ public class STLObject
             stl.setUserData(name);
         } else
             System.err.println("STLObject(): cannot create a valid STL object.");
+    }
+    
+    /**
+     * Set the extruder material to use for this object
+     * @param s
+     */
+    public void setMaterial(String s)
+    {
+    	System.out.println("Material selected = " + s);
+    	material = s;
+    }
+    
+    /**
+     * @return the name of the material to use to make this object
+     */
+    public String getMaterial()
+    {
+    	return material;
     }
 
     // method to recursively set the user data for objects in the scenegraph tree

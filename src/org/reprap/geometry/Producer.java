@@ -46,22 +46,22 @@ public class Producer {
 		evenHatchDirection = new RrHalfPlane(new Rr2Point(0.0, 1.0), new Rr2Point(1.0, 0.0));
 	}
 	
-	/**
-	 * @return simple polygon object that represents a 2D square
-	 */
-	public RrPolygon square()
-	{
-		RrPolygon a = new RrPolygon();
-		Rr2Point p1 = new Rr2Point(10, 10);
-		Rr2Point p2 = new Rr2Point(20, 10);
-		Rr2Point p3 = new Rr2Point(20, 20);
-		Rr2Point p4 = new Rr2Point(10, 20);
-		a.add(p1, 1);
-		a.add(p2, 1);
-		a.add(p3, 1);
-		a.add(p4, 1);
-		return a;
-	}
+//	/**
+//	 * @return simple polygon object that represents a 2D square
+//	 */
+//	public RrPolygon square()
+//	{
+//		RrPolygon a = new RrPolygon();
+//		Rr2Point p1 = new Rr2Point(10, 10);
+//		Rr2Point p2 = new Rr2Point(20, 10);
+//		Rr2Point p3 = new Rr2Point(20, 20);
+//		Rr2Point p4 = new Rr2Point(10, 20);
+//		a.add(p1, 1);
+//		a.add(p2, 1);
+//		a.add(p3, 1);
+//		a.add(p4, 1);
+//		return a;
+//	}
 	
 //	/**
 //	 * @return hexagonal object

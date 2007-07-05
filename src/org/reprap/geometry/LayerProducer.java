@@ -81,7 +81,7 @@ class segmentSpeeds
 public class LayerProducer {
 	
 	/**
-	 * Identifier for the "filler" material
+	 * Identifier for movements without depositing
 	 */
 	private static int gapMaterial = 0;
 	
@@ -101,7 +101,7 @@ public class LayerProducer {
 	public static int solidMaterial() { return solidMaterial; }
 
 	/**
-	 * 
+	 * The shape of the object built so far under the current layer
 	 */
 	private Shape3D lowerShell;
 

@@ -186,6 +186,24 @@ public class Preferences {
 		mainPreferences.setProperty(name, value);
 	}
 	
+	/**
+	 * @return an array of all the names of all the materials in extruders
+	 * @throws IOException
+	 */
+	public static String[] allMaterials() throws IOException
+	{
+		int extruderCount = globalPrefs.loadInt("NumberOfExtruders");
+		String[] result = new String[extruderCount];
+		
+		for(int i = 0; i < extruderCount; i++)
+		{
+			String prefix = "Extruder" + i + "_";
+			result[i] = globalPrefs.loadString(prefix + "MaterialType(name)");	
+		}
+		
+		return result;
+	}
+	
 	public static String[] startsWith(String prefix) throws IOException 
 	{
 		initIfNeeded();

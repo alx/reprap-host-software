@@ -217,7 +217,7 @@ public class GenericExtruder extends Device implements Extruder{
 	/**
 	 * The name of this extruder's material
 	 */
-	private String materialType;  
+	private String material;  
 	
 	/**
 	 * Where to put the nozzle
@@ -285,7 +285,7 @@ public class GenericExtruder extends Device implements Extruder{
 		oSpeed = prefs.loadDouble(prefName + "OutlineSpeed(0..1)");
 		asLength = prefs.loadDouble(prefName + "AngleSpeedLength(mm)");
 		asFactor = prefs.loadDouble(prefName + "AngleSpeedFactor(0..1)");
-		materialType = prefs.loadString(prefName + "MaterialType(name)");
+		material = prefs.loadString(prefName + "MaterialType(name)");
 		offsetX = prefs.loadDouble(prefName + "OffsetX(mm)");
 		offsetY = prefs.loadDouble(prefName + "OffsetY(mm)");
 		offsetZ = prefs.loadDouble(prefName + "OffsetZ(mm)");
@@ -413,7 +413,7 @@ public class GenericExtruder extends Device implements Extruder{
 		requestedTemperature = temperature;
 		if(Math.abs(requestedTemperature - extrusionTemp) > 5)
 		{
-			System.out.println(materialType + " extruder temperature set to " + requestedTemperature +
+			System.out.println(material + " extruder temperature set to " + requestedTemperature +
 				"C, which is not the standard temperature (" + extrusionTemp + "C).");
 		}
 		// Aim for 10% above our target to ensure we reach it.  It doesn't matter
@@ -494,7 +494,7 @@ public class GenericExtruder extends Device implements Extruder{
 	 * @throws IOException
 	 */
 	private void setHeater(int heat, int safetyCutoff, boolean lock) throws IOException {
-		//System.out.println(materialType + " extruder heater set to " + heat + " limit " + safetyCutoff);
+		//System.out.println(material + " extruder heater set to " + heat + " limit " + safetyCutoff);
 		if (lock) lock();
 		try {
 			sendMessage(new RequestSetHeat((byte)heat, (byte)safetyCutoff));
@@ -516,7 +516,7 @@ public class GenericExtruder extends Device implements Extruder{
 	 * @throws IOException
 	 */
 	private void setHeater(int heat0, int heat1, int t0, int t1, boolean lock) throws IOException {
-		System.out.println(materialType + " extruder heater set to " + heat0 + "/" + heat1 + " limit " + t0 + "/" + t1);
+		System.out.println(material + " extruder heater set to " + heat0 + "/" + heat1 + " limit " + t0 + "/" + t1);
 		if (lock) lock();
 		try {
 			sendMessage(new RequestSetHeat((byte)heat0,
@@ -563,7 +563,7 @@ public class GenericExtruder extends Device implements Extruder{
 		// time we will send a suitable temperature scale as well.
 		// To maximize the range, when vRefFactor is high (15) then
 		// the scale is minimum (0).
-		System.out.println(materialType + " extruder vRefFactor set to " + vRefFactor);
+		System.out.println(material + " extruder vRefFactor set to " + vRefFactor);
 		tempScaler = 7 - (vRefFactor >> 1);
 	    setVref(vRefFactor);
 		setTempScaler(tempScaler);
@@ -581,7 +581,7 @@ public class GenericExtruder extends Device implements Extruder{
 		
 		lock();
 		try {
-			//System.out.println(materialType + " extruder refreshing sensor");
+			//System.out.println(material + " extruder refreshing sensor");
 			RequestIsEmptyResponse reply = new RequestIsEmptyResponse(this, new OutgoingBlankMessage(MSG_IsEmpty), 500);
 			currentMaterialOutSensor = reply.getValue() == 0 ? false : true; 
 		} catch (InvalidPayloadException e) {
@@ -615,7 +615,7 @@ public class GenericExtruder extends Device implements Extruder{
 				RefreshEmptySensor();
 				RefreshTemperature();
 			} catch (Exception ex) {
-				System.out.println(materialType + " extruder exception during temperature/material update ignored");
+				System.out.println(material + " extruder exception during temperature/material update ignored");
 			}
 		}
 	}
@@ -689,7 +689,7 @@ public class GenericExtruder extends Device implements Extruder{
 	 * @throws Exception
 	 */
 	private void RefreshTemperature() throws Exception {
-		//System.out.println(materialType + " extruder refreshing temperature");
+		//System.out.println(material + " extruder refreshing temperature");
 		getDeviceTemperature();
 	}
 	
@@ -707,15 +707,15 @@ public class GenericExtruder extends Device implements Extruder{
 				RequestTemperatureResponse reply = new RequestTemperatureResponse(this, request, 500);
 				
 				rawHeat = reply.getHeat();
-				//System.out.println(materialType + " extruder raw temp " + rawHeat);
+				//System.out.println(material + " extruder raw temp " + rawHeat);
 				calibration = reply.getCalibration();
 				
 				if (rawHeat == 255 && vRefFactor > 0) {
-					System.out.println(materialType + " extruder re-ranging temperature (faster)");
+					System.out.println(material + " extruder re-ranging temperature (faster)");
 					vRefFactor--;
 					setTempRange();
 				} else if (rawHeat < 64 && vRefFactor < 15) {
-					System.out.println(materialType + " extruder re-ranging temperature (slower)");
+					System.out.println(material + " extruder re-ranging temperature (slower)");
 					vRefFactor++;
 					setTempRange();
 				} else
@@ -725,7 +725,7 @@ public class GenericExtruder extends Device implements Extruder{
 			double resistance = calculateResistance(rawHeat, calibration);
 			
 			currentTemperature = calculateTemperature(resistance);
-			//System.out.println(materialType + " extruder current temp " + currentTemperature);
+			//System.out.println(material + " extruder current temp " + currentTemperature);
 			
 			lastTemperatureUpdate = System.currentTimeMillis();
 		}
@@ -1049,6 +1049,8 @@ public class GenericExtruder extends Device implements Extruder{
      */
     public String toString()
     {
-    	return materialType;
+    	return material;
     }
+    
+
 }
