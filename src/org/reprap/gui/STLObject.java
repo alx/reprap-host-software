@@ -63,6 +63,7 @@ import com.sun.j3d.utils.picking.*;
 import com.sun.j3d.loaders.Scene;
 import org.j3d.renderer.java3d.loaders.STLLoader;
 import org.reprap.Preferences;
+import org.reprap.devices.NullExtruder;
 
 public class STLObject
 {
@@ -236,8 +237,10 @@ public class STLObject
      */
     public void setMaterial(String s)
     {
-    	System.out.println("Material selected = " + s);
+    	//System.out.println("Material selected = " + s);
     	material = s;
+    	Appearance a = NullExtruder.getAppearanceFromNumber(NullExtruder.getNumberFromMaterial(s));
+    	setAppearance(a);
     }
     
     /**

@@ -122,6 +122,12 @@ class MaterialRadioButtons extends JPanel{
 		ButtonGroup bGroup = new ButtonGroup();
 		String[] names;
 		radioPanel = new JPanel(new GridLayout(0, 1));
+		radioPanel.setSize(300,200);
+		JLabel jLabel1 = new JLabel();
+		radioPanel.add(jLabel1);
+		jLabel1.setText("         Select the material           ");
+		jLabel1.setHorizontalAlignment(SwingConstants.CENTER);
+		
 		try
 		{
 			names = Preferences.allMaterials();
@@ -141,8 +147,20 @@ class MaterialRadioButtons extends JPanel{
 		        bGroup.add(b);
 		        radioPanel.add(b);
 			}
+			
+//			JButton okButton = new JButton();
+//			radioPanel.add(okButton);
+//			okButton.setText("OK");
+//			okButton.setSize(30, 30);
+//			okButton.addActionListener(new ActionListener() {
+//				public void actionPerformed(ActionEvent evt) {
+//					
+//				}
+//			});
+			
 			add(radioPanel, BorderLayout.LINE_START);
 			setBorder(BorderFactory.createEmptyBorder(20,20,20,20));
+			
 		} catch (Exception ex)
 		{
 			System.err.println(ex.toString());
@@ -153,6 +171,7 @@ class MaterialRadioButtons extends JPanel{
     	stl = s;
         //Create and set up the window.
         JFrame frame = new JFrame("Material selector");
+        frame.setLocation(500, 400);
         frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 
         //Create and set up the content pane.
