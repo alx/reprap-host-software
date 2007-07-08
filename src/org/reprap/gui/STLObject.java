@@ -65,6 +65,18 @@ import org.j3d.renderer.java3d.loaders.STLLoader;
 import org.reprap.Preferences;
 import org.reprap.devices.NullExtruder;
 
+/**
+ * 
+ * @author ensab
+ *
+ */
+
+class Attributes
+{
+	public String material;
+	public Appearance app;
+}
+
 public class STLObject
 {
     private MouseObject mouse = null;  // The mouse, if it is controlling us
@@ -77,75 +89,134 @@ public class STLObject
                                        // the order of loading
     private String material = null;	   // The name of the material in the extruder for this object
     private Appearance app;			   // The appearance of the extruded material from which this will be made
+    private BoundingBox bbox = null;
     
-    // Load an STL object from a file with a known offset (set that null to put
-    // the object bottom-left-at-origin), an index count in the scene, 
-    // and set its appearance
-    
-    public STLObject( String location, Vector3d offset,
-            int objectIndex, Appearance app) 
+    /**
+     * This is called by the constructors to set up all the Branchgroup 
+     * capabilities etc.
+     *
+     */
+    private void initialise(String location, int objectIndex)
     {
-        Scene scene = null;
-        BoundingBox bbox = null;
-        
-        STLLoader loader = new STLLoader( );
-        
-        try 
-        {
-            scene = loader.load( location );
-        } catch ( Exception e ) 
-        {
-            System.err.println( "STLObject(): Exception loading STL file from: " 
-                    + location );
-            e.printStackTrace( );
-        }
-        
+    	stl = new BranchGroup(); 
         name = location + " " + Integer.toString(objectIndex);
         
+        // No mouse yet
         
-        // Recurse down the object setting its characteristics
+        mouse = null;
         
-        Hashtable namedObjects = null;
-        java.util.Enumeration enumValues = null;
-        java.util.Enumeration enumKeys = null;
+        // Set up our bit of the scene graph
         
-        if (scene != null) 
+        top = new BranchGroup();
+        handle = new BranchGroup();
+        trans = new TransformGroup();
+        
+        top.setCapability(BranchGroup.ALLOW_DETACH);
+        top.setCapability(Group.ALLOW_CHILDREN_EXTEND);
+        top.setCapability(Group.ALLOW_CHILDREN_WRITE);
+        top.setCapability(Group.ALLOW_CHILDREN_READ);
+        top.setCapability(Node.ALLOW_AUTO_COMPUTE_BOUNDS_READ);
+        top.setCapability(Node.ALLOW_BOUNDS_READ);
+        
+        handle.setCapability(BranchGroup.ALLOW_DETACH);
+        handle.setCapability(Group.ALLOW_CHILDREN_EXTEND);
+        handle.setCapability(Group.ALLOW_CHILDREN_WRITE);
+        handle.setCapability(Group.ALLOW_CHILDREN_READ);
+        
+        trans.setCapability(Group.ALLOW_CHILDREN_EXTEND);
+        trans.setCapability(Group.ALLOW_CHILDREN_WRITE);
+        trans.setCapability(Group.ALLOW_CHILDREN_READ);
+        trans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
+        trans.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
+        
+        trans.addChild(stl);
+        handle.addChild(trans);
+        top.addChild(handle);
+    }
+    
+    /**
+     * Tell everything our name (N.B. everything under stl should have had that
+     * done for it by the recursive call above).
+     */
+    private void setNames()
+    {
+        top.setUserData(name);
+        handle.setUserData(name);
+        trans.setUserData(name);
+        stl.setUserData(name);    	
+    }
+    
+    private BranchGroup loadSingleSTL(String location)
+    {
+    	BranchGroup result = null;
+        STLLoader loader = new STLLoader();
+        Scene scene;
+        bbox = null;
+        try 
         {
-            // get the scene group - that is the stl
-            
-            stl = scene.getSceneGroup( );
-            stl.setCapability( Node.ALLOW_BOUNDS_READ );
-            stl.setCapability( Group.ALLOW_CHILDREN_READ );
-            
-            // Set the appearance of the object and recursively add its name
-            
-            namedObjects = scene.getNamedObjects( );
-            enumValues = namedObjects.elements( );
-            enumKeys = namedObjects.keys( );
-            
-            
-            if( enumValues != null ) 
+            scene = loader.load(location);
+            if (scene != null) 
             {
-                while( enumValues.hasMoreElements( ) != false ) 
+                result = scene.getSceneGroup();
+                Hashtable namedObjects = null;
+                java.util.Enumeration enumValues = null;
+                java.util.Enumeration enumKeys = null;
+                result.setCapability(Node.ALLOW_BOUNDS_READ);
+                result.setCapability(Group.ALLOW_CHILDREN_READ);
+                
+                // Set the appearance of the object and recursively add its name
+                
+                namedObjects = scene.getNamedObjects( );
+                enumValues = namedObjects.elements( );
+                //enumKeys = namedObjects.keys( );
+                
+                
+                if( enumValues != null ) 
                 {
-                    Object value = enumValues.nextElement( );
-                    bbox = (BoundingBox)((Shape3D)value).getBounds();
-                    
-                    ((Shape3D)value).setCapability(Shape3D.ALLOW_APPEARANCE_WRITE );
-                    GeometryArray g = (GeometryArray)((Shape3D)value).getGeometry();
-                    g.setCapability(GeometryArray.ALLOW_COORDINATE_WRITE);
-                    ((Shape3D)value).setAppearance(app);
-                    
-                    Object key = enumKeys.nextElement( );
-                    recursiveSetUserData( value, key, name );
+                    while( enumValues.hasMoreElements( ) != false ) 
+                    {
+                    	Shape3D value = (Shape3D)enumValues.nextElement();
+                        bbox = (BoundingBox)value.getBounds();
+                        
+                        value.setCapability(Shape3D.ALLOW_APPEARANCE_WRITE );
+                        GeometryArray g = (GeometryArray)value.getGeometry();
+                        g.setCapability(GeometryArray.ALLOW_COORDINATE_WRITE);
+                        
+                        //Object key = enumKeys.nextElement( );
+                        recursiveSetUserData(value, name);
+                    }
                 }
-            }
+            }            
+        } catch ( Exception e ) 
+        {
+            System.err.println("loadSingelSTL(String location): Exception loading STL file from: " 
+                    + location);
+            e.printStackTrace();
         }
         
-        // If we've got a live one, the bounding box will be set; find its limits.
-        
-        if(bbox != null) 
-        {
+        return result;
+    }
+    
+    /**
+     * Load an STL object from a file with a known offset (set that null to put
+     * the object bottom-left-at-origin), an index count in the scene,
+     * and set its appearance
+     * 
+     * @param location
+     * @param offset
+     * @param objectIndex
+     * @param defaultApp
+     */
+    public STLObject(String location, Vector3d offset,
+            int objectIndex, Appearance defaultApp) 
+    {
+    	initialise(location, objectIndex);
+    	
+    	BranchGroup child = loadSingleSTL(location);
+    	
+    	if(child != null && bbox != null)
+    	{
+    		stl.addChild(loadSingleSTL(location));
             javax.vecmath.Point3d p0 = new javax.vecmath.Point3d();
             javax.vecmath.Point3d p1 = new javax.vecmath.Point3d();
             bbox.getLower(p0);
@@ -173,63 +244,35 @@ public class STLObject
             // loaded object; we actually shift all its points to put it in this
             // standard place.
             
-            enumValues = namedObjects.elements( );
-            
-            if( enumValues != null ) 
-            {
-                while( enumValues.hasMoreElements( ) != false ) 
-                {
-                    Object value = enumValues.nextElement( );
-                    recursiveSetOffset( value, offset );
-                }
-            }
-            
+            setOffset(offset);
+
             // Now shift us to have bottom left at origin using our transform.
             
             Transform3D temp_t = new Transform3D();
             temp_t.set(scale(size, 0.5));
-            trans = new TransformGroup(temp_t);
+            trans.setTransform(temp_t);
             
-            // No mouse yet
+            setNames();
+            setAppearance(defaultApp);
             
-            mouse = null;
-            
-            // Set up our bit of the scene graph
-            
-            top = new BranchGroup();
-            handle = new BranchGroup();
-            
-            top.setCapability(BranchGroup.ALLOW_DETACH);
-            top.setCapability(Group.ALLOW_CHILDREN_EXTEND);
-            top.setCapability(Group.ALLOW_CHILDREN_WRITE);
-            top.setCapability(Group.ALLOW_CHILDREN_READ);
-            top.setCapability(Node.ALLOW_AUTO_COMPUTE_BOUNDS_READ);
-            top.setCapability(Node.ALLOW_BOUNDS_READ);
-            
-            handle.setCapability(BranchGroup.ALLOW_DETACH);
-            handle.setCapability(Group.ALLOW_CHILDREN_EXTEND);
-            handle.setCapability(Group.ALLOW_CHILDREN_WRITE);
-            handle.setCapability(Group.ALLOW_CHILDREN_READ);
-            
-            trans.setCapability(Group.ALLOW_CHILDREN_EXTEND);
-            trans.setCapability(Group.ALLOW_CHILDREN_WRITE);
-            trans.setCapability(Group.ALLOW_CHILDREN_READ);
-            trans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-            trans.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
-            
-            trans.addChild(stl);
-            handle.addChild(trans);
-            top.addChild(handle);
-            
-            // Tell everything our name (N.B. everything under stl should have had that
-            // done for it by the recursive call above).
-            
-            top.setUserData(name);
-            handle.setUserData(name);
-            trans.setUserData(name);
-            stl.setUserData(name);
         } else
             System.err.println("STLObject(): cannot create a valid STL object.");
+    }
+    
+    // Make an STL object from an existing BranchGroup
+    
+    public STLObject(BranchGroup s, String n) 
+    {
+    	initialise(n, 0);
+        name = n;
+        
+        stl.addChild(s);
+        size = new Vector3d(1, 1, 1);  // Should never be needed.
+        
+        Transform3D temp_t = new Transform3D();
+        trans.setTransform(temp_t); 
+        
+        setNames();
     }
     
     /**
@@ -238,7 +281,6 @@ public class STLObject
      */
     public void setMaterial(String s)
     {
-    	//System.out.println("Material selected = " + s);
     	material = s;
     	app = NullExtruder.getAppearanceFromNumber(NullExtruder.getNumberFromMaterial(s));
     	setAppearance(app);
@@ -255,13 +297,13 @@ public class STLObject
     // method to recursively set the user data for objects in the scenegraph tree
     // we also set the capabilites on Shape3D objects required by the PickTool
 
-    void recursiveSetUserData( Object value, Object key , String name) 
+    void recursiveSetUserData(Object value, String name) 
     {
         if( value instanceof SceneGraphObject != false ) 
         {
             // set the user data for the item
             SceneGraphObject sg = (SceneGraphObject) value;
-            sg.setUserData( key );
+            sg.setUserData( name );
             
             // recursively process group
             if( sg instanceof Group ) 
@@ -272,10 +314,10 @@ public class STLObject
                 java.util.Enumeration enumKids = g.getAllChildren( );
                 
                 while( enumKids.hasMoreElements( ) != false )
-                    recursiveSetUserData( enumKids.nextElement( ), key, name );
+                    recursiveSetUserData( enumKids.nextElement( ), name );
             } else if ( sg instanceof Shape3D ) 
             {
-                if ( sg instanceof Shape3D)
+                //if ( sg instanceof Shape3D)
                     ((Shape3D)sg).setUserData(name);
                 PickTool.setCapabilities( (Node) sg, PickTool.INTERSECT_FULL );
             }
@@ -306,6 +348,11 @@ public class STLObject
                     s3dOffset((Shape3D)sg, p);
             }
         }
+    }
+    
+    void setOffset(Vector3d p)
+    {
+    	recursiveSetOffset(stl, p);
     }
     
     // Shift a Shape3D permanently by p
@@ -368,55 +415,7 @@ public class STLObject
         }
     }
     
-    // Make an STL object from an existing BranchGroup
-    
-    public STLObject(BranchGroup s, String n) 
-    {
-        stl = s;
-        size = new Vector3d(1, 1, 1);  // Should never be needed.
-        name = n;
-        
-        Transform3D temp_t = new Transform3D();
-        trans = new TransformGroup(temp_t);
-        
-        // No mouse yet
-        
-        mouse = null;
-        
-        // Set up our bit of the scene graph
-        
-        top = new BranchGroup();
-        handle = new BranchGroup();
-        
-        top.setCapability(BranchGroup.ALLOW_DETACH);
-        top.setCapability(Group.ALLOW_CHILDREN_EXTEND);
-        top.setCapability(Group.ALLOW_CHILDREN_WRITE);
-        top.setCapability(Group.ALLOW_CHILDREN_READ);
-        top.setCapability(Node.ALLOW_AUTO_COMPUTE_BOUNDS_READ);
-        top.setCapability(Node.ALLOW_BOUNDS_READ);
-        
-        handle.setCapability(BranchGroup.ALLOW_DETACH);
-        handle.setCapability(Group.ALLOW_CHILDREN_EXTEND);
-        handle.setCapability(Group.ALLOW_CHILDREN_WRITE);
-        handle.setCapability(Group.ALLOW_CHILDREN_READ);
-        
-        trans.setCapability(Group.ALLOW_CHILDREN_EXTEND);
-        trans.setCapability(Group.ALLOW_CHILDREN_WRITE);
-        trans.setCapability(Group.ALLOW_CHILDREN_READ);
-        trans.setCapability(TransformGroup.ALLOW_TRANSFORM_WRITE);
-        trans.setCapability(TransformGroup.ALLOW_TRANSFORM_READ);
-        
-        trans.addChild(stl);
-        handle.addChild(trans);
-        top.addChild(handle);
-        
-        // Tell everything our name 
-        
-        top.setUserData(name);
-        handle.setUserData(name);
-        trans.setUserData(name);
-        stl.setUserData(name);
-    }
+
 
     // Set my transform
     

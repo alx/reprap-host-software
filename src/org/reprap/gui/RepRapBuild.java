@@ -111,6 +111,13 @@ import com.sun.j3d.utils.picking.PickResult;
 import com.sun.j3d.utils.picking.PickTool;
 import org.reprap.Preferences;
 
+/**
+ * Little class to put up a radiobutton menu so you can set
+ * what material something is to be made from.
+ * 
+ * @author ensab
+ *
+ */
 class MaterialRadioButtons extends JPanel{
 	private static STLObject stl;
 	private static JFrame frame;
@@ -185,15 +192,17 @@ class MaterialRadioButtons extends JPanel{
 
 //************************************************************************
 
-// This is the main public class that creates a virtual world of the RepRap
-// working volume, allows you to put STL-file objects in it, move them about
-// to arrange them, and build them in the machine.
+/**
+ * This is the main public class that creates a virtual world of the RepRap
+ * working volume, allows you to put STL-file objects in it, move them about
+ * to arrange them, and build them in the machine.
+ */
 
 public class RepRapBuild extends Panel3D implements MouseListener {
 	private MouseObject mouse = null;
 	private PickCanvas pickCanvas = null; // The thing picked by a mouse click
 	private STLObject lastPicked = null; // The last thing picked
-	private java.util.List stls = new ArrayList(); // All the STLs to be built
+	private java.util.List stls = new ArrayList(); // All the STLObjects to be built
 	private int objectIndex = 0; // Counter for STLs as they are loaded
 
 	// Constructors

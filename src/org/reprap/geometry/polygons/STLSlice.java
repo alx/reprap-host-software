@@ -133,12 +133,13 @@ public class STLSlice
 	/**
 	 * The STL objects in 3D
 	 */
-	List stls;
+	private List shapeList;
 	
 	/**
 	 * List of the edges with points in this one
 	 */
 	private List edges;
+	
 	/**
 	 * Its enclosing box
 	 */
@@ -186,7 +187,7 @@ public class STLSlice
 		q4 = null;
 		box = new RrBox();
 		visited = false;
-		stls = null;
+		shapeList = null;
 		sFactor = 1;
 		resolution_2 = Preferences.tiny();
 		below = null;
@@ -200,7 +201,7 @@ public class STLSlice
 	public STLSlice(List s)
 	{
 		this();
-		stls = s;
+		shapeList = s;
 	}
 	
 	/**
@@ -697,9 +698,9 @@ public class STLSlice
 		STLObject stl;
 		double result = Double.NEGATIVE_INFINITY;
 		
-		for(int i = 0; i < stls.size(); i++)
+		for(int i = 0; i < shapeList.size(); i++)
 		{
-			stl = (STLObject)stls.get(i);
+			stl = (STLObject)shapeList.get(i);
 			if(stl.size.z > result)
 				result = stl.size.z;
 		}
@@ -709,7 +710,7 @@ public class STLSlice
 	
 	/**
 	 * build a 2D polygon list of all edges in the plane z
-	 * from all the objects in stls then turn it to CSG.
+	 * from all the objects in shapeList then turn it to CSG.
 	 * @param z
 	 * @return a CSG representation of all the polygons in the slice
 	 */
@@ -718,7 +719,7 @@ public class STLSlice
 		Point3d p, q, r;
 		Vector3d a, b;
 		
-		if(stls == null)
+		if(shapeList == null)
 		{
 			System.err.println("slice(): no STL list loaded!");
 			return null;
@@ -744,9 +745,9 @@ public class STLSlice
 		Enumeration things;
 		
 		triangles = new ArrayList();
-		for(int i = 0; i < stls.size(); i++)
+		for(int i = 0; i < shapeList.size(); i++)
 		{
-			stl = (STLObject)stls.get(i);
+			stl = (STLObject)shapeList.get(i);
 			trans = stl.getTransform();
 			bg = stl.getSTL();
 			things = bg.getAllChildren();
