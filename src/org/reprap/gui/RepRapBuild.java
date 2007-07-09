@@ -310,12 +310,13 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 		if (pickResult != null) // Got anything?
 		{
 			Node actualNode = pickResult.getObject();
-			String name = (String) actualNode.getUserData();
-			if (name != null) // Really got something?
+			//String name = (String) actualNode.getUserData();
+			picked = (STLObject)actualNode.getUserData();
+			if (picked != null) // Really got something?
 			{
-				if (name != workingVolume.name) // STL object picked?
+				if (picked != workingVolume) // STL object picked?
 				{
-					picked = findSTL(name);
+					//picked = findSTL(name);
 					if (picked != null) {
 						picked.setAppearance(picked_app); // Highlight it
 						if (lastPicked != null)
@@ -342,15 +343,15 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 
 	// Find the stl object in the scene with the given name
 
-	protected STLObject findSTL(String name) {
-		STLObject stl;
-		for (int i = 0; i < stls.size(); i++) {
-			stl = (STLObject) stls.get(i);
-			if (stl.name == name)
-				return stl;
-		}
-		return null;
-	}
+//	protected STLObject findSTL(String name) {
+//		STLObject stl;
+//		for (int i = 0; i < stls.size(); i++) {
+//			stl = (STLObject) stls.get(i);
+//			if (stl.name == name)
+//				return stl;
+//		}
+//		return null;
+//	}
 
 	public void mouseEntered(MouseEvent e) {
 	}
@@ -427,16 +428,8 @@ public class RepRapBuild extends Panel3D implements MouseListener {
 	{
 		if (lastPicked == null)
 			return;
-		STLObject stl;
-		for(int i = 0; i < stls.size(); i++)
-		{
-			stl = (STLObject)stls.get(i);
-			if(stl == lastPicked)
-			{
-				getMaterialName(stl);
-				break;
-			}
-		}
+		getMaterialName(lastPicked);
+		mouseToWorld();
 	}
 	
 	// Callback to delete one of the loaded objects

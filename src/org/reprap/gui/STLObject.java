@@ -85,7 +85,7 @@ public class STLObject
     public TransformGroup trans = null;// Static transform for when the mouse is away
     public BranchGroup stl = null;     // The actual STL geometry
     public Vector3d size = null;       // X, Y and Z extent
-    public String name = null;         // Name is the file name plus a digit indicating
+    //public String name = null;         // Name is the file name plus a digit indicating
                                        // the order of loading
     private String material = null;	   // The name of the material in the extruder for this object
     private Appearance app;			   // The appearance of the extruded material from which this will be made
@@ -99,7 +99,7 @@ public class STLObject
     private void initialise(String location, int objectIndex)
     {
     	stl = new BranchGroup(); 
-        name = location + " " + Integer.toString(objectIndex);
+        //name = location + " " + Integer.toString(objectIndex);
         
         // No mouse yet
         
@@ -132,19 +132,23 @@ public class STLObject
         trans.addChild(stl);
         handle.addChild(trans);
         top.addChild(handle);
+        top.setUserData(this);
+        handle.setUserData(this);
+        trans.setUserData(this);
+        stl.setUserData(this);    	
     }
     
-    /**
-     * Tell everything our name (N.B. everything under stl should have had that
-     * done for it by the recursive call above).
-     */
-    private void setNames()
-    {
-        top.setUserData(name);
-        handle.setUserData(name);
-        trans.setUserData(name);
-        stl.setUserData(name);    	
-    }
+//    /**
+//     * Tell everything our name (N.B. everything under stl should have had that
+//     * done for it by the recursive call above).
+//     */
+//    private void setNames()
+//    {
+//        top.setUserData(this);
+//        handle.setUserData(this);
+//        trans.setUserData(this);
+//        stl.setUserData(this);    	
+//    }
     
     private BranchGroup loadSingleSTL(String location)
     {
@@ -183,7 +187,7 @@ public class STLObject
                         g.setCapability(GeometryArray.ALLOW_COORDINATE_WRITE);
                         
                         //Object key = enumKeys.nextElement( );
-                        recursiveSetUserData(value, name);
+                        recursiveSetUserData(value, this);
                     }
                 }
             }            
@@ -252,7 +256,7 @@ public class STLObject
             temp_t.set(scale(size, 0.5));
             trans.setTransform(temp_t);
             
-            setNames();
+            //setNames();
             setAppearance(defaultApp);
             
         } else
@@ -264,7 +268,7 @@ public class STLObject
     public STLObject(BranchGroup s, String n) 
     {
     	initialise(n, 0);
-        name = n;
+        //name = n;
         
         stl.addChild(s);
         size = new Vector3d(1, 1, 1);  // Should never be needed.
@@ -272,7 +276,7 @@ public class STLObject
         Transform3D temp_t = new Transform3D();
         trans.setTransform(temp_t); 
         
-        setNames();
+        //setNames();
     }
     
     /**
@@ -297,13 +301,13 @@ public class STLObject
     // method to recursively set the user data for objects in the scenegraph tree
     // we also set the capabilites on Shape3D objects required by the PickTool
 
-    void recursiveSetUserData(Object value, String name) 
+    void recursiveSetUserData(Object value, Object me) 
     {
         if( value instanceof SceneGraphObject != false ) 
         {
             // set the user data for the item
             SceneGraphObject sg = (SceneGraphObject) value;
-            sg.setUserData( name );
+            sg.setUserData( me );
             
             // recursively process group
             if( sg instanceof Group ) 
@@ -314,11 +318,11 @@ public class STLObject
                 java.util.Enumeration enumKids = g.getAllChildren( );
                 
                 while( enumKids.hasMoreElements( ) != false )
-                    recursiveSetUserData( enumKids.nextElement( ), name );
+                    recursiveSetUserData( enumKids.nextElement( ), me );
             } else if ( sg instanceof Shape3D ) 
             {
                 //if ( sg instanceof Shape3D)
-                    ((Shape3D)sg).setUserData(name);
+                    ((Shape3D)sg).setUserData(me);
                 PickTool.setCapabilities( (Node) sg, PickTool.INTERSECT_FULL );
             }
         }
