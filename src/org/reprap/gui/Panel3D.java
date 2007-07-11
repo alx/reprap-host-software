@@ -78,7 +78,7 @@ abstract public class Panel3D extends JPanel {
 	//--------------------------------------------------------------
 	
 	protected static final Color3f black = new Color3f(0, 0, 0);	
-	protected Appearance default_app = null; // Colour for unselected parts
+//	protected Appearance default_app = null; // Colour for unselected parts
 //	protected Appearance shell_app = null; // Colour for the lower shell during print.
 	protected Appearance picked_app = null; // Colour for the selected part
 	protected Appearance wv_app = null; // Colour for the working volume
@@ -159,8 +159,8 @@ abstract public class Panel3D extends JPanel {
 		
 		// ----------------------
 		
-		default_app = new Appearance();
-		default_app.setMaterial(new Material(unselectedColour, black, unselectedColour, black, 0f));
+//		default_app = new Appearance();
+//		default_app.setMaterial(new Material(unselectedColour, black, unselectedColour, black, 0f));
 
 		picked_app = new Appearance();
 		picked_app.setMaterial(new Material(selectedColour, black, selectedColour, black, 0f));

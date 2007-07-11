@@ -10,6 +10,9 @@ import java.util.Properties;
 import java.util.Enumeration;
 import java.util.List;
 import java.util.ArrayList;
+import javax.media.j3d.Appearance;
+import javax.media.j3d.Material;
+import javax.vecmath.Color3f;
 
 /**
  * A single centralised repository of the current preference settings.  This also
@@ -42,15 +45,35 @@ public class Preferences {
 	                                                     // derive this from Axis1Scale and Axis2Scale
 
 	private static final double absoluteZero = -273;
+	private static final double inToMM = 25.4;
+	
+	private static final Color3f black = new Color3f(0, 0, 0);
 	
 	public static int grid() { return grid; }
 	public static double gridRes() { return gridRes; }
 	public static double lessGridSquare() { return lessGridSquare; }
 	public static double tiny() { return tiny; }
 	public static double swell() { return swell; }
-	public static double inchesToMillimetres() { return 25.4; }
+	public static double inchesToMillimetres() { return inToMM; }
 	public static double machineResolution() { return machineResolution; }
-	public static double absoluteZero() { return absoluteZero; }	
+	public static double absoluteZero() { return absoluteZero; }
+	public static Appearance unselectedApp()
+	{
+		Color3f unselectedColour = null;
+		try
+		{
+			unselectedColour = new Color3f((float)Preferences.loadGlobalDouble("UnselectedColourR(0..1)"), 
+				(float)Preferences.loadGlobalDouble("UnselectedColourG(0..1)"), 
+				(float)Preferences.loadGlobalDouble("UnselectedColourB(0..1)"));
+		} catch (Exception ex)
+		{
+			ex.printStackTrace();
+		}
+		Appearance unselectedApp = new Appearance();
+		unselectedApp.setMaterial(new 
+				Material(unselectedColour, black, unselectedColour, black, 0f));
+		return unselectedApp;
+	}
 	
 	// Main preferences constructor
 	

@@ -183,13 +183,13 @@ public class Main {
 			}});
         manipMenu.add(inToMM);
         
-        JMenuItem materialSTL = new JMenuItem("New material for selected object", KeyEvent.VK_M);
-        materialSTL.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, ActionEvent.CTRL_MASK));
-        materialSTL.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent arg0) {
-				onMaterial();
-			}});
-        manipMenu.add(materialSTL);
+//        JMenuItem materialSTL = new JMenuItem("New material for selected object", KeyEvent.VK_M);
+//        materialSTL.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_M, ActionEvent.CTRL_MASK));
+//        materialSTL.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent arg0) {
+//				onMaterial();
+//			}});
+//        manipMenu.add(materialSTL);
         
         JMenuItem deleteSTL = new JMenuItem("Delete selected object", KeyEvent.VK_W);
         deleteSTL.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_W, ActionEvent.CTRL_MASK));
@@ -482,9 +482,9 @@ public class Main {
     	  builder.inToMM();
       } 
     
-    private void onMaterial() {
-  	  builder.materialSTL();
-    }
+//    private void onMaterial() {
+//  	  builder.materialSTL();
+//    }
     
     private void onDelete() {
     	  builder.deleteSTL();

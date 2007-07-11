@@ -71,12 +71,6 @@ import org.reprap.devices.NullExtruder;
  *
  */
 
-class Attributes
-{
-	public String material;
-	public Appearance app;
-}
-
 public class STLObject
 {
     private MouseObject mouse = null;  // The mouse, if it is controlling us
@@ -85,21 +79,12 @@ public class STLObject
     public TransformGroup trans = null;// Static transform for when the mouse is away
     public BranchGroup stl = null;     // The actual STL geometry
     public Vector3d size = null;       // X, Y and Z extent
-    //public String name = null;         // Name is the file name plus a digit indicating
-                                       // the order of loading
-    private String material = null;	   // The name of the material in the extruder for this object
-    private Appearance app;			   // The appearance of the extruded material from which this will be made
-    private BoundingBox bbox = null;
+    private BoundingBox bbox = null;   // Temporary storage for the bounding box while loading
     
-    /**
-     * This is called by the constructors to set up all the Branchgroup 
-     * capabilities etc.
-     *
-     */
-    private void initialise(String location, int objectIndex)
+
+    public STLObject()
     {
     	stl = new BranchGroup(); 
-        //name = location + " " + Integer.toString(objectIndex);
         
         // No mouse yet
         
@@ -132,39 +117,37 @@ public class STLObject
         trans.addChild(stl);
         handle.addChild(trans);
         top.addChild(handle);
-        top.setUserData(this);
-        handle.setUserData(this);
-        trans.setUserData(this);
-        stl.setUserData(this);    	
+        
+        Attributes nullAtt = new Attributes(null, this, null, null);
+        top.setUserData(nullAtt);
+        handle.setUserData(nullAtt);
+        trans.setUserData(nullAtt);
+        stl.setUserData(nullAtt);
+        
+        bbox = null;
     }
-    
-//    /**
-//     * Tell everything our name (N.B. everything under stl should have had that
-//     * done for it by the recursive call above).
-//     */
-//    private void setNames()
-//    {
-//        top.setUserData(this);
-//        handle.setUserData(this);
-//        trans.setUserData(this);
-//        stl.setUserData(this);    	
-//    }
-    
-    private BranchGroup loadSingleSTL(String location)
+
+    /**
+     * Actually load the stl file and set its attributes
+     * @param location
+     * @param att
+     * @return
+     */
+    private BranchGroup loadSingleSTL(String location, Attributes att)
     {
     	BranchGroup result = null;
         STLLoader loader = new STLLoader();
         Scene scene;
-        bbox = null;
         try 
         {
             scene = loader.load(location);
             if (scene != null) 
             {
                 result = scene.getSceneGroup();
+                att.setPart(result);
+                result.setUserData(att);
                 Hashtable namedObjects = null;
                 java.util.Enumeration enumValues = null;
-                java.util.Enumeration enumKeys = null;
                 result.setCapability(Node.ALLOW_BOUNDS_READ);
                 result.setCapability(Group.ALLOW_CHILDREN_READ);
                 
@@ -172,8 +155,6 @@ public class STLObject
                 
                 namedObjects = scene.getNamedObjects( );
                 enumValues = namedObjects.elements( );
-                //enumKeys = namedObjects.keys( );
-                
                 
                 if( enumValues != null ) 
                 {
@@ -186,14 +167,14 @@ public class STLObject
                         GeometryArray g = (GeometryArray)value.getGeometry();
                         g.setCapability(GeometryArray.ALLOW_COORDINATE_WRITE);
                         
-                        //Object key = enumKeys.nextElement( );
-                        recursiveSetUserData(value, this);
+                        recursiveSetUserData(value, att);
                     }
                 }
-            }            
+            } 
+    		stl.addChild(result);
         } catch ( Exception e ) 
         {
-            System.err.println("loadSingelSTL(String location): Exception loading STL file from: " 
+            System.err.println("loadSingelSTL(): Exception loading STL file from: " 
                     + location);
             e.printStackTrace();
         }
@@ -202,25 +183,15 @@ public class STLObject
     }
     
     /**
-     * Load an STL object from a file with a known offset (set that null to put
-     * the object bottom-left-at-origin), an index count in the scene,
-     * and set its appearance
-     * 
-     * @param location
+     * Move the object by actually changing all its coordinates (i.e. don't just add a
+     * transform).  Also record its size.
+     * @param child
      * @param offset
-     * @param objectIndex
-     * @param defaultApp
      */
-    public STLObject(String location, Vector3d offset,
-            int objectIndex, Appearance defaultApp) 
+    private void applyOffset(BranchGroup child, Vector3d offset) 
     {
-    	initialise(location, objectIndex);
-    	
-    	BranchGroup child = loadSingleSTL(location);
-    	
     	if(child != null && bbox != null)
     	{
-    		stl.addChild(loadSingleSTL(location));
             javax.vecmath.Point3d p0 = new javax.vecmath.Point3d();
             javax.vecmath.Point3d p1 = new javax.vecmath.Point3d();
             bbox.getLower(p0);
@@ -256,46 +227,62 @@ public class STLObject
             temp_t.set(scale(size, 0.5));
             trans.setTransform(temp_t);
             
-            //setNames();
-            setAppearance(defaultApp);
+            restoreAppearance();
             
         } else
-            System.err.println("STLObject(): cannot create a valid STL object.");
+            System.err.println("applyOffset(): no bounding box or child.");
     }
     
-    // Make an STL object from an existing BranchGroup
+    /**
+     * Load an STL object from a file with a known offset (set that null to put
+     * the object bottom-left-at-origin) and set its material (and hence its
+     * appearance).
+     * 
+     * @param location
+     * @param offset
+     * @param material
+     */
+    public Attributes addSTL(String location, Vector3d offset, String material) 
+    {
+    	Attributes att = new Attributes(material, this, null,
+    			NullExtruder.getAppearanceFromNumber(NullExtruder.getNumberFromMaterial(material)));
+    	BranchGroup child = loadSingleSTL(location, att);
+    	if(child == null)
+    		return null;
+    	applyOffset(child, offset);
+    	return att;
+    }
     
+    /**
+     * Load an STL object from a file with a known offset (set that null to put
+     * the object bottom-left-at-origin) and set its appearance
+     * 
+     * @param location
+     * @param offset
+     * @param app
+     */
+    public Attributes addSTL(String location, Vector3d offset, Appearance app) 
+    {
+    	Attributes att = new Attributes(null, this, null, app);
+    	BranchGroup child = loadSingleSTL(location, att);
+    	if(child == null)
+    		return null;
+    	applyOffset(child, offset);
+    	return att;
+    }
+    
+    /**
+     * Make an STL object from an existing BranchGroup
+     */
     public STLObject(BranchGroup s, String n) 
     {
-    	initialise(n, 0);
-        //name = n;
-        
+    	this();
+  
         stl.addChild(s);
         size = new Vector3d(1, 1, 1);  // Should never be needed.
         
         Transform3D temp_t = new Transform3D();
         trans.setTransform(temp_t); 
-        
-        //setNames();
-    }
-    
-    /**
-     * Set the extruder material to use for this object
-     * @param s
-     */
-    public void setMaterial(String s)
-    {
-    	material = s;
-    	app = NullExtruder.getAppearanceFromNumber(NullExtruder.getNumberFromMaterial(s));
-    	setAppearance(app);
-    }
-    
-    /**
-     * @return the name of the material to use to make this object
-     */
-    public String getMaterial()
-    {
-    	return material;
     }
 
     // method to recursively set the user data for objects in the scenegraph tree
@@ -321,8 +308,7 @@ public class STLObject
                     recursiveSetUserData( enumKids.nextElement( ), me );
             } else if ( sg instanceof Shape3D ) 
             {
-                //if ( sg instanceof Shape3D)
-                    ((Shape3D)sg).setUserData(me);
+                ((Shape3D)sg).setUserData(me);
                 PickTool.setCapabilities( (Node) sg, PickTool.INTERSECT_FULL );
             }
         }
@@ -483,11 +469,24 @@ public class STLObject
     }
     
     /**
-     * Restore the appearance to the correct colour.
+     * Restore the appearances to the correct colour.
      */
     public void restoreAppearance()
     {
-        setAppearance_r(stl, app);     
+    	java.util.Enumeration enumKids = stl.getAllChildren( );
+        
+        while( enumKids.hasMoreElements( ) != false )
+        {
+        	Object b = enumKids.nextElement();
+        	if(b instanceof BranchGroup)
+        	{
+        		Attributes att = (Attributes)((BranchGroup)b).getUserData();
+        		if(att != null)
+        			setAppearance_r(b, att.getAppearance());
+        		else
+        			System.err.println("restore!");
+        	}
+        }
     }
     
     // Why the !*$! aren't these in Vector3d???
