@@ -61,6 +61,7 @@ import com.sun.j3d.utils.geometry.GeometryInfo;
 import com.sun.j3d.utils.geometry.NormalGenerator;
 import org.reprap.gui.STLObject;
 import org.reprap.Preferences;
+import org.reprap.gui.Attributes;
 
 // Small class to hold line segments and the quads in which their ends lie
 
@@ -77,14 +78,20 @@ class LineSegment
 	public STLSlice qa, qb;
 	
 	/**
+	 * 
+	 */
+	public Attributes att;
+	
+	/**
 	 * Constructor takes two intersection points with an STL triangle edge.
 	 * @param p
 	 * @param q
 	 */
-	public LineSegment(Rr2Point p, Rr2Point q)
+	public LineSegment(Rr2Point p, Rr2Point q, Attributes at)
 	{
 		a = p;
 		b = q;
+		att = at;
 		qa = null;
 		qb = null;
 	}
@@ -178,7 +185,7 @@ public class STLSlice
 	/**
 	 * Null constructor just initialises a few things.
 	 */
-	public STLSlice()
+	private STLSlice()
 	{
 		edges = new ArrayList();
 		q1 = null;
@@ -209,9 +216,9 @@ public class STLSlice
 	 * @param p
 	 * @param q
 	 */
-	public void add(Rr2Point p, Rr2Point q)
+	public void add(Rr2Point p, Rr2Point q, Attributes att)
 	{
-		edges.add(new LineSegment(p, q));
+		edges.add(new LineSegment(p, q, att));
 	}
 	
 	/**
@@ -293,7 +300,7 @@ public class STLSlice
 	 * @param r
 	 * @param z
 	 */
-	private void addEdge(Point3d p, Point3d q, Point3d r, double z)
+	private void addEdge(Point3d p, Point3d q, Point3d r, double z, Attributes att)
 	{
 		Point3d odd = null, even1 = null, even2 = null;
 		int pat = 0;
@@ -354,7 +361,7 @@ public class STLSlice
 		
 		if(!Rr2Point.same(e1, e2, Preferences.lessGridSquare()))
 		{
-			add(e1, e2);
+			add(e1, e2, att);
 			box.expand(e1);
 			box.expand(e2);
 		}
@@ -386,7 +393,7 @@ public class STLSlice
 	 * @param trans
 	 * @param z
 	 */
-	private void addAllEdges(Shape3D shape, Transform3D trans, double z)
+	private void addAllEdges(Shape3D shape, Transform3D trans, double z, Attributes att)
     {
         GeometryArray g = (GeometryArray)shape.getGeometry();
         Point3d p1 = new Point3d();
@@ -410,7 +417,7 @@ public class STLSlice
                 trans.transform(p1, q1);
                 trans.transform(p2, q2);
                 trans.transform(p3, q3);
-                addEdge(q1, q2, q3, z);
+                addEdge(q1, q2, q3, z, att);
             }
         }
     }
@@ -421,7 +428,7 @@ public class STLSlice
 	 * @param trans
 	 * @param z
 	 */
-	private void recursiveSetEdges(Object value, Transform3D trans, double z) 
+	private void recursiveSetEdges(Object value, Transform3D trans, double z, Attributes att) 
     {
         if(value instanceof SceneGraphObject) 
         {
@@ -431,10 +438,10 @@ public class STLSlice
                 Group g = (Group)sg;
                 java.util.Enumeration enumKids = g.getAllChildren( );
                 while(enumKids.hasMoreElements())
-                    recursiveSetEdges(enumKids.nextElement(), trans, z);
+                    recursiveSetEdges(enumKids.nextElement(), trans, z, att);
             } else if (sg instanceof Shape3D) 
             {
-                addAllEdges((Shape3D)sg, trans, z);
+                addAllEdges((Shape3D)sg, trans, z, att);
             }
         }
     }
@@ -641,7 +648,7 @@ public class STLSlice
 		{
 			corner = startCorner;
 			edge = corner.segment(0);
-			pg = new RrPolygon();
+			pg = new RrPolygon();   //Communicate edge.att here
 			do
 			{
 				if(corner.visited)
@@ -750,12 +757,17 @@ public class STLSlice
 			stl = (STLObject)shapeList.get(i);
 			trans = stl.getTransform();
 			bg = stl.getSTL();
-			things = bg.getAllChildren();
-			while(things.hasMoreElements()) 
-			{
-				Object value = things.nextElement();
-				recursiveSetEdges(value, trans, z);
-			}
+			java.util.Enumeration enumKids = bg.getAllChildren( );
+	        
+	        while(enumKids.hasMoreElements( ))
+	        {
+	        	Object ob = enumKids.nextElement();
+	        	if(ob instanceof BranchGroup)
+	        	{
+	        		Attributes att = (Attributes)((BranchGroup)ob).getUserData();
+	        		recursiveSetEdges(ob, trans, z, att);
+	        	}
+	        }
 		}
 		
 		if(triangles.size() > 0)

@@ -304,7 +304,7 @@ public class STLObject
                 // recurse on child nodes
                 java.util.Enumeration enumKids = g.getAllChildren( );
                 
-                while( enumKids.hasMoreElements( ) != false )
+                while(enumKids.hasMoreElements( ))
                     recursiveSetUserData( enumKids.nextElement( ), me );
             } else if ( sg instanceof Shape3D ) 
             {
@@ -331,7 +331,7 @@ public class STLObject
                 // recurse on child nodes
                 java.util.Enumeration enumKids = g.getAllChildren( );
                 
-                while( enumKids.hasMoreElements( ) != false )
+                while(enumKids.hasMoreElements( ))
                     recursiveSetOffset( enumKids.nextElement( ), p );
             } else if ( sg instanceof Shape3D ) 
             {
@@ -379,7 +379,7 @@ public class STLObject
                 // recurse on child nodes
                 java.util.Enumeration enumKids = g.getAllChildren( );
                 
-                while( enumKids.hasMoreElements( ) != false )
+                while(enumKids.hasMoreElements( ))
                     recursiveSetScale( enumKids.nextElement( ), s );
             } else if ( sg instanceof Shape3D ) 
             {
@@ -475,7 +475,7 @@ public class STLObject
     {
     	java.util.Enumeration enumKids = stl.getAllChildren( );
         
-        while( enumKids.hasMoreElements( ) != false )
+        while(enumKids.hasMoreElements( ))
         {
         	Object b = enumKids.nextElement();
         	if(b instanceof BranchGroup)
@@ -484,7 +484,7 @@ public class STLObject
         		if(att != null)
         			setAppearance_r(b, att.getAppearance());
         		else
-        			System.err.println("restore!");
+        			System.err.println("restoreAppearance(): no Attributes!");
         	}
         }
     }
