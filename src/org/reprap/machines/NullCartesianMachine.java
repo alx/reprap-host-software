@@ -2,6 +2,8 @@ package org.reprap.machines;
 
 import java.io.IOException;
 import javax.media.j3d.*;
+
+import org.reprap.Attributes;
 import org.reprap.CartesianPrinter;
 import org.reprap.Preferences;
 import org.reprap.Extruder;
@@ -76,7 +78,7 @@ public class NullCartesianMachine implements CartesianPrinter {
 		extruders = new NullExtruder[extruderCount];
 		for(int i = 0; i < extruderCount; i++)
 		{
-			String prefix = "Extruder" + i;
+			String prefix = "Extruder" + i + "_";
 			extruders[i] = new NullExtruder(config, i);
 		}
 		extruder = 1;
@@ -150,14 +152,30 @@ public class NullCartesianMachine implements CartesianPrinter {
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#selectMaterial(int)
 	 */
-	public void selectMaterial(int materialIndex) {
+	public void selectExtruder(int materialIndex) {
 		if (isCancelled()) return;
 		if(materialIndex < 0 || materialIndex >= extruderCount)
 			System.err.println("Selected material (" + materialIndex + ") is out of range.");
 		else
 			extruder = materialIndex;
+			
 //		if (previewer != null)
-//			previewer.setMaterial(extruders[extruder]);
+//			previewer.setExtruder(extruders[extruder]);
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#selectMaterial(int)
+	 */
+	public void selectExtruder(Attributes att) {
+		for(int i = 0; i < extruderCount; i++)
+		{
+			if(att.getMaterial().equals(extruders[i].toString()))
+			{
+				selectExtruder(i);
+				return;
+			}
+		}
+		System.err.println("selectExtruder() - extruder not found for: " + att.getMaterial());
 	}
 
 	/* (non-Javadoc)
@@ -383,7 +401,7 @@ public class NullCartesianMachine implements CartesianPrinter {
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#setLowerShell(javax.media.j3d.Shape3D)
 	 */
-	public void setLowerShell(Shape3D ls)
+	public void setLowerShell(BranchGroup ls)
 	{
 		previewer.setLowerShell(ls);
 	}
@@ -434,6 +452,14 @@ public class NullCartesianMachine implements CartesianPrinter {
 			if(name.equals(extruders[i].toString()))
 				return extruders[i];
 		return null;
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#getExtruder(String)
+	 */
+	public Extruder[] getExtruders()
+	{
+		return extruders;
 	}
 	
 }

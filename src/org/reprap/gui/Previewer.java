@@ -3,6 +3,7 @@ package org.reprap.gui;
 import javax.media.j3d.*;
 import org.reprap.Printer;
 
+
 public interface Previewer {
 
 	public void setMachine(Printer p);
@@ -12,5 +13,5 @@ public interface Previewer {
 	public void reset();
 	public boolean isCancelled();
 	public void setCancelled(boolean isCancelled);
-	public void setLowerShell(Shape3D ls);
+	public void setLowerShell(BranchGroup ls);
 }

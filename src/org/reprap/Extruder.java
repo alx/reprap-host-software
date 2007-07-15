@@ -177,5 +177,10 @@ public interface Extruder {
      * @return the appearance (colour) to use in the simulation window for this material
      */
     public Appearance getAppearance();  
+    
+    /**
+     * @return the material name
+     */
+    public String toString();
  
 }

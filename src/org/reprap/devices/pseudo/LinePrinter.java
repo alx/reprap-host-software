@@ -40,6 +40,11 @@ public class LinePrinter {
 		this.extruder = extruder;
 	}
 	
+	public void changeExtruder(Extruder e)
+	{
+		extruder = e;
+	}
+	
 	/**
 	 * @throws IOException
 	 */

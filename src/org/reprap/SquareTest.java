@@ -19,7 +19,7 @@ public class SquareTest {
 		reprap.setPreviewer(preview);
 
 		reprap.calibrate();
-		reprap.selectMaterial(0);
+		reprap.selectExtruder(0);
 		reprap.setSpeed(reprap.getExtruder().getXYSpeed());  
 		//reprap.getExtruder().setExtruderSpeed(180);
 		reprap.getExtruder().heatOn();

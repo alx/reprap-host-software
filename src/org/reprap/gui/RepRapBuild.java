@@ -105,6 +105,8 @@ import javax.vecmath.Color3f;
 import com.sun.j3d.utils.picking.PickCanvas;
 import com.sun.j3d.utils.picking.PickResult;
 import com.sun.j3d.utils.picking.PickTool;
+
+import org.reprap.Attributes;
 import org.reprap.Preferences;
 
 
@@ -112,7 +114,7 @@ import org.reprap.Preferences;
  * Little class to put up a radiobutton menu so you can set
  * what material something is to be made from.
  * 
- * @author ensab
+ * @author adrian
  *
  */
 class MaterialRadioButtons extends JPanel{
@@ -129,7 +131,7 @@ class MaterialRadioButtons extends JPanel{
 		radioPanel.setSize(300,200);
 		JLabel jLabel1 = new JLabel();
 		radioPanel.add(jLabel1);
-		jLabel1.setText(" Select the material for the object to be loaded ");
+		jLabel1.setText(" Select the material for the object just loaded ");
 		jLabel1.setHorizontalAlignment(SwingConstants.CENTER);
 		
 		try

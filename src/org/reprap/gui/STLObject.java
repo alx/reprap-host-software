@@ -62,13 +62,18 @@ import javax.vecmath.*;
 import com.sun.j3d.utils.picking.*;
 import com.sun.j3d.loaders.Scene;
 import org.j3d.renderer.java3d.loaders.STLLoader;
+import org.reprap.Attributes;
 import org.reprap.Preferences;
 import org.reprap.devices.NullExtruder;
 
 /**
+ * Class for holding a group (maybe just 1) of 3D objects for RepRap to make.
+ * They can be moved around on the build platform en mass, but not moved
+ * relative to each other, so they can represent an assembly made from several
+ * different materials.
  * 
- * @author ensab
- *
+ * @author adrian
+ * 
  */
 
 public class STLObject
@@ -144,21 +149,21 @@ public class STLObject
             if (scene != null) 
             {
                 result = scene.getSceneGroup();
-                att.setPart(result);
-                result.setUserData(att);
-                Hashtable namedObjects = null;
-                java.util.Enumeration enumValues = null;
                 result.setCapability(Node.ALLOW_BOUNDS_READ);
                 result.setCapability(Group.ALLOW_CHILDREN_READ);
                 
-                // Set the appearance of the object and recursively add its name
+                att.setPart(result);
+                result.setUserData(att);
+        		stl.addChild(result);
                 
-                namedObjects = scene.getNamedObjects( );
-                enumValues = namedObjects.elements( );
+                // Recursively add its attribute
+                
+                Hashtable namedObjects = scene.getNamedObjects( );
+                java.util.Enumeration enumValues = namedObjects.elements( );
                 
                 if( enumValues != null ) 
                 {
-                    while( enumValues.hasMoreElements( ) != false ) 
+                    while(enumValues.hasMoreElements( )) 
                     {
                     	Shape3D value = (Shape3D)enumValues.nextElement();
                         bbox = (BoundingBox)value.getBounds();
@@ -171,7 +176,7 @@ public class STLObject
                     }
                 }
             } 
-    		stl.addChild(result);
+
         } catch ( Exception e ) 
         {
             System.err.println("loadSingelSTL(): Exception loading STL file from: " 

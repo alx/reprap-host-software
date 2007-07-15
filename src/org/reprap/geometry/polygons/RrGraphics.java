@@ -173,7 +173,7 @@ public class RrGraphics
 		stlc = null;
 		plot_box = pb;
 		
-		setScales(pl.box);
+		setScales(pl.getBox());
 	}
 	
 	/**
@@ -344,7 +344,7 @@ public class RrGraphics
 		if(plot_box)
 		{
 			colour(5);
-			plot(p.box);
+			plot(p.getBox());
 		}
 		
 //		colour(4);

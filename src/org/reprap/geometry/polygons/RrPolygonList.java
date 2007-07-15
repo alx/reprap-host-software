@@ -58,6 +58,8 @@ package org.reprap.geometry.polygons;
 
 import java.io.*;
 import java.util.*;
+
+import org.reprap.Attributes;
 import org.reprap.Preferences;
 
 /**
@@ -95,12 +97,12 @@ public class RrPolygonList
 	/**
 	 * 
 	 */
-	public List polygons;
+	private List polygons;
 	
 	/**
 	 * 
 	 */
-	public RrBox box;
+	private RrBox box;
 	
 	/**
 	 * Empty constructor
@@ -128,6 +130,11 @@ public class RrPolygonList
 	{
 		return polygons.size();
 	}
+	
+	/**
+	 * @return the current enclosing box
+	 */
+	public RrBox getBox() { return box; }
 	
 	/**
 	 * Overwrite one of the polygons
@@ -180,7 +187,7 @@ public class RrPolygonList
 	public void add(RrPolygon p)
 	{
 		polygons.add(p);
-		box.expand(p.box);
+		box.expand(p.getBox());
 	}
 	
 	/**
@@ -288,7 +295,7 @@ public class RrPolygonList
 		for(int i = 0; i < size(); i++)
 		{
 			RrPolygon p = polygon(i);
-			if(p.box.d_2() > 2*d2)
+			if(p.getBox().d_2() > 2*d2)
 				r.add(p.simplify(d));
 		}
 		
@@ -446,9 +453,10 @@ public class RrPolygonList
 	 * Take a list of CSG polygons, classify each as being inside other(s)
 	 * (or not), and hence form a single CSG expression representing them all.
 	 * @param csgPols
+	 * @param polAttributes
 	 * @return single CSG expression based on csgPols list 
 	 */
-	private RrCSG resolveInsides(List csgPols)
+	private RrCSGPolygon resolveInsides(List csgPols)
 	{
 		int i, j, k, m;
 		
@@ -515,8 +523,9 @@ public class RrPolygonList
 		{
 			if(contains.get(i) != null)
 					result = RrCSG.union(result, (RrCSG)csgPols.get(i));
-		}	
-		return result;	
+		}
+		
+		return new RrCSGPolygon(result, box.scale(1.1), polygon(0).getAttributes());		
 	}
 	
 	/**
@@ -530,12 +539,10 @@ public class RrPolygonList
 		for(int i = 0; i < size(); i++)
 			csgPols.add(polygon(i).toCSG(tolerance).csg());
 		
-		RrCSG expression = resolveInsides(csgPols);
+		RrCSGPolygon polygons = resolveInsides(csgPols);
 		//expression = expression.simplify(tolerance);
-		RrBox b = box.scale(1.1);
-		RrCSGPolygon result = new RrCSGPolygon(expression, b);
 		
-		return result;
+		return polygons;
 	}
 	
 }

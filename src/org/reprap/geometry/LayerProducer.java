@@ -7,6 +7,7 @@
 package org.reprap.geometry;
 
 import java.io.IOException;
+import java.util.*;
 import javax.media.j3d.*;
 import org.reprap.Printer;
 import org.reprap.Preferences;
@@ -103,7 +104,7 @@ public class LayerProducer {
 	/**
 	 * The shape of the object built so far under the current layer
 	 */
-	private Shape3D lowerShell;
+	private BranchGroup lowerShell;
 
 	/**
 	 * 
@@ -172,7 +173,7 @@ public class LayerProducer {
 	 * @param ls
 	 * @param hatchDirection
 	 */
-	public LayerProducer(Printer printer, double zValue, RrCSGPolygon csgPol, Shape3D ls, RrHalfPlane hatchDirection) {
+	public LayerProducer(Printer printer, double zValue, RrCSGPolygonList csgPols, BranchGroup ls, RrHalfPlane hatchDirection) {
 		this.printer = printer;
 		lowerShell = ls;
 		baseSpeed = printer.getExtruder().getXYSpeed();
@@ -181,8 +182,8 @@ public class LayerProducer {
 		currentSpeed= outlineSpeed; // Always start with an outline
 		z = zValue;
 		
-		RrCSGPolygon offBorder = csgPol.offset(-0.5*printer.getExtruder().getExtrusionSize());
-		RrCSGPolygon offHatch = csgPol.offset(-1.5*printer.getExtruder().getExtrusionSize());
+		RrCSGPolygonList offBorder = csgPols.offset(-0.5, printer.getExtruders());
+		RrCSGPolygonList offHatch = csgPols.offset(-1.5, printer.getExtruders());
 		
 		//csgPol.divide(Preferences.tiny(), 1.01);
 		//RrGraphics g = new RrGraphics(csgPol, true);
@@ -195,7 +196,7 @@ public class LayerProducer {
 		borderPolygons = offBorder.megList(solidMaterial, solidMaterial);
 		
 		hatchedPolygons = new RrPolygonList();
-		hatchedPolygons.add(offHatch.hatch(hatchDirection, printer.getExtruder().getExtrusionInfillWidth(), 
+		hatchedPolygons.add(offHatch.hatch(hatchDirection, printer.getExtruders(),
 				solidMaterial, gapMaterial));	
 	
 //		RrPolygonList pllist = new RrPolygonList();
@@ -205,7 +206,7 @@ public class LayerProducer {
 
 		csg_p = null;
 		
-		RrBox big = csgPol.box().scale(1.1);
+		RrBox big = csgPols.box().scale(1.1);
 		
 		double width = big.x().length();
 		double height = big.y().length();
@@ -310,6 +311,8 @@ public class LayerProducer {
 	{
 		if(p.size() <= 1)
 			return;
+		
+		printer.selectExtruder(p.getAttributes());
 		
 		int stopExtruding = p.backStep(printer.getExtruder().getExtrusionOverRun());
 		

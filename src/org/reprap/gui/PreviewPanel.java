@@ -248,7 +248,7 @@ public class PreviewPanel extends Panel3D implements Previewer {
 		statusWindow.setCancelled(isCancelled);
 	}
 	
-	public void setLowerShell(Shape3D ls)
+	public void setLowerShell(BranchGroup ls)
 	{
 		if(extrusionsOld != null)
 			extrusionsOld.removeAllChildren();
@@ -262,7 +262,6 @@ public class PreviewPanel extends Panel3D implements Previewer {
 		BranchGroup subLower = new BranchGroup();
 		if(ls != null)
 		{
-			ls.setAppearance(reprap.getExtruder().getAppearance());
 			subLower.addChild(ls);
 			lowerShell.addChild(subLower);
 		}

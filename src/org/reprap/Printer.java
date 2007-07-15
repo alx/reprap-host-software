@@ -68,10 +68,16 @@ public interface Printer {
 	public void homeToZeroY() throws ReprapException, IOException; 
 	
 	/**
-	 * Select a specific material print with
-	 * @param materialIndex identifier of the material
+	 * Select a specific material to print with
+	 * @param attributes with name of the material
 	 */
-	public void selectMaterial(int materialIndex);
+	public void selectExtruder(Attributes att);
+	
+	/**
+	 * Select a specific material to print with
+	 * @param extr identifier of the material
+	 */
+	public void selectExtruder(int extr);
 	
 	/**
 	 * Indicates end of job, homes extruder, powers down etc
@@ -237,12 +243,18 @@ public interface Printer {
 	/**
 	 * @param ls
 	 */
-	public void setLowerShell(Shape3D ls);
+	public void setLowerShell(BranchGroup ls);
 	
 	/**
 	 * @param name
 	 * @return the extruder for the material called name; null if not found.
 	 */
 	public Extruder getExtruder(String name);
+	
+	/**
+	 * Get the list of all the extruders
+	 * @return
+	 */
+	public Extruder[] getExtruders();
 
 }

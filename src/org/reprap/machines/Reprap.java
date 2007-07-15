@@ -2,6 +2,8 @@ package org.reprap.machines;
 
 import java.io.IOException;
 import javax.media.j3d.*;
+
+import org.reprap.Attributes;
 import org.reprap.CartesianPrinter;
 import org.reprap.Preferences;
 import org.reprap.ReprapException;
@@ -334,7 +336,7 @@ public class Reprap implements CartesianPrinter {
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#selectMaterial(int)
 	 */
-	public void selectMaterial(int materialIndex) {
+	public void selectExtruder(int materialIndex) {
 		if (isCancelled()) return;
 		
 		if(materialIndex < 0 || materialIndex >= extruderCount)
@@ -342,14 +344,30 @@ public class Reprap implements CartesianPrinter {
 		else
 			extruder = materialIndex;
 		
+		layerPrinter.changeExtruder(extruders[extruder]);
+		
 //		if (previewer != null)
-//			previewer.setMaterial(extruders[extruder]);
+//			previewer.setExtruder(extruders[extruder]);
 
 		if (isCancelled()) return;
 		// TODO Select new material
 		// TODO Load new x/y/z offsets for the new extruder
 	}
-
+	
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#selectMaterial(int)
+	 */
+	public void selectExtruder(Attributes att) {
+		for(int i = 0; i < extruderCount; i++)
+		{
+			if(att.getMaterial().equals(extruders[i].toString()))
+			{
+				selectExtruder(i);
+				return;
+			}
+		}
+		System.err.println("selectExtruder() - extruder not found for: " + att.getMaterial());
+	}
 	/**
 	 * FIXME: Why don't these use round()? - AB.
 	 * @param n
@@ -733,7 +751,7 @@ public class Reprap implements CartesianPrinter {
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#setLowerShell(javax.media.j3d.Shape3D)
 	 */
-	public void setLowerShell(Shape3D ls)
+	public void setLowerShell(BranchGroup ls)
 	{
 		previewer.setLowerShell(ls);
 	}
@@ -770,6 +788,14 @@ public class Reprap implements CartesianPrinter {
 	public Extruder getExtruder()
 	{
 		return extruders[extruder];
+	}
+	
+	/* (non-Javadoc)
+	 * @see org.reprap.Printer#getExtruder()
+	 */
+	public Extruder[] getExtruders()
+	{
+		return extruders;
 	}
 	
 	/* (non-Javadoc)

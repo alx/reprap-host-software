@@ -1,5 +1,6 @@
 package org.reprap.geometry;
 
+import java.util.*;
 import javax.media.j3d.*;
 import javax.vecmath.*;
 import org.reprap.Preferences;
@@ -171,7 +172,7 @@ public class Producer {
 		System.out.println("Intialising reprap");
 		reprap.initialise();
 		System.out.println("Selecting material 0");
-		reprap.selectMaterial(0);
+		reprap.selectExtruder(0);
 		//reprap.setExtruderSpeed(extrusionSpeed);
 		System.out.println("Setting temperature");
 		reprap.getExtruder().heatOn();
@@ -272,10 +273,10 @@ public class Producer {
 //						isEvenLayer?evenHatchDirection:oddHatchDirection);
 //			} else
 //			{
-				RrCSGPolygon slice = stlc.slice(z+reprap.getExtruder().getExtrusionHeight()*0.5, 
-						LayerProducer.solidMaterial(), LayerProducer.gapMaterial(), bld.getObjectColour());
-				Shape3D lowerShell = stlc.getShape3D();
-				if(slice != null)
+				RrCSGPolygonList slice = stlc.slice(z+reprap.getExtruder().getExtrusionHeight()*0.5, 
+						LayerProducer.solidMaterial(), LayerProducer.gapMaterial());
+				BranchGroup lowerShell = stlc.getBelow();
+				if(slice.size() > 0)
 					layer = new LayerProducer(reprap, z, slice, lowerShell,
 						isEvenLayer?evenHatchDirection:oddHatchDirection);
 				else

@@ -1,6 +1,8 @@
 
 package org.reprap.geometry.polygons;
 
+import org.reprap.Attributes;
+
 /**
  * Testing class
  */
@@ -18,7 +20,7 @@ public class TestMain
 		Rr2Point rr = new Rr2Point(0.45, 0.5);
 		Rr2Point ss = new Rr2Point(0.4, 0.3);    
 		
-		RrPolygon a = new RrPolygon();
+		RrPolygon a = new RrPolygon(new Attributes(null, null, null, null));
 		a.add(p, 1);
 		a.add(q, 1);
 		a.add(r, 1);
@@ -27,7 +29,7 @@ public class TestMain
 		RrPolygonList c = new RrPolygonList();
 		c.add(a);
 		
-		a = new RrPolygon();
+		a = new RrPolygon(new Attributes(null, null, null, null));
 		a.add(rr, 2);
 		a.add(qq, 2);
 		a.add(pp, 2);
@@ -63,7 +65,8 @@ public class TestMain
 		}
 		
 		return new RrCSGPolygon(r, new RrBox(new Rr2Point(hexX - hexSize, hexY - hexSize), 
-				new Rr2Point(hexX + hexSize, hexY + hexSize)));
+				new Rr2Point(hexX + hexSize, hexY + hexSize)),
+				new Attributes(null, null, null, null));
 	}
 	
 	public static RrCSGPolygon testPol()
@@ -108,7 +111,8 @@ public class TestMain
 		ppc = RrCSG.difference(ppc, pc);
 		
 		return new RrCSGPolygon(ppc, new 
-				RrBox(new Rr2Point(-0.032,-0.0176), new Rr2Point(1.317,1.12)));
+				RrBox(new Rr2Point(-0.032,-0.0176), new Rr2Point(1.317,1.12)),
+				new Attributes(null, null, null, null));
 	}
 	
 	public static void rrCSGTest()

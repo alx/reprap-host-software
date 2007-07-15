@@ -238,7 +238,12 @@ public class NullExtruder implements Extruder{
 		isCommsAvailable = true;
 	
 	}
-
+	
+	/**
+	 * @return the material type
+	 */
+    public String toString() { return materialType; }
+	
 	/* (non-Javadoc)
 	 * @see org.reprap.Extruder#dispose()
 	 */
@@ -516,4 +521,11 @@ public class NullExtruder implements Extruder{
 		a.setMaterial(new Material(col, black, col, black, 101f));
 		return a;
     }
+    
+    public static Appearance getAppearanceFromMaterial(String material)
+    {
+    	return(getAppearanceFromNumber(getNumberFromMaterial(material)));
+    }
+    
+
 }

@@ -58,6 +58,8 @@ package org.reprap.geometry.polygons;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.reprap.Attributes;
 import org.reprap.Preferences;
 
 /**
@@ -153,13 +155,21 @@ public class RrCSGPolygon
 	private Rr2Point vertex;
 	
 	/**
+	 * the attributes of this polygon
+	 */
+	private Attributes att;
+	
+	/**
 	 * Set one up
 	 * @param p
 	 * @param bx
 	 */
-	public RrCSGPolygon(RrCSG p, RrBox bx)
+	public RrCSGPolygon(RrCSG p, RrBox bx, Attributes a)
 	{
+		if(a == null)
+			System.err.println("RrCSGPolygon(): null attributes!");
 		box = new RrBox(bx);
+		att = a;
 		q1 = null;
 		q2 = null;
 		q3 = null;
@@ -192,7 +202,8 @@ public class RrCSGPolygon
 	public boolean corner() { return corner; }
 	public Rr2Point vertex() { return vertex; }
 	public RrInterval interval1() { return i1; } 
-	public RrInterval interval2() { return i2; } 
+	public RrInterval interval2() { return i2; }
+	public Attributes getAttributes() { return att; }
 	
 	
 	/**
@@ -284,21 +295,21 @@ public class RrCSGPolygon
 		Rr2Point newNE = Rr2Point.mul(Rr2Point.add(nw, ne), 0.5);
 		RrBox s = new RrBox(Rr2Point.add(newSW, new Rr2Point(0, -addY)), 
 				Rr2Point.add(newNE, new Rr2Point(addX, 0)));
-		q1 = new RrCSGPolygon(csg.prune(s), s);
+		q1 = new RrCSGPolygon(csg.prune(s), s, att);
 		
 		s = new RrBox(Rr2Point.add(cen, new Rr2Point(-addX, -addY)), 
 				ne);
-		q2 = new RrCSGPolygon(csg.prune(s), s);
+		q2 = new RrCSGPolygon(csg.prune(s), s, att);
 		
 		newSW = Rr2Point.mul(Rr2Point.add(sw, se), 0.5);
 		newNE = Rr2Point.mul(Rr2Point.add(se, ne), 0.5);
 		s = new RrBox(Rr2Point.add(newSW, new Rr2Point(-addX, 0)), 
 				Rr2Point.add(newNE, new Rr2Point(0, addY)));		
-		q3 = new RrCSGPolygon(csg.prune(s), s);
+		q3 = new RrCSGPolygon(csg.prune(s), s, att);
 		
 		s = new RrBox(sw, 
 				Rr2Point.add(cen, new Rr2Point(addX, addY)));		
-		q4 = new RrCSGPolygon(csg.prune(s), s);
+		q4 = new RrCSGPolygon(csg.prune(s), s, att);
 		
 		// Recursively divide the children
 		
@@ -483,13 +494,13 @@ public class RrCSGPolygon
 		if(-d >= 0.5*box.x().length() || -d >= 0.5*box.y().length())
 		{
 			b = new RrBox(new Rr2Point(0,0), new Rr2Point(1,1));
-			return new RrCSGPolygon(RrCSG.nothing(), b);
+			return new RrCSGPolygon(RrCSG.nothing(), b, att);
 		}
 		Rr2Point p = new Rr2Point(Math.sqrt(2)*d, Math.sqrt(2)*d);
 		b = new RrBox( Rr2Point.sub(box.sw(), p), Rr2Point.add(box.ne(), p) );
 		RrCSG expression = csg.offset(d);
 		expression = expression.simplify(Math.sqrt(resolution_2));
-		RrCSGPolygon result = new RrCSGPolygon(csg.offset(d), b);
+		RrCSGPolygon result = new RrCSGPolygon(csg.offset(d), b, att);
 		if(q1 != null)
 			result.divide(resolution_2, sFactor);
 		return result;
@@ -550,7 +561,7 @@ public class RrCSGPolygon
      */
     public RrPolygon meg(int flag)
     {
-    	RrPolygon result = new RrPolygon();
+    	RrPolygon result = new RrPolygon(att);
     	
     	RrCSGPolygon c = this;
     	RrHalfPlane now, next;
@@ -713,7 +724,7 @@ public class RrCSGPolygon
     	if(backwards)
     		beforeIndex++;
     	
-    	RrPolygon rPol = new RrPolygon();
+    	RrPolygon rPol = new RrPolygon(att);
     	RrCSGPolygon startQuad = modelEdge.getQuad(beforeIndex);
     	RrCSGPolygon c = startQuad;
     	RrHalfPlane next;
@@ -771,7 +782,7 @@ public class RrCSGPolygon
      */
 	private RrPolygon snakeGrow(List hatches, int thisHatch, int thisPt, int fg, int fs)
 	{
-		RrPolygon result = new RrPolygon();
+		RrPolygon result = new RrPolygon(att);
 		
 		RrHalfPlane h = (RrHalfPlane)hatches.get(thisHatch);
 		Rr2Point pt = h.pLine().point(h.getParameter(thisPt));

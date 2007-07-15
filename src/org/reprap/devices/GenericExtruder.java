@@ -334,7 +334,7 @@ public class GenericExtruder extends Device implements Extruder{
 
 	
 	}
-
+	
 	/* (non-Javadoc)
 	 * @see org.reprap.Extruder#dispose()
 	 */

@@ -71,6 +71,7 @@ package org.reprap.geometry.polygons;
 import java.io.*;
 import java.util.*;
 import org.reprap.geometry.LayerProducer;
+import org.reprap.Attributes;
 import org.reprap.Preferences;
 
 /**
@@ -79,32 +80,40 @@ import org.reprap.Preferences;
 public class RrPolygon
 {
 	/**
-	 * 
+	 * Used to choose the starting point for a randomized-start copy of a polygon
 	 */
 	private static Random rangen = new Random(918273);
 	
 	/**
-	 * 
+	 * The (X, Y) points rond the polygon as Rr2Points
 	 */
-	public List points;
+	private List points;
 	
 	/**
-	 * 
+	 * General purpose list of integer flag values, one for each point
 	 */
-	public List flags;
+	private List flags;
 	
 	/**
-	 * 
+	 * The atributes of the STL object that this polygon represents
 	 */
-	public RrBox box;
+	private Attributes att;
 	
 	/**
-	 * Empty polygon
+	 * The minimum enclosing X-Y box round the polygon
 	 */
-	public RrPolygon()
+	private RrBox box;
+	
+	/**
+	 * Make an empty polygon
+	 */
+	public RrPolygon(Attributes a)
 	{
+		if(a == null)
+			System.err.println("RrPolygon(): null attributes!");
 		points = new ArrayList();
 		flags = new ArrayList();
+		att = a;
 		box = new RrBox();
 	}
 	
@@ -163,19 +172,14 @@ public class RrPolygon
 	}
 	
 	/**
-	 * Deep copy
+	 * Deep copy - NB: attributes _not_ deep copied
 	 * @param p
 	 */
 	public RrPolygon(RrPolygon p)
 	{
-		points = new ArrayList();
-		flags = new ArrayList();
-		box = new RrBox(p.box);
+		this(p.att);
 		for(int i = 0; i < p.size(); i++)
-		{
-			points.add(new Rr2Point(p.point(i)));
-			flags.add(new Integer((p.flag(i)))); 
-		}		
+			add(new Rr2Point(p.point(i)), new Integer((p.flag(i))));		
 	}
 	
 	/**
@@ -191,7 +195,18 @@ public class RrPolygon
 	}
 	
 	/**
+	 * @return the attributes
+	 */
+	public Attributes getAttributes() { return att; }
+	
+	/**
+	 * @return the current surrounding box
+	 */
+	public RrBox getBox() { return box; }
+	
+	/**
 	 * Put a new polygon and its flag values on the end
+	 * (N.B. Attributes of the new polygon are ignored)
 	 * @param p
 	 */
 	public void add(RrPolygon p)
@@ -251,7 +266,7 @@ public class RrPolygon
 	 */
 	public RrPolygon negate()
 	{
-		RrPolygon result = new RrPolygon();
+		RrPolygon result = new RrPolygon(att);
 		int f;
 		for(int i = size() - 1; i >= 0; i--)
 		{
@@ -265,12 +280,11 @@ public class RrPolygon
 	}
 	
 	/**
-	 * Same polygon starting at a random vertex.
 	 * @return same polygon starting at a random vertex
 	 */
 	public RrPolygon randomStart()
 	{
-		RrPolygon result = new RrPolygon();
+		RrPolygon result = new RrPolygon(att);
 		int i = rangen.nextInt(size());
 		for(int j = 0; j < size(); j++)
 		{
@@ -284,7 +298,7 @@ public class RrPolygon
 	
 	/**
 	 * Signed area (-ve result means polygon goes anti-clockwise)
-	 * @return ?
+	 * @return signed area
 	 */
 	public double area()
 	{
@@ -303,8 +317,8 @@ public class RrPolygon
 	
 	/**
 	 * Backtrack a given distance, inserting a new point there and returning its index
-	 * @param d
-	 * @return ??
+	 * @param distance to backtrack
+	 * @return index of the inserted point
 	 */
 	public int backStep(double d)
 	{
@@ -380,7 +394,7 @@ public class RrPolygon
 		int leng = size();
 		if(leng <= 3)
 			return new RrPolygon(this);
-		RrPolygon r = new RrPolygon();
+		RrPolygon r = new RrPolygon(att);
 		double d2 = d*d;
 		int v1 = findAngleStart(0, d2);
 		r.add(point(v1%leng), flag(v1%leng));
@@ -392,6 +406,8 @@ public class RrPolygon
 				return(r);
 			r.add(point(v2%leng), flag(v2%leng));
 		}
+		// The compiler is very clever to spot that no return
+		// is needed here...
 	}
 	
 	/**
@@ -402,7 +418,7 @@ public class RrPolygon
 	 */
 	public RrPolygon filterShort(double tiny)
 	{
-		RrPolygon r = new RrPolygon();
+		RrPolygon r = new RrPolygon(att);
 		int oldEdgeFlag = flag(size()-1);
 		int i, ii;
 		
@@ -431,7 +447,7 @@ public class RrPolygon
 		
 		// Nothing left
 		
-		return new RrPolygon();
+		return new RrPolygon(att);
 	}
 	
 	// ****************************************************************************
@@ -825,7 +841,9 @@ public class RrPolygon
 
 		RrBox b = copy.box.scale(1.1);
 		//expression = expression.simplify(tolerance);
-		RrCSGPolygon result = new RrCSGPolygon(expression, b);
+		if(att == null)
+			System.err.println("toCSG(): null attribute!");
+		RrCSGPolygon result = new RrCSGPolygon(expression, b, att);
 		
 		return result;
 	}

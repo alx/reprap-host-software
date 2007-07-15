@@ -60,8 +60,9 @@ import javax.vecmath.*;
 import com.sun.j3d.utils.geometry.GeometryInfo;
 import com.sun.j3d.utils.geometry.NormalGenerator;
 import org.reprap.gui.STLObject;
+import org.reprap.Attributes;
 import org.reprap.Preferences;
-import org.reprap.gui.Attributes;
+import org.reprap.devices.NullExtruder;
 
 // Small class to hold line segments and the quads in which their ends lie
 
@@ -89,6 +90,8 @@ class LineSegment
 	 */
 	public LineSegment(Rr2Point p, Rr2Point q, Attributes at)
 	{
+		if(at == null)
+			System.err.println("LineSegment(): null attributes!");
 		a = p;
 		b = q;
 		att = at;
@@ -130,6 +133,57 @@ class LineSegment
 		if(count != 2)
 			System.err.println("LineSegment.setQuad(): dud end count = " + count);
 	}
+}
+
+class AandT
+{
+	public Attributes att;
+	public Transform3D trans;
+	
+	public AandT(Attributes a, Transform3D t)
+	{
+		att = a;
+		trans = t;
+	}
+}
+
+class MaterialLists
+{
+	private ArrayList<AandT> [] ats;
+	int extruderCount;
+	
+	public MaterialLists()
+	{
+		extruderCount = 0;
+		
+		try
+		{
+			extruderCount = Preferences.loadGlobalInt("NumberOfExtruders");
+		} catch (Exception ex)
+		{
+			System.err.println("MaterialLists(): " + ex.toString());
+		}
+		
+		ats = new ArrayList[extruderCount];
+		for(int i = 0; i < extruderCount; i++)
+			ats[i] = new ArrayList<AandT>();
+	}
+	
+	public void add(Attributes a, Transform3D t)
+	{
+		int i = NullExtruder.getNumberFromMaterial(a.getMaterial());
+		if(i < 0 || i >= extruderCount)
+			System.err.println("MaterialLists.add() - dud material: " + a.getMaterial());
+		else
+			ats[i].add(new AandT(a, t));
+	}
+	
+	public ArrayList<AandT> getAandTs(int i)
+	{
+		return ats[i];
+	}
+	
+	public int getExtruderCount() { return extruderCount; }
 }
 
 /**
@@ -175,17 +229,22 @@ public class STLSlice
 	/**
 	 * All the STL triangles and part-triangles below Z 
 	 */
-	private static List triangles;
+	private List triangles;
 	
 	/**
 	 * Made from the below-Z triangles 
 	 */
-	private Shape3D below;
+	private BranchGroup below;
 	
 	/**
-	 * Null constructor just initialises a few things.
+	 * The lists of parts sorted by material
 	 */
-	private STLSlice()
+	private MaterialLists mls;
+	
+	/**
+	 * Just initialises a few things.
+	 */
+	private void cleanUp()
 	{
 		edges = new ArrayList();
 		q1 = null;
@@ -194,10 +253,8 @@ public class STLSlice
 		q4 = null;
 		box = new RrBox();
 		visited = false;
-		shapeList = null;
 		sFactor = 1;
 		resolution_2 = Preferences.tiny();
-		below = null;
 		triangles = new ArrayList();
 	}
 	
@@ -207,8 +264,28 @@ public class STLSlice
 	 */
 	public STLSlice(List s)
 	{
-		this();
+		cleanUp();
 		shapeList = s;
+		mls = new MaterialLists();
+		for(int i = 0; i < shapeList.size(); i++)
+		{
+			STLObject stl = (STLObject)shapeList.get(i);
+			Transform3D trans = stl.getTransform();
+			BranchGroup bg = stl.getSTL();
+			java.util.Enumeration enumKids = bg.getAllChildren( );
+			
+	        while(enumKids.hasMoreElements( ))
+	        {
+	        	Object ob = enumKids.nextElement();
+	        	
+	        	if(ob instanceof BranchGroup)
+	        	{
+	        		BranchGroup bg1 = (BranchGroup)ob;
+	        		Attributes att = (Attributes)(bg1.getUserData());
+	        		mls.add(att, trans);
+	        	}
+	        }
+		}
 	}
 	
 	/**
@@ -275,7 +352,7 @@ public class STLSlice
 	}
 	
 	
-	public Shape3D getShape3D()
+	public BranchGroup getBelow()
 	{
 		//return null;
 		return below;
@@ -550,8 +627,7 @@ public class STLSlice
     			{
     				divideFurther = true;
     				break;
-    			}
-    				
+    			}		
     		}
 	   		
 	   		if(divideFurther)
@@ -638,7 +714,7 @@ public class STLSlice
 	private RrPolygonList conquer(int fg, int fs)
 	{
 		RrPolygonList pgl = new RrPolygonList();
-		RrPolygon pg;
+		//RrPolygon pg;
 		STLSlice corner, newCorner, startCorner;
 		LineSegment edge, newEdge;
 		Rr2Point p0, p1;
@@ -648,7 +724,7 @@ public class STLSlice
 		{
 			corner = startCorner;
 			edge = corner.segment(0);
-			pg = new RrPolygon();   //Communicate edge.att here
+			RrPolygon pg = new RrPolygon(edge.att);
 			do
 			{
 				if(corner.visited)
@@ -721,105 +797,84 @@ public class STLSlice
 	 * @param z
 	 * @return a CSG representation of all the polygons in the slice
 	 */
-	public RrCSGPolygon slice(double z, int fg, int fs, Color3f baseColour)
+	public RrCSGPolygonList slice(double z, int fg, int fs)
 	{
-		Point3d p, q, r;
-		Vector3d a, b;
-		
-		if(shapeList == null)
-		{
-			System.err.println("slice(): no STL list loaded!");
-			return null;
-		}
-			
-		// Clear out any residues from last z value
-		
-		q1 = null;
-		q2 = null;
-		q3 = null;
-		q4 = null;
-		visited = false;
-		sFactor = 1;
-		resolution_2 = Preferences.tiny(); 
-		edges = new ArrayList();
-		
-		// Run through all the STL objects adding line segments to edges
-		// wherever the z plane cuts them.
-		
-		STLObject stl;
-		Transform3D trans;
-		BranchGroup bg;
-		Enumeration things;
-		
-		triangles = new ArrayList();
-		for(int i = 0; i < shapeList.size(); i++)
-		{
-			stl = (STLObject)shapeList.get(i);
-			trans = stl.getTransform();
-			bg = stl.getSTL();
-			java.util.Enumeration enumKids = bg.getAllChildren( );
-	        
-	        while(enumKids.hasMoreElements( ))
-	        {
-	        	Object ob = enumKids.nextElement();
-	        	if(ob instanceof BranchGroup)
-	        	{
-	        		Attributes att = (Attributes)((BranchGroup)ob).getUserData();
-	        		recursiveSetEdges(ob, trans, z, att);
-	        	}
-	        }
-		}
-		
-		if(triangles.size() > 0)
-		{
-			GeometryInfo gi = new GeometryInfo(GeometryInfo.TRIANGLE_ARRAY);
-			Point3d t_array[] = new Point3d[triangles.size()];
+		RrCSGPolygonList rl = new RrCSGPolygonList();
 
-			for(int i = 0; i < triangles.size(); i++)
-				t_array[i] = (Point3d)triangles.get(i);
+		below = new BranchGroup();
+		
+		for(int mat = 0; mat < mls.getExtruderCount(); mat++)
+		{
+			cleanUp();
+			ArrayList<AandT> aats = mls.getAandTs(mat);
+
+			if(aats.size() > 0)
+			{
+				Appearance ap = aats.get(0).att.getAppearance();
+
+				for(int obj = 0; obj < aats.size(); obj++)
+				{
+					AandT aat = aats.get(obj);
+					Transform3D trans = aat.trans;
+					Attributes attr = aat.att;
+//					java.util.Enumeration enumKids = attr.getPart().getAllChildren( );
+//
+//					while(enumKids.hasMoreElements( ))
+//					{
+//						Object ob = enumKids.nextElement();
+//						if(ob instanceof BranchGroup)
+//							recursiveSetEdges(ob, trans, z, attr);
+//					}
+					recursiveSetEdges(attr.getPart(), trans, z, attr);
+				}
+
+				if(triangles.size() > 0)
+				{
+					GeometryInfo gi = new GeometryInfo(GeometryInfo.TRIANGLE_ARRAY);
+					Point3d t_array[] = new Point3d[triangles.size()];
+
+					for(int i = 0; i < triangles.size(); i++)
+						t_array[i] = (Point3d)triangles.get(i);
+
+					gi.setCoordinates(t_array);
+
+					NormalGenerator normalGenerator = new NormalGenerator();
+					normalGenerator.generateNormals(gi);
+
+					below.addChild(new Shape3D(gi.getGeometryArray(), ap));
+
+					triangles = new ArrayList();
+				}
+
+
+				// Make sure nothing falls down the cracks.
+
+				sFactor = Preferences.swell();
+				box = box.scale(sFactor);
+				resolution_2 = box.d_2()*Preferences.tiny();
+
+				// Recursively generate the quad tree.  The aim is to have each
+				// leaf quad containing either 0 or 2 ends of different line
+				// segments.  Then we just run round joining up all the pairs of
+				// ends.
+
+				divide();
+
+				// Run round joining up all the pairs of ends...
+
+				RrPolygonList pgl = conquer(fg, fs);
+
+				// Remove wrinkles
+				//RrGraphics g = new RrGraphics(pgl, false);
+				pgl = pgl.simplify(Preferences.gridRes()*1.5);
+				//RrGraphics g2 = new RrGraphics(pgl, false);
+				// Check for a silly result.
 				
-			gi.setCoordinates(t_array);
-			
-			NormalGenerator normalGenerator = new NormalGenerator();
-		    normalGenerator.generateNormals(gi);
-		    
-		    Appearance ap = new Appearance();
-		    Color3f black = new Color3f(0, 0, 0);
-		    ap.setMaterial(new Material(baseColour, black, baseColour, black, 0f));
-		    
-			below = new Shape3D(gi.getGeometryArray(), ap);
-			
-			triangles = new ArrayList();
+				if(pgl.size() > 0)
+					rl.add(pgl.toCSG(Preferences.tiny()));
+			}
 		}
-		
-		// Make sure nothing falls down the cracks.
-		
-		sFactor = Preferences.swell();
-		box = box.scale(sFactor);
-		resolution_2 = box.d_2()*Preferences.tiny();
-		
-		// Recursively generate the quad tree.  The aim is to have each
-		// leaf quad containing either 0 or 2 ends of different line
-		// segments.  Then we just run round joining up all the pairs of
-		// ends.
 
-		divide();
-
-		// Run round joining up all the pairs of ends...
-		
-		RrPolygonList pgl = conquer(fg, fs);
-		
-		// Remove wrinkles
-	   	//RrGraphics g = new RrGraphics(pgl, false);
-		pgl = pgl.simplify(Preferences.gridRes()*1.5);
-		//RrGraphics g2 = new RrGraphics(pgl, false);
-		// Check for a silly result.
-		
-		if(pgl.size() < 1)
-		{
-			System.err.println("slice(): nothing there!");
-			return null;
-		} else
-			return pgl.toCSG(Preferences.tiny());
+		return rl;
 	}
 }

@@ -53,7 +53,7 @@ public class PreviewWindow extends javax.swing.JFrame implements Previewer {
 		panel.setCancelled(isCancelled);
 	}
 	
-	public void setLowerShell(Shape3D ls)
+	public void setLowerShell(BranchGroup ls)
 	{
 		panel.setLowerShell(ls);
 	}
