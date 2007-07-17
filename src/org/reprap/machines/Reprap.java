@@ -159,7 +159,7 @@ public class Reprap implements CartesianPrinter {
 				new SNAPAddress(prefs.loadInt(prefix + "Address")), prefs, i);
 		}
 		
-		extruder=1;
+		extruder=0;
 		
 		layerPrinter = new LinePrinter(motorX, motorY, extruders[extruder]);
 
@@ -559,7 +559,7 @@ public class Reprap implements CartesianPrinter {
 	 * @throws IOException
 	 */
 	private void EnsureHot() throws ReprapException, IOException {
-		if(extruders[extruder].getTemperatureTarget() < Preferences.absoluteZero())
+		if(extruders[extruder].getTemperatureTarget() <= Preferences.absoluteZero() + 1)
 			return;
 		
 		double threshold = extruders[extruder].getTemperatureTarget() * 0.65;	// Changed from 0.95 by Vik.
