@@ -10,6 +10,7 @@ import java.io.IOException;
 import java.util.*;
 import javax.media.j3d.*;
 import org.reprap.Printer;
+import org.reprap.Attributes;
 import org.reprap.Preferences;
 import org.reprap.ReprapException;
 import org.reprap.geometry.polygons.*;
@@ -139,17 +140,22 @@ public class LayerProducer {
 	/**
 	 * 
 	 */
-	private int baseSpeed;
+//	private int baseSpeed;
 	
 	/**
 	 * 
 	 */
-	private int infillSpeed;
+//	private int infillSpeed;
 	
 	/**
 	 * 
 	 */
-	private int outlineSpeed;
+//	private int outlineSpeed;
+	
+	/**
+	 * 
+	 */
+	private int commonBorder, commonHatch;
 	
 	/**
 	 * 
@@ -176,10 +182,7 @@ public class LayerProducer {
 	public LayerProducer(Printer printer, double zValue, RrCSGPolygonList csgPols, BranchGroup ls, RrHalfPlane hatchDirection) {
 		this.printer = printer;
 		lowerShell = ls;
-		baseSpeed = printer.getExtruder().getXYSpeed();
-		outlineSpeed = (int)Math.round(baseSpeed*printer.getExtruder().getOutlineSpeed());
-		infillSpeed = (int)Math.round(baseSpeed*printer.getExtruder().getInfillSpeed());
-		currentSpeed= outlineSpeed; // Always start with an outline
+
 		z = zValue;
 		
 		RrCSGPolygonList offBorder = csgPols.offset(-0.5, printer.getExtruders());
@@ -307,12 +310,20 @@ public class LayerProducer {
 	 * @throws IOException
 	 * @throws ReprapException
 	 */
-	private void plot(RrPolygon p) throws ReprapException, IOException
+	private void plot(RrPolygon p, boolean outline) throws ReprapException, IOException
 	{
 		if(p.size() <= 1)
 			return;
 		
-		printer.selectExtruder(p.getAttributes());
+		if(outline)
+			p = p.randomStart();
+		
+		Attributes att = p.getAttributes();
+		int baseSpeed = att.getExtruder(printer.getExtruders()).getXYSpeed();
+		int outlineSpeed = (int)Math.round(baseSpeed*att.getExtruder(printer.getExtruders()).getOutlineSpeed());
+		int infillSpeed = (int)Math.round(baseSpeed*att.getExtruder(printer.getExtruders()).getInfillSpeed());
+		
+		printer.selectExtruder(att);
 		
 		int stopExtruding = p.backStep(printer.getExtruder().getExtrusionOverRun());
 		
@@ -322,10 +333,21 @@ public class LayerProducer {
 		
 		printer.setSpeed(printer.getFastSpeed());
 		move(p.point(0), p.point(1), true, false);
-		printer.setSpeed(outlineSpeed);
+//		printer.setSpeed(outlineSpeed);
 		plot(p.point(0), p.point(1), false);
 		// Print any lead-in.
 		printer.printStartDelay(printer.getExtruder().getExtrusionDelay());
+		
+		if(outline)
+		{
+			printer.setSpeed(outlineSpeed);
+			currentSpeed = outlineSpeed;			
+		} else
+		{
+			printer.setSpeed(infillSpeed);
+			currentSpeed = infillSpeed;			
+		}
+		
 		
 		int f = p.flag(0);
 		for(int j = 1; j <= leng; j++)
@@ -353,6 +375,42 @@ public class LayerProducer {
 			f = p.flag(i);
 		}
 	}
+	
+	private int plotOneMaterial(RrPolygonList polygons, int i, boolean outline)
+		throws ReprapException, IOException
+	{
+		String material = polygons.polygon(i).getAttributes().getMaterial();
+		
+		while(i < polygons.size() && polygons.polygon(i).getAttributes().getMaterial().equals(material))
+		{
+			if (printer.isCancelled())
+				return i;
+			plot(polygons.polygon(i), outline);
+			i++;
+		}
+		return i;
+	}
+	
+	private boolean nextCommon(int ib, int ih)
+	{
+		commonBorder = ib;
+		commonHatch = ih;
+		
+		for(int jb = ib; jb < borderPolygons.size(); jb++)
+		{
+			for(int jh = ih; jh < hatchedPolygons.size(); jh++)
+			{
+				if(borderPolygons.polygon(ib).getAttributes().getMaterial().equals(
+						hatchedPolygons.polygon(ih).getAttributes().getMaterial()))
+				{
+					commonBorder = jb;
+					commonHatch = jh;
+					return true;
+				}
+			}
+		}
+		return false;
+	}
 		
 	/**
 	 * Master plot function - draw everything
@@ -361,33 +419,50 @@ public class LayerProducer {
 	 */
 	public void plot() throws ReprapException, IOException
 	{
-		int i;
-		
-		printer.setSpeed(outlineSpeed);
-		currentSpeed = outlineSpeed;
+		int ib, jb, ih, jh;
 		
 		borderPolygons = borderPolygons.filterShorts(Preferences.machineResolution()*2);
-		for(i = 0; i < borderPolygons.size(); i++) 
-		{
-			if (printer.isCancelled())
-				break;
-			plot(borderPolygons.polygon(i).randomStart());
-		}
-		
-		printer.setSpeed(infillSpeed);
-		currentSpeed = infillSpeed;
-		
 		hatchedPolygons = hatchedPolygons.filterShorts(Preferences.machineResolution()*2);
-		for(i = 0; i < hatchedPolygons.size(); i++) 
+		
+		ib = 0;
+		ih = 0;
+		
+		while(nextCommon(ib, ih)) 
+		{	
+			for(jb = ib; jb < commonBorder; jb++)
+			{
+				if (printer.isCancelled())
+					break;
+				plot(borderPolygons.polygon(jb), true);
+			}
+			ib = commonBorder;
+
+			for(jh = ih; jh < commonHatch; jh++)
+			{
+				if (printer.isCancelled())
+					break;
+				plot(hatchedPolygons.polygon(jh), false);
+			}
+			ih = commonHatch;
+			
+			ib = plotOneMaterial(borderPolygons, ib, true);
+			ih = plotOneMaterial(hatchedPolygons, ih, false);	
+		}
+		
+		for(jb = ib; jb < borderPolygons.size(); jb++)
 		{
 			if (printer.isCancelled())
 				break;
-			plot(hatchedPolygons.polygon(i));
+			plot(borderPolygons.polygon(jb), true);			
 		}
 		
-		printer.setSpeed(outlineSpeed);
-		currentSpeed = outlineSpeed;
-		// Uncomment the next line to replace lower layers with shell triangles.
+		for(jh = ih; jh < commonHatch; jh++)
+		{
+			if (printer.isCancelled())
+				break;
+			plot(hatchedPolygons.polygon(jh), false);
+		}
+
 		printer.setLowerShell(lowerShell);
 	}		
 	
