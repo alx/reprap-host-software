@@ -45,7 +45,7 @@ class variable
 	String n;
 	
 	public variable(String s) { init = false; n = s;}
-	public boolean value() { if(!init) System.err.println("Variable undefined!"); return bv; }
+	public boolean get() { if(!init) System.err.println("Variable undefined!"); return bv; }
 	public boolean isSet() { return init; }
 	public void set(boolean b) { bv = b; init = true;}
 	public String name() { return n; }
@@ -85,19 +85,21 @@ class BooleanExpression
 	 */
 	private variable leaf;
 	
+	private variable [] variables;
 	
-	public BooleanExpression(int exp)
-	{
-		c1 = new BooleanExpression('a');
-		if((exp & 1) == 1)
-			c2 = new BooleanExpression(new BooleanExpression('b'), new BooleanExpression('c'), bop.AND);
-		else
-			c2 = new BooleanExpression(new BooleanExpression('b'), new BooleanExpression('b'), bop.OR);
-		if((exp & 2) == 2)
-			leafOp = bop.AND;
-		else
-			leafOp = bop.OR;
-	}
+	
+//	public BooleanExpression(int exp)
+//	{
+//		c1 = new BooleanExpression('a');
+//		if((exp & 1) == 1)
+//			c2 = new BooleanExpression(new BooleanExpression('b'), new BooleanExpression('c'), bop.AND);
+//		else
+//			c2 = new BooleanExpression(new BooleanExpression('b'), new BooleanExpression('b'), bop.OR);
+//		if((exp & 2) == 2)
+//			leafOp = bop.AND;
+//		else
+//			leafOp = bop.OR;
+//	}
 
 	/**
 	 * Operand and two operators
@@ -108,20 +110,14 @@ class BooleanExpression
 	public BooleanExpression(BooleanExpression a, BooleanExpression b, bop op)
 	{
 		
-		if(op == bop.LEAF)
+		if(op == bop.LEAF || op == bop.ZERO || op == bop.ONE)
 			System.out.println("BooleanExpression(...): leaf operator!");
 		
 		leafOp = op;
-		
-		if(op == bop.ZERO || op == bop.ONE)
-		{
-			c1 = null;
-			c2 = null;
-		} else
-		{
-			c1 = a;
-			c2 = b;			
-		}
+		leaf = null;
+		c1 = a;
+		c2 = b;
+		recordVariables();
 	}
 	
 //	/**
@@ -147,6 +143,7 @@ class BooleanExpression
 		c2 = null;
 		leafOp = bop.LEAF;
 		leaf = v;
+		recordVariables();
 	}
 	
 	/**
@@ -154,12 +151,51 @@ class BooleanExpression
 	 */
 	public int leafCount()
 	{
-		if(leafOp == bop.LEAF || leafOp == bop.ZERO || leafOp == bop.ONE)
+		if(leafOp == bop.LEAF) // || leafOp == bop.ZERO || leafOp == bop.ONE)
 			return 1;
 		else
 			return c1.leafCount()+c2.leafCount();
 	}
 	
+	private int recordVariables_r(int i)
+	{
+		if(leafOp == bop.LEAF) // || leafOp == bop.ZERO || leafOp == bop.ONE)
+			variables[i++] = leaf;
+		else
+		{
+			int k;
+			for(k = 0; k < c1.variables.length; k++)
+				variables[i++] = c1.variables[k];
+			for(k = 0; k < c2.variables.length; k++)
+				variables[i++] = c2.variables[k];
+		}
+		return i;
+	}	
+	
+	private void recordVariables()
+	{
+		int vc = leafCount();
+		variables = new variable[vc];
+		if(recordVariables_r(0) != vc)
+			System.err.println("setVariables(): dud recursion!");
+	}
+	
+	public void setAll(int i)
+	{
+		variable.setAll(variables, i);
+	}
+	
+	public int getIndex(variable v)
+	{
+		for(int i = 0; i < variables.length; i++)
+		{
+			if(v == variables[i])
+				return i;
+		}
+		System.err.println("getIndex(): variable not found!");
+		return -1;
+	}
+		
 	/**
 	 * @param v
 	 * @return
@@ -172,13 +208,13 @@ class BooleanExpression
 		switch(leafOp)
 		{
 		case LEAF:
-			return leaf.value();
+			return leaf.get();
 		
-		case ZERO:
-			return false;
-			
-		case ONE:
-			return true;
+//		case ZERO:
+//			return false;
+//			
+//		case ONE:
+//			return true;
 			
 		case LEFT:
 			return c1.generateValue();
@@ -212,11 +248,11 @@ class BooleanExpression
 		case LEAF:
 			return r + leaf.name();
 		
-		case ZERO:
-			return r + "RrCSG.nothing()";
-			
-		case ONE:
-			return r + "RrCSG.nothing()";
+//		case ZERO:
+//			return r + "RrCSG.nothing()";
+//			
+//		case ONE:
+//			return r + "RrCSG.nothing()";
 			
 		case LEFT:
 			return c1.toJava_r(r);
@@ -273,12 +309,10 @@ class FunctionTable
 	/**
 	 * @param b
 	 */
-	public FunctionTable(BooleanExpression b, variable [] vs)
+	public FunctionTable(BooleanExpression b)
 	{
 		int i;
 		inputs = b.leafCount();
-		if (vs.length != inputs)
-			System.err.println("FunctionTable(): wrong number of variables!");
 		
 		entries = 1;
 		for(i = 0; i < inputs; i++)
@@ -286,7 +320,7 @@ class FunctionTable
 		table = new boolean[entries];
 		for(i = 0; i < entries; i++)
 		{
-			variable.setAll(vs, i);
+			b.setAll(i);
 			table[i] = b.generateValue();
 		}
 		//sortEntries();
@@ -302,12 +336,10 @@ class FunctionTable
 	 * @param a
 	 * @param equal_a
 	 */
-	public FunctionTable(BooleanExpression b, variable [] vs, int v, int equal_v)
+	public FunctionTable(BooleanExpression b, variable v, variable equal_v, boolean opposite)
 	{
 		int i;
-		inputs = b.leafCount();
-		if (vs.length != inputs)
-			System.err.println("FunctionTable(): wrong number of variables!");		
+		inputs = b.leafCount();	
 		
 		entries = 1;
 		for(i = 1; i < inputs; i++)
@@ -316,13 +348,8 @@ class FunctionTable
 		int k = 0;
 		for(i = 0; i < entries*2; i++)
 		{
-			variable.setAll(vs, i);
-			if(equal_v < 0)
-				vs[-equal_v].set(!vs[v].value());
-			else
-				vs[equal_v].set(vs[v].value());
-
-			if(notOne(i, Math.abs(equal_v)))
+			b.setAll(i);
+			if(opposite ^ (equal_v.get() == v.get()))
 			{
 				table[k] = b.generateValue();
 				k++;
@@ -445,19 +472,13 @@ public class CodeGenerator
 		
 		BooleanExpression xx = new BooleanExpression(aa, bb, bop.OR);
 		BooleanExpression yy = new BooleanExpression(xx, cc, bop.AND);
-		
-		variable [] vs = new variable[3];
-		vs[0] = a;
-		vs[1] = b;
-		vs[2] = c;		
-		FunctionTable f = new FunctionTable(yy, vs, 0, -2);
+				
+		FunctionTable f = new FunctionTable(yy, a, c, true);
 		
 		BooleanExpression g = new BooleanExpression(aa, bb, bop.AND);
 
-		variable [] vss = new variable[2];
-		vss[0] = a;
-		vss[1] = b;			
-		FunctionTable h = new FunctionTable(g, vss);
+		
+		FunctionTable h = new FunctionTable(g);
 		
 		System.out.println(f.toString() + "\n\n");
 		System.out.println(h.toString() + "\n");
