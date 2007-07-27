@@ -34,6 +34,8 @@ public class WorkingVolumeFrame  extends JFrame {
 		
 		createControlPanel();
 		pack();
+		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		show();
 	}
 	
 	public void createControlPanel()
