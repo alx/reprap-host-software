@@ -23,6 +23,7 @@ enum bop
 	ZERO("zero"),
 	ONE("one"),
 	LEAF("leaf"),
+	NOT("not"),
 	LEFT("left"),
 	RIGHT("right"),
 	AND("and"),
@@ -39,7 +40,11 @@ enum bop
     public String toString() { return name; }
 }
 
-
+/**
+ * A single boolean variable with a name
+ * @author ensab
+ *
+ */
 class variable
 {
 	boolean bv;
@@ -97,7 +102,12 @@ class BooleanExpression
 	 */
 	private int leafCount;
 	
-	
+	/**
+	 * Make an expression from three variables in an array.
+	 * exp decides the expression.
+	 * @param variables
+	 * @param exp
+	 */
 	public BooleanExpression(variable [] variables, int exp)
 	{
 		leafCount = -1;
@@ -131,6 +141,19 @@ class BooleanExpression
 		leaf = null;
 		c1 = a;
 		c2 = b;
+		recordVariables();
+	}
+	
+	public BooleanExpression(BooleanExpression a, bop op)
+	{
+		leafCount = -1;		
+		if(op != bop.NOT)
+			System.out.println("BooleanExpression(..., NOT): op not NOT!");
+		
+		leafOp = op;
+		leaf = null;
+		c1 = a;
+		c2 = null;
 		recordVariables();
 	}
 	
@@ -172,39 +195,60 @@ class BooleanExpression
 			{
 				leafCount = 1;
 			}
-			else
+			else if(leafOp == bop.NOT)
+			{
+				leafCount = c1.leafCount();
+			} else
 				leafCount = c1.leafCount()+c2.leafCount();
 		}
 
 		return leafCount;		
 	}
 	
-	private int recordVariables_r(int i)
-	{
-		if(leafOp == bop.LEAF) // || leafOp == bop.ZERO || leafOp == bop.ONE)
-			variables[i++] = leaf;
-		else
-		{
-			int k;
-			for(k = 0; k < c1.variables.length; k++)
-				variables[i++] = c1.variables[k];
-			for(k = 0; k < c2.variables.length; k++)
-				variables[i++] = c2.variables[k];
-		}
-		return i;
-	}	
+//	private int recordVariables_r(int i)
+//	{
+//		if(leafOp == bop.LEAF) // || leafOp == bop.ZERO || leafOp == bop.ONE)
+//			variables[i++] = leaf;
+//		else
+//		{
+//			int k;
+//			for(k = 0; k < c1.variables.length; k++)
+//				variables[i++] = c1.variables[k];
+//			for(k = 0; k < c2.variables.length; k++)
+//				variables[i++] = c2.variables[k];
+//		}
+//		return i;
+//	}	
 	
 	private void recordVariables()
 	{
 		int vc = leafCount();
 		variables = new variable[vc];
-		if(recordVariables_r(0) != vc)
-			System.err.println("setVariables(): dud recursion!");
+		int i = 0;
+		int k;
+		if(leafOp == bop.LEAF) // || leafOp == bop.ZERO || leafOp == bop.ONE)
+			variables[i++] = leaf;
+		else if(leafOp == bop.NOT)
+		{
+			for(k = 0; k < c1.variables.length; k++)
+				variables[i++] = c1.variables[k];			
+		} else
+		{
+			for(k = 0; k < c1.variables.length; k++)
+				variables[i++] = c1.variables[k];
+			for(k = 0; k < c2.variables.length; k++)
+				variables[i++] = c2.variables[k];
+		}		
 	}
 	
 	public void setAll(int i)
 	{
 		variable.setAll(variables, i);
+	}
+	
+	public variable [] getVariables()
+	{
+		return variables;
 	}
 	
 	public int getIndex(variable v)
@@ -232,11 +276,14 @@ class BooleanExpression
 		case LEAF:
 			return leaf.get();
 		
-//		case ZERO:
-//			return false;
-//			
-//		case ONE:
-//			return true;
+		case ZERO:
+			return false;
+			
+		case ONE:
+			return true;
+			
+		case NOT:
+			return !c1.generateValue();
 			
 		case LEFT:
 			return c1.generateValue();
@@ -270,11 +317,14 @@ class BooleanExpression
 		case LEAF:
 			return r + leaf.name();
 		
-//		case ZERO:
-//			return r + "RrCSG.nothing()";
-//			
-//		case ONE:
-//			return r + "RrCSG.nothing()";
+		case ZERO:
+			return r + "RrCSG.nothing()";
+			
+		case ONE:
+			return r + "RrCSG.universe()";
+			
+		case NOT:
+			return c1.toJava_r(r) + ".complement()";
 			
 		case LEFT:
 			return c1.toJava_r(r);
@@ -332,6 +382,11 @@ class FunctionTable
 	 * 
 	 */
 	boolean allFalse, allTrue;
+	
+	/**
+	 * 
+	 */
+	String header;
 		
 	/**
 	 * @param b
@@ -347,6 +402,7 @@ class FunctionTable
 		for(i = 0; i < inputs; i++)
 			entries *= 2;
 		table = new boolean[entries];
+
 		for(i = 0; i < entries; i++)
 		{
 			b.setAll(i);
@@ -356,12 +412,17 @@ class FunctionTable
 			else
 				allTrue = false;
 		}
+		
+		variable [] vs = b.getVariables();
+		header = "";
+		for(i = 0; i < vs.length; i++)
+			header += vs[i].name() + " ";
 	}
 	
-	private static boolean notOne(int i, int v)
-	{
-		return ((i >> v) & 1) == 1;
-	}
+//	private static boolean notOne(int i, int v)
+//	{
+//		return ((i >> v) & 1) == 1;
+//	}
 	
 	/**
 	 * @param b
@@ -392,6 +453,13 @@ class FunctionTable
 					allTrue = false;
 				k++;
 			}
+		}
+		variable [] vs = b.getVariables();
+		header = "";
+		for(i = 0; i < vs.length; i++)
+		{
+			if(vs[i] != equal_v)
+			header += vs[i].name() + " ";
 		}
 	}
 	
@@ -444,7 +512,7 @@ class FunctionTable
 			k = k >> 1;
 			bits++;
 		}
-		String result = "";
+		String result = header + "\n";;
 		for(int j = 0; j < entries; j++)
 		{
 			result = result + bitString(j, bits) + "| ";
@@ -476,9 +544,76 @@ public class CodeGenerator
 				FunctionTable g = new FunctionTable(be);
 				if(FunctionTable.same(f, g))
 					return be;
+				BooleanExpression bf = new BooleanExpression(be, bop.NOT);
+				g = new FunctionTable(bf);
+				if(FunctionTable.same(f, g))
+					return bf;
+				BooleanExpression bg = new BooleanExpression(new BooleanExpression(new BooleanExpression(a),
+						bop.NOT), 
+						new BooleanExpression(b), bopValues[i]);
+				g = new FunctionTable(bg);
+				if(FunctionTable.same(f, g))
+					return bg;				
+				BooleanExpression bh = new BooleanExpression(new BooleanExpression(a), 
+						new BooleanExpression(new BooleanExpression(b),bop.NOT), bopValues[i]);
+				g = new FunctionTable(bh);
+				if(FunctionTable.same(f, g))
+					return bh;
+				BooleanExpression bi = new BooleanExpression(new BooleanExpression(new BooleanExpression(a),
+						bop.NOT), 
+						new BooleanExpression(new BooleanExpression(b),bop.NOT), bopValues[i]);
+				g = new FunctionTable(bi);
+				if(FunctionTable.same(f, g))
+					return bi;					
 			}
 		}
 		return null;
+	}
+	
+	private static void oneCase(variable [] variables, int exp, int j, int k, boolean opposite, boolean fts)
+	{
+		BooleanExpression a = new BooleanExpression(variables, exp);
+		
+		FunctionTable f = new FunctionTable(a, variables[j], variables[k], opposite);
+		
+		BooleanExpression g = findEqualTwo(f, variables[j], variables[3-(j+k)]);
+		System.out.println(a.toJava());
+		System.out.print(variables[j].name() + " = ");
+		if(opposite)
+			System.out.print("!");	
+		System.out.println(variables[k].name() + " ->");
+		
+		if(fts)
+			System.out.println(f.toString());
+
+		if(g != null || f.allOnes() || f.allZeros())
+		{
+			if(f.allOnes())
+				System.out.println("r = RrCSG.universe();\n");
+			else if(f.allZeros())
+				System.out.println("r = RrCSG.nothing();\n");
+			else
+				System.out.println(g.toJava() + "\n");
+			if(g != null && fts)
+			{
+				FunctionTable h = new FunctionTable(g);
+				System.out.println(h.toString());
+			}
+		} else
+			System.out.println("No equivalence." + "\n");
+	}
+	
+	private static void allCases(variable [] variables)
+	{	
+		for(int exp = 0; exp < 4; exp++)
+		{
+			for(int j = 0; j < 2; j++)
+				for(int k = j+1; k < 3; k++)
+				{
+					oneCase(variables, exp, j, k, false, false);
+					oneCase(variables, exp, j, k, true, false);
+				}
+		}		
 	}
 
 	/**
@@ -486,75 +621,15 @@ public class CodeGenerator
 	 */
 	public static void main(String[] args) 
 	{
-//		variable a = new variable("a");
-//		variable b = new variable("b");
-//		variable c = new variable("c");
-//		//variable d = new variable("d");
-//		
-//		BooleanExpression aa = new BooleanExpression(a);
-//		BooleanExpression bb = new BooleanExpression(b);
-//		BooleanExpression cc = new BooleanExpression(c);
-//		//BooleanExpression dd = new BooleanExpression(d);
-//		
-//		BooleanExpression xx = new BooleanExpression(aa, bb, bop.OR);
-//		BooleanExpression yy = new BooleanExpression(xx, cc, bop.AND);
-//				
-//		FunctionTable f = new FunctionTable(yy, a, c, true);
-//		
-//		BooleanExpression g = new BooleanExpression(aa, bb, bop.AND);
-//
-//		
-//		FunctionTable h = new FunctionTable(g);
-//		
-//		System.out.println(f.toString() + "\n\n");
-//		System.out.println(h.toString() + "\n");
-//		if(FunctionTable.same(f, h))
-//			System.out.println("Same");
-//		else
-//			System.out.println("Different");
-//		System.out.println(g.toJava());
-//		System.out.println(yy.toJava());
-		
 		variable [] variables = new variable[4];
 		variables[0] = new variable("a");
 		variables[1] = new variable("b");
 		variables[2] = new variable("c");
 		variables[3] = new variable("d");
 		
-		for(int i = 0; i < 4; i++)
-		{
-			BooleanExpression a = new BooleanExpression(variables, i);
-			for(int j = 0; j < 2; j++)
-				for(int k = j+1; k < 3; k++)
-				{
-					FunctionTable f = new FunctionTable(a, variables[j], variables[k], true);
-					BooleanExpression b = findEqualTwo(f, variables[j], variables[3-k]);
-					if(b != null || f.allOnes() || f.allZeros())
-					{
-						System.out.println(a.toJava());
-						System.out.println(variables[j].name() + " = !" + variables[k].name());
-						if(f.allOnes())
-							System.out.println("r = RrCSG.universe();\n");
-						else if(f.allZeros())
-							System.out.println("r = RrCSG.nothing();\n");
-						else
-							System.out.println(b.toJava() + "\n");
-					}
-					f = new FunctionTable(a, variables[j], variables[k], false);
-					b = findEqualTwo(f, variables[j], variables[3-k]);
-					if(b != null || f.allOnes() || f.allZeros())
-					{
-						System.out.println(a.toJava());
-						System.out.println(variables[j].name() + " == " + variables[k].name());
-						if(f.allOnes())
-							System.out.println("r = RrCSG.universe();\n");
-						else if(f.allZeros())
-							System.out.println("r = RrCSG.nothing();\n");
-						else
-							System.out.println(b.toJava() + "\n");						
-					}
-				}
-		}
-	}
+		//oneCase(variables, 1, 0, 1, false, true);
+		allCases(variables);
+	}	
+
 }
 
