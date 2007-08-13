@@ -315,7 +315,7 @@ public class RrCSG
 	
 	/**
 	 * Lazy evaluation for complement.
-	 * @return completent ?
+	 * @return complement
 	 */
 	public RrCSG complement()
 	{		
@@ -364,11 +364,23 @@ public class RrCSG
 	 * Set difference is intersection with complement
 	 * @param a
 	 * @param b
-	 * @return set difference as CSG object base don input CSG objects a and b
+	 * @return set difference as CSG object based on input CSG objects a and b
 	 */		
 	public static RrCSG difference(RrCSG a, RrCSG b)
 	{
 		return intersection(a, b.complement());
+	}
+	
+	/**
+	 * Make a rectangle
+	 */
+	public static RrCSG RrCSGFromBox(RrBox b)
+	{
+		RrCSG r = new RrCSG(new RrHalfPlane(b.nw(), b.ne()));
+		r = RrCSG.intersection(r, new RrCSG(new RrHalfPlane(b.ne(), b.se())));
+		r = RrCSG.intersection(r, new RrCSG(new RrHalfPlane(b.se(), b.sw())));
+		r = RrCSG.intersection(r, new RrCSG(new RrHalfPlane(b.sw(), b.nw())));
+		return r;
 	}
 	
 	
@@ -377,7 +389,7 @@ public class RrCSG
 	 * This assumes simplify has been run over this set
 	 * @return regularised CSG object
 	 */	
-	private RrCSG reg_3()
+	private RrCSG reg_3_old()
 	{
 		RrCSG result = this;
 		
@@ -449,6 +461,147 @@ public class RrCSG
 			}
 		}
 		return result;
+	}
+	
+	
+	/**
+	 * Regularise a set with a contents of 3
+	 * This assumes simplify has been run over this set
+	 * @return regularised CSG object
+	 */	
+	private RrCSG reg_3()
+	{
+		RrCSG r = this;
+		
+		if(complexity != 3)
+			return r;
+		
+		RrCSG a = c1;
+		RrCSG b = c2.c1;
+		RrCSG c = c2.c2;
+		
+		int caseVal = 0;
+		boolean noEquals = true;
+
+		if(a == b)
+			noEquals = false;
+		if(a == c)
+		{
+			noEquals = false;
+			caseVal |= 4;
+		}
+		if(b == c)
+		{
+			noEquals = false;
+			caseVal |= 2;
+			caseVal |= 4;
+		}
+		if(a == b.comp)
+		{
+			noEquals = false;
+			caseVal |= 1;
+		}
+		if(a == c.comp)
+		{
+			noEquals = false;
+			caseVal |= 1;
+			caseVal |= 4;
+		}
+		if(b == c.comp)
+		{
+			noEquals = false;
+			caseVal |= 1;
+			caseVal |= 2;
+			caseVal |= 4;
+		}
+		
+		if(noEquals)
+			return r;
+		
+		if(op == RrCSGOp.INTERSECTION)
+			caseVal |= 8;
+		if(c2.op == RrCSGOp.INTERSECTION)
+			caseVal |= 16;
+		
+		switch(caseVal)
+		{
+		case 0: 
+			r = RrCSG.union(a, c);
+			break;
+		case 1: 
+			r = RrCSG.universe();
+			break;
+		case 4: 
+			r = RrCSG.union(a, b);
+			break;
+		case 5: 
+			r = RrCSG.universe();
+			break;
+		case 6: 
+			r = RrCSG.union(b, a);
+			break;
+		case 7: 
+			r = RrCSG.universe();
+			break;
+		case 8: 
+			r = a;
+			break;
+		case 9: 
+			r = RrCSG.union(a.complement(), c);
+			break;
+		case 12: 
+			r = b;
+			break;
+		case 13: 
+			r = RrCSG.union(a, b.complement());
+			break;
+		case 14: 
+			r = RrCSG.union(b, a);
+			break;
+		case 15: 
+			r = b;
+			break;
+		case 16: 
+			r = a;
+			break;
+		case 17: 
+			r = RrCSG.intersection(a.complement(), c);
+			break;
+		case 20: 
+			r = b;
+			break;
+		case 21: 
+			r = RrCSG.intersection(a, b.complement());
+			break;
+		case 22: 
+			r = RrCSG.intersection(b, a);
+			break;
+		case 23: 
+			r = b;
+			break;
+		case 24: 
+			r = RrCSG.intersection(a, c);
+			break;
+		case 25: 
+			r = RrCSG.nothing();
+			break;
+		case 28: 
+			r = RrCSG.intersection(a, b);
+			break;
+		case 29: 
+			r = RrCSG.nothing();
+			break;
+		case 30: 
+			r = RrCSG.intersection(b, a);
+			break;
+		case 31: 
+			r = RrCSG.nothing();
+			break;		
+		default:
+			System.err.println("RrCSG.reg_3(): dud case value: " + caseVal);
+		}
+		
+		return r;
 	}
 	
 	
