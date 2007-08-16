@@ -13,55 +13,292 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.io.IOException;
+
+import javax.swing.Box;
+import javax.swing.BoxLayout;
 import javax.swing.JButton;
+import javax.swing.JCheckBox;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
+import javax.swing.JOptionPane;
 import javax.swing.JPanel;
-//import javax.swing.JTextField;
+import javax.swing.JSlider;
+import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
+import javax.swing.JTextField;
 import javax.swing.border.EtchedBorder;
 import javax.swing.border.TitledBorder;
-//import org.reprap.Printer;
-//import java.io.IOException;
+import org.reprap.Printer;
+import java.io.IOException;
+import java.util.Timer;
 
-public class WorkingVolumeFrame  extends JFrame {
+import javax.swing.event.ChangeEvent;
 
+import org.reprap.Preferences;
+import org.reprap.comms.Communicator;
+import org.reprap.comms.snap.SNAPAddress;
+import org.reprap.comms.snap.SNAPCommunicator;
+import org.reprap.devices.GenericExtruder;
+import org.reprap.devices.GenericStepperMotor;
+import org.reprap.gui.Utility;
+
+import javax.swing.event.ChangeListener;
+
+public class WorkingVolumeFrame  extends JFrame /*implements ChangeListener*/ {
+	
 	private JLabel status;
+	
+	private final int fastSpeed = 245;
+	private final int slowSpeed = 210;
 	
 	public WorkingVolumeFrame()
 	{
+		/*try { 
+			talkToBot();
+		}
+		catch (Exception e){
+			JOptionPane.showMessageDialog(null, e.getMessage());
+			return;
+		}*/
+		
 		status = new JLabel("Pick an axis, then zero it by clicking on the home button.");
 		getContentPane().add(status, BorderLayout.CENTER);
 		
-		createControlPanel();
+		try { 
+			addAxisControls();
+		}
+		catch (Exception e){
+			JOptionPane.showMessageDialog(null, e.getMessage());
+			return;
+		}
+		
 		pack();
-		setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		show();
 	}
 	
-	public void createControlPanel()
-	{
-		JPanel xPanel = createXPanel();
-		//JPanel yPanel = createYPanel();
-		//JPanel zPanel = createZPanel();
-
-		JPanel controlPanel = new JPanel();
-		controlPanel.setLayout(new GridLayout(3,1));
-		controlPanel.add(xPanel);
-		//controlPanel.add(yPanel);
-		//controlPanel.add(zPanel);
-		
-		getContentPane().add(controlPanel, BorderLayout.SOUTH);
+	/*
+	 * 
+	 * Code cribbed from org.reprap.gui.steppertest.Main v818
+	 * Needs review
+	 * 
+	 */
 	
+	private final int localNodeNumber = 0;
+	private final int baudRate = 19200;
+	private final int intialSpeed = 236;
+	
+	//private ShapePanel  shapePanel;
+	private ExtruderPanel extruderPanel;
+	
+	JPanel motorX, motorY, motorZ;
+	GenericExtruder extruder = null;
+	
+	Communicator communicator;
+	
+	public void talkToBot() throws Exception {
+		
+		SNAPAddress myAddress = new SNAPAddress(localNodeNumber);
+		
+		String port = Preferences.loadGlobalString("Port(name)");
+		String err = "";
+		
+		try {
+			communicator = new SNAPCommunicator(port,baudRate, myAddress);
+		}
+		catch (gnu.io.NoSuchPortException e)
+		{
+			err = "There was an error opening " + port + ".\n\n";
+			err += "Check to make sure that is the right path.\n";
+			err += "Check that you have your serial connector plugged in.";
+			
+			throw new Exception(err);
+		}
+		catch (gnu.io.PortInUseException e)
+		{
+			err = "The " + port + " port is already in use by another program.";
+			
+			throw new Exception(err);
+		}
+		
+		if (err.length() == 0)
+		{
+			extruder = new GenericExtruder(communicator,
+					new SNAPAddress(Preferences.loadGlobalString("Extruder0_Address")),
+					Preferences.getGlobalPreferences(), 0);
+		
+
+	        Utility.centerWindowOnScreen(this);
+		}
 	}
 	
-	public JPanel createXPanel() 
+/*	public void dispose() {
+
+		super.dispose();
+		if (extruder != null)
+			extruder.dispose();
+		if (motorX != null)
+			motorX.dispose();
+		if (motorY != null)
+			motorY.dispose();
+		if (motorZ != null)
+			motorZ.dispose();
+		if (communicator != null)
+			communicator.dispose();
+	}*/
+	
+	private void addAxisControls() throws Exception {
+		
+		JPanel dialogue = new JPanel();
+		setTitle("Working Volume Probe");
+		
+		dialogue.setLayout(new GridLayout(3,1));		
+		motorX = axisPanel("X", 1, communicator);
+		dialogue.add(motorX, BorderLayout.CENTER);
+		
+		motorY = axisPanel("Y", 2, communicator);
+		dialogue.add(motorY, BorderLayout.CENTER);
+		
+		motorZ = axisPanel("Z", 3, communicator);
+		dialogue.add(motorZ, BorderLayout.CENTER);
+			
+		getContentPane().add(dialogue, BorderLayout.SOUTH);
+	}
+
+	/*public void stateChanged(ChangeEvent evt) {
+		try {
+			Object srcObj = evt.getSource();
+			
+			if (srcObj instanceof JSlider) {
+				JSlider src = (JSlider)srcObj;
+				if (src == speedX || src == speedY || src == speedZ) {
+					if (src.getValue() < 1)
+						src.setValue(1);
+					if (lockXYZSpeed.isSelected()) {
+						if (src == speedX) {
+							speedY.setValue(speedX.getValue());
+							speedZ.setValue(speedX.getValue());
+						} else if (src == speedY) {
+							speedX.setValue(speedY.getValue());
+							speedZ.setValue(speedY.getValue());
+						} else if (src == speedZ) {
+							speedX.setValue(speedZ.getValue());
+							speedY.setValue(speedZ.getValue());
+						}
+					}
+					motorX.updateSpeed();
+					motorY.updateSpeed();
+					motorZ.updateSpeed();
+				}
+				
+			} else if (srcObj instanceof JCheckBox) {
+				JCheckBox src = (JCheckBox)srcObj;
+				if (src.isSelected()) {
+					speedY.setValue(speedX.getValue());
+					speedZ.setValue(speedZ.getValue());
+				}
+			}
+		} catch (Exception ex) {
+			JOptionPane.showMessageDialog(null, "Update exception: " + ex);
+			ex.printStackTrace();
+		}
+	}
+		
+	private void reloadPosition() throws IOException {
+		motorX.loadPosition();
+		motorY.loadPosition();
+	}
+
+	protected void onLineButton() {
+		try {
+			JFrame frame = new JFrame();
+			LineTest inst = new LineTest(frame,
+					motorX.getMotor(),
+					motorY.getMotor(),
+					extruder, speedX.getValue(), extruderPanel.getSpeed());
+			inst.setVisible(true);
+			reloadPosition();
+		} catch (Exception ex) {
+			JOptionPane.showMessageDialog(null, "Line test exception: " + ex);
+			ex.printStackTrace();
+		
+		}
+	}*/
+	
+	/* 
+	 * 
+	 * End of Cribbing from org.reprap.gui.steppertest.Main v818
+	 * 
+	 */
+	
+	private int maxValue = 30000;
+	private int startingPosition = 5000;
+	private Timer updateTimer;
+	private GenericStepperMotor motor; 
+	
+	public JPanel axisPanel(String name, int motorId, Communicator communicator) throws IOException 
 	{
+		
+		/* 
+		 * 
+		 * Start of Cribbing from org.reprap.gui.steppertest.StepperPanel v818
+		 * 
+		 */
+		
+//super();
+		
+
+		final String axis;
+		switch(motorId)
+		{
+		case 1:
+			axis = "X";
+			break;
+		case 2:
+			axis = "Y";
+			break;
+		case 3:
+			axis = "Z";
+			break;
+		default:
+			axis = "X";
+			System.err.println("StepperPanel - dud axis id: " + motorId);
+				
+		}
+		int address = Preferences.loadGlobalInt(axis + "Axis" + "Address");
+		
+		double stepsPerMM = Preferences.loadGlobalDouble(axis + "AxisScale(steps/mm)");
+		double axisLength = Preferences.loadGlobalDouble("Working" + axis + "(mm)");
+		maxValue = (int)Math.round(stepsPerMM*axisLength);
+		startingPosition = maxValue/6;
+		
+		updateTimer = new Timer();
+		
+		motor = new GenericStepperMotor(communicator, new SNAPAddress(address), Preferences.getGlobalPreferences(), motorId);
+		
+		
+		/* 
+		 * 
+		 * Start of Cribbing from org.reprap.gui.steppertest.StepperPanel v818
+		 * 
+		 */
+		
+		
 		JButton home = new JButton("Home");
 		home.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				status.setText("Homing...");
+				status.setText("Homing... ");
 				status.repaint();
-				//onHomeReset();
+				try {
+					motor.homeReset(fastSpeed);
+				} catch (Exception ex) {
+					JOptionPane.showMessageDialog(null, "Could not home motor: " + ex);
+				}
+				status.setText("Axis homed. Push an 'Advance' button to move towards the end of the axis...");
+				status.repaint();
+
+				//Set position in momory to zero
 				//When homed, reset JLabel to "When homed, push an 'Advance' button to move towards the end of the axis..."
 			}
 		});
@@ -69,18 +306,26 @@ public class WorkingVolumeFrame  extends JFrame {
 		JButton advanceFast = new JButton("Advance FAST");
 		advanceFast.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				status.setText("Advancing... be ready to push the STOP button when the axis nears the end.");
+				status.setText("Advancing quickly... be ready to push the STOP button when the axis nears the end.");
 				status.repaint();
-				//go fast;
+				try {
+					motor.seek(fastSpeed, 100000);
+				} catch (Exception ex) {
+					JOptionPane.showMessageDialog(null, "Could not advance at fastSpeed: " + ex);
+				}
 			}
 		});
 		
 		JButton advanceSlow = new JButton("Advance SLOW");
 		advanceSlow.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				status.setText("Advancing... be ready to push the STOP button when the axis nears the end.");
+				status.setText("Advancing slowly... be ready to push the STOP button when the axis nears the end.");
 				status.repaint();
-				//go slow;
+				try {
+					motor.seek(slowSpeed, 100000);
+				} catch (Exception ex) {
+					JOptionPane.showMessageDialog(null, "Could not advance at slowSpeed: " + ex);
+				}
 			}
 		});
 		
@@ -89,24 +334,39 @@ public class WorkingVolumeFrame  extends JFrame {
 			public void actionPerformed(ActionEvent evt) {
 				status.setText("Axis stopped. To save this position as the endstop, click 'Set as Limit'.");
 				status.repaint();
-				//stop;
+				try {
+					motor.stepForward();
+				} catch (Exception ex) {
+					JOptionPane.showMessageDialog(null, "Could not stop motor: " + ex);
+				}
 			}
 		});
 		
 		JButton set = new JButton("Set as Limit");
 		set.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				status.setText("Limit set. Returning home...");
+				
+				try {
+					org.reprap.Preferences.setGlobalString("Working" + axis + "(mm)", Integer.toString(motor.getPosition()));
+					
+				} catch (Exception ex) {
+					JOptionPane.showMessageDialog(null, "Either could not get position or set preferences: " + ex);
+				}
+				
+				try {
+					status.setText("Limit set to " + motor.getPosition());
+					
+				} catch (Exception ex) {
+					JOptionPane.showMessageDialog(null, "Could not get position: " + ex);
+				}
 				status.repaint();
-				//update preferences
-				//go home
-				//when home reset JLabel
+				
 			}
 		});
 
 		JPanel panel = new JPanel();
 		
-		panel.setBorder(new TitledBorder(new EtchedBorder(), "X-Axis"));
+		panel.setBorder(new TitledBorder(new EtchedBorder(), name +"-Axis"));
 		panel.add(home);
 		panel.add(advanceFast);
 		panel.add(advanceSlow);
@@ -116,4 +376,3 @@ public class WorkingVolumeFrame  extends JFrame {
 		
 	}
 }
-
