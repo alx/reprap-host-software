@@ -270,6 +270,19 @@ public class Main {
 //			}});
 //        toolsMenu.add(toolsWorkingVolume);
         
+//      JMenuItem toolsMaintenancePositions = new JMenuItem("Maintenance positions", KeyEvent.VK_M);
+//      toolsMaintenancePositions.addActionListener(new ActionListener() {
+//			public void actionPerformed(ActionEvent arg0) {
+//				try {
+//					new org.reprap.gui.steppertest.MaintenancePositionsFrame();
+//				}
+//            	catch (Exception ex) {
+//           		JOptionPane.showMessageDialog(null, "Maintenance positions exception: " + ex);
+//       			ex.printStackTrace();
+//           	}
+//			}});
+//      toolsMenu.add(toolsMaintenancePositions);
+        
         JMenuItem toolsExerciser = new JMenuItem("Stepper exerciser", KeyEvent.VK_S);
         toolsExerciser.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
