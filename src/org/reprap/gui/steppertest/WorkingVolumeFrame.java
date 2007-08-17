@@ -49,20 +49,23 @@ public class WorkingVolumeFrame  extends JFrame /*implements ChangeListener*/ {
 	
 	private JLabel status;
 	
-	private final int fastSpeed = 245;
-	private final int slowSpeed = 210;
+	private final int fastSpeed = 235;
+	private final int slowSpeed = 180;
 	
 	public WorkingVolumeFrame()
 	{
-		/*try { 
+		setTitle("Working Volume Probe");
+		
+		try { 
 			talkToBot();
 		}
 		catch (Exception e){
 			JOptionPane.showMessageDialog(null, e.getMessage());
 			return;
-		}*/
+		}
 		
 		status = new JLabel("Pick an axis, then zero it by clicking on the home button.");
+		
 		getContentPane().add(status, BorderLayout.CENTER);
 		
 		try { 
@@ -151,17 +154,17 @@ public class WorkingVolumeFrame  extends JFrame /*implements ChangeListener*/ {
 	private void addAxisControls() throws Exception {
 		
 		JPanel dialogue = new JPanel();
-		setTitle("Working Volume Probe");
 		
-		dialogue.setLayout(new GridLayout(3,1));		
+		dialogue.setLayout(new GridLayout(3,1));
+		
 		motorX = axisPanel("X", 1, communicator);
-		dialogue.add(motorX, BorderLayout.CENTER);
+		dialogue.add(motorX);
 		
 		motorY = axisPanel("Y", 2, communicator);
-		dialogue.add(motorY, BorderLayout.CENTER);
+		dialogue.add(motorY);
 		
 		motorZ = axisPanel("Z", 3, communicator);
-		dialogue.add(motorZ, BorderLayout.CENTER);
+		dialogue.add(motorZ);
 			
 		getContentPane().add(dialogue, BorderLayout.SOUTH);
 	}
@@ -231,18 +234,20 @@ public class WorkingVolumeFrame  extends JFrame /*implements ChangeListener*/ {
 	 * End of Cribbing from org.reprap.gui.steppertest.Main v818
 	 * 
 	 */
-	
-	private int maxValue = 30000;
-	private int startingPosition = 5000;
-	private Timer updateTimer;
-	private GenericStepperMotor motor; 
+
+
+
 	
 	public JPanel axisPanel(String name, int motorId, Communicator communicator) throws IOException 
 	{
+	    int maxValue = 30000;
+		int startingPosition = 5000;
+		Timer updateTimer;
+		final GenericStepperMotor motor;
 		
 		/* 
 		 * 
-		 * Start of Cribbing from org.reprap.gui.steppertest.StepperPanel v818
+		 * Start of Cribbing from org.reprap.gui.steppertest.StepperPanel v673
 		 * 
 		 */
 		
@@ -268,10 +273,9 @@ public class WorkingVolumeFrame  extends JFrame /*implements ChangeListener*/ {
 		}
 		int address = Preferences.loadGlobalInt(axis + "Axis" + "Address");
 		
-		double stepsPerMM = Preferences.loadGlobalDouble(axis + "AxisScale(steps/mm)");
-		double axisLength = Preferences.loadGlobalDouble("Working" + axis + "(mm)");
-		maxValue = (int)Math.round(stepsPerMM*axisLength);
-		startingPosition = maxValue/6;
+		final double stepsPerMM = Preferences.loadGlobalDouble(axis + "AxisScale(steps/mm)");
+		
+
 		
 		updateTimer = new Timer();
 		
@@ -280,7 +284,7 @@ public class WorkingVolumeFrame  extends JFrame /*implements ChangeListener*/ {
 		
 		/* 
 		 * 
-		 * Start of Cribbing from org.reprap.gui.steppertest.StepperPanel v818
+		 * End of Cribbing from org.reprap.gui.steppertest.StepperPanel v673
 		 * 
 		 */
 		
@@ -295,11 +299,16 @@ public class WorkingVolumeFrame  extends JFrame /*implements ChangeListener*/ {
 				} catch (Exception ex) {
 					JOptionPane.showMessageDialog(null, "Could not home motor: " + ex);
 				}
-				status.setText("Axis homed. Push an 'Advance' button to move towards the end of the axis...");
+				try {
+					status.setText("Axis homed @ " + motor.getPosition() + ". Push an 'Advance' button to move towards the end of the axis...");
+				} catch (Exception ex) {
+					JOptionPane.showMessageDialog(null, "Could not get motor position: " + ex);
+				}
+				
 				status.repaint();
 
-				//Set position in momory to zero
-				//When homed, reset JLabel to "When homed, push an 'Advance' button to move towards the end of the axis..."
+				//Set position in memory to zero?
+
 			}
 		});
 		
@@ -308,8 +317,9 @@ public class WorkingVolumeFrame  extends JFrame /*implements ChangeListener*/ {
 			public void actionPerformed(ActionEvent evt) {
 				status.setText("Advancing quickly... be ready to push the STOP button when the axis nears the end.");
 				status.repaint();
-				try {
-					motor.seek(fastSpeed, 100000);
+				try 
+				{
+					motor.seek(fastSpeed, 30000);
 				} catch (Exception ex) {
 					JOptionPane.showMessageDialog(null, "Could not advance at fastSpeed: " + ex);
 				}
@@ -322,7 +332,7 @@ public class WorkingVolumeFrame  extends JFrame /*implements ChangeListener*/ {
 				status.setText("Advancing slowly... be ready to push the STOP button when the axis nears the end.");
 				status.repaint();
 				try {
-					motor.seek(slowSpeed, 100000);
+					motor.seek(slowSpeed, 30000);
 				} catch (Exception ex) {
 					JOptionPane.showMessageDialog(null, "Could not advance at slowSpeed: " + ex);
 				}
@@ -332,32 +342,44 @@ public class WorkingVolumeFrame  extends JFrame /*implements ChangeListener*/ {
 		JButton stop = new JButton("STOP!");
 		stop.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				status.setText("Axis stopped. To save this position as the endstop, click 'Set as Limit'.");
-				status.repaint();
+
 				try {
-					motor.stepForward();
+					motor.setIdle();
 				} catch (Exception ex) {
 					JOptionPane.showMessageDialog(null, "Could not stop motor: " + ex);
 				}
+				try {
+					status.setText("Axis stopped @ " + motor.getPosition() + " steps. To save this position as the endstop, click 'Set as Limit'.");
+					
+				} catch (Exception ex) {
+					JOptionPane.showMessageDialog(null, "Could not get motor position: " + ex);
+				}
+				status.repaint();
 			}
 		});
 		
-		JButton set = new JButton("Set as Limit");
+		JButton set = new JButton("Calculate Limit");
 		set.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
 				
+				
 				try {
-					org.reprap.Preferences.setGlobalString("Working" + axis + "(mm)", Integer.toString(motor.getPosition()));
-					
+					//org.reprap.Preferences.setGlobalString("Working" + axis + "(mm)", Integer.toString(motor.getPosition()));
+					//doesn't work. Manual workaround displayed next..
 				} catch (Exception ex) {
 					JOptionPane.showMessageDialog(null, "Either could not get position or set preferences: " + ex);
 				}
 				
 				try {
-					status.setText("Limit set to " + motor.getPosition());
+
+					double axisLength = (int)Math.round(motor.getPosition()/stepsPerMM);
+					
+					status.setText("Steps: " + motor.getPosition() + " @ "
+							+ stepsPerMM + " 'steps/mm'. Update 'Working" + axis + "(mm)' to: "
+							+ axisLength + " mm.");
 					
 				} catch (Exception ex) {
-					JOptionPane.showMessageDialog(null, "Could not get position: " + ex);
+					JOptionPane.showMessageDialog(null, "Could not get position, or unable to load AxisScale preference: " + ex);
 				}
 				status.repaint();
 				

@@ -59,6 +59,14 @@ public class MaintenancePositionsFrame  extends JFrame /*implements ChangeListen
 	public MaintenancePositionsFrame()
 	{
 		try { 
+			talkToBot();
+		}
+		catch (Exception e){
+			JOptionPane.showMessageDialog(null, "Can't talk to bot: " + e);
+			return;
+		}
+		
+		try { 
 			motorX = new GenericStepperMotor(communicator, new SNAPAddress(Preferences.loadGlobalInt("XAxisAddress")), Preferences.getGlobalPreferences(), 1);
 			motorY = new GenericStepperMotor(communicator, new SNAPAddress(Preferences.loadGlobalInt("YAxisAddress")), Preferences.getGlobalPreferences(), 2);
 		}
@@ -67,13 +75,7 @@ public class MaintenancePositionsFrame  extends JFrame /*implements ChangeListen
 			return;
 		}
 		
-		/*try { 
-			talkToBot();
-		}
-		catch (Exception e){
-			JOptionPane.showMessageDialog(null, e.getMessage());
-			return;
-		}*/
+
 
 		warning = new JLabel("WARNING: Use Working Volume Probe to establish WorkingAxis(mm) preferences first.");
 		status = new JLabel("To activate the sector buttons, click home...");
@@ -177,7 +179,7 @@ public class MaintenancePositionsFrame  extends JFrame /*implements ChangeListen
 		JButton home = homeButton();
 		JButton bottomMiddle= sectorXYButton(maxStepsX/2, 0, "V");
 		JButton bottomRight = sectorXYButton(maxStepsX, 0, "");
-		
+		 
 		sectorXY.add(topLeft);
 		sectorXY.add(topMiddle);
 		sectorXY.add(topRight);
@@ -245,7 +247,6 @@ public class MaintenancePositionsFrame  extends JFrame /*implements ChangeListen
 				catch (Exception ex) {
 					homePositionAlreadyFound = false;
 					JOptionPane.showMessageDialog(null, "Could not home motor: " + ex);
-					
 				}
 				if (homePositionAlreadyFound = true)
 				{
