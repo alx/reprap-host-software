@@ -5,6 +5,8 @@
  * Designed to walk the axes to their extents
  * thus setting the working volume of the printer.
  * 
+ * Code borrowed from org.reprap.gui.steppertest.Main v818 
+ * and from org.reprap.gui.steppertest.StepperPanel v673
  */
 
 package org.reprap.gui.steppertest;
@@ -45,25 +47,42 @@ import org.reprap.gui.Utility;
 
 import javax.swing.event.ChangeListener;
 
-public class WorkingVolumeFrame  extends JFrame /*implements ChangeListener*/ {
+public class WorkingVolumeFrame  extends JFrame {
 	
 	private JLabel status;
-	
 	private final int fastSpeed = 235;
 	private final int slowSpeed = 180;
 	
+	private final int localNodeNumber = 0;
+	private final int baudRate = 19200;
+	JPanel motorX, motorY, motorZ;
+	Communicator communicator;
+	
 	public WorkingVolumeFrame()
 	{
-		setTitle("Working Volume Probe");
-		
-		try { 
-			talkToBot();
+		//Establish connection type
+		String connection = "nullcartesian";
+		try {
+		connection = Preferences.loadGlobalString("Geometry");
 		}
+		
 		catch (Exception e){
-			JOptionPane.showMessageDialog(null, e.getMessage());
+			JOptionPane.showMessageDialog(null, "Can't establish 'Geometry parameter'" + e);
 			return;
 		}
 		
+		//Initialise comms with bot
+		if (connection == "cartesian"){
+			try { 
+				talkToBot();
+			}
+			catch (Exception e){
+				JOptionPane.showMessageDialog(null, e.getMessage());
+				return;
+			}
+		}
+		
+		setTitle("Working Volume Probe");
 		status = new JLabel("Pick an axis, then zero it by clicking on the home button.");
 		
 		getContentPane().add(status, BorderLayout.CENTER);
@@ -80,25 +99,6 @@ public class WorkingVolumeFrame  extends JFrame /*implements ChangeListener*/ {
 		setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
 		show();
 	}
-	
-	/*
-	 * 
-	 * Code cribbed from org.reprap.gui.steppertest.Main v818
-	 * Needs review
-	 * 
-	 */
-	
-	private final int localNodeNumber = 0;
-	private final int baudRate = 19200;
-	private final int intialSpeed = 236;
-	
-	//private ShapePanel  shapePanel;
-	private ExtruderPanel extruderPanel;
-	
-	JPanel motorX, motorY, motorZ;
-	GenericExtruder extruder = null;
-	
-	Communicator communicator;
 	
 	public void talkToBot() throws Exception {
 		
@@ -124,32 +124,7 @@ public class WorkingVolumeFrame  extends JFrame /*implements ChangeListener*/ {
 			
 			throw new Exception(err);
 		}
-		
-		if (err.length() == 0)
-		{
-			extruder = new GenericExtruder(communicator,
-					new SNAPAddress(Preferences.loadGlobalString("Extruder0_Address")),
-					Preferences.getGlobalPreferences(), 0);
-		
-
-	        Utility.centerWindowOnScreen(this);
-		}
 	}
-	
-/*	public void dispose() {
-
-		super.dispose();
-		if (extruder != null)
-			extruder.dispose();
-		if (motorX != null)
-			motorX.dispose();
-		if (motorY != null)
-			motorY.dispose();
-		if (motorZ != null)
-			motorZ.dispose();
-		if (communicator != null)
-			communicator.dispose();
-	}*/
 	
 	private void addAxisControls() throws Exception {
 		
@@ -169,75 +144,6 @@ public class WorkingVolumeFrame  extends JFrame /*implements ChangeListener*/ {
 		getContentPane().add(dialogue, BorderLayout.SOUTH);
 	}
 
-	/*public void stateChanged(ChangeEvent evt) {
-		try {
-			Object srcObj = evt.getSource();
-			
-			if (srcObj instanceof JSlider) {
-				JSlider src = (JSlider)srcObj;
-				if (src == speedX || src == speedY || src == speedZ) {
-					if (src.getValue() < 1)
-						src.setValue(1);
-					if (lockXYZSpeed.isSelected()) {
-						if (src == speedX) {
-							speedY.setValue(speedX.getValue());
-							speedZ.setValue(speedX.getValue());
-						} else if (src == speedY) {
-							speedX.setValue(speedY.getValue());
-							speedZ.setValue(speedY.getValue());
-						} else if (src == speedZ) {
-							speedX.setValue(speedZ.getValue());
-							speedY.setValue(speedZ.getValue());
-						}
-					}
-					motorX.updateSpeed();
-					motorY.updateSpeed();
-					motorZ.updateSpeed();
-				}
-				
-			} else if (srcObj instanceof JCheckBox) {
-				JCheckBox src = (JCheckBox)srcObj;
-				if (src.isSelected()) {
-					speedY.setValue(speedX.getValue());
-					speedZ.setValue(speedZ.getValue());
-				}
-			}
-		} catch (Exception ex) {
-			JOptionPane.showMessageDialog(null, "Update exception: " + ex);
-			ex.printStackTrace();
-		}
-	}
-		
-	private void reloadPosition() throws IOException {
-		motorX.loadPosition();
-		motorY.loadPosition();
-	}
-
-	protected void onLineButton() {
-		try {
-			JFrame frame = new JFrame();
-			LineTest inst = new LineTest(frame,
-					motorX.getMotor(),
-					motorY.getMotor(),
-					extruder, speedX.getValue(), extruderPanel.getSpeed());
-			inst.setVisible(true);
-			reloadPosition();
-		} catch (Exception ex) {
-			JOptionPane.showMessageDialog(null, "Line test exception: " + ex);
-			ex.printStackTrace();
-		
-		}
-	}*/
-	
-	/* 
-	 * 
-	 * End of Cribbing from org.reprap.gui.steppertest.Main v818
-	 * 
-	 */
-
-
-
-	
 	public JPanel axisPanel(String name, int motorId, Communicator communicator) throws IOException 
 	{
 	    int maxValue = 30000;
@@ -245,15 +151,6 @@ public class WorkingVolumeFrame  extends JFrame /*implements ChangeListener*/ {
 		Timer updateTimer;
 		final GenericStepperMotor motor;
 		
-		/* 
-		 * 
-		 * Start of Cribbing from org.reprap.gui.steppertest.StepperPanel v673
-		 * 
-		 */
-		
-//super();
-		
-
 		final String axis;
 		switch(motorId)
 		{
@@ -275,19 +172,7 @@ public class WorkingVolumeFrame  extends JFrame /*implements ChangeListener*/ {
 		
 		final double stepsPerMM = Preferences.loadGlobalDouble(axis + "AxisScale(steps/mm)");
 		
-
-		
-		updateTimer = new Timer();
-		
 		motor = new GenericStepperMotor(communicator, new SNAPAddress(address), Preferences.getGlobalPreferences(), motorId);
-		
-		
-		/* 
-		 * 
-		 * End of Cribbing from org.reprap.gui.steppertest.StepperPanel v673
-		 * 
-		 */
-		
 		
 		JButton home = new JButton("Home");
 		home.addActionListener(new ActionListener() {
@@ -306,9 +191,6 @@ public class WorkingVolumeFrame  extends JFrame /*implements ChangeListener*/ {
 				}
 				
 				status.repaint();
-
-				//Set position in memory to zero?
-
 			}
 		});
 		
