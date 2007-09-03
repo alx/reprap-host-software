@@ -32,6 +32,8 @@ import org.reprap.devices.GenericExtruder;
 import org.reprap.devices.GenericStepperMotor;
 import org.reprap.gui.Utility;
 
+import java.awt.Color;
+
 public class MaintenancePositionsFrame  extends JFrame {
 	
 	// Panel globals
@@ -54,7 +56,10 @@ public class MaintenancePositionsFrame  extends JFrame {
 	
 	public MaintenancePositionsFrame()
 	{
-		//Establish connection type
+		/*
+		 * TODO: Trying to recognise null/cartesian status: Won't work?
+		 * 
+		 * //Establish connection type
 		String connection = "nullcartesian";
 		try {
 		connection = Preferences.loadGlobalString("Geometry");
@@ -66,7 +71,7 @@ public class MaintenancePositionsFrame  extends JFrame {
 		}
 		
 		//Initialise comms with bot
-		if (connection == "cartesian"){
+		if (connection == "cartesian"){*/
 			try { 
 				talkToBot();
 			}
@@ -74,7 +79,7 @@ public class MaintenancePositionsFrame  extends JFrame {
 				JOptionPane.showMessageDialog(null, "Can't talk to bot: " + e);
 				return;
 			}
-		}
+		//}
 		
 		//Establish motors
 		try { 
@@ -91,6 +96,8 @@ public class MaintenancePositionsFrame  extends JFrame {
 		warning = new JLabel("WARNING: Use Working Volume Probe to establish WorkingAxis(mm) preferences first.");
 		area = new JLabel("Finding working area...");
 		status = new JLabel("To activate the sector buttons, click home...");
+		status.setForeground(Color.red);
+
 		
 		JPanel text = new JPanel();
 		text.setLayout(new GridLayout(3,1));	
@@ -157,15 +164,15 @@ public class MaintenancePositionsFrame  extends JFrame {
 		JPanel sectorXY = new JPanel();
 		sectorXY.setLayout(new GridLayout(3,3));		
 		
-		JButton topLeft = makeSectorXYButton(0, maxStepsY, "");
-		JButton topMiddle = makeSectorXYButton(maxStepsX/2, maxStepsY, "^");
-		JButton topRight = makeSectorXYButton(maxStepsX, maxStepsY, "");
-		JButton middleLeft = makeSectorXYButton(0, maxStepsY/2, "<");
-		JButton middle = makeSectorXYButton(maxStepsX/2, maxStepsY/2, "X");
-		JButton middleRight = makeSectorXYButton(maxStepsX, maxStepsY/2, ">");
+		JButton topLeft = makeSectorXYButton(0, maxStepsY, 0, axisLengthY, "", false);
+		JButton topMiddle = makeSectorXYButton(maxStepsX/2, maxStepsY, axisLengthX/2, axisLengthY, "^", false);
+		JButton topRight = makeSectorXYButton(maxStepsX, maxStepsY, axisLengthX, axisLengthY, "", false);
+		JButton middleLeft = makeSectorXYButton(0, maxStepsY/2, 0, axisLengthY/2, "<", true);
+		JButton middle = makeSectorXYButton(maxStepsX/2, maxStepsY/2, axisLengthX/2, axisLengthY/2, "X", true);
+		JButton middleRight = makeSectorXYButton(maxStepsX, maxStepsY/2, axisLengthX, axisLengthY/2, ">", false);
 		JButton home = homeButton();
-		JButton bottomMiddle= makeSectorXYButton(maxStepsX/2, 0, "V");
-		JButton bottomRight = makeSectorXYButton(maxStepsX, 0, "");
+		JButton bottomMiddle= makeSectorXYButton(maxStepsX/2, 0, axisLengthX/2, 0, "V", true);
+		JButton bottomRight = makeSectorXYButton(maxStepsX, 0, axisLengthX, 0, "", false);
 		 
 		sectorXY.add(topLeft);
 		sectorXY.add(topMiddle);
@@ -181,39 +188,46 @@ public class MaintenancePositionsFrame  extends JFrame {
 		
 	}
 
-	private JButton makeSectorXYButton(int x, int y, String pointer)
+	private JButton makeSectorXYButton(int xSteps, int ySteps, double xmm, double ymm, String pointer, boolean activate)
 	{
-		final int xCoord = x;
-		final int yCoord = y;
+		final int xCoord = xSteps;
+		final int yCoord = ySteps;
+		final double xMM = xmm;
+		final double yMM = ymm;
+		final boolean active = activate;
 		
-		JButton sector = new JButton(pointer);
+		final JButton sector = new JButton(pointer);
 		sector.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
-				if (homePositionAlreadyFound) 
+				if (active)
 				{
-					status.setText("Travelling...");
-					status.repaint();
-					try {
-							motorX.seek(fastSpeed, xCoord);
-							motorX.seek(fastSpeed, yCoord);
-	
-						
-					} catch (Exception ex) {
-						JOptionPane.showMessageDialog(null, "Could not position motor: " + ex);
-					}
-					try {
-					
-						status.setText("Step position: " + motorX.getPosition()
-								+ ", " + motorY.getPosition()); 
+					if (homePositionAlreadyFound) 
+					{
+						status.setText("Travelling...");
 						status.repaint();
-					} catch (Exception ex) {
-						JOptionPane.showMessageDialog(null, "Could not find motor position " + ex);
+						try {
+								motorX.seek(fastSpeed, xCoord);
+								motorY.seek(fastSpeed, yCoord);
+	
+						} catch (Exception ex) {
+							JOptionPane.showMessageDialog(null, "Could not position motor: " + ex);
+						}
+						
+						status.setText("Head position: " + xMM
+									+ ", " + yMM); 
+						status.repaint();
+					}	
+					else {
+						status.setText("Find the home position before sectors can activate."); 
+						status.repaint();
 					}
 				}
-				else {
-					status.setText("Find the home position before sectors can activate."); 
+				else
+				{
+					status.setText("Button has already been DEACTIVATED for safety. Reactivate in source if happy with working volume."); 
 					status.repaint();
 				}
+		
 			}
 		});
 		

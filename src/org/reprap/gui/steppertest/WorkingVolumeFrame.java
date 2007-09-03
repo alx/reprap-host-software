@@ -15,6 +15,8 @@ import java.awt.BorderLayout;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.Color;
+
 import java.io.IOException;
 
 import javax.swing.Box;
@@ -47,11 +49,13 @@ import org.reprap.gui.Utility;
 
 import javax.swing.event.ChangeListener;
 
+
+
 public class WorkingVolumeFrame  extends JFrame {
 	
 	private JLabel status;
-	private final int fastSpeed = 235;
-	private final int slowSpeed = 180;
+	private final int fastSpeed = 245;
+	private final int slowSpeed = 160;
 	
 	private final int localNodeNumber = 0;
 	private final int baudRate = 19200;
@@ -60,7 +64,7 @@ public class WorkingVolumeFrame  extends JFrame {
 	
 	public WorkingVolumeFrame()
 	{
-		//Establish connection type
+		/*//Establish connection type
 		String connection = "nullcartesian";
 		try {
 		connection = Preferences.loadGlobalString("Geometry");
@@ -69,10 +73,10 @@ public class WorkingVolumeFrame  extends JFrame {
 		catch (Exception e){
 			JOptionPane.showMessageDialog(null, "Can't establish 'Geometry parameter'" + e);
 			return;
-		}
+		}*/
 		
 		//Initialise comms with bot
-		if (connection == "cartesian"){
+		/*if (connection == "cartesian"){*/
 			try { 
 				talkToBot();
 			}
@@ -80,13 +84,20 @@ public class WorkingVolumeFrame  extends JFrame {
 				JOptionPane.showMessageDialog(null, e.getMessage());
 				return;
 			}
-		}
+		//}
 		
 		setTitle("Working Volume Probe");
+		JLabel warning = new JLabel("WARNING: Certain ranges of working volume distances will cause Java 3D errors.");
 		status = new JLabel("Pick an axis, then zero it by clicking on the home button.");
+		status.setForeground(Color.red);
 		
-		getContentPane().add(status, BorderLayout.CENTER);
+		JPanel text = new JPanel();
+		text.setLayout(new GridLayout(2,1));	
+		text.add(warning);
+		text.add(status);
 		
+		getContentPane().add(text, BorderLayout.NORTH);
+				
 		try { 
 			addAxisControls();
 		}
