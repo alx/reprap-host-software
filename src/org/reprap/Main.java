@@ -257,31 +257,31 @@ public class Main {
         toolsMenu.setMnemonic(KeyEvent.VK_T);
         menubar.add(toolsMenu);
         
-//        JMenuItem toolsWorkingVolume = new JMenuItem("Working volume probe", KeyEvent.VK_W);
-//        toolsWorkingVolume.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent arg0) {
-//				try {
-//					new org.reprap.gui.steppertest.WorkingVolumeFrame();
-//				}
-//              	catch (Exception ex) {
-//             		JOptionPane.showMessageDialog(null, "Working volume probe exception: " + ex);
-//         			ex.printStackTrace();
-//             	}
-//			}});
-//        toolsMenu.add(toolsWorkingVolume);
+        JMenuItem toolsWorkingVolume = new JMenuItem("Working volume probe", KeyEvent.VK_W);
+        toolsWorkingVolume.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				try {
+					new org.reprap.gui.steppertest.WorkingVolumeFrame();
+				}
+              	catch (Exception ex) {
+             		JOptionPane.showMessageDialog(null, "Working volume probe exception: " + ex);
+         			ex.printStackTrace();
+             	}
+			}});
+        toolsMenu.add(toolsWorkingVolume);
         
-//      JMenuItem toolsMaintenancePositions = new JMenuItem("Maintenance positions", KeyEvent.VK_M);
-//      toolsMaintenancePositions.addActionListener(new ActionListener() {
-//			public void actionPerformed(ActionEvent arg0) {
-//				try {
-//					new org.reprap.gui.steppertest.MaintenancePositionsFrame();
-//				}
-//            	catch (Exception ex) {
-//           		JOptionPane.showMessageDialog(null, "Maintenance positions exception: " + ex);
-//       			ex.printStackTrace();
-//           	}
-//			}});
-//      toolsMenu.add(toolsMaintenancePositions);
+      JMenuItem toolsMaintenancePositions = new JMenuItem("Maintenance positions", KeyEvent.VK_M);
+      toolsMaintenancePositions.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent arg0) {
+				try {
+					new org.reprap.gui.steppertest.MaintenancePositionsFrame();
+				}
+            	catch (Exception ex) {
+           		JOptionPane.showMessageDialog(null, "Maintenance positions exception: " + ex);
+       			ex.printStackTrace();
+           	}
+			}});
+      toolsMenu.add(toolsMaintenancePositions);
         
         JMenuItem toolsExerciser = new JMenuItem("Stepper exerciser", KeyEvent.VK_S);
         toolsExerciser.addActionListener(new ActionListener() {
