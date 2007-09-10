@@ -99,7 +99,7 @@ public class Main extends javax.swing.JDialog {
 						// This is normal when shutting down, so ignore
 					}
 					catch (Exception ex) {
-						System.out.println("Exception during profiler temperature update: " + ex.getMessage());
+						System.err.println("Exception during profiler temperature update: " + ex.getMessage());
 					}
 				}
 			}

@@ -32,7 +32,7 @@ public class CommsLock {
 	 */
 	synchronized public void unlock() {
 		if (!locked)
-			System.out.println("Warning: Calling unlock from an already unlocked state!");
+			System.err.println("Warning: Calling unlock from an already unlocked state!");
 		locked = false;
 		notify();
 		//System.out.println("Unlock: " + Thread.currentThread().getName() + " released");

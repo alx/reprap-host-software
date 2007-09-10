@@ -124,11 +124,24 @@ public class Reprap implements CartesianPrinter {
 	private boolean idleZ;
 	
 	/**
+	 * Make helpful comments?
+	 */
+	private boolean debugMode = false;
+	
+	/**
 	 * @param prefs
 	 * @throws Exception
 	 */
 	public Reprap(Preferences prefs) throws Exception {
 		startTime = System.currentTimeMillis();
+		
+		try {
+			// Try to load debug setting from properties file
+			debugMode = Preferences.loadGlobalBool("Debug");
+		} catch (Exception ex) {
+			// Fall back to non-debug mode if no setting is available
+			debugMode = false;
+		}
 		
 		int axes = prefs.loadInt("AxisCount");
 		if (axes != 3)
@@ -181,7 +194,7 @@ public class Reprap implements CartesianPrinter {
 		try {
 			currentZ = convertToPositionZ(motorZ.getPosition());
 		} catch (Exception ex) {
-			System.out.println("Z axis not responding and will be ignored");
+			System.err.println("Z axis not responding and will be ignored");
 			excludeZ = true;
 		}
 		
@@ -572,7 +585,8 @@ public class Reprap implements CartesianPrinter {
 		double y = currentY;
 		int tempReminder=0;
 		temperatureReminder();
-		System.out.println("Moving to heating zone");
+		if(debugMode)
+			System.out.println("Moving to heating zone");
 		int oldSpeed = currentSpeedXY;
 		
 		// Ensure the extruder is off
@@ -593,7 +607,8 @@ public class Reprap implements CartesianPrinter {
 			} catch (InterruptedException e) {
 			}
 		}
-		System.out.println("Returning to previous position");
+		if(debugMode)
+			System.out.println("Returning to previous position");
 		moveTo(x, y, currentZ, true, false);
 		setSpeed(oldSpeed);
 		if (previewer != null) previewer.setMessage(null);
@@ -608,12 +623,13 @@ public class Reprap implements CartesianPrinter {
 	private void temperatureReminder() {
 		if(extruders[extruder].getTemperatureTarget() < Preferences.absoluteZero())
 			return;
-		System.out.println("Reminding it of the temperature");
+		if(debugMode)
+			System.out.println("Reminding it of the temperature");
 		try {
 			extruders[extruder].setTemperature(extruders[extruder].getTemperatureTarget());
 			//setTemperature(Preferences.loadGlobalInt("ExtrusionTemp"));
 		} catch (Exception e) {
-			System.out.println("Error resetting temperature.");
+			System.err.println("Error resetting temperature.");
 		}
 	}
 	

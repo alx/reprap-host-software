@@ -34,11 +34,24 @@ public class Producer {
 	protected RepRapBuild bld;
 	
 	/**
+	 * Make helpful comments?
+	 */
+	private boolean debugMode = false;
+	
+	/**
 	 * @param preview
 	 * @param builder
 	 * @throws Exception
 	 */
 	public Producer(PreviewPanel preview, RepRapBuild builder) throws Exception {
+		try {
+			// Try to load debug setting from properties file
+			debugMode = Preferences.loadGlobalBool("Debug");
+		} catch (Exception ex) {
+			// Fall back to non-debug mode if no setting is available
+			debugMode = false;
+		}
+		
 		reprap = MachineFactory.create();
 		reprap.setPreviewer(preview);
 		preview.setMachine(reprap);
@@ -169,25 +182,32 @@ public class Producer {
 //		reprap.setSpeed(movementSpeedXY);
 //		reprap.setFastSpeed(fastSpeedXY);
 //		reprap.setSpeedZ(movementSpeedZ);
-		System.out.println("Intialising reprap");
+		if(debugMode)
+			System.out.println("Intialising reprap");
 		reprap.initialise();
-		System.out.println("Selecting material 0");
+		if(debugMode)
+			System.out.println("Selecting material 0");
 		reprap.selectExtruder(0);
 		//reprap.setExtruderSpeed(extrusionSpeed);
-		System.out.println("Setting temperature");
+		if(debugMode)
+			System.out.println("Setting temperature");
 		reprap.getExtruder().heatOn();
 		
 		// A "warmup" segment to get things in working order
 		if (!subtractive) {
-			System.out.println("Printing warmup segments, moving to (0,5)");
+			if(debugMode)
+				System.out.println("Printing warmup segments, moving to (0,5)");
 			reprap.setSpeed(reprap.getFastSpeed());
 			reprap.moveTo(0, 5, reprap.getExtruder().getExtrusionHeight(), true, false);
 			reprap.setSpeed(reprap.getExtruder().getXYSpeed());
-			System.out.println("Printing warmup segments, printing to (0,20)");
+			if(debugMode)
+				System.out.println("Printing warmup segments, printing to (0,20)");
 			reprap.printTo(0, 20, reprap.getExtruder().getExtrusionHeight(), false);
-			System.out.println("Printing warmup segments, printing to (2,20)");
+			if(debugMode)
+				System.out.println("Printing warmup segments, printing to (2,20)");
 			reprap.printTo(2, 20, reprap.getExtruder().getExtrusionHeight(), false);
-			System.out.println("Printing warmup segments, printing to (2,5)");
+			if(debugMode)
+				System.out.println("Printing warmup segments, printing to (2,5)");
 			reprap.printTo(2, 5, reprap.getExtruder().getExtrusionHeight(), true);
 			reprap.setSpeed(reprap.getFastSpeed());
 		}
@@ -231,7 +251,8 @@ public class Producer {
 			
 			if (reprap.isCancelled())
 				break;
-			System.out.println("Commencing layer at " + z);
+			if(debugMode)
+				System.out.println("Commencing layer at " + z);
 
 			// Change Z height
 			reprap.moveTo(reprap.getX(), reprap.getY(), z, false, false);
@@ -239,7 +260,8 @@ public class Producer {
 			// Layer cooling phase - after we've just raised the head.
 			//Only if we're not a null device.
 			if ((z != startZ && reprap.getExtruder().getCoolingPeriod() > 0)&&!(reprap instanceof NullCartesianMachine)) {
-				System.out.println("Starting a cooling period");
+				if(debugMode)
+					System.out.println("Starting a cooling period");
 				// Save where we are. We'll come back after we've cooled off.
 				double storedX=reprap.getX();
 				double storedY=reprap.getY();
@@ -250,9 +272,11 @@ public class Producer {
 				reprap.moveTo(0, 0, z, true, true);
 				Thread.sleep(1000 * reprap.getExtruder().getCoolingPeriod());
 				reprap.getExtruder().setCooler(false);
-				System.out.println("Brief delay for head to warm up.");
+				if(debugMode)
+					System.out.println("Brief delay for head to warm up.");
 				Thread.sleep(200 * reprap.getExtruder().getCoolingPeriod());
-				System.out.println("End of cooling period");
+				if(debugMode)
+					System.out.println("End of cooling period");
 				// TODO: BUG! Strangely, this only restores Y axis!
 				//System.out.println("stored X and Y: " + storedX + "   " + storedY);
 				

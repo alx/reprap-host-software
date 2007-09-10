@@ -23,11 +23,6 @@ import org.reprap.comms.messages.OutgoingIntMessage;
 public class GenericStepperMotor extends Device {
 	
 	/**
-	 * 
-	 */
-	private static boolean debugMode = false;
-	
-	/**
 	 * API for firmware
 	 * Activate the stepper motor in forward direction 
 	 */
@@ -120,14 +115,21 @@ public class GenericStepperMotor extends Device {
 	private boolean haveCalibrated = false;
 	
 	/**
-	 * 
+	 * Useful to know what we're called
 	 */
 	private String axis;
+	
+
 	
 	/**
 	 * Power output limiting (0-100 percent)
 	 */
-	private int maxTorque; 
+	private int maxTorque;
+	
+	/**
+	 * Make helpful comments?
+	 */
+	private boolean debugMode = false;
 	
 	/**
 	 * @param communicator
@@ -142,7 +144,7 @@ public class GenericStepperMotor extends Device {
 		
 		try {
 			// Try to load debug setting from properties file
-			debugMode = Preferences.loadGlobalBool("CommsDebug");
+			debugMode = Preferences.loadGlobalBool("Debug");
 		} catch (Exception ex) {
 			// Fall back to non-debug mode if no setting is available
 			debugMode = false;

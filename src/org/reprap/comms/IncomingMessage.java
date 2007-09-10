@@ -59,7 +59,7 @@ public abstract class IncomingMessage {
 				comm.receiveMessage(this, timeout);
 			} catch (IOException e) {
 				e.printStackTrace();
-				System.out.println("IO error/timeout, resending");
+				System.err.println("IO error/timeout, resending");
 				// Just to prevent any unexpected spinning
 				try {
 					Thread.sleep(1);
@@ -71,7 +71,7 @@ public abstract class IncomingMessage {
 			return;
 		}
 		// If it's not going to respond, try to continue regardless.
-		System.out.println("Resend limit exceeded. Failing without reported error.");
+		System.err.println("Resend limit exceeded. Failing without reported error.");
 	}
 
 	

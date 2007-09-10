@@ -430,8 +430,8 @@ public class RrPolygon
 				double d = Rr2Point.sub(point(ii), point(i - 1)).mod();
 				if(d > tiny)
 					r.add(point(i - 1), flag(i - 1));
-				else
-					System.out.println("Tiny edge removed.");
+				//else
+					//System.out.println("Tiny edge removed.");
 			} else
 				r.add(point(i - 1), flag(i - 1));
 			oldEdgeFlag = flag(i - 1);

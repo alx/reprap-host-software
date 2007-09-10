@@ -317,7 +317,7 @@ abstract public class Panel3D extends JPanel {
 		JavaSoundMixer javaSoundMixer = new JavaSoundMixer(pe);
 
 		if (javaSoundMixer == null)
-			System.out.println("create of audiodevice failed");
+			System.err.println("create of audiodevice failed");
 
 		return javaSoundMixer;
 	}
