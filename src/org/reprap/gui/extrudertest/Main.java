@@ -99,7 +99,22 @@ public class Main extends javax.swing.JDialog {
 				Preferences.getGlobalPreferences(), i);
 		}
 		
-		extruder=0;
+		extruder = -1;
+		
+		for(int i = 0; i < extruderCount; i++)
+		{
+			if (extruders[i].isAvailable())
+			{
+				extruder = i;
+				break;
+			}
+		}
+		
+		if(extruder < 0)
+		{
+			System.err.println("No extruders available!");
+			System.exit(0);
+		}
 
 		initGUI();
 		
@@ -108,17 +123,6 @@ public class Main extends javax.swing.JDialog {
 		extruderSpeed.setValue(200);
 		extruderSpeed.setMajorTickSpacing(64);
 		extruderSpeed.setMinorTickSpacing(16);
-
-		if (!extruders[extruder].isAvailable()) {
-			extrudeButton.setEnabled(false);
-			extruderSpeed.setEnabled(false);
-			currentTemperature.setEnabled(false);
-			desiredTemperature.setEnabled(false);
-			heaterActive.setEnabled(false);
-			materialEmpty.setEnabled(false);
-			coolerActive.setEnabled(false);
-			return;
-		}
 
 		pollThread = new Thread() {
 			public void run() {
@@ -363,6 +367,24 @@ public class Main extends javax.swing.JDialog {
 					extruder = extruderCount - 1;
 				desiredExtruder.setText(Integer.valueOf(extruder).toString());
 				jLabel7.setText(extruders[extruder].toString());
+				if (!extruders[extruder].isAvailable()) {
+					extrudeButton.setEnabled(false);
+					extruderSpeed.setEnabled(false);
+					currentTemperature.setEnabled(false);
+					desiredTemperature.setEnabled(false);
+					heaterActive.setEnabled(false);
+					materialEmpty.setEnabled(false);
+					coolerActive.setEnabled(false);
+				} else
+				{
+					extrudeButton.setEnabled(true);
+					extruderSpeed.setEnabled(true);
+					currentTemperature.setEnabled(true);
+					desiredTemperature.setEnabled(true);
+					heaterActive.setEnabled(true);
+					materialEmpty.setEnabled(true);
+					coolerActive.setEnabled(true);					
+				}
 		}
 		catch (Exception ex) {
 			JOptionPane.showMessageDialog(null, "Exception setting extruder: " + ex);
