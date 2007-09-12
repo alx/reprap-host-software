@@ -137,7 +137,7 @@ class BooleanExpression
 	{
 		leafCount = -1;		
 		if(!op.diadic())
-			System.out.println("BooleanExpression(a, b): leaf operator or NOT!");
+			System.err.println("BooleanExpression(a, b): leaf operator or NOT!");
 		
 		leafOp = op;
 		leaf = null;
@@ -150,7 +150,7 @@ class BooleanExpression
 	{
 		leafCount = -1;		
 		if(op != bop.NOT)
-			System.out.println("BooleanExpression(..., NOT): op not NOT!");
+			System.err.println("BooleanExpression(..., NOT): op not NOT!");
 		
 		leafOp = op;
 		leaf = null;

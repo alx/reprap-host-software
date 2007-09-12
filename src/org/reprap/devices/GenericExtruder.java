@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.reprap.Device;
 import org.reprap.Preferences;
+import org.reprap.utilities.Debug;
 import org.reprap.Extruder;
 import org.reprap.comms.Address;
 import org.reprap.comms.Communicator;
@@ -253,11 +254,6 @@ public class GenericExtruder extends Device implements Extruder{
 	private Appearance materialColour;
 	
 	/**
-	 * Make helpful comments?
-	 */
-	private boolean debugMode = false;
-	
-	/**
 	 * @param communicator
 	 * @param address
 	 * @param prefs
@@ -266,14 +262,6 @@ public class GenericExtruder extends Device implements Extruder{
 	public GenericExtruder(Communicator communicator, Address address, Preferences prefs, int extruderId) {
 		
 		super(communicator, address);
-		
-		try {
-			// Try to load debug setting from properties file
-			debugMode = prefs.loadBool("Debug");
-		} catch (Exception ex) {
-			// Fall back to non-debug mode if no setting is available
-			debugMode = false;
-		}
 		
 		myExtruderID = extruderId;
 		String prefName = "Extruder" + extruderId + "_";
@@ -426,8 +414,7 @@ public class GenericExtruder extends Device implements Extruder{
 		requestedTemperature = temperature;
 		if(Math.abs(requestedTemperature - extrusionTemp) > 5)
 		{
-			if(debugMode)
-				System.out.println(material + " extruder temperature set to " + requestedTemperature +
+			Debug.d(material + " extruder temperature set to " + requestedTemperature +
 				"C, which is not the standard temperature (" + extrusionTemp + "C).");
 		}
 		// Aim for 10% above our target to ensure we reach it.  It doesn't matter
@@ -530,8 +517,7 @@ public class GenericExtruder extends Device implements Extruder{
 	 * @throws IOException
 	 */
 	private void setHeater(int heat0, int heat1, int t0, int t1, boolean lock) throws IOException {
-		if(debugMode)
-			System.out.println(material + " extruder heater set to " + heat0 + "/" + heat1 + " limit " + t0 + "/" + t1);
+		Debug.d(material + " extruder heater set to " + heat0 + "/" + heat1 + " limit " + t0 + "/" + t1);
 		if (lock) lock();
 		try {
 			sendMessage(new RequestSetHeat((byte)heat0,
@@ -578,8 +564,7 @@ public class GenericExtruder extends Device implements Extruder{
 		// time we will send a suitable temperature scale as well.
 		// To maximize the range, when vRefFactor is high (15) then
 		// the scale is minimum (0).
-		if(debugMode)
-			System.out.println(material + " extruder vRefFactor set to " + vRefFactor);
+		Debug.d(material + " extruder vRefFactor set to " + vRefFactor);
 		tempScaler = 7 - (vRefFactor >> 1);
 	    setVref(vRefFactor);
 		setTempScaler(tempScaler);
@@ -631,8 +616,7 @@ public class GenericExtruder extends Device implements Extruder{
 				RefreshEmptySensor();
 				RefreshTemperature();
 			} catch (Exception ex) {
-				if(debugMode)
-					System.out.println(material + " extruder exception during temperature/material update ignored");
+				Debug.d(material + " extruder exception during temperature/material update ignored");
 			}
 		}
 	}
@@ -728,13 +712,11 @@ public class GenericExtruder extends Device implements Extruder{
 				calibration = reply.getCalibration();
 				
 				if (rawHeat == 255 && vRefFactor > 0) {
-					if(debugMode)
-						System.out.println(material + " extruder re-ranging temperature (faster)");
+					Debug.d(material + " extruder re-ranging temperature (faster)");
 					vRefFactor--;
 					setTempRange();
 				} else if (rawHeat < 64 && vRefFactor < 15) {
-					if(debugMode)
-						System.out.println(material + " extruder re-ranging temperature (slower)");
+					Debug.d(material + " extruder re-ranging temperature (slower)");
 					vRefFactor++;
 					setTempRange();
 				} else
