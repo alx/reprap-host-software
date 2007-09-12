@@ -11,7 +11,7 @@ import gnu.io.SerialPort;
 import gnu.io.UnsupportedCommOperationException;
 
 import org.reprap.Device;
-import org.reprap.Preferences;
+import org.reprap.utilities.Debug;
 import org.reprap.comms.Address;
 import org.reprap.comms.Communicator;
 import org.reprap.comms.IncomingContext;
@@ -57,17 +57,6 @@ public class SNAPCommunicator implements Communicator {
 	
 	//private ReceiveThread receiveThread = null;
 	
-	/**
-	 * Boolean to turn debugging on or off on SNAP messages
-	 * True indicates additional debugging messages will be printed
-	 * Managed in the properties file @link{Preferences.loadGlobalBool("CommsDebug")}
-	 */
-	private boolean debugComms;
-	
-	/**
-	 * Make helpful comments?
-	 */
-	private boolean debugMode = false;	
 	
 	/**
 	 * Lock for comms
@@ -87,16 +76,9 @@ public class SNAPCommunicator implements Communicator {
 	 */
 	public SNAPCommunicator(String portName, int baudRate, Address localAddress)
 			throws NoSuchPortException, PortInUseException, IOException, UnsupportedCommOperationException {
-		try {
-			// Try to load debug setting from properties file
-			debugMode = Preferences.loadGlobalBool("Debug");
-		} catch (Exception ex) {
-			// Fall back to non-debug mode if no setting is available
-			debugMode = false;
-		}
+
 		this.localAddress = localAddress;
-		if(debugMode)
-			System.out.println("Opening port "+portName);
+		Debug.d("Opening port " + portName);
 		CommPortIdentifier commId = CommPortIdentifier.getPortIdentifier(portName);
 		port = (SerialPort)commId.open(portName, 30000);
 		
@@ -129,14 +111,6 @@ public class SNAPCommunicator implements Communicator {
 
 		writeStream = port.getOutputStream();
 		readStream = port.getInputStream();
-		
-		try {
-			// Try to load debug setting from properties file
-			debugComms = Preferences.loadGlobalBool("CommsDebug");
-		} catch (Exception ex) {
-			// Fall back to non-debug mode if no setting is available
-			debugComms = false;
-		}
 	}
 	
 	public void close()
@@ -146,15 +120,15 @@ public class SNAPCommunicator implements Communicator {
 		port = null;
 	}
 	
-	private void dumpPacket(Device device, OutgoingMessage messageToSend) {
-		byte [] binaryMessage = messageToSend.getBinary(); 
-		System.out.print(localAddress.toString());
-		System.out.print("->");
-		System.out.print(device.getAddress().toString());
-		System.out.print(": ");
+	private String dumpPacket(Device device, OutgoingMessage messageToSend) {
+		byte [] binaryMessage = messageToSend.getBinary();
+		String r = localAddress.toString();
+		r += "->";
+		r += device.getAddress().toString();
+		r += ": ";
 		for(int i = 0; i < binaryMessage.length; i++)
-			System.out.print(Integer.toHexString(binaryMessage[i]>=0?binaryMessage[i]:binaryMessage[i]+256) + " ");
-		System.out.println("");
+			r += Integer.toHexString(binaryMessage[i]>=0?binaryMessage[i]:binaryMessage[i]+256) + " ";
+		return r;
 	}
 	
 	public IncomingContext sendMessage(Device device,
@@ -167,12 +141,8 @@ public class SNAPCommunicator implements Communicator {
 
 		for(;;) 
 		{
-			if (debugComms) 
-			{
-				System.out.print("TX ");
-				dumpPacket(device, messageToSend);
-			}
-
+			Debug.c("tx " +	dumpPacket(device, messageToSend));
+			
 			sendRawMessage(packet);
 
 			SNAPPacket ackPacket;
@@ -190,8 +160,7 @@ public class SNAPCommunicator implements Communicator {
 				break;
 			if (ackPacket.getSourceAddress().equals(localAddress)) {
 				// Packet was from us, so assume no node present
-				if(debugMode)
-					System.out.println("Device at address " + device.getAddress() + " not present");
+				Debug.d("Device at address " + device.getAddress() + " not present");
 				throw new IOException("Device at address " + device.getAddress() + " not present");
 			}
 			if (!ackPacket.isNak()) {
@@ -247,16 +216,15 @@ public class SNAPCommunicator implements Communicator {
 	
 	protected synchronized SNAPPacket receivePacket(long timeout) throws IOException {
 		SNAPPacket packet = null;
-		if (debugComms) System.out.print("RX ");
 		try {
 			port.enableReceiveTimeout(messageTimeout);
 		} catch (UnsupportedCommOperationException e) {
-			if(debugMode)
-				System.out.println("Read timeouts unsupported on this platform");
+			Debug.d("Read timeouts unsupported on this platform");
 		}
+		String msg = "rx: ";
 		for(;;) {
 			int c = readByte(timeout);
-			if (debugComms) System.out.print(Integer.toHexString(c) + " ");
+			msg += Integer.toHexString(c) + " ";
 			if (c == -1)
 				throw new IOException("Timeout receiving byte");
 			if (packet == null) {
@@ -267,7 +235,7 @@ public class SNAPCommunicator implements Communicator {
 			if (packet.receiveByte((byte)c)) {
 				// Packet is complete
 				if (packet.validate()) {
-					if (debugComms) System.out.println("");
+					Debug.c(msg);
 					return packet;
 				} else {
 					System.err.println("CRC error");
@@ -303,8 +271,7 @@ public class SNAPCommunicator implements Communicator {
 	private boolean processPacket(IncomingMessage message, SNAPPacket packet) throws IOException {
 		// First ACK the message
 		if (packet.isAck()) {
-			if(debugMode)
-				System.out.println("Unexpected ACK received instead of message, not supported yet");
+			Debug.d("Unexpected ACK received instead of message, not supported yet");
 	  	  	return false;
 		}
 		/// TODO send ACKs
@@ -319,8 +286,7 @@ public class SNAPCommunicator implements Communicator {
 			return true;
 		} else {
 			// Not interested, wait for more
-			if(debugMode)
-				System.out.println("Ignored and dropped packet");
+			Debug.d("Ignored and dropped packet");
 			return false;
 		}
 	}

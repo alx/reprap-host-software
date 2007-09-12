@@ -16,6 +16,7 @@ import org.reprap.devices.pseudo.LinePrinter;
 import org.reprap.gui.CalibrateZAxis;
 import org.reprap.gui.Previewer;
 import org.reprap.Extruder;
+import org.reprap.utilities.Debug;
 
 /**
  * 
@@ -123,10 +124,6 @@ public class Reprap implements CartesianPrinter {
 	 */
 	private boolean idleZ;
 	
-	/**
-	 * Make helpful comments?
-	 */
-	private boolean debugMode = false;
 	
 	/**
 	 * @param prefs
@@ -134,14 +131,6 @@ public class Reprap implements CartesianPrinter {
 	 */
 	public Reprap(Preferences prefs) throws Exception {
 		startTime = System.currentTimeMillis();
-		
-		try {
-			// Try to load debug setting from properties file
-			debugMode = Preferences.loadGlobalBool("Debug");
-		} catch (Exception ex) {
-			// Fall back to non-debug mode if no setting is available
-			debugMode = false;
-		}
 		
 		int axes = prefs.loadInt("AxisCount");
 		if (axes != 3)
@@ -585,8 +574,7 @@ public class Reprap implements CartesianPrinter {
 		double y = currentY;
 		int tempReminder=0;
 		temperatureReminder();
-		if(debugMode)
-			System.out.println("Moving to heating zone");
+		Debug.d("Moving to heating zone");
 		int oldSpeed = currentSpeedXY;
 		
 		// Ensure the extruder is off
@@ -607,8 +595,7 @@ public class Reprap implements CartesianPrinter {
 			} catch (InterruptedException e) {
 			}
 		}
-		if(debugMode)
-			System.out.println("Returning to previous position");
+		Debug.d("Returning to previous position");
 		moveTo(x, y, currentZ, true, false);
 		setSpeed(oldSpeed);
 		if (previewer != null) previewer.setMessage(null);
@@ -623,8 +610,7 @@ public class Reprap implements CartesianPrinter {
 	private void temperatureReminder() {
 		if(extruders[extruder].getTemperatureTarget() < Preferences.absoluteZero())
 			return;
-		if(debugMode)
-			System.out.println("Reminding it of the temperature");
+		Debug.d("Reminding it of the temperature");
 		try {
 			extruders[extruder].setTemperature(extruders[extruder].getTemperatureTarget());
 			//setTemperature(Preferences.loadGlobalInt("ExtrusionTemp"));

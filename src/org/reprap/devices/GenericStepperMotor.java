@@ -1,8 +1,7 @@
 package org.reprap.devices;
 
 import java.io.IOException;
-
-import org.reprap.utilities.Timer;
+import org.reprap.utilities.Debug;
 import org.reprap.Device;
 import org.reprap.Preferences;
 import org.reprap.ReprapException;
@@ -129,11 +128,6 @@ public class GenericStepperMotor extends Device {
 	private int maxTorque;
 	
 	/**
-	 * Make helpful comments?
-	 */
-	private boolean debugMode = false;
-	
-	/**
 	 * @param communicator
 	 * @param address
 	 * @param prefs
@@ -143,16 +137,7 @@ public class GenericStepperMotor extends Device {
 		
 		//Address address, int maxTorque
 		super(communicator, address);
-		
-		try {
-			// Try to load debug setting from properties file
-			debugMode = Preferences.loadGlobalBool("Debug");
-		} catch (Exception ex) {
-			// Fall back to non-debug mode if no setting is available
-			debugMode = false;
-		}
-		
-		
+			
 		switch(motorId)
 		{
 		case 1:
@@ -197,8 +182,7 @@ public class GenericStepperMotor extends Device {
 	public void setSpeed(int speed) throws IOException {
 		initialiseIfNeeded();
 		lock();
-		if(debugMode)
-			System.out.println(Timer.report(axis + " axis - setting speed: " + speed));
+		Debug.d(axis + " axis - setting speed: " + speed);
 		try {
 			OutgoingMessage request = new RequestSetSpeed(speed);
 			sendMessage(request);
@@ -214,8 +198,7 @@ public class GenericStepperMotor extends Device {
 	public void setIdle() throws IOException {
 		initialiseIfNeeded();
 		lock();
-		if(debugMode)
-			System.out.println(Timer.report(axis + " axis - going idle."));
+		Debug.d(axis + " axis - going idle.");
 		try {
 			OutgoingMessage request = new RequestSetSpeed();
 			sendMessage(request);
@@ -231,8 +214,7 @@ public class GenericStepperMotor extends Device {
 	public void stepForward() throws IOException {
 		initialiseIfNeeded();
 		lock();
-		if(debugMode)
-			System.out.println(Timer.report(axis + " axis - stepping forward."));		
+		Debug.d(axis + " axis - stepping forward.");		
 		try {
 			OutgoingMessage request = new RequestOneStep(true);
 			sendMessage(request);
@@ -248,8 +230,7 @@ public class GenericStepperMotor extends Device {
 	public void stepBackward() throws IOException {
 		initialiseIfNeeded();
 		lock();
-		if(debugMode)
-			System.out.println(Timer.report(axis + " axis - stepping backward."));	
+		Debug.d(axis + " axis - stepping backward.");	
 		try {
 			OutgoingMessage request = new RequestOneStep(false);
 			sendMessage(request);
@@ -273,8 +254,7 @@ public class GenericStepperMotor extends Device {
 	public void setPosition(int position) throws IOException {
 		initialiseIfNeeded();
 		lock();
-		if(debugMode)
-			System.out.println(Timer.report(axis + " axis - setting position to: " + position));	
+		Debug.d(axis + " axis - setting position to: " + position);	
 		try {
 			sendMessage(new RequestSetPosition(position));
 		}
@@ -291,8 +271,7 @@ public class GenericStepperMotor extends Device {
 		int value;
 		initialiseIfNeeded();
 		lock();
-		if(debugMode)
-			System.out.println(Timer.report(axis + " axis - getting position.  It is... "));
+		Debug.d(axis + " axis - getting position.  It is... ");
 		try {
 			IncomingContext replyContext = sendMessage(
 					new OutgoingBlankMessage(MSG_GetPosition));
@@ -308,8 +287,7 @@ public class GenericStepperMotor extends Device {
 		finally {
 			unlock();
 		}
-		if(debugMode)
-			System.out.println(Timer.report("..." + value));		
+		Debug.d("..." + value);		
 		return value;
 	}
 	
@@ -321,9 +299,7 @@ public class GenericStepperMotor extends Device {
 	public void seek(int speed, int position) throws IOException {
 		initialiseIfNeeded()	;
 		lock();
-		if(debugMode)
-			System.out.println(Timer.report(axis + " axis - seeking position " + position + 
-					" at speed " + speed));
+		Debug.d(axis + " axis - seeking position " + position + " at speed " + speed);
 		try {
 			sendMessage(new RequestSeekPosition(speed, position));
 		}
@@ -340,9 +316,7 @@ public class GenericStepperMotor extends Device {
 	public void seekBlocking(int speed, int position) throws IOException {
 		initialiseIfNeeded();
 		lock();
-		if(debugMode)
-			System.out.println(Timer.report(axis + " axis - seeking-blocking position " + position + 
-					" at speed " + speed));
+		Debug.d(axis + " axis - seeking-blocking position " + position + " at speed " + speed);
 		try {
 			setNotification();
 			new RequestSeekResponse(this, new RequestSeekPosition(speed, position), 50000);
@@ -364,8 +338,7 @@ public class GenericStepperMotor extends Device {
 	public Range getRange(int speed) throws IOException, InvalidPayloadException {
 		initialiseIfNeeded()	;
 		lock();
-		if(debugMode)
-			System.out.println(Timer.report(axis + " axis - getting range."));
+		Debug.d(axis + " axis - getting range.");
 		try {
 			if (haveCalibrated) {
 				IncomingContext replyContext = sendMessage(
@@ -394,8 +367,7 @@ public class GenericStepperMotor extends Device {
 	public void homeReset(int speed) throws IOException, InvalidPayloadException {
 		initialiseIfNeeded()	;
 		lock();
-		if(debugMode)
-			System.out.println(Timer.report(axis + " axis - home reset at speed " + speed));
+		Debug.d(axis + " axis - home reset at speed " + speed);
 		try {
 			setNotification();
 			new RequestHomeResetResponse(this, new OutgoingByteMessage(MSG_HomeReset, (byte)speed), 60000);
@@ -412,8 +384,7 @@ public class GenericStepperMotor extends Device {
 	public void setSync(byte syncType) throws IOException {
 		initialiseIfNeeded()	;
 		lock();
-		if(debugMode)
-			System.out.println(Timer.report(axis + " axis - setting sync to " + syncType));
+		Debug.d(axis + " axis - setting sync to " + syncType);
 		try {
 			sendMessage(
 					new OutgoingByteMessage(MSG_SetSyncMode, syncType));
@@ -433,9 +404,7 @@ public class GenericStepperMotor extends Device {
 	public void dda(int speed, int x1, int deltaY) throws IOException {
 		initialiseIfNeeded()	;
 		lock();
-		if(debugMode)
-			System.out.println(Timer.report(axis + " axis - dda at speed " + speed 
-					+ ". x1 = " + x1 + ", deltaY = " + deltaY));
+		Debug.d(axis + " axis - dda at speed " + speed + ". x1 = " + x1 + ", deltaY = " + deltaY);
 		try {
 			setNotification();
 			
@@ -453,8 +422,7 @@ public class GenericStepperMotor extends Device {
 	 */
 	private void setNotification() throws IOException {
 		initialiseIfNeeded()	;
-		if(debugMode)
-			System.out.println(Timer.report(axis + " axis - setting notification on."));
+		Debug.d(axis + " axis - setting notification on.");
 		if (!haveSetNotification) {
 			sendMessage(new OutgoingAddressMessage(MSG_SetNotification,
 					getCommunicator().getAddress()));
@@ -467,8 +435,7 @@ public class GenericStepperMotor extends Device {
 	 */
 	private void setNotificationOff() throws IOException {
 		initialiseIfNeeded()	;
-		if(debugMode)
-			System.out.println(Timer.report(axis + " axis - setting notification off."));
+		Debug.d(axis + " axis - setting notification off.");
 		if (haveSetNotification) {
 			sendMessage(new OutgoingAddressMessage(MSG_SetNotification, getAddress().getNullAddress()));
 			haveSetNotification = false;
@@ -486,8 +453,7 @@ public class GenericStepperMotor extends Device {
 		double power = maxTorque * 68.0 / 100.0;
 		byte scaledPower = (byte)power;
 		lock();
-		if(debugMode)
-			System.out.println(Timer.report(axis + " axis - setting maximum torque to: " + maxTorque));
+		Debug.d(axis + " axis - setting maximum torque to: " + maxTorque);
 		try {
 			sendMessage(
 					new OutgoingByteMessage(MSG_SetPower, scaledPower));
