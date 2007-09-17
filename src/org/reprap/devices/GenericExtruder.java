@@ -81,6 +81,12 @@ public class GenericExtruder extends Device implements Extruder{
 	private double currentTemperature = 0;
 	
 	/**
+	 * Temprature history
+	 */
+	private double[] tH;
+	private int tHi;
+	
+	/**
 	 * Is a material-out sensor connected to the exteruder or not. 
 	 * If this is the case, TODO: impact?
 	 */
@@ -263,6 +269,9 @@ public class GenericExtruder extends Device implements Extruder{
 		
 		super(communicator, address);
 		
+		tH = new double[] {20, 20, 20}; // Bit of a hack - room temp
+		tHi = 0;
+		
 		myExtruderID = extruderId;
 		String prefName = "Extruder" + extruderId + "_";
 		
@@ -307,6 +316,8 @@ public class GenericExtruder extends Device implements Extruder{
 		}
 		
 		isCommsAvailable = true;
+		
+
 		
 		/*pollThread = new Thread() {
 			public void run() {
@@ -615,10 +626,33 @@ public class GenericExtruder extends Device implements Extruder{
 			try {
 				RefreshEmptySensor();
 				RefreshTemperature();
+				tH[tHi] = currentTemperature;
+				currentTemperature = tempVote();
 			} catch (Exception ex) {
 				Debug.d(material + " extruder exception during temperature/material update ignored");
 			}
 		}
+	}
+	
+	/**
+	 * Take a vote among the last three temperatures
+	 * @return
+	 */
+	private double tempVote()
+	{
+		int ip = (tHi + 1)%3;
+		int ipp = (tHi + 2)%3;
+		double dp = Math.abs(tH[tHi] - tH[ip]);
+		double dpp = Math.abs(tH[tHi] - tH[ipp]);
+		double d = Math.abs(tH[ip] - tH[ipp]);
+		if(dp <= d || dpp <= d)
+			d = tH[tHi];
+		else
+			d = 0.5*(tH[ip] + tH[ipp]);
+		//Debug.d("tempVote() - t0: " + tH[0] + ", t1: " + tH[1] + ", t2: " + tH[2] +
+				//", current: " + tH[tHi] + ", returning: " + d);
+		tHi = (tHi + 1)%3;
+		return d;
 	}
 	
 	/* (non-Javadoc)
@@ -627,6 +661,7 @@ public class GenericExtruder extends Device implements Extruder{
 	public double getTemperature() {
 		awaitSensorsInitialised();
 		TEMPpollcheck();
+		//return tempVote();
 		return currentTemperature;
 	}
 
@@ -696,37 +731,54 @@ public class GenericExtruder extends Device implements Extruder{
 	
 	/**
 	 * 
+	 * @param rawHeat
+	 * @return
+	 * @throws Exception
+	 */
+	private boolean rerangeTemperature(int rawHeat) throws Exception 
+	{
+		boolean notDone = false;
+		if (rawHeat == 255 && vRefFactor > 0) {
+			vRefFactor--;
+			Debug.d(material + " extruder re-ranging temperature (faster): ");
+			setTempRange();
+		} else if (rawHeat < 64 && vRefFactor < 15) {
+			vRefFactor++;
+			Debug.d(material + " extruder re-ranging temperature (slower): ");
+			setTempRange();
+		} else
+			notDone = true;
+		return notDone;
+	}
+	
+	/**
+	 * 
 	 * @throws Exception
 	 */
 	private void getDeviceTemperature() throws Exception {
 		lock();
 		try {
-			int rawHeat;
-			int calibration;
-			for(;;) {
+			int rawHeat = 0;
+			int calibration = 0;
+			for(;;) { // Don't repeatedly re-range?
 				OutgoingMessage request = new OutgoingBlankMessage(MSG_GetTemp);
 				RequestTemperatureResponse reply = new RequestTemperatureResponse(this, request, 500);
 				
 				rawHeat = reply.getHeat();
 				//System.out.println(material + " extruder raw temp " + rawHeat);
+
 				calibration = reply.getCalibration();
 				
-				if (rawHeat == 255 && vRefFactor > 0) {
-					Debug.d(material + " extruder re-ranging temperature (faster)");
-					vRefFactor--;
-					setTempRange();
-				} else if (rawHeat < 64 && vRefFactor < 15) {
-					Debug.d(material + " extruder re-ranging temperature (slower)");
-					vRefFactor++;
-					setTempRange();
-				} else
-					break;
+				if(rerangeTemperature(rawHeat))
+					break; // All ok
+				else
+					Thread.sleep(500); // Wait for PIC temp routine to settle before going again
 			}
 			
 			double resistance = calculateResistance(rawHeat, calibration);
 			
 			currentTemperature = calculateTemperature(resistance);
-			//System.out.println(material + " extruder current temp " + currentTemperature);
+			Debug.d(material + " extruder current temp " + currentTemperature);
 			
 			lastTemperatureUpdate = System.currentTimeMillis();
 		}
@@ -841,7 +893,8 @@ public class GenericExtruder extends Device implements Extruder{
 		 * @param timeout
 		 * @throws IOException
 		 */
-		public RequestTemperatureResponse(Device device, OutgoingMessage message, long timeout) throws IOException {
+		public RequestTemperatureResponse(Device device, OutgoingMessage message, 
+				long timeout) throws IOException {
 			super(device, message, timeout);
 		}
 		
