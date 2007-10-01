@@ -167,6 +167,7 @@ class MaterialRadioButtons extends JPanel{
 		} catch (Exception ex)
 		{
 			System.err.println(ex.toString());
+			ex.printStackTrace();
 		}	
 	}
     
