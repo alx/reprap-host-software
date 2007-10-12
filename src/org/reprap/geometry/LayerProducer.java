@@ -1,19 +1,18 @@
 /*
  * Created on May 1, 2006
  *
- * TODO To change the template for this generated file go to
- * Window - Preferences - Java - Code Style - Code Templates
+ * Changed by Vik to reject polts of less than 0.05mm
  */
 package org.reprap.geometry;
 
 import java.io.IOException;
-import java.util.*;
 import javax.media.j3d.*;
 import org.reprap.Printer;
 import org.reprap.Attributes;
 import org.reprap.Preferences;
 import org.reprap.ReprapException;
 import org.reprap.geometry.polygons.*;
+import org.reprap.utilities.Debug;
 
 /**
  *
@@ -312,11 +311,27 @@ public class LayerProducer {
 	 */
 	private void plot(RrPolygon p, boolean outline) throws ReprapException, IOException
 	{
-		if(p.size() <= 1)
-			return;
+		int leng = p.size();
 		
-		if(outline)
-			p = p.randomStart();
+		if(leng <= 1)
+			return;
+		// If the length of the plot is <0.05mm, don't bother with it.
+		// This will not spot an attempt to plot 10,000 points in 1mm.
+		double plotDist=0;
+		Rr2Point lastPoint=p.point(0);
+		for (int i=1; i<leng; i++)
+		{
+			Rr2Point n=p.point(i);
+			plotDist+=distanceBetween(lastPoint,n);
+			lastPoint=n;
+		}
+		if (plotDist<0.05) {
+			Debug.d("Rejected line with "+leng+"points, length"+plotDist);
+			return;
+		}
+
+//		if(outline)
+//			p = p.randomStart();
 		
 		Attributes att = p.getAttributes();
 		int baseSpeed = att.getExtruder(printer.getExtruders()).getXYSpeed();
@@ -326,8 +341,6 @@ public class LayerProducer {
 		printer.selectExtruder(att);
 		
 		int stopExtruding = p.backStep(printer.getExtruder().getExtrusionOverRun());
-		
-		int leng = p.size();
 		
 		if (printer.isCancelled()) return;
 		
@@ -347,7 +360,6 @@ public class LayerProducer {
 			printer.setSpeed(infillSpeed);
 			currentSpeed = infillSpeed;			
 		}
-		
 		
 		int f = p.flag(0);
 		for(int j = 1; j <= leng; j++)
@@ -371,11 +383,15 @@ public class LayerProducer {
 				}else
 					move(p.point(i), next, false, false);
 			}
-
 			f = p.flag(i);
 		}
 	}
 	
+	// Calculate the distance between two points
+	private double distanceBetween(Rr2Point x, Rr2Point y) {
+		return Math.sqrt((x.x()*x.x())-(y.y()*y.y()));
+	}
+
 	private int plotOneMaterial(RrPolygonList polygons, int i, boolean outline)
 		throws ReprapException, IOException
 	{
