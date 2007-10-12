@@ -1,8 +1,6 @@
 package org.reprap.geometry;
 
-import java.util.*;
 import javax.media.j3d.*;
-import javax.vecmath.*;
 import org.reprap.Preferences;
 import org.reprap.Printer;
 import org.reprap.geometry.polygons.*;
@@ -152,25 +150,25 @@ public class Producer {
 		//int extrusionTemp = 40;
 		//int movementSpeedXY = 230;
 		//int fastSpeedXY = 230;
-		//int movementSpeedZ = 230;
+		int movementSpeedZ = 212;
 		
 		//int coolingPeriod = Preferences.loadGlobalInt("CoolingPeriod");
 		boolean subtractive = Preferences.loadGlobalBool("Subtractive");
 		
-//		try {
+		try {
 //			extrusionSpeed = Preferences.loadGlobalInt("ExtrusionSpeed");
 //			extrusionTemp = Preferences.loadGlobalInt("ExtrusionTemp");
 //			movementSpeedXY = Preferences.loadGlobalInt("MovementSpeed");
 //			fastSpeedXY = Preferences.loadGlobalInt("FastSpeed");
-//			movementSpeedZ = Preferences.loadGlobalInt("MovementSpeedZ");
-//		} catch (Exception ex) {
-//			System.out.println("Warning: could not load ExtrusionSpeed/MovementSpeed, using defaults");
-//		}
+			movementSpeedZ = Preferences.loadGlobalInt("MovementSpeedZ(0..255)");
+		} catch (Exception ex) {
+			System.out.println("Warning: could not load ExtrusionSpeed/MovementSpeed, using defaults");
+		}
 		
 
 //		reprap.setSpeed(movementSpeedXY);
 //		reprap.setFastSpeed(fastSpeedXY);
-//		reprap.setSpeedZ(movementSpeedZ);
+		reprap.setSpeedZ(movementSpeedZ);
 		Debug.d("Intialising reprap");
 		reprap.initialise();
 		Debug.d("Selecting material 0");
@@ -184,11 +182,12 @@ public class Producer {
 			Debug.d("Printing warmup segments, moving to (0,5)");
 			reprap.setSpeed(reprap.getFastSpeed());
 			reprap.moveTo(0, 5, reprap.getExtruder().getExtrusionHeight(), true, false);
-			reprap.setSpeed(reprap.getExtruder().getXYSpeed());
-			Debug.d("Printing warmup segments, printing to (0,20)");
-			reprap.printTo(0, 20, reprap.getExtruder().getExtrusionHeight(), false);
-			Debug.d("Printing warmup segments, printing to (2,20)");
-			reprap.printTo(2, 20, reprap.getExtruder().getExtrusionHeight(), false);
+			// Run at about 50% of max - give it a nice, long time to squirt.
+			reprap.setSpeed(reprap.getExtruder().getXYSpeed()/2);
+			System.out.println("Printing warmup segments, printing to (0,50)");
+			reprap.printTo(0, 50, reprap.getExtruder().getExtrusionHeight(), false);
+			System.out.println("Printing warmup segments, printing to (2,50)");
+			reprap.printTo(2, 50, reprap.getExtruder().getExtrusionHeight(), false);
 			Debug.d("Printing warmup segments, printing to (2,5)");
 			reprap.printTo(2, 5, reprap.getExtruder().getExtrusionHeight(), true);
 			reprap.setSpeed(reprap.getFastSpeed());
