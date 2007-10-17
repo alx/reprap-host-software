@@ -380,7 +380,7 @@ public class RrPolygon
 			}	
 		}
 		System.err.println("RrPolygon.findAngleStart(): polygon is all one straight line!");
-		return 0;
+		return -1;
 	}
 	
 	/**
@@ -397,12 +397,16 @@ public class RrPolygon
 		RrPolygon r = new RrPolygon(att);
 		double d2 = d*d;
 		int v1 = findAngleStart(0, d2);
+		// We get back -1 if the points are in a straight line.
+		if (v1<0)
+			return new RrPolygon(this);
 		r.add(point(v1%leng), flag(v1%leng));
 		int v2 = v1;
 		while(true)
 		{
+			// We get back -1 if the points are in a straight line. 
 			v2 = findAngleStart(v2, d2);
-			if(v2 > leng)
+			if((v2 > leng)||(v2<0))
 				return(r);
 			r.add(point(v2%leng), flag(v2%leng));
 		}
