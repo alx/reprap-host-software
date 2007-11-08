@@ -277,7 +277,7 @@ public class Main extends javax.swing.JDialog {
 			{
 				jLabel5 = new JLabel();
 				getContentPane().add(jLabel5);
-				jLabel5.setText("Extruder speed");
+				jLabel5.setText("Extruder speed: " + extruderSpeed.getValue());
 				jLabel5.setBounds(7, 168, 140, 28);
 				jLabel5.setHorizontalAlignment(SwingConstants.RIGHT);
 			}
@@ -393,6 +393,10 @@ public class Main extends javax.swing.JDialog {
 	}
 	
 	private void extruderSpeedStateChanged(ChangeEvent evt) {
+
+		jLabel5.setText("Extruder speed: " + extruderSpeed.getValue());
+		jLabel5.repaint();
+		
 		if (extruding)
 			setExtruderSpeed();
 	}
@@ -401,9 +405,11 @@ public class Main extends javax.swing.JDialog {
 		if (extruding) {
 			extruding = false;
 			extrudeButton.setText("Extrude");
+		
 		} else {
 			extruding = true;
 			extrudeButton.setText("Stop");
+			
 			System.out.println("Extruding at speed: " + extruderSpeed.getValue());
 		}
 		setExtruderSpeed();
