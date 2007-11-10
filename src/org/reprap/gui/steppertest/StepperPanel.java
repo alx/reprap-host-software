@@ -50,7 +50,7 @@ public class StepperPanel extends JPanel implements ChangeListener {
 	private JCheckBox torque;            // If motor is driving or not
 	
 	private JLabel rangeLabel;
-	
+	private JLabel posRequest, posActual;		
 	private GenericStepperMotor motor; 
 	private boolean moving = false;   // True if (as far as we know) the motor is seeking
 	private boolean waiting = false;  // True if already waiting for a timer to complete (so we don't start another one)
@@ -107,20 +107,29 @@ public class StepperPanel extends JPanel implements ChangeListener {
 		
 		add(new JLabel("Set " + name + " axis position"), c);
 		positionRequest = new JSlider(SwingConstants.HORIZONTAL, minValue, maxValue, 0);
-		positionRequest.setValue(startingPosition);
-		positionRequest.addChangeListener(this);
 		c.gridy = 1;
 		add(positionRequest, c);
+		posRequest = new JLabel();
+		posRequest.setHorizontalAlignment(SwingConstants.RIGHT);
+		c.gridx = 1;
+		add(posRequest, c);
+		reqUpdate(startingPosition);
+		positionRequest.addChangeListener(this);
 		
+		c.gridx = 0;
 		c.gridy = 2;
 		add(new JLabel("Actual " + name + " axis position"), c);
 		positionActual = new JSlider(SwingConstants.HORIZONTAL, minValue, maxValue, 0);
-		positionActual.setValue(startingPosition);
 		positionActual.setEnabled(false);
 		c.gridy = 3;
 		add(positionActual, c);
-		
+		posActual = new JLabel();
+		posActual.setHorizontalAlignment(SwingConstants.RIGHT);
 		c.gridx = 1;
+		add(posActual, c);
+		actUpdate(startingPosition);
+		
+		c.gridx = 2;
 		c.gridy = 0;
 		rangeLabel = new JLabel();
 		updateRange();
@@ -135,7 +144,7 @@ public class StepperPanel extends JPanel implements ChangeListener {
 		});
 		add(calibrate, c);
 		
-		c.gridx = 2;
+		c.gridx = 3;
 		JButton home = new JButton("Home");
 		home.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
@@ -144,7 +153,7 @@ public class StepperPanel extends JPanel implements ChangeListener {
 		});
 		add(home, c);
 		
-		c.gridx = 3;
+		c.gridx = 4;
 		JButton stepForward = new JButton("Step +");
 		stepForward.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
@@ -153,7 +162,7 @@ public class StepperPanel extends JPanel implements ChangeListener {
 		});
 		add(stepForward, c);
 		
-		c.gridx = 4;
+		c.gridx = 5;
 		JButton stepBackward = new JButton("Step -");
 		stepBackward.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent evt) {
@@ -162,7 +171,7 @@ public class StepperPanel extends JPanel implements ChangeListener {
 		});
 		add(stepBackward, c);
 		
-		c.gridx = 1;
+		c.gridx = 2;
 		c.gridy = 2;
 		torque = new JCheckBox("Torque");
 		torque.addActionListener(new ActionListener() {
@@ -205,6 +214,41 @@ public class StepperPanel extends JPanel implements ChangeListener {
         positionRequest.setMinorTickSpacing(range/80);   // A full circle
         positionRequest.setPaintTicks(true);
 	}
+	
+	/**
+	 * Pad a string with spaces
+	 * @param s
+	 * @return
+	 */
+	private String sPad(String s)
+	{
+		int l = s.length();
+		if(l < 6)
+			for(int i = 0; i < 6 - l; i++)
+				s = " " + s;
+		return s + " ";
+	}
+	
+	/**
+	 * Update position request 
+	 */
+	private void reqUpdate(int value)
+	{
+		positionRequest.setValue(value);
+		posRequest.setText(sPad(String.valueOf(value)));
+		posRequest.repaint();
+	}
+	
+	/**
+	 * Update actual position 
+	 */
+	
+	private void actUpdate(int value)
+	{
+		positionActual.setValue(value);
+		posActual.setText(sPad(String.valueOf(value)));
+		posActual.repaint();
+	}
 
 	/**
 	 * Calibrate button handler
@@ -218,7 +262,7 @@ public class StepperPanel extends JPanel implements ChangeListener {
 			// that we're at the max position, so update to reflect this
 			moving = false;
 			updateRange();
-			positionRequest.setValue(maxValue);
+			reqUpdate(maxValue);
 		} catch (Exception ex) {
 			JOptionPane.showMessageDialog(null, "Problem during calibration: " + ex);
 		}
@@ -250,8 +294,8 @@ public class StepperPanel extends JPanel implements ChangeListener {
 	{
 		try {
 			motor.homeReset(externalSpeedSlider.getValue());
-			positionRequest.setValue(0);
-			positionActual.setValue(0);
+			reqUpdate(0);
+			actUpdate(0);
 			torque.setSelected(true);
 		} catch (Exception ex) {
 			JOptionPane.showMessageDialog(null, "Could not home motor: " + ex);
@@ -315,8 +359,8 @@ public class StepperPanel extends JPanel implements ChangeListener {
 	private void setDisplayPosition() throws IOException {
 		int position = motor.getPosition();
 		if (monitoring)
-			positionRequest.setValue(position);
-		positionActual.setValue(position);
+			reqUpdate(position);
+		actUpdate(position);
 		if (position == positionRequest.getValue())
 			moving = false;
 	}	
@@ -326,7 +370,9 @@ public class StepperPanel extends JPanel implements ChangeListener {
 	 * @throws IOException
 	 */
 	private void seekToSelectedPosition() throws IOException {
-		motor.seek(externalSpeedSlider.getValue(), positionRequest.getValue());
+		int pos = positionRequest.getValue();
+		motor.seek(externalSpeedSlider.getValue(), pos);
+		reqUpdate(pos);
 		torque.setSelected(true);
 		moving = true;
 		startUpdates();
@@ -380,8 +426,9 @@ public class StepperPanel extends JPanel implements ChangeListener {
 
 	public void loadPosition() throws IOException {
 		monitor(false);
-		positionActual.setValue(motor.getPosition());
-		positionRequest.setValue(motor.getPosition());
+		int position = motor.getPosition();
+		actUpdate(position);
+		reqUpdate(position);
 		torque.setSelected(true);
 	}
 	

@@ -38,6 +38,7 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 	private ExtruderPanel extruderPanel;
 	
 	JSlider speedX, speedY, speedZ;
+	private JLabel xS, yS, zS;
 	JCheckBox lockXYZSpeed;
 	
 	StepperPanel motorX, motorY, motorZ;
@@ -142,8 +143,12 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 		speedX.setPaintTicks(true);
 		speedX.setPaintLabels(true);
 		c.gridx = 0;
-		c.gridy = 2;
+		c.gridy = 3;
 		panel.add(speedX, c);
+		xS = new JLabel();
+		xS.setHorizontalAlignment(SwingConstants.CENTER);
+		c.gridy = 2;
+		panel.add(xS, c);
 		
 		speedY = new JSlider(SwingConstants.VERTICAL, 1, 255, intialSpeed);
 		speedY.addChangeListener(this);
@@ -151,8 +156,13 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 		speedY.setMinorTickSpacing(10);
 		speedY.setPaintTicks(true);
 		speedX.setPaintLabels(true);
+		c.gridy = 3;
 		c.gridx = 1;
 		panel.add(speedY, c);
+		yS = new JLabel();
+		yS.setHorizontalAlignment(SwingConstants.CENTER);
+		c.gridy = 2;
+		panel.add(yS, c);
 		
 		speedZ = new JSlider(SwingConstants.VERTICAL, 1, 255, intialSpeed);
 		speedZ.addChangeListener(this);
@@ -160,12 +170,17 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 		speedZ.setMinorTickSpacing(10);
 		speedZ.setPaintTicks(true);
 		c.gridx = 2;
+		c.gridy = 3;
 		panel.add(speedZ, c);
+		zS = new JLabel();
+		zS.setHorizontalAlignment(SwingConstants.CENTER);
+		c.gridy = 2;
+		panel.add(zS, c);
 		
 		lockXYZSpeed = new JCheckBox("Lock X/Y/Z speed", true);
 		lockXYZSpeed.addChangeListener(this);
 		c.gridx = 0;
-		c.gridy = 3;
+		c.gridy = 4;
 		c.gridwidth = 3;
 		panel.add(lockXYZSpeed, c);
 		
@@ -216,6 +231,7 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 			}
 		});
 		buttons.add(lineButton);
+		updateSpeedBoxes();
 		
 		//JButton squareButton = new JButton("Square Test");
 		//squareButton.addActionListener(new ActionListener() {
@@ -233,6 +249,16 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 		//});
 		//buttons.add(circleButton);
 pack();
+	}
+	
+	private void updateSpeedBoxes()
+	{
+		xS.setText(String.valueOf(speedX.getValue()));
+		xS.repaint();
+		yS.setText(String.valueOf(speedY.getValue()));
+		yS.repaint();
+		zS.setText(String.valueOf(speedZ.getValue()));
+		zS.repaint();
 	}
 
 	public void stateChanged(ChangeEvent evt) {
@@ -256,6 +282,7 @@ pack();
 							speedY.setValue(speedZ.getValue());
 						}
 					}
+					updateSpeedBoxes();
 					motorX.updateSpeed();
 					motorY.updateSpeed();
 					motorZ.updateSpeed();
