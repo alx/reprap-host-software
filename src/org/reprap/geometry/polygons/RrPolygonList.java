@@ -480,6 +480,43 @@ public class RrPolygonList
 			contains.add(contain);
 		}
 		
+		// Eliminate anything in a list that is contained by something else in the list
+		// (very Bertrand Russell...)
+		
+//		for(i = 0; i < size(); i++)
+//		{		
+//			if(contains.get(i) != null)
+//			{
+//				List top_list = (ArrayList)contains.get(i);
+//				for(k = 0; k < top_list.size(); k++)
+//				{
+//					if(top_list.get(k) != null)
+//					{
+//						int top_entry = ((Integer)top_list.get(k)).intValue();
+//						if(contains.get(top_entry) != null)
+//						{
+//							List bottom_list = (ArrayList)contains.get(top_entry);
+//							for(int k2 = 0; k2 < bottom_list.size(); k2++)
+//							{
+//								int bottom_entry = ((Integer)bottom_list.get(k2)).intValue();
+//								for(int k3 = 0; k3 < top_list.size(); k3++)
+//								{
+//									int m3 = ((Integer)top_list.get(k3)).intValue();
+//									if(m3 == bottom_entry)
+//										top_list.set(k3, null);
+//								}
+//							}
+//						}
+//					}
+//				}
+//				for(k = top_list.size() - 1; k >= 0; k--)
+//				{
+//					if(top_list.get(k) == null)
+//						top_list.remove(k);
+//				}
+//			}
+//		}
+		
 		// Starting with polygons that just contain one other, take the difference.
 		// Then go on to a contents of two, and so on.
 		// Remove any polygon that has been subtracted from further consideration.
@@ -524,8 +561,10 @@ public class RrPolygonList
 			if(contains.get(i) != null)
 					result = RrCSG.union(result, (RrCSG)csgPols.get(i));
 		}
-		
-		return new RrCSGPolygon(result, box.scale(1.1), polygon(0).getAttributes());		
+		RrCSGPolygon res = new RrCSGPolygon(result, box.scale(1.1), polygon(0).getAttributes());
+		//res.divide(0.0001, 0);
+		//RrGraphics g2 = new RrGraphics(res, true);
+		return res;		
 	}
 	
 	/**
