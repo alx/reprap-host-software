@@ -111,6 +111,28 @@ public class LinePrinter {
 		currentY = endY;
 	}
 	
+	/**
+	 * Correct a speed change (in (0, 1])for the fact that it's click times that get
+	 * send to the controller.
+	 * @param oldSpeed
+	 * @param factor
+	 * @return
+	 */
+	
+	public static int speedFix(int oldSpeed, double factor)
+	{
+		if(factor <= 0 || factor > 1)
+			return oldSpeed;
+		
+		double x = 256 + (oldSpeed - 256)/factor;
+		int speed = (int)Math.round(x);
+		if(speed < 1)
+			speed = 1;
+		if(speed > 255)
+			speed = 255;
+		return speed;		
+	}
+	
 
 	/**
 	 * Correct the speed for the angle of the line to the axes
@@ -124,7 +146,7 @@ public class LinePrinter {
 		if(length == 0)
 			return movementSpeed;
 		double longSide = Math.max(Math.abs(dx), Math.abs(dy));
-		return (int)Math.round((movementSpeed*longSide)/length);
+		return speedFix(movementSpeed, longSide/length);
 	}
 
 	/**
