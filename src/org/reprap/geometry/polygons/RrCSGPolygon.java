@@ -853,7 +853,7 @@ public class RrCSGPolygon
 			break;
 			
 		default:
-			System.err.println("RrPolygonList.hatch(): The atan2 function doesn't seem to work...");
+			System.err.println("RrCSGPolygon.hatch(): The atan2 function doesn't seem to work...");
 		}
 		
 		RrHalfPlane hatcher = new 

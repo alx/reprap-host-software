@@ -89,6 +89,206 @@ class chPair
 }
 
 /**
+ * tree - class to hold lists to build a containment tree
+ * (that is a representation of which polygon is inside which,
+ * like a Venn diagram).
+ */
+class treeList
+{
+	/**
+	 * Index of this polygon in the list
+	 */
+	private int index;
+	
+	/**
+	 * The polygons inside this one
+	 */
+	private List<treeList> children;
+	
+	/**
+	 * The polygon that contains this one
+	 */
+	private treeList parent;
+	
+	/**
+	 * Constructor builds from a polygon index
+	 * @param i
+	 */
+	treeList(int i)
+	{
+		index = i;
+		children = null;
+		parent = null;
+	}
+	
+	/**
+	 * Add a polygon as a child of this one
+	 * @param t
+	 */
+	public void addChild(treeList t)
+	{
+		if(children == null)
+			children = new ArrayList<treeList>();
+		children.add(t);
+	}
+	
+	/**
+	 * Get the ith polygon child of this one
+	 * @param i
+	 * @return
+	 */
+	public treeList getChild(int i)
+	{
+		if(children == null)
+		{
+			System.err.println("treeList: attempt to get child from null list!");
+			return null;
+		}
+		return children.get(i);
+	}
+	
+	/**
+	 * Get the parent
+	 * @return
+	 */
+	public treeList getParent()
+	{
+		return parent;
+	}
+	
+	/**
+	 * How long is the list (if any)
+	 * @return
+	 */
+	public int size()
+	{
+		if(children != null)
+			return children.size();
+		else
+			return 0;
+	}
+	
+	/**
+	 * Printable form
+	 */
+	public String toString()
+	{
+		String result;
+		
+		if(parent != null)
+			result = Integer.toString(index) + "(^" + parent.index + "): ";
+		else
+			result = Integer.toString(index) + "(^null): ";
+		
+		for(int i = 0; i < size(); i++)
+		{
+			result += getChild(i).polygonIndex() + " ";
+		}
+		result += "\n";
+		for(int i = 0; i < size(); i++)
+		{
+			result += getChild(i).toString();
+		}
+		return result;
+	}
+	
+	
+	/**
+	 * Remove every instance of polygon t from the list
+	 * @param t
+	 */
+	public void remove(treeList t)
+	{		
+		for(int i = size() - 1; i >= 0; i--)
+		{
+			if(getChild(i) == t)
+			{
+				children.remove(i);
+			}
+		}
+	}
+	
+
+	/**
+	 * Recursively walk the tree from here to find polygon target.
+	 * @param node
+	 * @param target
+	 * @return
+	 */
+	public treeList walkFind(int target)
+	{
+		if(polygonIndex() == target)
+			return this;
+				
+		for(int i = 0; i < size(); i++)
+		{
+			treeList result = getChild(i).walkFind(target);
+			if(result != null)
+				return result;
+		}
+		
+		return null;
+	}
+	
+	/**
+	 * Walk the tree building a CSG expression to represent all
+	 * the polygons as one thing.
+	 * @param csgPols
+	 * @return
+	 */
+	public RrCSG buildCSG(List<RrCSG> csgPols)
+	{
+		if(size() == 0)
+			return csgPols.get(index);
+		
+		RrCSG offspring = RrCSG.nothing();
+		
+		for(int i = 0; i < size(); i++)
+		{
+			treeList iEntry = getChild(i);
+			RrCSG iCSG = iEntry.buildCSG(csgPols);
+			offspring = RrCSG.union(offspring, iCSG);
+		}
+		
+		if(index < 0)
+			return offspring;
+		else
+			return RrCSG.difference(csgPols.get(index), offspring);
+	}
+	
+	/**
+	 * Do a depth-first walk setting parents.  Any node that appears
+	 * in more than one list should have the deepest possible parent 
+	 * set as its parent, which is what we want.
+	 * @param node
+	 */
+	public void setParents()
+	{
+		treeList child;
+		int i;
+		for(i = 0; i < size(); i++)
+		{
+			child = getChild(i);
+			child.parent = this;
+		}
+		for(i = 0; i < size(); i++)
+		{
+			child = getChild(i);
+			child.setParents();
+		}		
+	}
+	
+	/**
+	 * get the index of the polygon
+	 * @return
+	 */
+	public int polygonIndex()
+	{
+		return index;
+	}
+}
+
+/**
  * RrPolygonList: A collection of 2D polygons
  * List of polygons class.  This too maintains a maximum enclosing rectangle.
  */
@@ -393,9 +593,9 @@ public class RrPolygonList
 	 * @param csgPols
 	 * @return true if the polygon is inside the CSG polygon, false if otherwise
 	 */
-	private boolean inside(int i, int j, List csgPols)
+	private boolean inside(int i, int j, List<RrCSG> csgPols)
 	{
-		RrCSG exp = (RrCSG)csgPols.get(j);
+		RrCSG exp = csgPols.get(j);
 		Rr2Point p = polygon(i).point(0);
 		boolean a = (exp.value(p) <= 0);
 		p = polygon(i).point(polygon(i).size()/2);
@@ -450,118 +650,81 @@ public class RrPolygonList
 	}
 	
 	/**
-	 * Take a list of CSG polygons, classify each as being inside other(s)
+	 * Take a list of CSG expressions, each one corresponding with the entry of the same 
+	 * index in this class, classify each as being inside other(s)
 	 * (or not), and hence form a single CSG expression representing them all.
 	 * @param csgPols
 	 * @param polAttributes
 	 * @return single CSG expression based on csgPols list 
 	 */
-	private RrCSGPolygon resolveInsides(List csgPols)
+	private RrCSGPolygon resolveInsides(List<RrCSG> csgPols)
 	{
-		int i, j, k, m;
+		int i, j;
+		
+		treeList universe = new treeList(-1);
+		universe.addChild(new treeList(0));
 		
 		// For each polygon construct a list of all the others that
 		// are inside it (if any).
 		
-		List contains = new ArrayList();
-		for(i = 0; i < size(); i++)
+		for(i = 0; i < size() - 1; i++)
 		{
-			List contain = new ArrayList();
-			for(j = 0; j < size(); j++)
+			treeList isList = universe.walkFind(i);
+			if(isList == null)
 			{
-				if(j != i)
-				{
-					if(inside(j, i, csgPols))
-					{
-						contain.add(new Integer(j));
-					}
-				}
+				isList = new treeList(i);
+				universe.addChild(isList);
 			}
-			contains.add(contain);
-		}
-		
-		// Eliminate anything in a list that is contained by something else in the list
-		// (very Bertrand Russell...)
-		
-//		for(i = 0; i < size(); i++)
-//		{		
-//			if(contains.get(i) != null)
-//			{
-//				List top_list = (ArrayList)contains.get(i);
-//				for(k = 0; k < top_list.size(); k++)
-//				{
-//					if(top_list.get(k) != null)
-//					{
-//						int top_entry = ((Integer)top_list.get(k)).intValue();
-//						if(contains.get(top_entry) != null)
-//						{
-//							List bottom_list = (ArrayList)contains.get(top_entry);
-//							for(int k2 = 0; k2 < bottom_list.size(); k2++)
-//							{
-//								int bottom_entry = ((Integer)bottom_list.get(k2)).intValue();
-//								for(int k3 = 0; k3 < top_list.size(); k3++)
-//								{
-//									int m3 = ((Integer)top_list.get(k3)).intValue();
-//									if(m3 == bottom_entry)
-//										top_list.set(k3, null);
-//								}
-//							}
-//						}
-//					}
-//				}
-//				for(k = top_list.size() - 1; k >= 0; k--)
-//				{
-//					if(top_list.get(k) == null)
-//						top_list.remove(k);
-//				}
-//			}
-//		}
-		
-		// Starting with polygons that just contain one other, take the difference.
-		// Then go on to a contents of two, and so on.
-		// Remove any polygon that has been subtracted from further consideration.
-		
-		int leng = 0;
-		boolean notFinished = true;
-		while(notFinished)
-		{
-			notFinished = false;
-			leng++;
-			for(i = 0; i < size(); i++)
+
+			for(j = i + 1; j < size(); j++)
 			{
-				if(contains.get(i) != null)
+				treeList jsList = universe.walkFind(j);
+				if(jsList == null)
 				{
-					List contain = (ArrayList)contains.get(i);
-					int ct = activeCount(contain);
-					if(ct >= leng)
-						notFinished = true;
-					if(ct == leng)
-					{
-						RrCSG base = (RrCSG)csgPols.get(i);
-						for(k = 0; k < contain.size(); k++)
-						{
-							if(contain.get(k) != null)
-							{
-								m = ((Integer)contain.get(k)).intValue();
-								base = RrCSG.difference(base, (RrCSG)csgPols.get(m));
-								getRidOf(m, contains);
-							}
-						}
-						csgPols.set(i, base);
-					}
+					jsList = new treeList(j);
+					universe.addChild(jsList);
 				}
+
+
+				if(inside(j, i, csgPols))  // j inside i?
+					isList.addChild(jsList);
+
+				if(inside(i, j, csgPols))  // i inside j?
+					jsList.addChild(isList);						
 			}
 		}
 		
-		// Union what's left
+		// Set all the parent pointers
 		
-		RrCSG result = RrCSG.nothing();
+		universe.setParents();
+		//System.out.println("---\n" + universe.toString() + "\n---\n");
+		
+		// Eliminate each leaf from every part of the tree except the node immediately above itself
+		
 		for(i = 0; i < size(); i++)
-		{
-			if(contains.get(i) != null)
-					result = RrCSG.union(result, (RrCSG)csgPols.get(i));
+		{		
+			treeList isList = universe.walkFind(i);
+			if(isList == null)
+				System.err.println("RrPolygonList.resolveInsides() - can't find list for polygon " + i);
+			treeList parent = isList.getParent();
+			if(parent != null)
+			{
+				parent = parent.getParent();
+				while(parent != null)
+				{
+					parent.remove(isList);
+					parent = parent.getParent();
+				}
+			}
 		}
-		RrCSGPolygon res = new RrCSGPolygon(result, box.scale(1.1), polygon(0).getAttributes());
+		//System.out.println("---\n" + universe.toString() + "\n---\n");
+		
+		// We now have a tree of containment.  universe is the root.
+		// Walk the tree turning it into a single CSG expression
+		
+		RrCSG expression = universe.buildCSG(csgPols);
+		
+		RrCSGPolygon res = new RrCSGPolygon(expression, box.scale(1.1), polygon(0).getAttributes());
 		//res.divide(0.0001, 0);
 		//RrGraphics g2 = new RrGraphics(res, true);
 		return res;		

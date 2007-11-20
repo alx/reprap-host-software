@@ -6,11 +6,11 @@ import org.reprap.Attributes;
 import org.reprap.Extruder;
 
 public class RrCSGPolygonList {
-	List csgPolygons;
+	List<RrCSGPolygon> csgPolygons;
 	
 	public RrCSGPolygonList()
 	{
-		csgPolygons = new ArrayList();
+		csgPolygons = new ArrayList<RrCSGPolygon>();
 	}
 	
 	public void add(RrCSGPolygon c)
@@ -20,7 +20,7 @@ public class RrCSGPolygonList {
 	
 	public RrCSGPolygon get(int i)
 	{
-		return (RrCSGPolygon)csgPolygons.get(i);
+		return csgPolygons.get(i);
 	}
 	
 	public int size()
