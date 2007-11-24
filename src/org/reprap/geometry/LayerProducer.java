@@ -12,6 +12,7 @@ import org.reprap.Attributes;
 import org.reprap.Preferences;
 import org.reprap.ReprapException;
 import org.reprap.geometry.polygons.*;
+import org.reprap.devices.pseudo.LinePrinter;
 import org.reprap.utilities.Debug;
 
 /**
@@ -71,8 +72,8 @@ class segmentSpeeds
 	
 	int speed(int currentSpeed, double angFac)
 	{
-		return (int)Math.round((double)currentSpeed*(1 - 
-				0.5*(1 + ca)*angFac));
+		double fac = (1 - 0.5*(1 + ca)*angFac);
+		return LinePrinter.speedFix(currentSpeed, fac);
 	}
 }
 
@@ -245,7 +246,7 @@ public class LayerProducer {
 
 			if(ss.plotMiddle)
 			{
-				int straightSpeed = (int)Math.round((double)currentSpeed*(1 - 
+				int straightSpeed = LinePrinter.speedFix(currentSpeed, (1 - 
 						printer.getExtruder().getAngleSpeedFactor()));
 				printer.setSpeed(straightSpeed);
 				printer.printTo(ss.p2.x(), ss.p2.y(), z, false);
@@ -335,8 +336,12 @@ public class LayerProducer {
 		
 		Attributes att = p.getAttributes();
 		int baseSpeed = att.getExtruder(printer.getExtruders()).getXYSpeed();
-		int outlineSpeed = (int)Math.round(baseSpeed*att.getExtruder(printer.getExtruders()).getOutlineSpeed());
-		int infillSpeed = (int)Math.round(baseSpeed*att.getExtruder(printer.getExtruders()).getInfillSpeed());
+		int outlineSpeed = LinePrinter.speedFix(baseSpeed, 
+				att.getExtruder(printer.getExtruders()).getOutlineSpeed());
+			//(int)Math.round(baseSpeed*att.getExtruder(printer.getExtruders()).getOutlineSpeed());
+		int infillSpeed = LinePrinter.speedFix(baseSpeed, 
+				att.getExtruder(printer.getExtruders()).getInfillSpeed());
+			//(int)Math.round(baseSpeed*att.getExtruder(printer.getExtruders()).getInfillSpeed());
 		
 		printer.selectExtruder(att);
 		
