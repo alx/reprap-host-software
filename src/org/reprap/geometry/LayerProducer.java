@@ -253,11 +253,11 @@ public class LayerProducer {
 			}
 
 			printer.setSpeed(ss.speed(currentSpeed, printer.getExtruder().getAngleSpeedFactor()));
-			printer.printTo(ss.p3.x(), ss.p3.y(), z, turnOff);
+			printer.printTo(ss.p3.x(), ss.p3.y(), z, true);
 			pos = ss.p3;
 		// Leave speed set for the start of the next line.
 		} else
-			printer.printTo(first.x(), first.y(), z, turnOff);
+			printer.printTo(first.x(), first.y(), z, true);
 	}
 
 	/**

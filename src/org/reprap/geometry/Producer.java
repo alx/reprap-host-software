@@ -43,8 +43,20 @@ public class Producer {
 		reprap.setPreviewer(preview);
 		preview.setMachine(reprap);
 		bld = builder;
+
+		//		Original hatch vectors
 		oddHatchDirection = new RrHalfPlane(new Rr2Point(0.0, 0.0), new Rr2Point(1.0, 1.0));
 		evenHatchDirection = new RrHalfPlane(new Rr2Point(0.0, 1.0), new Rr2Point(1.0, 0.0));
+		
+//		//		Vertical hatch vector
+//		oddHatchDirection = new RrHalfPlane(new Rr2Point(0.0, 0.0), new Rr2Point(0.0, 1.0));
+//		evenHatchDirection = new RrHalfPlane(new Rr2Point(0.0, 1.0), new Rr2Point(0.0, 0.0));
+	
+//		//		Horizontal hatch vector
+//		oddHatchDirection = new RrHalfPlane(new Rr2Point(0.0, 0.0), new Rr2Point(1.0, 0.0));
+//		evenHatchDirection = new RrHalfPlane(new Rr2Point(1.0, 0.0), new Rr2Point(0.0, 0.0));
+		
+
 	}
 	
 //	/**
@@ -179,18 +191,19 @@ public class Producer {
 		
 		// A "warmup" segment to get things in working order
 		if (!subtractive) {
-			Debug.d("Printing warmup segments, moving to (0,5)");
+			
+			Debug.d("Printing warmup segments, moving to (5,5)");
+			reprap.setSpeed(reprap.getExtruder().getXYSpeed());
+			reprap.moveTo(5, 5, 0, false, false);
+			Debug.d("Printing warmup segments, printing to (5,50)");
+			reprap.printTo(5, 50, 0, false);
+			Debug.d("Printing warmup segments, printing to (7,50)");
+			reprap.printTo(7, 50, 0, false);
+			Debug.d("Printing warmup segments, printing to (7,5)");
+			reprap.printTo(7, 5, 0, true);
+			Debug.d("Warmup complete");
 			reprap.setSpeed(reprap.getFastSpeed());
-			reprap.moveTo(0, 5, reprap.getExtruder().getExtrusionHeight(), true, false);
-			// Run at about 50% of max - give it a nice, long time to squirt.
-			reprap.setSpeed(reprap.getExtruder().getXYSpeed()/2);
-			System.out.println("Printing warmup segments, printing to (0,50)");
-			reprap.printTo(0, 50, reprap.getExtruder().getExtrusionHeight(), false);
-			System.out.println("Printing warmup segments, printing to (2,50)");
-			reprap.printTo(2, 50, reprap.getExtruder().getExtrusionHeight(), false);
-			Debug.d("Printing warmup segments, printing to (2,5)");
-			reprap.printTo(2, 5, reprap.getExtruder().getExtrusionHeight(), true);
-			reprap.setSpeed(reprap.getFastSpeed());
+			
 		}
 		
 		// This should now split off layers one at a time
@@ -222,10 +235,15 @@ public class Producer {
 			reprap.setZManual(startZ);
 		} else {
 			// Normal constructive fabrication, start at the bottom and work up.
+			
 			// Note that we start extruding one layer off the baseboard...
-			startZ = reprap.getExtruder().getExtrusionHeight();
+			// startZ = reprap.getExtruder().getExtrusionHeight();
+			
+			startZ = 0;
 			endZ = zMax;
+			
 			stepZ = reprap.getExtruder().getExtrusionHeight();
+		
 		}
 		
 		for(double z = startZ; subtractive ? z > endZ : z < endZ; z += stepZ) {
