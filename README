@@ -6,8 +6,9 @@ Author: Jonathan Marsden
 
 Version: RELEASE
 
-This is a very early attempt at a quick package of the Reprap host
-software.  It should run on Linux, Windows, and Macintosh.
+This is an early attempt at a quick package of the Reprap host
+software.  It should run on Linux, Windows, and Macintosh.  Several
+bugs have been fixed since the last release, though plenty remain!
 
 DOCUMENTATION:
 
