@@ -39,7 +39,7 @@ public class Preferences {
 	private static final int grid = 100;             // Click outline polygons to a...
 	private static final double gridRes = 1.0/grid;  // ...10 micron grid
 	private static final double lessGridSquare = gridRes*gridRes*0.01;  // Small squared size of a gridsquare
-	private static final double tiny = 1.0e-10;      // A small number
+	private static final double tiny = 1.0e-12;      // A small number
 	private static final double swell = 1.01;        // Quad tree swell factor
 	private static final double machineResolution = 0.1; // RepRap step size in mm - should 
 	                                                     // derive this from Axis1Scale and Axis2Scale

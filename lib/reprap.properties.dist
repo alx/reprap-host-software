@@ -18,6 +18,7 @@ Extruder1_OffsetY(mm)=0
 Extruder1_ExtrusionSize(mm)=0.7
 Extruder0_CoolingPeriod(s)=40
 ZAxisAddress=4
+MovementSpeedZ(0..255)=212
 Debug=false
 Extruder1_InfillSpeed(0..1)=1.0
 Extruder1_Rz(ohms)=29000

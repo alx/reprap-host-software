@@ -63,25 +63,28 @@ import org.reprap.gui.STLObject;
 import org.reprap.Attributes;
 import org.reprap.Preferences;
 import org.reprap.devices.NullExtruder;
+import org.reprap.utilities.*;
 
 // Small class to hold line segments and the quads in which their ends lie
 
 class LineSegment
-{
+{	
 	/**
-	 * 
+	 * The ends of the line segment
 	 */
 	public Rr2Point a, b;
 	
 	/**
-	 * 
+	 * The quads that the ends lie in
 	 */
 	public STLSlice qa, qb;
 	
 	/**
-	 * 
+	 * The attribute (i.e. RepRap material) of the segment.
 	 */
 	public Attributes att;
+	
+
 	
 	/**
 	 * Constructor takes two intersection points with an STL triangle edge.
@@ -98,6 +101,11 @@ class LineSegment
 		qa = null;
 		qb = null;
 	}
+	
+	public String toString()
+	{
+		return "edge ends: (" + a.toString() + ") to (" + b.toString() + ")"; 
+	}
 
 	/**
 	 * A quad contains (we hope...) the ends of two segments - record that
@@ -106,28 +114,22 @@ class LineSegment
 	public static void setQuad(STLSlice q)
 	{
 		if(q.edges().size() != 2)
-			System.err.println("LineSegment.setQuad(): wrong edge count: " + 
-					q.edges().size());
+			Debug.d("LineSegment.setQuad(): dud edge count: " + q.edges().size());
+		
 		int count = 0;
-		if(q.box().point_relative(q.segment(0).a) == 0)
+		
+		for(int i = 0; i < q.edges().size(); i++)
 		{
-			q.segment(0).qa = q;
-			count++;
-		}
-		if(q.box().point_relative(q.segment(0).b) == 0)
-		{
-			q.segment(0).qb = q;
-			count++;
-		}
-		if(q.box().point_relative(q.segment(1).a) == 0)
-		{
-			q.segment(1).qa = q;
-			count++;
-		}
-		if(q.box().point_relative(q.segment(1).b) == 0)
-		{
-			q.segment(1).qb = q;
-			count++;
+			if(q.box().point_relative(q.segment(i).a) == 0)
+			{
+				q.segment(i).qa = q;
+				count++;
+			}
+			if(q.box().point_relative(q.segment(i).b) == 0)
+			{
+				q.segment(i).qb = q;
+				count++;
+			}
 		}
 		
 		if(count != 2)
@@ -135,6 +137,31 @@ class LineSegment
 	}
 }
 
+/**
+ * Small holder for quads and points as they get visited
+ * @author ensab
+ *
+ */
+class trackPolygon
+{
+	public STLSlice nextQ;
+	public LineSegment nextE;
+	public Rr2Point here;
+	
+	public trackPolygon()
+	{
+		nextQ = null;
+		nextE = null;
+		here = null;
+	}
+}
+
+/**
+ * Very small class to hold attributes (i.e. material made from) and transforms for
+ * the objects made from them.
+ * @author ensab
+ *
+ */
 class AandT
 {
 	public Attributes att;
@@ -147,9 +174,14 @@ class AandT
 	}
 }
 
+/**
+ * list of materials and transforms of the objects made from them.
+ * @author ensab
+ *
+ */
 class MaterialLists
 {
-	private ArrayList<AandT> [] ats;
+	private ArrayList<AandT> ats[];
 	int extruderCount;
 	
 	public MaterialLists()
@@ -164,7 +196,7 @@ class MaterialLists
 			System.err.println("MaterialLists(): " + ex.toString());
 		}
 		
-		ats = new ArrayList[extruderCount];
+		ats = new ArrayList[extruderCount]; // Javanonsense: Why can't this be ats = new ArrayList<AandT>[extruderCount]; then?
 		for(int i = 0; i < extruderCount; i++)
 			ats[i] = new ArrayList<AandT>();
 	}
@@ -187,19 +219,27 @@ class MaterialLists
 }
 
 /**
- *
+ * Class to hold all the STL objects in the scene and to compute slices through them.
+ * The slices are computed by dividing a rectangle (box) in a quad tree down to the point
+ * where each quad contains two ends of different line segments.  These ends are then assumed
+ * to join together.
  */
 public class STLSlice 
 {
 	/**
-	 * The STL objects in 3D
+	 * Used to make unbiased but arbitrary decisions
 	 */
-	private List shapeList;
+	private static Random rangen = new Random(739127);
 	
 	/**
-	 * List of the edges with points in this one
+	 * The STL objects in 3D
 	 */
-	private List edges;
+	private List<STLObject> shapeList;
+	
+	/**
+	 * List of the edges with points in this quad
+	 */
+	private List<LineSegment> edges;
 	
 	/**
 	 * Its enclosing box
@@ -209,27 +249,32 @@ public class STLSlice
 	/**
 	 * Quad tree division - NW, NE, SE, SW
 	 */
-	private STLSlice q1,q2,q3,q4;
+	private STLSlice q1, q2, q3, q4;
+	
+	/**
+	 * Lists of the x coordinates of the segment endpoints in this quad
+	 */
+	private ArrayList<Double> xCoords;
+	
+	/**
+	 * Lists of the y coordinates of the segment endpoints in this quad
+	 */	
+	private ArrayList<Double> yCoords;
 	
 	/**
 	 * Squared diagonal of the smallest box to go to 
 	 */
-	private double resolution_2;
+	private static double resolution_2 = Preferences.tiny();
 	
 	/**
 	 * Swell factor for division
 	 */
-	private double sFactor;
+	private static double sFactor = 1;
 	
 	/**
-	 * Flag to indicate the quad's been dealt with 
+	 * All the STL triangles and part-triangles below slice-height, Z 
 	 */
-	private boolean visited;
-	
-	/**
-	 * All the STL triangles and part-triangles below Z 
-	 */
-	private List triangles;
+	private List<Point3d> triangles;
 	
 	/**
 	 * Made from the below-Z triangles 
@@ -240,41 +285,48 @@ public class STLSlice
 	 * The lists of parts sorted by material
 	 */
 	private MaterialLists mls;
+	/**
+	 * For debugging
+	 */
+	RrGraphics qp;
 	
 	/**
-	 * Just initialises a few things.
+	 * Just initialises a few things, or cleans the data structure
+	 * between slices.
 	 */
 	private void cleanUp()
 	{
-		edges = new ArrayList();
+		edges = new ArrayList<LineSegment>();
 		q1 = null;
 		q2 = null;
 		q3 = null;
 		q4 = null;
+		xCoords = new ArrayList<Double>();
+		yCoords = new ArrayList<Double>();
 		box = new RrBox();
-		visited = false;
-		sFactor = 1;
-		resolution_2 = Preferences.tiny();
-		triangles = new ArrayList();
+		triangles = new ArrayList<Point3d>();
 	}
 	
 	/**
 	 * This constructor records the list of STL objects. 
 	 * @param s
 	 */
-	public STLSlice(List s)
+	public STLSlice(List<STLObject> s)
 	{
 		cleanUp();
 		shapeList = s;
 		mls = new MaterialLists();
+		
+		// For each object, record its material and transform
+		
 		for(int i = 0; i < shapeList.size(); i++)
 		{
-			STLObject stl = (STLObject)shapeList.get(i);
+			STLObject stl = shapeList.get(i);
 			Transform3D trans = stl.getTransform();
 			BranchGroup bg = stl.getSTL();
-			java.util.Enumeration enumKids = bg.getAllChildren( );
+			java.util.Enumeration enumKids = bg.getAllChildren();
 			
-	        while(enumKids.hasMoreElements( ))
+	        while(enumKids.hasMoreElements())
 	        {
 	        	Object ob = enumKids.nextElement();
 	        	
@@ -289,27 +341,33 @@ public class STLSlice
 	}
 	
 	/**
-	 * Add a new line segment to the list.
+	 * This quad is a leaf if it has no children; just check the first.
+	 * @return
+	 */
+	public boolean leaf()
+	{
+		return q1 == null;
+	}
+	
+	/**
+	 * Add a new line segment to the list.  Also add its end coordinates to
+	 * the lists of those.
 	 * @param p
 	 * @param q
 	 */
 	public void add(Rr2Point p, Rr2Point q, Attributes att)
 	{
+		xCoords.add(new Double(p.x()));
+		xCoords.add(new Double(q.x()));
+		yCoords.add(new Double(p.y()));
+		yCoords.add(new Double(q.y()));
+		
 		edges.add(new LineSegment(p, q, att));
 	}
 	
 	/**
-	 * Set the resolution to the square of a length.
-	 * @param r
-	 */
-	public void setResolution(double r)
-	{
-		resolution_2 = r*r;
-	}
-	
-	/**
-	 * Return the contents
-	 * @return contents of the STL slice
+	 * Return the box
+	 * @return 
 	 */
 	public RrBox box()
 	{
@@ -319,11 +377,15 @@ public class STLSlice
 	/**
 	 * @return the edges of the STL slice
 	 */
-	public List edges()
+	public List<LineSegment> edges()
 	{
 		return edges;
 	}
 	
+	/**
+	 * get the quad children
+	 * @return
+	 */
 	public STLSlice c_1()
 	{
 		return q1;
@@ -336,7 +398,6 @@ public class STLSlice
 	{
 		return q3;
 	}
-	
 	public STLSlice c_4()
 	{
 		return q4;
@@ -348,13 +409,15 @@ public class STLSlice
 	 */
 	public LineSegment segment(int i)
 	{
-		return (LineSegment)edges.get(i);
+		return edges.get(i);
 	}
 	
-	
+	/**
+	 * Get the triangulation below the current slice level.
+	 * @return
+	 */
 	public BranchGroup getBelow()
 	{
-		//return null;
 		return below;
 	}
 	
@@ -371,7 +434,9 @@ public class STLSlice
 	}
 	
 	/**
-	 * Add the edge where the plane z cuts a triangle (if it does)
+	 * Add the edge where the plane z cuts the triangle (p, q, r) (if it does).
+	 * Also update the triangulation of the object below the current slice used
+	 * for the simulation window.
 	 * @param p
 	 * @param q
 	 * @param r
@@ -392,37 +457,52 @@ public class STLSlice
 		
 		switch(pat)
 		{
+		// All above
 		case 0:
 			return;
+			
+		// All below
 		case 7:
 			triangles.add(new Point3d(p));
 			triangles.add(new Point3d(q));
 			triangles.add(new Point3d(r));
 			return;
+			
+		// q, r below, p above	
 		case 6:
 			twoBelow = true;
+		// p below, q, r above
 		case 1:
 			odd = p;
 			even1 = q;
 			even2 = r;
 			break;
+			
+		// p, r below, q above	
 		case 5:
 			twoBelow = true;
+		// q below, p, r above	
 		case 2:
 			odd = q;
 			even1 = r;
 			even2 = p;
 			break;
+
+		// p, q below, r above	
 		case 3:
 			twoBelow = true;
+		// r below, p, q above	
 		case 4:
 			odd = r;
 			even1 = p;
 			even2 = q;
 			break;
+			
 		default:
 			System.err.println("addEdge(): the | function doesn't seem to work...");
 		}
+		
+		// Work out the intersection line segment (e1 -> e2) between the z plane and the triangle
 		
 		even1.sub((Tuple3d)odd);
 		even2.sub((Tuple3d)odd);
@@ -435,13 +515,15 @@ public class STLSlice
 		Point3d e3_2 = new Point3d(e2.x(), e2.y(), z);
 		e2 = new Rr2Point(toGrid(e2.x()), toGrid(e2.y()));
 		
-		
+		// Too short?
 		if(!Rr2Point.same(e1, e2, Preferences.lessGridSquare()))
 		{
 			add(e1, e2, att);
 			box.expand(e1);
 			box.expand(e2);
 		}
+		
+		// Sort out the bits of triangle to add to the shape under the z plane
 		
 		if(twoBelow)
 		{
@@ -530,7 +612,7 @@ public class STLSlice
 	 * @param res
 	 * @param fac
 	 */
-	private STLSlice(List pgl, RrBox b, double res, double fac)
+	private STLSlice(List<LineSegment> pgl, RrBox b)
 	{
 		edges = pgl;
 		box = b;
@@ -538,28 +620,128 @@ public class STLSlice
 		q2 = null;
 		q3 = null;
 		q4 = null;
-		resolution_2 = res;
-		sFactor = fac;
-		visited = false;
-		prune();  // Remove edges not ending in this quad.
+		xCoords = new ArrayList<Double>();
+		yCoords = new ArrayList<Double>();
 	}
 	
 	/**
 	 * Prune the edge list to the box so that only segments
-	 * with endpoints in the box are retained.
+	 * with endpoints in the box are retained.  
 	 */
 	private void prune()
 	{
-		List result = new ArrayList();
+		List<LineSegment> result = new ArrayList<LineSegment>();
 		
 		for(int i = 0; i < edges.size(); i++)
 		{
-			if(box.point_relative(segment(i).a) == 0 ||
-					box.point_relative(segment(i).b) == 0)
-				result.add(edges.get(i));
+			Rr2Point aa = segment(i).a;
+			Rr2Point bb = segment(i).b;
+			
+			boolean aIn = (box.point_relative(aa) == 0);
+			boolean bIn = (box.point_relative(bb) == 0);
+			
+			if(aIn || bIn)
+				result.add(segment(i));
+
+			if(aIn)
+			{
+				xCoords.add(new Double(aa.x()));
+				yCoords.add(new Double(aa.y()));
+			}
+			
+			if(bIn)
+			{
+				xCoords.add(new Double(bb.x()));
+				yCoords.add(new Double(bb.y()));
+			}
 		}
 				
 		edges = result;
+	}
+	
+	/**
+	 * Start near the middle of a sorted list of coordinates, working both
+	 * up and down and find the first decent-sized gap
+	 * @param coords
+	 * @param i
+	 * @return
+	 */
+	private static double findGap(ArrayList<Double> coords, RrInterval i)
+	{
+		double g, v;
+		
+		Collections.sort(coords);
+		
+		int middle = coords.size()/2;
+		double vpOld = coords.get(middle).doubleValue();
+		double vmOld = vpOld;
+		int p = middle + 1;
+		int m = middle - 1;
+		RrInterval biggest = new RrInterval(0, 0);
+		
+		while(p < coords.size() || m  >= 0)
+		{
+			if(p < coords.size())
+			{
+				v = coords.get(p).doubleValue();
+				g = v - vpOld;
+				if(g > Preferences.gridRes()*0.1)
+				{
+					return 0.5*(vpOld + v);
+				}
+				if(g > biggest.length())
+					biggest = new RrInterval(vpOld, v);
+				vpOld = v;
+				p++;
+			}
+			
+			if(m >= 0)
+			{
+				v = coords.get(m).doubleValue();
+				g = vmOld - v;
+				if(g > Preferences.gridRes()*0.1)
+				{
+					return 0.5*(v + vmOld);
+				}
+				if(g > biggest.length())
+					biggest = new RrInterval(v, vmOld);
+				vmOld = v;
+				m--;
+			}
+		}
+		
+		if(biggest.length() > Preferences.gridRes()*0.1)
+			return biggest.low() + 0.5*biggest.length();
+		else
+		{
+			do
+				v = coords.get(0) + (rangen.nextDouble() - 0.5)*i.length();
+			while(!i.in(v));
+			return v;
+		}
+	}
+	
+	/**
+	 * Find the place to put the quad division.
+	 * @return
+	 */
+	private Rr2Point biggestGap()
+	{
+		Rr2Point result = new Rr2Point(findGap(xCoords, box.x()), findGap(yCoords, box.y()));
+		//System.out.println("Box: " + box.toString() + "   centre: " + result.toString());
+		
+		// Not needed any more
+		
+		//xCoords = new ArrayList<Double>();
+		//yCoords = new ArrayList<Double>();
+		
+		// Sanity check
+		
+		if(box.point_relative(result) != 0)
+			Debug.d("STLSlice.biggestGap(): point outside box! point: " + 
+					result.toString() + ", box: " + box.toString());
+		
+		return result;		
 	}
 	
 	/**
@@ -573,37 +755,47 @@ public class STLSlice
 		Rr2Point nw = box.nw();
 		Rr2Point ne = box.ne();
 		Rr2Point se = box.se();
-		Rr2Point cen = box.centre();
+		
+		Rr2Point cen = biggestGap();
+		double w = cen.x() - (cen.x() - sw.x())*(sFactor - 1);
+		double n = cen.y() + (nw.y() - cen.y())*(sFactor - 1);
+		double e = cen.x() + (se.x() - cen.x())*(sFactor - 1);
+		double s = cen.y() - (cen.y() - sw.y())*(sFactor - 1);
 		
 //		 Put the results in the children
 		
-		RrBox s = new RrBox(Rr2Point.mul(Rr2Point.add(sw, nw), 0.5), 
-				Rr2Point.mul(Rr2Point.add(nw, ne), 0.5));
-		s = s.scale(sFactor);
-		q1 = new STLSlice(edges, s, resolution_2, sFactor);
+		RrBox b = new RrBox(nw, new Rr2Point(e, s));
+		q1 = new STLSlice(edges, b);
+		q1.prune();
 		
-		s = new RrBox(cen, ne);
-		s = s.scale(sFactor);
-		q2 = new STLSlice(edges, s, resolution_2, sFactor);
+		b = new RrBox(ne, new Rr2Point(w, s));
+		q2 = new STLSlice(edges, b);
+		q2.prune();
 		
-		s = new RrBox(Rr2Point.mul(Rr2Point.add(sw, se), 0.5), 
-				Rr2Point.mul(Rr2Point.add(se, ne), 0.5));
-		s = s.scale(sFactor);
-		q3 = new STLSlice(edges, s, resolution_2, sFactor);
+		b = new RrBox(se, new Rr2Point(w, n));
+		q3 = new STLSlice(edges, b);
+		q3.prune();
 		
-		s = new RrBox(sw, cen);
-		s = s.scale(sFactor);
-		q4 = new STLSlice(edges, s, resolution_2, sFactor);	
+		b = new RrBox(sw, new Rr2Point(e, n));
+		q4 = new STLSlice(edges, b);
+		q4.prune();
 	}
 	
+
 	/**
 	 * Quad tree division to end up with two (or no) ends in each box.
 	 */
 	public void divide()
 	{
+		if(edges.size() <= 0)
+			return;
+		
 		if(box.d_2() < resolution_2)
 		{
-			System.err.println("STLSlice.divide(): hit resolution limit!");
+			Debug.d("STLSlice.divide(): hit resolution limit! Edge end count: " + edges.size());
+			for(int i = 0; i < edges.size(); i++)
+				Debug.d(edges.get(i).toString());
+			LineSegment.setQuad(this);
 			return;
 		}
 		
@@ -614,62 +806,67 @@ public class STLSlice
 			q2.divide();
 			q3.divide();
 			q4.divide();
-		} else
+			return;
+		}
+
+		for(int i = 0; i < edges.size(); i++)
 		{
-			if(edges.size() <= 0)
-				return;
-			
-			boolean divideFurther = false;
-	   		for(int i = 0; i < edges.size(); i++)
-    		{
-    			if(box.point_relative(segment(i).a) == 0 &&  
-    					box.point_relative(segment(i).b) == 0)
-    			{
-    				divideFurther = true;
-    				break;
-    			}		
-    		}
-	   		
-	   		if(divideFurther)
-	   		{
-	   			makeQuads();
+			if(box.point_relative(segment(i).a) == 0 &&  
+					box.point_relative(segment(i).b) == 0)
+			{
+				makeQuads();
 				q1.divide();
 				q2.divide();
 				q3.divide();
 				q4.divide();
-	   		} else if(edges.size() == 1)
-	   		{
-	   			// We end up here occasionally - it seems to do no harm...
-	   			//System.err.println("STLSlice.divide(): only one end in box!");
-	   		} else
-	   			LineSegment.setQuad(this);
+				return;
+			}		
 		}
+
+		if(edges.size() == 1)
+		{
+			Debug.d("STLSlice.divide(): only one end in box: " + edges.get(0).toString() + " box: " + box.toString());
+			edges.remove(0);
+		} else
+			LineSegment.setQuad(this);
+
 	}
 	
 	 /**
-	 * Check the list to find an unvisited corner
+	 * Recursively walk the tree to find an unvisited corner in a quad
      */
     private STLSlice findCorner()
-    {
+    {	
     	STLSlice result = null;
     	
-		for (int i = 0; i < edges.size(); i++)
-		{
-			LineSegment s = segment(i);
-			if (!s.qa.visited && !s.qb.visited)
-				return s.qa;
-		}
- 
-    	return result;
+    	if(!leaf())
+    	{
+    		result = q1.findCorner();
+    		if(result != null)
+    			return result;
+    		result = q2.findCorner();
+    		if(result != null)
+    			return result;
+    		result = q3.findCorner();
+    		if(result != null)
+    			return result;
+    		result = q4.findCorner();
+    		return result;
+    	}
+
+    	if(edges.size() > 0)
+    		return this;
+    	else
+    		return null;
     }
 
     /**
      * Useful for debugging - plot a bit of the quad tree.
      */
-    private void quickPlot()
+    private static void quickPlot(STLSlice s)
     {
-    	RrGraphics g = new RrGraphics(box.scale(1.5), true);
-		g.addSTL(this);
+    	s.qp = new RrGraphics(s.box.scale(1.5), true);
+		s.qp.addSTL(s);
 		System.out.print("Type any character: ");
 		System.out.flush();
 		try
@@ -679,47 +876,131 @@ public class STLSlice
 		{
 			System.err.print("Uh?");
 		}
-		g = null;
+		//g = null;
     }
-//    
-//    /**
-//     * Useful for debugging - print statistics
-//     * TODO: rewrite so log4j can be used
-//     */
-//    public void reportStats()
-//    {
-//    	int single = 0;
-//    	int twin = 0;
-//    	for(int i = 0; i < edges.size(); i++)
-//    	{
-//    		LineSegment s = segment(i);
-//    		if(s.qa == null)
-//    			single++;
-//    		if(s.qb == null)
-//    			single++;
-//    		if(s.qa != null && s.qb != null)
-//    			twin++;
-//    	}
-//    	System.out.println("STLSlice.reportStats() - lines: " + edges.size()
-//    			+ " double-ended quads: " + twin +
-//    			" single ends: " + single);
-//    }
     
+    public void recursiveReport()
+    {
+    	if(leaf())
+    	{
+    		System.out.println("Leaf box: " + box.toString() + " contains -");
+        	for(int i = 0; i < edges.size(); i++)
+        		System.out.println("   " + segment(i).toString());
+    	} else
+    	{
+    		q1.recursiveReport();
+    		q2.recursiveReport();
+    		q3.recursiveReport();
+    		q4.recursiveReport();
+    	}
+    }
+    
+    /**
+     * Useful for debugging - print statistics
+     * TODO: rewrite so log4j can be used
+     */
+    public void reportStats()
+    {
+    	int single = 0;
+    	int twin = 0;
+    	for(int i = 0; i < edges.size(); i++)
+    	{
+    		LineSegment s = segment(i);
+    		if(s.qa == null)
+    			single++;
+    		if(s.qb == null)
+    			single++;
+    		if(s.qa != null && s.qb != null)
+    			twin++;
+    	}
+    	System.out.println("STLSlice.reportStats() - lines: " + edges.size()
+    			+ " double-ended quads: " + twin +
+    			" single ends: " + single);
+    }
+    
+
+    /**
+     * We are working our way round a polygon.  This function takes the
+     * edge we're running along from the quad we're in and finds the 
+     * next quad and next edge at its other end.
+     */
+    private trackPolygon processThisQuad(LineSegment edge)
+    {
+    	trackPolygon result = new trackPolygon();
+    	
+    	if(edges.size() <= 0)
+    		return result;
+    	
+    	boolean aEnd;
+    	if(edge.qa == this)
+    		aEnd = true;
+    	else
+    		aEnd = false;
+    	
+    	boolean dud = true;
+    	for(int i = 0; i < edges.size(); i++)
+    	{
+    		if(edge == segment(i))
+    		{
+    			edges.remove(i);
+    			dud = false;
+    			break;
+    		}
+    	}
+    	
+    	if(dud)
+    		Debug.d("processThisQuad(): edge not found!");
+    	
+    	if(edges.size() <= 0)
+    	{
+    		Debug.d("processThisQuad(): entered quad with no exit!");
+    		return result;
+    	}
+    	
+    	result.nextE = segment(0);
+    	edges.remove(0);
+		
+		Rr2Point p0, p1;
+		
+		if(aEnd)
+			p0 = edge.a;
+		else
+			p0 = edge.b;
+		
+    	if(result.nextE.qa == this)
+    		aEnd = true;
+    	else
+    		aEnd = false;
+    	
+		if(aEnd)
+			p1 = result.nextE.a;
+		else
+			p1 = result.nextE.b;
+		
+		result.here = Rr2Point.mul(0.5, Rr2Point.add(p0, p1));
+		
+		if(aEnd)
+			result.nextQ = result.nextE.qb;
+		else
+			result.nextQ = result.nextE.qa;
+    	
+		return result;
+    }
+	
 	/**
 	 * Stitch up the line segment ends in the quad tree.
 	 * @param fg
 	 * @param fs
 	 * @return a list of all the resulting polygons.
 	 */
-	private RrPolygonList conquer(int fg, int fs)
+	private static RrPolygonList conquer(STLSlice root, int fg, int fs)
 	{
 		RrPolygonList pgl = new RrPolygonList();
-		//RrPolygon pg;
-		STLSlice corner, newCorner, startCorner;
-		LineSegment edge, newEdge;
-		Rr2Point p0, p1;
 		
-		startCorner = findCorner();
+		STLSlice corner, startCorner;
+		LineSegment edge;
+		startCorner = root.findCorner();
+		
 		while(startCorner != null)
 		{
 			corner = startCorner;
@@ -727,51 +1008,25 @@ public class STLSlice
 			RrPolygon pg = new RrPolygon(edge.att);
 			do
 			{
-				if(corner.visited)
-				{
-					System.err.println("conquer(): revisiting quad!");
-					break;
-				}
-				corner.visited = true;
-				
-				if(corner.edges.size() != 2)
-				{
-					System.err.println("conquer(): dud quad contents:" +
-							corner.edges.size());
-					break;
-				}
-				
-				newEdge = corner.segment(1);
-				if(edge == newEdge)
-					newEdge = corner.segment(0);
-				
-				p0 = edge.a;
-				if(edge.qa != corner)
-					p0 = edge.b;
-				
-				p1 = newEdge.a;
-				newCorner = newEdge.qb;
-				if(corner == newCorner)
-				{
-					newCorner = newEdge.qa;
-					p1 = newEdge.b;
-				}
-				
-				Rr2Point vertex = Rr2Point.mul(0.5, Rr2Point.add(p0, p1));
-				pg.add(vertex, fg);
-				edge = newEdge;
-				corner = newCorner;
+				trackPolygon tp = corner.processThisQuad(edge);
+				if(tp.here != null)
+					pg.add(tp.here, fg);
+				corner = tp.nextQ;
+				edge = tp.nextE;
 			} while (corner != startCorner && corner != null);
+			
 			if(pg.size() > 2)  // Throw away "noise"...
 			{
 				pg.flag(pg.size() - 1, fs);
 				pgl.add(pg);
 			}
-			startCorner = findCorner();
+
+			startCorner = root.findCorner();
 		}
 		return pgl;
 	}
-	
+    
+
 	/**
 	 * Find the maximum height of the object(s) to be built
 	 * @return that height
@@ -793,7 +1048,7 @@ public class STLSlice
 	
 	/**
 	 * build a 2D polygon list of all edges in the plane z
-	 * from all the objects in shapeList then turn it to CSG.
+	 * from all the objects in shapeList then turn it in CSG form.
 	 * @param z
 	 * @return a CSG representation of all the polygons in the slice
 	 */
@@ -817,14 +1072,6 @@ public class STLSlice
 					AandT aat = aats.get(obj);
 					Transform3D trans = aat.trans;
 					Attributes attr = aat.att;
-//					java.util.Enumeration enumKids = attr.getPart().getAllChildren( );
-//
-//					while(enumKids.hasMoreElements( ))
-//					{
-//						Object ob = enumKids.nextElement();
-//						if(ob instanceof BranchGroup)
-//							recursiveSetEdges(ob, trans, z, attr);
-//					}
 					recursiveSetEdges(attr.getPart(), trans, z, attr);
 				}
 
@@ -834,7 +1081,7 @@ public class STLSlice
 					Point3d t_array[] = new Point3d[triangles.size()];
 
 					for(int i = 0; i < triangles.size(); i++)
-						t_array[i] = (Point3d)triangles.get(i);
+						t_array[i] = triangles.get(i);
 
 					gi.setCoordinates(t_array);
 
@@ -843,7 +1090,7 @@ public class STLSlice
 
 					below.addChild(new Shape3D(gi.getGeometryArray(), ap));
 
-					triangles = new ArrayList();
+					triangles = new ArrayList<Point3d>();
 				}
 
 
@@ -859,15 +1106,17 @@ public class STLSlice
 				// ends.
 
 				divide();
-
+				
 				// Run round joining up all the pairs of ends...
 
-				RrPolygonList pgl = conquer(fg, fs);
+				RrPolygonList pgl = conquer(this, fg, fs);
 
 				// Remove wrinkles
-				//RrGraphics g = new RrGraphics(pgl, false);
+
 				pgl = pgl.simplify(Preferences.gridRes()*1.5);
-				//RrGraphics g2 = new RrGraphics(pgl, false);
+				
+				//RrGraphics g = new RrGraphics(pgl, false);
+
 				// Check for a silly result.
 				
 				if(pgl.size() > 0)

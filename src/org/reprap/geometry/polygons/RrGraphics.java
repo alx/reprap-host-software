@@ -109,8 +109,8 @@ public class RrGraphics
 	/**
 	 * 
 	 */
-	private Graphics2D g2d;
-	
+	private static Graphics2D g2d;
+	private static JFrame jframe;
 	/**
 	 * 
 	 */
@@ -149,10 +149,10 @@ public class RrGraphics
 		
 		pos = new Rr2Point(width*0.5, height*0.5);
 		
-		JFrame frame = new JFrame();
-		frame.setSize(frameWidth, frameHeight);
-		frame.getContentPane().add(new MyComponent());
-		frame.setVisible(true);
+		jframe = new JFrame();
+		jframe.setSize(frameWidth, frameHeight);
+		jframe.getContentPane().add(new MyComponent());
+		jframe.setVisible(true);
 	}
 	
 	/**
@@ -430,7 +430,7 @@ public class RrGraphics
 	 */
 	private void plot(STLSlice s)
 	{
-		if(s.c_1() == null)
+		if(s.leaf())
 		{
 			if(plot_box)
 			{
@@ -476,6 +476,10 @@ public class RrGraphics
 	 */
 	class MyComponent extends JComponent 
 	{
+		public MyComponent()
+		{
+			super();
+		}
 		// This method is called whenever the contents needs to be painted
 		public void paint(Graphics g) 
 		{

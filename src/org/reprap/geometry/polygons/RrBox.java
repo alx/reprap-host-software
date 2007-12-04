@@ -113,14 +113,14 @@ public class RrBox
 	}
 	
 	/**
-	 * Make from the corners
+	 * Make from any diagonal corners
 	 * @param sw
 	 * @param ne
 	 */
-	public RrBox(Rr2Point sw, Rr2Point ne)
+	public RrBox(Rr2Point a, Rr2Point b)
 	{
-		x = new RrInterval(sw.x(), ne.x());
-		y = new RrInterval(sw.y(), ne.y());
+		x = new RrInterval(Math.min(a.x(), b.x()), Math.max(a.x(), b.x()));
+		y = new RrInterval(Math.min(a.y(), b.y()), Math.max(a.y(), b.y()));
 		empty = x.empty() || y.empty();
 	}
 	
