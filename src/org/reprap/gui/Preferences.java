@@ -515,6 +515,9 @@ public class Preferences extends javax.swing.JDialog {
 	 */
 	private boolean isNumber(String s)
 	{
+		// Bulletproofing.
+		if ((s==null)||(s.length()==0)) return false;
+		
 		int start = 0;
 		
 		while(Character.isSpaceChar(s.charAt(start)))
@@ -523,6 +526,7 @@ public class Preferences extends javax.swing.JDialog {
 		if(s.charAt(start) == '-' || s.charAt(start) == '+')
 			start++;
 		
+		// Last we checked, only one decimal point allowed per number.
 		int dotCount = 0;
 		for(int i = start; i < s.length(); i++)
 		{
