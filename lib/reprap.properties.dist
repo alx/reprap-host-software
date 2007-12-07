@@ -104,3 +104,5 @@ WorkingOffsetX(mm)=-17.3
 SelectedColourB(0..1)=0.2
 BackColourG(0..1)=0.9
 Extruder1_ExtrusionTemp(C)=-273
+MovementSpeedZ(0..255)=210
+
