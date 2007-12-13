@@ -7,6 +7,7 @@ import java.io.IOException;
 import org.reprap.Device;
 import org.reprap.Extruder;
 import org.reprap.Preferences;
+import org.reprap.ReprapException;
 import javax.media.j3d.Appearance;
 import javax.vecmath.Color3f;
 import javax.media.j3d.Material;
@@ -199,6 +200,26 @@ public class NullExtruder implements Extruder{
 	 */	
 	private Appearance materialColour;
 	
+	/**
+	 * Enable wiping procedure for nozzle
+	 */
+	private boolean nozzleWipeEnabled;
+	
+	/**
+	 * Nozzle wiper co-ordinates
+	 */
+	private int nozzleWipeDatumX;
+	private int nozzleWipeDatumY;
+	
+	/**
+	 * Distance to move nozzle past wiper
+	 */
+	private int nozzleWipeStroke;
+	
+	/**
+	 * Number of wipes per procedure
+	 */
+	private int nozzleWipeFreq;
 
 	/**
 	 * @param prefs
@@ -232,7 +253,12 @@ public class NullExtruder implements Extruder{
 		offsetX = prefs.loadDouble(prefName + "OffsetX(mm)");
 		offsetY = prefs.loadDouble(prefName + "OffsetY(mm)");
 		offsetZ = prefs.loadDouble(prefName + "OffsetZ(mm)");
-
+		nozzleWipeEnabled = prefs.loadBool(prefName + "NozzleWipeEnabled");
+		nozzleWipeDatumX = prefs.loadInt(prefName + "NozzleWipeDatumX");
+		nozzleWipeDatumY = prefs.loadInt(prefName + "NozzleWipeDatumY");
+		nozzleWipeStroke = prefs.loadInt(prefName + "NozzleWipeStroke");
+		nozzleWipeFreq = prefs.loadInt(prefName + "NozzleWipeFreq");
+				
 		materialColour = getAppearanceFromNumber(extruderId);		
 			
 		isCommsAvailable = true;
@@ -527,5 +553,44 @@ public class NullExtruder implements Extruder{
     	return(getAppearanceFromNumber(getNumberFromMaterial(material)));
     }
     
+	 /**
+     * @return determine whether nozzle wipe method is enabled or not 
+     */
+    public boolean getNozzleWipeEnabled()
+    {
+    	return nozzleWipeEnabled;
+    }    
+    
+    /**
+     * @return the X-cord for the nozzle wiper
+     */
+    public int getNozzleWipeDatumX()
+    {
+    	return nozzleWipeDatumX;
+    }
+
+    /**
+     * @return the Y-cord for the nozzle wiper
+     */
+    public int getNozzleWipeDatumY()
+    {
+    	return nozzleWipeDatumY;
+    }
+    
+    /**
+     * @return the length of the nozzle movement over the wiper
+     */
+    public int getNozzleWipeStroke()
+    {
+    	return nozzleWipeStroke;
+    }
+    
+    /**
+     * @return the number of times the nozzle moves over the wiper
+     */
+    public int getNozzleWipeFreq()
+    {
+    	return nozzleWipeFreq;
+    }
 
 }

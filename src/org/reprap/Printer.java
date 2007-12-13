@@ -256,5 +256,10 @@ public interface Printer {
 	 * @return
 	 */
 	public Extruder[] getExtruders();
-
+	
+	/**
+	 * Wipes the nozzle
+	 */
+    public void wipeNozzle() throws ReprapException, IOException;
+         
 }

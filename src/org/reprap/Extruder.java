@@ -182,5 +182,30 @@ public interface Extruder {
      * @return the material name
      */
     public String toString();
- 
+    
+    /**
+     * @return whether nozzle wipe method is enabled or not 
+     */
+    public boolean getNozzleWipeEnabled();
+    
+    /**
+     * @return the X-cord for the nozzle wiper
+     */
+    public int getNozzleWipeDatumX();
+
+    /**
+     * @return the Y-cord for the nozzle wiper
+     */
+    public int getNozzleWipeDatumY();
+    
+    /**
+     * @return the length of the nozzle movement over the wiper
+     */
+    public int getNozzleWipeStroke();
+    
+    /**
+     * @return the number of times the nozzle moves over the wiper
+     */
+    public int getNozzleWipeFreq();
+
 }

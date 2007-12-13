@@ -186,7 +186,7 @@ public class Reprap implements CartesianPrinter {
 			System.err.println("Z axis not responding and will be ignored");
 			excludeZ = true;
 		}
-		
+
 	}
 	
 	/* (non-Javadoc)
@@ -810,6 +810,35 @@ public class Reprap implements CartesianPrinter {
 				return extruders[i];
 		return null;
 	}
+	
+
+	/**
+	 * Moves nozzle back and forth over wiper
+	 */
+	public void wipeNozzle() throws ReprapException, IOException {
+		
+		if (getExtruder().getNozzleWipeEnabled() == false) return;
+		
+		else {
+			
+			int freq = getExtruder().getNozzleWipeFreq();
+			int datumX = getExtruder().getNozzleWipeDatumX();
+			int datumY = getExtruder().getNozzleWipeDatumY();
+			int stroke = getExtruder().getNozzleWipeStroke();
+			
+			setSpeed(fastSpeedXY);
+			
+			// Moves nozzle over wiper
+			for (int w=0; w < freq; w++)
+			{
+				moveTo(datumX, datumY+(stroke/2), currentZ, false, false);
+				moveTo(datumX, datumY-(stroke/2), currentZ, false, false);
+			}
+			
+			
+		}
+	}
+
 }
 
 
