@@ -195,6 +195,8 @@ public class Producer {
 			Debug.d("Printing warmup segments, moving to (5,5)");
 			reprap.setSpeed(reprap.getExtruder().getXYSpeed());
 			reprap.moveTo(5, 5, 0, false, false);
+			// Take it slow and easy.
+			reprap.setSpeed(reprap.getExtruder().getXYSpeed()*3/4);
 			Debug.d("Printing warmup segments, printing to (5,50)");
 			reprap.printTo(5, 50, 0, false);
 			Debug.d("Printing warmup segments, printing to (7,50)");
