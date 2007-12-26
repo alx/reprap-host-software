@@ -13,7 +13,7 @@
     <copy file="lib/reprap-wv.stl" tofile="bin/reprap-wv.stl"/>
 </target>
 
-<target name="jar" depends="clean,properties,backgroundstl">
+<target name="jar" depends="init,properties,backgroundstl">
     <mkdir dir="${jar.dir}"/>
     <jar destfile="${jar.dir}/${ant.project.name}.jar" basedir="bin">
         <manifest>
