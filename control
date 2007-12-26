@@ -1,0 +1,12 @@
+Package: reprap-host
+Version: 0.8.2.20071225
+Section: non-free/net
+Priority: extra
+Architecture: all
+Depends: sun-java6-jre,libjava3d-java,libj3d-org-java,librxtx-java
+Maintainer: Jonathan Marsden <jmarsden@fastmail.fm>
+Description: Controls a Reprap 3D printer to create custom 3D objects
+ by extruding materials such as CAPA or HDPE plastics.
+ .
+ See http://www.reprap.org
+ .
