@@ -8,6 +8,9 @@
     &buildfile;
     <path id="project.classpath">
         <pathelement location="bin"/>
+	<fileset dir="/usr/share/java" casesensitive="yes">
+	    <include name="**/*.jar"/>
+	</fileset>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
@@ -18,7 +21,7 @@
     </target>
     <target depends="init" name="build">
         <echo message="${ant.project.name}: ${ant.file}"/>
-        <javac destdir="bin">
+        <javac source="1.5" target="1.5" destdir="bin">
             <src path="src"/>
             <classpath refid="project.classpath"/>
         </javac>
