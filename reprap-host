@@ -1,0 +1,3 @@
+#!/bin/sh
+cd /usr/lib/reprap
+java -cp '.:reprap.jar:/usr/share/java/*' -Xmx384M org/reprap/Main
