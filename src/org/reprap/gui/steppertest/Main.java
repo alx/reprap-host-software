@@ -32,14 +32,15 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 	private final int localNodeNumber = 0;
 	private final int baudRate = 19200;
 	
-	private final int intialSpeed = 236;
+	private final int intialXYSpeed = 236;
+	private final int intialZSpeed = 230;
 	
 	//private ShapePanel  shapePanel;
 	private ExtruderPanel extruderPanel;
 	
 	JSlider speedX, speedY, speedZ;
 	private JLabel xS, yS, zS;
-	JCheckBox lockXYZSpeed;
+	JCheckBox lockXYSpeed;
 	
 	StepperPanel motorX, motorY, motorZ;
 	GenericExtruder extruder = null;
@@ -136,7 +137,7 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 		c.gridx = 2;
 		panel.add(new JLabel("Z"), c);
 		
-		speedX = new JSlider(SwingConstants.VERTICAL, 0, 255, intialSpeed);
+		speedX = new JSlider(SwingConstants.VERTICAL, 0, 255, intialXYSpeed);
 		speedX.addChangeListener(this);
 		speedX.setMajorTickSpacing(50);
 		speedX.setMinorTickSpacing(10);
@@ -150,7 +151,7 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 		c.gridy = 2;
 		panel.add(xS, c);
 		
-		speedY = new JSlider(SwingConstants.VERTICAL, 1, 255, intialSpeed);
+		speedY = new JSlider(SwingConstants.VERTICAL, 1, 255, intialXYSpeed);
 		speedY.addChangeListener(this);
 		speedY.setMajorTickSpacing(50);
 		speedY.setMinorTickSpacing(10);
@@ -164,7 +165,7 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 		c.gridy = 2;
 		panel.add(yS, c);
 		
-		speedZ = new JSlider(SwingConstants.VERTICAL, 1, 255, intialSpeed);
+		speedZ = new JSlider(SwingConstants.VERTICAL, 1, 255, intialZSpeed);
 		speedZ.addChangeListener(this);
 		speedZ.setMajorTickSpacing(50);
 		speedZ.setMinorTickSpacing(10);
@@ -177,12 +178,12 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 		c.gridy = 2;
 		panel.add(zS, c);
 		
-		lockXYZSpeed = new JCheckBox("Lock X/Y/Z speed", true);
-		lockXYZSpeed.addChangeListener(this);
+		lockXYSpeed = new JCheckBox("Lock X/Y speed", true);
+		lockXYSpeed.addChangeListener(this);
 		c.gridx = 0;
 		c.gridy = 4;
 		c.gridwidth = 3;
-		panel.add(lockXYZSpeed, c);
+		panel.add(lockXYSpeed, c);
 		
 		JPanel positionPanel = new JPanel();
 		positionPanel.setLayout(new BoxLayout(positionPanel, BoxLayout.Y_AXIS));
@@ -270,16 +271,16 @@ pack();
 				if (src == speedX || src == speedY || src == speedZ) {
 					if (src.getValue() < 1)
 						src.setValue(1);
-					if (lockXYZSpeed.isSelected()) {
+					if (lockXYSpeed.isSelected()) {
 						if (src == speedX) {
 							speedY.setValue(speedX.getValue());
-							speedZ.setValue(speedX.getValue());
+//							speedZ.setValue(speedX.getValue());
 						} else if (src == speedY) {
 							speedX.setValue(speedY.getValue());
-							speedZ.setValue(speedY.getValue());
-						} else if (src == speedZ) {
-							speedX.setValue(speedZ.getValue());
-							speedY.setValue(speedZ.getValue());
+//							speedZ.setValue(speedY.getValue());
+//						} else if (src == speedZ) {
+//							speedX.setValue(speedZ.getValue());
+//							speedY.setValue(speedZ.getValue());
 						}
 					}
 					updateSpeedBoxes();
