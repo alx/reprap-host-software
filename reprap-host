@@ -5,5 +5,6 @@ RAM_SIZE=384M				# Amount of RAM to allow Java VM to use
 REPRAP_DIR="/usr/lib/reprap"		# reprap.jar file and stl file
 JAVA_LIBRARY_DIR="/usr/share/java"	# Java3D and j3d.org libraries
 
+cd "$REPRAP_DIR"	# So we can find the reprap-wv.stl file.  Can we avoid this??
 java -cp "$REPRAP_DIR:$REPRAP_DIR/reprap.jar:$JAVA_LIBRARY_DIR/*" \
   -Xmx$RAM_SIZE org/reprap/Main
