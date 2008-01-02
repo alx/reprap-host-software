@@ -45,7 +45,6 @@ public class MaintenancePositionsFrame  extends JFrame {
 	// 'Talk to bot' globals
 
 	private final int localNodeNumber = 0;
-	private final int baudRate = 19200;
 	Communicator communicator;
 	
 	// Operation globals
@@ -129,7 +128,7 @@ public class MaintenancePositionsFrame  extends JFrame {
 		String err = "";
 		
 		try {
-			communicator = new SNAPCommunicator(port,baudRate, myAddress);
+			communicator = new SNAPCommunicator(port, myAddress);
 		}
 		catch (gnu.io.NoSuchPortException e)
 		{

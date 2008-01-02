@@ -17,6 +17,7 @@ import org.reprap.comms.Communicator;
 import org.reprap.comms.IncomingContext;
 import org.reprap.comms.IncomingMessage;
 import org.reprap.comms.OutgoingMessage;
+import org.reprap.Preferences;
 
 /**
  *
@@ -74,13 +75,14 @@ public class SNAPCommunicator implements Communicator {
 	 * @throws IOException
 	 * @throws UnsupportedCommOperationException
 	 */
-	public SNAPCommunicator(String portName, int baudRate, Address localAddress)
+	public SNAPCommunicator(String portName, Address localAddress)
 			throws NoSuchPortException, PortInUseException, IOException, UnsupportedCommOperationException {
 
 		this.localAddress = localAddress;
 		Debug.d("Opening port " + portName);
 		CommPortIdentifier commId = CommPortIdentifier.getPortIdentifier(portName);
 		port = (SerialPort)commId.open(portName, 30000);
+		int baudRate = Preferences.loadGlobalInt("BaudRate");
 		
 		
 		// Workround for javax.comm bug.

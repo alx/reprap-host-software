@@ -7,6 +7,7 @@ Extruder0_XYSpeed(0..255)=230
 Extruder1_Beta(K)=3480
 Extruder1_OutlineSpeed(0..1)=0.6
 Extruder1_Reverse(ms)=0
+BaudRate=19200
 SelectedColourR(0..1)=0.6
 RadiusFactor=0.7
 SelectedColourG(0..1)=0.2

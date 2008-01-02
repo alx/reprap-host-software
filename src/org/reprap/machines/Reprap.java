@@ -34,8 +34,7 @@ public class Reprap implements CartesianPrinter {
 	/**
 	 * comms speed
 	 */
-	private final int baudRate = 19200;
-
+	
 	/**
 	 * 
 	 */
@@ -139,7 +138,7 @@ public class Reprap implements CartesianPrinter {
 		String commPortName = prefs.loadString("Port(name)");
 		
 		SNAPAddress myAddress = new SNAPAddress(localNodeNumber); 
-		communicator = new SNAPCommunicator(commPortName, baudRate, myAddress);
+		communicator = new SNAPCommunicator(commPortName, myAddress);
 		
 		motorX = new GenericStepperMotor(communicator,
 				new SNAPAddress(prefs.loadInt("XAxisAddress")), prefs, 1);

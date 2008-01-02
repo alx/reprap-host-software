@@ -119,7 +119,7 @@ public class WorkingVolumeFrame  extends JFrame {
 		String err = "";
 		
 		try {
-			communicator = new SNAPCommunicator(port,baudRate, myAddress);
+			communicator = new SNAPCommunicator(port, myAddress);
 		}
 		catch (gnu.io.NoSuchPortException e)
 		{

@@ -35,7 +35,6 @@ public class AxisRepeatabilityTest {
 		
 		
 		final int localNodeNumber = 0;
-		final int baudRate = 19200;
 
 
 		int address;
@@ -54,7 +53,7 @@ public class AxisRepeatabilityTest {
 		try
 		{		
 			communicator = new SNAPCommunicator(Preferences.loadGlobalString("Port"),
-				baudRate, myAddress);
+				myAddress);
 		}catch(Exception ex)
 		{
 			System.err.println("Argh 2!");

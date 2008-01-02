@@ -59,7 +59,6 @@ public class Main extends javax.swing.JDialog {
 	private int extruder;
 	
 	private final int localNodeNumber = 0;
-	private final int baudRate = 19200;
 	
 	private Thread pollThread = null;
 	private boolean pollThreadExiting = false;
@@ -84,7 +83,7 @@ public class Main extends javax.swing.JDialog {
 		SNAPAddress myAddress = new SNAPAddress(localNodeNumber); 
 		this.setResizable(false);
 		communicator = new SNAPCommunicator(Preferences.loadGlobalString("Port(name)"),
-				baudRate, myAddress);
+				myAddress);
 		
 		extruderCount = Preferences.loadGlobalInt("NumberOfExtruders");
 		extruders = new GenericExtruder[extruderCount];

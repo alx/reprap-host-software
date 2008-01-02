@@ -43,7 +43,6 @@ public class Main extends javax.swing.JDialog {
 	private JTextField maxTemp;
 
 	private final int localNodeNumber = 0;
-	private final int baudRate = 19200;
 	
 	private Thread pollThread = null;
 	private boolean pollThreadExiting = false;
@@ -74,7 +73,7 @@ public class Main extends javax.swing.JDialog {
 		SNAPAddress myAddress = new SNAPAddress(localNodeNumber); 
 		this.setResizable(false);
 		communicator = new SNAPCommunicator(Preferences.loadGlobalString("Port(name)"),
-				baudRate, myAddress);
+				myAddress);
 
 		extruder = new GenericExtruder(communicator,
 				new SNAPAddress(Preferences.loadGlobalString("Extruder0_Address")),
