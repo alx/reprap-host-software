@@ -658,6 +658,7 @@ public class GenericExtruder extends Device implements Extruder{
 				currentTemperature = tempVote();
 			} catch (Exception ex) {
 				Debug.d(material + " extruder exception during temperature/material update ignored");
+				ex.printStackTrace();
 			}
 		}
 	}
