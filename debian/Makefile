@@ -1,11 +1,14 @@
 RELEASE=`date -u +%Y%m%d`
 NOW=`date -u +'%d %B %Y'`
 
-.phony: clean all debfiles deb
+.phony: clean all debfiles deb jar
 
-all: debfiles deb
+all: debfiles deb jar
 
-debfiles:
+jar:
+	(cd .. ; ant jar )
+
+debfiles: jar
 	# Control files
 	mkdir -p deb/DEBIAN
 	cp -p control postinst postrm deb/DEBIAN
@@ -39,5 +42,5 @@ deb: debfiles
 	sudo dpkg -b deb .
 
 clean:
-	rm -rf deb
+	-[ -d deb ] && sudo rm -rf deb
 
