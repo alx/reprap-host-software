@@ -17,8 +17,8 @@ debfiles: jar
 	cp -p ../reprap-host deb/usr/bin/
 	# Program directory
 	mkdir -p deb/usr/lib/reprap/org/reprap
-	cp -p ../bin/org/reprap/Main.class deb/usr/lib/reprap/
-	cp -p ../jar/Reprap.jar deb/usr/lib/reprap/reprap.jar
+	cp -p ../bin/org/reprap/Main.class deb/usr/lib/reprap/org/reprap
+	cp -p ../jar/reprap.jar deb/usr/lib/reprap/
 	cp -p ../lib/reprap-wv.stl deb/usr/lib/reprap/
 	# man page
 	mkdir -p deb/usr/share/man/man1
