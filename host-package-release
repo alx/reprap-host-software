@@ -4,8 +4,8 @@
 # init
 RELEASE=${1:-`date -u +%Y%m%d`}
 FILENAME="reprap-host-$RELEASE"
-FILELIST="jar/Reprap.jar lib/reprap-wv.stl \
-    reprap-host.sh reprap-host.bat LICENSE"
+FILELIST="jar/reprap.jar lib/reprap-wv.stl \
+    reprap-host.sh reprap-host reprap-host.bat LICENSE"
 
 SRCFILENAME="reprap-host-src-$RELEASE"
 SRCFILELIST="src/* LICENSE build.xml build-user.xml .classpath .project \
@@ -32,6 +32,10 @@ done
 #   and the current UTC date for DATE
 NOW=`date -u +'%d %B %Y'`
 sed -e "s/RELEASE/$RELEASE/g" -e "s/DATE/$NOW/g" README >$FILENAME/README
+
+# Copy Main class file, so we can use java -cp to run software
+mkdir -p $FILENAME/org/reprap
+cp -p bin/org/reprap/Main.class $FILENAME/org/reprap/
 
 # Create zip archive
 [ -f "$FILENAME".zip ] && rm "$FILENAME".zip

@@ -1,1 +1,1 @@
-java -Xmx384M -jar Reprap.jar
+java -Xmx384M -jar reprap.jar
