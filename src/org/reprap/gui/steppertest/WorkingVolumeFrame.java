@@ -58,7 +58,6 @@ public class WorkingVolumeFrame  extends JFrame {
 	private final int slowSpeed = 160;
 	
 	private final int localNodeNumber = 0;
-	private final int baudRate = 19200;
 	JPanel motorX, motorY, motorZ;
 	Communicator communicator;
 	
