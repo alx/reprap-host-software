@@ -33,7 +33,7 @@ done
 NOW=`date -u +'%d %B %Y'`
 sed -e "s/RELEASE/$RELEASE/g" -e "s/DATE/$NOW/g" README >$FILENAME/README
 # Create README.txt for Windows people
-sed -e 's/$/\r/' README >$FILENAME/README.txt
+sed -e 's/$/\r/' $FILENAME/README >$FILENAME/README.txt
 
 # Copy Main class file, so we can use java -cp to run software
 mkdir -p $FILENAME/org/reprap
