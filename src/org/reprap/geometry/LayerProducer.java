@@ -331,8 +331,6 @@ public class LayerProducer {
 			return;
 		}
 
-//		if(outline)
-//			p = p.randomStart();
 		
 		Attributes att = p.getAttributes();
 		int baseSpeed = att.getExtruder(printer.getExtruders()).getXYSpeed();
@@ -344,6 +342,9 @@ public class LayerProducer {
 			//(int)Math.round(baseSpeed*att.getExtruder(printer.getExtruders()).getInfillSpeed());
 		
 		printer.selectExtruder(att);
+		
+		if(outline && printer.getExtruder().randomStart())
+			p = p.randomStart();
 		
 		int stopExtruding = p.backStep(printer.getExtruder().getExtrusionOverRun());
 		

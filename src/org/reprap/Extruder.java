@@ -207,5 +207,11 @@ public interface Extruder {
      * @return the number of times the nozzle moves over the wiper
      */
     public int getNozzleWipeFreq();
+    
+    /**
+     * Start polygons at a random location round their perimiter
+     * @return
+     */
+    public boolean randomStart();
 
 }

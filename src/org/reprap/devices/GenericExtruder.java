@@ -242,6 +242,10 @@ public class GenericExtruder extends Device implements Extruder{
 	 */
 	private int myExtruderID;
 	
+	/**
+	 * Start polygons at random perimiter points? 
+	 */
+	private boolean randSt = false;
 	
 	/**
 	 * Flag indicating if initialisation succeeded.  Usually this
@@ -327,6 +331,7 @@ public class GenericExtruder extends Device implements Extruder{
 		nozzleWipeDatumY = prefs.loadInt(prefName + "NozzleWipeDatumY");
 		nozzleWipeStroke = prefs.loadInt(prefName + "NozzleWipeStroke");
 		nozzleWipeFreq = prefs.loadInt(prefName + "NozzleWipeFreq");
+		randSt = prefs.loadBool(prefName + "RandomStart");
 		
 		Color3f col = new Color3f((float)prefs.loadDouble(prefName + "ColourR(0..1)"), 
 				(float)prefs.loadDouble(prefName + "ColourG(0..1)"), 
@@ -1175,4 +1180,12 @@ public class GenericExtruder extends Device implements Extruder{
     	return nozzleWipeFreq;
     }
     
+    /**
+     * Start polygons at a random location round their perimiter
+     * @return
+     */
+    public boolean randomStart()
+    {
+    	return randSt;
+    }
 }

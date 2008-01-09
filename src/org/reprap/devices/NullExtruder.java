@@ -220,6 +220,11 @@ public class NullExtruder implements Extruder{
 	 * Number of wipes per procedure
 	 */
 	private int nozzleWipeFreq;
+	
+	/**
+	 * Start polygons at random perimiter points? 
+	 */
+	private boolean randSt = false;
 
 	/**
 	 * @param prefs
@@ -258,7 +263,8 @@ public class NullExtruder implements Extruder{
 		nozzleWipeDatumY = prefs.loadInt(prefName + "NozzleWipeDatumY");
 		nozzleWipeStroke = prefs.loadInt(prefName + "NozzleWipeStroke");
 		nozzleWipeFreq = prefs.loadInt(prefName + "NozzleWipeFreq");
-				
+		randSt = prefs.loadBool(prefName + "RandomStart");
+		
 		materialColour = getAppearanceFromNumber(extruderId);		
 			
 		isCommsAvailable = true;
@@ -591,6 +597,15 @@ public class NullExtruder implements Extruder{
     public int getNozzleWipeFreq()
     {
     	return nozzleWipeFreq;
+    }
+    
+    /**
+     * Start polygons at a random location round their perimiter
+     * @return
+     */
+    public boolean randomStart()
+    {
+    	return randSt;
     }
 
 }
