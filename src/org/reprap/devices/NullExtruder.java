@@ -167,6 +167,16 @@ public class NullExtruder implements Extruder{
 	private double asFactor;
 	
 	/**
+	 * Line length below which to plot faster
+	 */
+	private double shortLength;
+	
+	/**
+	 *Factor for short line speeds
+	 */
+	private double shortSpeed;
+	
+	/**
 	 * The name of this extruder's material
 	 */
 	private String materialType;
@@ -264,6 +274,8 @@ public class NullExtruder implements Extruder{
 		nozzleWipeStroke = prefs.loadInt(prefName + "NozzleWipeStroke");
 		nozzleWipeFreq = prefs.loadInt(prefName + "NozzleWipeFreq");
 		randSt = prefs.loadBool(prefName + "RandomStart");
+		shortLength = prefs.loadDouble(prefName + "ShortLength");
+		shortSpeed = prefs.loadDouble(prefName + "ShortSpeed");
 		
 		materialColour = getAppearanceFromNumber(extruderId);		
 			
@@ -607,5 +619,24 @@ public class NullExtruder implements Extruder{
     {
     	return randSt;
     }
-
+    /**
+     * get short lengths which need to be plotted faster
+     * set -ve to turn this off.
+     * @return
+     */
+    
+    public double getShortLength()
+    {
+    	return shortLength; 
+    }
+    
+    /**
+     * Factor (between 0 and 1) to use to set the speed for
+     * short lines.
+     * @return
+     */
+    public double getShortSpeed()
+    {
+    	return shortSpeed; 
+    }
 }

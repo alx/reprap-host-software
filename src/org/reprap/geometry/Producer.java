@@ -9,6 +9,7 @@ import org.reprap.gui.RepRapBuild;
 import org.reprap.machines.MachineFactory;
 import org.reprap.machines.NullCartesianMachine;
 import org.reprap.utilities.Debug;
+import org.reprap.devices.pseudo.LinePrinter;
 
 public class Producer {
 	
@@ -196,7 +197,8 @@ public class Producer {
 			reprap.setSpeed(reprap.getExtruder().getXYSpeed());
 			reprap.moveTo(5, 5, 0, false, false);
 			// Take it slow and easy.
-			reprap.setSpeed(reprap.getExtruder().getXYSpeed()*3/4);
+			reprap.setSpeed(LinePrinter.speedFix(reprap.getExtruder().getXYSpeed(), 
+					reprap.getExtruder().getOutlineSpeed()));
 			Debug.d("Printing warmup segments, printing to (5,50)");
 			reprap.printTo(5, 50, 0, false);
 			Debug.d("Printing warmup segments, printing to (7,50)");

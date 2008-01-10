@@ -214,4 +214,17 @@ public interface Extruder {
      */
     public boolean randomStart();
 
+    /**
+     * get short lengths which need to be plotted faster
+     * set -ve to turn this off.
+     * @return
+     */
+    public double getShortLength();
+    
+    /**
+     * Factor (between 0 and 1) to use to set the speed for
+     * short lines.
+     * @return
+     */
+    public double getShortSpeed();
 }

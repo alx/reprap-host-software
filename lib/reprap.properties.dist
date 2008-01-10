@@ -3,6 +3,10 @@
 WorldName=RepRap-World
 CommsDebug=false
 Extruder0_ColourR(0..1)=0.3
+Extruder0_ShortLength=1.5
+Extruder0_ShortSpeed=1
+Extruder1_ShortLength=1.5
+Extruder1_ShortSpeed=1
 Extruder0_XYSpeed(0..255)=230
 Extruder1_Beta(K)=3480
 Extruder1_OutlineSpeed(0..1)=0.6

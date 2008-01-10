@@ -222,6 +222,16 @@ public class GenericExtruder extends Device implements Extruder{
 	private double asFactor;
 	
 	/**
+	 * Line length below which to plot faster
+	 */
+	private double shortLength;
+	
+	/**
+	 *Factor for short line speeds
+	 */
+	private double shortSpeed;
+	
+	/**
 	 * The name of this extruder's material
 	 */
 	private String material;  
@@ -332,6 +342,8 @@ public class GenericExtruder extends Device implements Extruder{
 		nozzleWipeStroke = prefs.loadInt(prefName + "NozzleWipeStroke");
 		nozzleWipeFreq = prefs.loadInt(prefName + "NozzleWipeFreq");
 		randSt = prefs.loadBool(prefName + "RandomStart");
+		shortLength = prefs.loadDouble(prefName + "ShortLength");
+		shortSpeed = prefs.loadDouble(prefName + "ShortSpeed");
 		
 		Color3f col = new Color3f((float)prefs.loadDouble(prefName + "ColourR(0..1)"), 
 				(float)prefs.loadDouble(prefName + "ColourG(0..1)"), 
@@ -465,10 +477,14 @@ public class GenericExtruder extends Device implements Extruder{
 		// if we go over because the power will be adjusted when we get there.  At
 		// the same time, if we aim too high, we'll overshoot a bit before we
 		// can react.
-		double temperature0 = temperature * 1.1;
+		
+		// Tighter temp constraints under test 10% -> 3% (10-1-8)
+		double temperature0 = temperature * 1.03;
 		
 		// A safety cutoff will be set at 20% above requested setting
-		double temperatureSafety = temperature * 1.2;
+		// Tighter temp constraints added by eD 20% -> 6% (10-1-8)
+		
+		double temperatureSafety = temperature * 1.06;
 		
 		// Calculate power output from hm, hb.  In general, the temperature
 		// we achieve is power * hm + hb.  So to achieve a given temperature
@@ -1187,5 +1203,25 @@ public class GenericExtruder extends Device implements Extruder{
     public boolean randomStart()
     {
     	return randSt;
+    }
+    
+    /**
+     * get short lengths which need to be plotted faster
+     * set -ve to turn this off.
+     * @return
+     */
+    public double getShortLength()
+    {
+    	return shortLength; 
+    }
+    
+    /**
+     * Factor (between 0 and 1) to use to set the speed for
+     * short lines.
+     * @return
+     */
+    public double getShortSpeed()
+    {
+    	return shortSpeed; 
     }
 }

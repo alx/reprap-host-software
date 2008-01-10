@@ -223,6 +223,28 @@ public class LayerProducer {
 		return new Rr2Point(printer.getX(), printer.getY());
 	}
 	
+	private boolean shortLine(Rr2Point p) throws ReprapException, IOException
+	{
+		double shortLen = printer.getExtruder().getShortLength();
+		if(shortLen < 0)
+			return false;
+		Rr2Point a = Rr2Point.sub(posNow(), p);
+		double amod = a.mod();
+		if(amod > shortLen) {
+			Debug.d("Long segment.  Current speed is: " + currentSpeed);
+			return false;
+		}
+		printer.setSpeed(LinePrinter.speedFix(printer.getExtruder().getXYSpeed(), 
+				printer.getExtruder().getShortSpeed()));
+		printer.printTo(p.x(), p.y(), z, true);
+		printer.setSpeed(currentSpeed);
+		Debug.d("Short segment at speed " +
+				LinePrinter.speedFix(currentSpeed, printer.getExtruder().getShortSpeed())
+				+" derived from speed: " + currentSpeed);
+		return true;
+		
+	}
+	
 	/**
 	 * @param first First point, the start of the line segment to be plotted.
 	 * @param second Second point, the end of the line segment to be plotted.
@@ -233,6 +255,9 @@ public class LayerProducer {
 	private void plot(Rr2Point first, Rr2Point second, boolean turnOff) throws ReprapException, IOException
 	{
 		if (printer.isCancelled()) return;
+		
+		if(shortLine(first))
+			return;
 		
 		double speedUpLength = printer.getExtruder().getAngleSpeedUpLength();
 		if(speedUpLength > 0)
