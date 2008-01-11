@@ -214,7 +214,9 @@ public class Reprap implements CartesianPrinter {
 				!startUp)
 			return;
 
-		double liftedZ = z + extruders[extruder].getExtrusionHeight();
+		// We don't need to lift a whole layer up. Half a layer should do
+		// and will dribble less. Remember the Z axis is kinda slow...
+		double liftedZ = z + (extruders[extruder].getExtrusionHeight()/2);
 		int stepperLiftedZ = convertToStepZ(liftedZ);
 		int targetZ;
 		
