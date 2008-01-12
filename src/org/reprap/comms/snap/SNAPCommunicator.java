@@ -128,9 +128,13 @@ public class SNAPCommunicator implements Communicator {
 		r += "->";
 		r += device.getAddress().toString();
 		r += ": ";
+		String rDec = " ( = ";
 		for(int i = 0; i < binaryMessage.length; i++)
+		{
 			r += Integer.toHexString(binaryMessage[i]>=0?binaryMessage[i]:binaryMessage[i]+256) + " ";
-		return r;
+		    rDec += Integer.toString(binaryMessage[i]>=0?binaryMessage[i]:binaryMessage[i]+256) + " ";
+		}
+		return r + rDec + ")";
 	}
 	
 	public IncomingContext sendMessage(Device device,
@@ -223,10 +227,12 @@ public class SNAPCommunicator implements Communicator {
 		} catch (UnsupportedCommOperationException e) {
 			Debug.d("Read timeouts unsupported on this platform");
 		}
-		String msg = "rx: ";
+		String msgHex = "rx: ";
+		String msgDec = " ( = ";
 		for(;;) {
 			int c = readByte(timeout);
-			msg += Integer.toHexString(c) + " ";
+			msgDec += Integer.toString(c) + " ";
+			msgHex += Integer.toHexString(c) + " ";
 			if (c == -1)
 				throw new IOException("Timeout receiving byte");
 			if (packet == null) {
@@ -237,7 +243,7 @@ public class SNAPCommunicator implements Communicator {
 			if (packet.receiveByte((byte)c)) {
 				// Packet is complete
 				if (packet.validate()) {
-					Debug.c(msg);
+					Debug.c(msgHex + msgDec + ")");
 					return packet;
 				} else {
 					System.err.println("CRC error");
