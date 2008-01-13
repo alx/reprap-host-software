@@ -373,9 +373,10 @@ public class LayerProducer {
 		
 		int stopExtruding = p.backStep(printer.getExtruder().getExtrusionOverRun());
 		
+		printer.setSpeed(printer.getFastSpeed());
+		
 		if (printer.isCancelled()) return;
 		
-		printer.setSpeed(printer.getFastSpeed());
 		move(p.point(0), p.point(1), true, false);
 //		printer.setSpeed(outlineSpeed);
 		plot(p.point(0), p.point(1), false);
@@ -398,7 +399,11 @@ public class LayerProducer {
 			int i = j%leng;
 			Rr2Point next = p.point((j+1)%leng);
 			
-			if (printer.isCancelled()) return;
+			if (printer.isCancelled()) 
+			{
+				    printer.setSpeed(printer.getFastSpeed());
+					return;
+			}
 			
 			if(f != gapMaterial && j <= stopExtruding)
 				plot(p.point(i), next, false);
@@ -408,14 +413,17 @@ public class LayerProducer {
 				if(f == gapMaterial)
 				{
 					if(j == leng)
+					{
+						printer.setSpeed(printer.getFastSpeed());
 						return;
-					else
+					} else
 						move(p.point(i), next, true, false);
 				}else
 					move(p.point(i), next, false, false);
 			}
 			f = p.flag(i);
 		}
+		printer.setSpeed(printer.getFastSpeed());
 	}
 	
 	// Calculate the distance between two points
