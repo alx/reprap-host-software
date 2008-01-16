@@ -559,8 +559,9 @@ public class RrCSGPolygon
 	 * @param flag
      * @return the polygon 
      */
-    public RrPolygon meg(int flag)
+    public RrPolygon meg() //(int flag)
     {
+    	int flag = 1;
     	RrPolygon result = new RrPolygon(att);
     	
     	RrCSGPolygon c = this;
@@ -581,7 +582,7 @@ public class RrCSGPolygon
     		if(!c.corner)
     			System.err.println("RrCSGPolygon.meg(): visiting non-corner quad!");
     		
-    		result.add(c.vertex, flag);
+    		result.add(c.vertex);
     		c.visit2 = true;
     		nextIndex = now.find(c) + 1;
     		
@@ -606,7 +607,7 @@ public class RrCSGPolygon
 	 * @param fs
      * @return a polygon list as the result
      */
-    public RrPolygonList megList(int fg, int fs)
+    public RrPolygonList megList() //(int fg, int fs)
     {
     	clearVisited(true, true);
 
@@ -616,10 +617,10 @@ public class RrCSGPolygon
     	RrCSGPolygon vtx = findCorner(true, true);
     	while(vtx != null)
     	{
-    		m = vtx.meg(fg);
+    		m = vtx.meg(); //(fg);
     		if(m.size() > 0)
     		{
-    			m.flag(0, fs);
+    			//m.flag(0, fs);
     			if(m.size() > 2)
     				result.add(m);
     			else
@@ -701,7 +702,7 @@ public class RrCSGPolygon
      * @return polygon edge between start/originaPlane and targetPlane
      */
     public snakeEnd megGoToPlane(Rr2Point start, RrHalfPlane modelEdge, RrHalfPlane originPlane,
-    		RrHalfPlane targetPlane, int flag)
+    		RrHalfPlane targetPlane) //, int flag)
     {
     	int beforeIndex = -1;
 
@@ -753,14 +754,14 @@ public class RrCSGPolygon
         		nextIndex = targetPlane.find(now);
         		if(nextIndex < 0)
         			return null;
-        		rPol.add(targetPlane.getPoint(nextIndex), flag);
+        		rPol.add(targetPlane.getPoint(nextIndex));
         		return new snakeEnd(rPol, targetPlane, nextIndex);
         	}
         	if(originPlane.value(pt) <= 0)
         		return null;
         	   		
     		c = now.getQuad(nextIndex);
-    		rPol.add(c.vertex, flag);
+    		rPol.add(c.vertex);
     		next = c.csg.c_1().plane();
     		if(next == now)
     			next = c.csg.c_2().plane();
@@ -780,13 +781,13 @@ public class RrCSGPolygon
      * @param fs
      * @return zigzag hatch polygon
      */
-	private RrPolygon snakeGrow(List hatches, int thisHatch, int thisPt, int fg, int fs)
+	private RrPolygon snakeGrow(List hatches, int thisHatch, int thisPt) //, int fg, int fs)
 	{
 		RrPolygon result = new RrPolygon(att);
 		
 		RrHalfPlane h = (RrHalfPlane)hatches.get(thisHatch);
 		Rr2Point pt = h.pLine().point(h.getParameter(thisPt));
-		result.add(pt, fg);
+		result.add(pt);
 		snakeEnd jump;
 		
 		do
@@ -795,11 +796,11 @@ public class RrCSGPolygon
 			if(thisPt%2 != 0)
 				thisPt--;
 			pt = h.pLine().point(h.getParameter(thisPt));
-			result.add(pt, fg);
+			result.add(pt);
 			thisHatch++;
 			if(thisHatch < hatches.size())
 				jump = megGoToPlane(pt, h.getPlane(thisPt), h, 
-					(RrHalfPlane)hatches.get(thisHatch), fg);
+					(RrHalfPlane)hatches.get(thisHatch)); //, fg);
 			else 
 				jump = null;
 			h.remove(thisPt);
@@ -811,7 +812,7 @@ public class RrCSGPolygon
 			}
 		} while(jump != null);
 		
-		result.flag(result.size()-1, fs);
+		//result.flag(result.size()-1, fs);
 		
 		return result;
 	}
@@ -824,7 +825,7 @@ public class RrCSGPolygon
 	 * @param fs
 	 * @return a polygon list as the result with flag values f
 	 */
-	public RrPolygonList hatch(RrHalfPlane hp, double gap, int fg, int fs)
+	public RrPolygonList hatch(RrHalfPlane hp, double gap) //, int fg, int fs)
 	{
 		RrBox big = box.scale(1.1);
 		double d = Math.sqrt(big.d_2());
@@ -886,7 +887,7 @@ public class RrCSGPolygon
 			}
 			if(segment >= 0)
 			{
-				snakes.add(snakeGrow(hatches, segment, 0, fg, fs));
+				snakes.add(snakeGrow(hatches, segment, 0)); //, fg, fs));
 			}
 		} while(segment >= 0);
 		

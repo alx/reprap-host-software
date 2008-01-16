@@ -307,8 +307,8 @@ public class Producer {
 //						isEvenLayer?evenHatchDirection:oddHatchDirection);
 //			} else
 //			{
-				RrCSGPolygonList slice = stlc.slice(z+reprap.getExtruder().getExtrusionHeight()*0.5, 
-						LayerProducer.solidMaterial(), LayerProducer.gapMaterial());
+				RrCSGPolygonList slice = stlc.slice(z+reprap.getExtruder().getExtrusionHeight()*0.5); 
+						// ,LayerProducer.solidMaterial(), LayerProducer.gapMaterial());
 				BranchGroup lowerShell = stlc.getBelow();
 				if(slice.size() > 0)
 					layer = new LayerProducer(reprap, z, slice, lowerShell,

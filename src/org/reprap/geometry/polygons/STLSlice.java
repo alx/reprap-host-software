@@ -993,7 +993,7 @@ public class STLSlice
 	 * @param fs
 	 * @return a list of all the resulting polygons.
 	 */
-	private static RrPolygonList conquer(STLSlice root, int fg, int fs)
+	private static RrPolygonList conquer(STLSlice root) //, int fg, int fs)
 	{
 		RrPolygonList pgl = new RrPolygonList();
 		
@@ -1010,14 +1010,14 @@ public class STLSlice
 			{
 				trackPolygon tp = corner.processThisQuad(edge);
 				if(tp.here != null)
-					pg.add(tp.here, fg);
+					pg.add(tp.here);
 				corner = tp.nextQ;
 				edge = tp.nextE;
 			} while (corner != startCorner && corner != null);
 			
 			if(pg.size() > 2)  // Throw away "noise"...
 			{
-				pg.flag(pg.size() - 1, fs);
+				//pg.flag(pg.size() - 1, fs);
 				pgl.add(pg);
 			}
 
@@ -1052,7 +1052,7 @@ public class STLSlice
 	 * @param z
 	 * @return a CSG representation of all the polygons in the slice
 	 */
-	public RrCSGPolygonList slice(double z, int fg, int fs)
+	public RrCSGPolygonList slice(double z) //, int fg, int fs)
 	{
 		RrCSGPolygonList rl = new RrCSGPolygonList();
 
@@ -1109,7 +1109,7 @@ public class STLSlice
 				
 				// Run round joining up all the pairs of ends...
 
-				RrPolygonList pgl = conquer(this, fg, fs);
+				RrPolygonList pgl = conquer(this); //, fg, fs);
 
 				// Remove wrinkles
 

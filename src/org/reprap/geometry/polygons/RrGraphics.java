@@ -356,10 +356,10 @@ public class RrGraphics
 		for(int j = 1; j <= leng; j++)
 		{
 			int i = j%leng;
-			int f = p.flag(j-1);
-			if(f != 0)
+			//int f = p.flag(j-1);
+			if(j == leng)
 			{
-				colour(f);
+				colour(1);
 				plot(p.point(i));
 			} else
 			{

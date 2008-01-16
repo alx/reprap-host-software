@@ -92,7 +92,7 @@ public class RrPolygon
 	/**
 	 * General purpose list of integer flag values, one for each point
 	 */
-	private List flags;
+	//private List flags = null;
 	
 	/**
 	 * The atributes of the STL object that this polygon represents
@@ -112,7 +112,7 @@ public class RrPolygon
 		if(a == null)
 			System.err.println("RrPolygon(): null attributes!");
 		points = new ArrayList();
-		flags = new ArrayList();
+		//flags = null;
 		att = a;
 		box = new RrBox();
 	}
@@ -131,10 +131,12 @@ public class RrPolygon
 	 * @param i
 	 * @return i-th flag
 	 */
-	public int flag(int i)
-	{
-		return ((Integer)flags.get(i)).intValue();
-	}
+//	private int flag(int i)
+//	{
+//		if(flags == null)
+//			System.err.println("RrPolygon.flag(i): flags not initialized.");
+//		return ((Integer)flags.get(i)).intValue();
+//	}
 	
 	/**
 	 * As a string
@@ -157,10 +159,12 @@ public class RrPolygon
 	 * @param i
 	 * @param f
 	 */
-	public void flag(int i, int f)
-	{
-		flags.set(i, new Integer(f));
-	}
+//	private void flag(int i, int f)
+//	{
+//		if(flags == null)
+//			System.err.println("RrPolygon.flag(i): flags not initialized.");
+//		flags.set(i, new Integer(f));
+//	}
 	
 	/**
 	 * Length
@@ -179,7 +183,7 @@ public class RrPolygon
 	{
 		this(p.att);
 		for(int i = 0; i < p.size(); i++)
-			add(new Rr2Point(p.point(i)), new Integer((p.flag(i))));		
+			add(new Rr2Point(p.point(i))); //, new Integer((p.flag(i))));		
 	}
 	
 	/**
@@ -187,10 +191,10 @@ public class RrPolygon
 	 * @param p
 	 * @param f
 	 */
-	public void add(Rr2Point p, int f)
+	public void add(Rr2Point p)
 	{
 		points.add(new Rr2Point(p));
-		flags.add(new Integer(f));
+		//flags.add(new Integer(f));
 		box.expand(p);
 	}
 	
@@ -216,7 +220,7 @@ public class RrPolygon
 		for(int i = 0; i < p.size(); i++)
 		{
 			points.add(new Rr2Point(p.point(i)));
-			flags.add(new Integer(p.flag(i))); 
+			//flags.add(new Integer(p.flag(i))); 
 		}
 		box.expand(p.box);
 	}
@@ -229,7 +233,8 @@ public class RrPolygon
 	public void remove(int i)
 	{
 		points.remove(i);
-		flags.remove(i);
+//		if(flags != null)
+//			flags.remove(i);
 	}
 	
 	/**
@@ -270,11 +275,11 @@ public class RrPolygon
 		int f;
 		for(int i = size() - 1; i >= 0; i--)
 		{
-			if(i > 0)
-				f = flag(i-1);
-			else
-				f = flag(size() - 1);
-			result.add(point(i), f);
+//			if(i > 0)
+//				f = flag(i-1);
+//			else
+//				f = flag(size() - 1);
+			result.add(point(i)); //, f);
 		}
 		return result;
 	}
@@ -288,7 +293,7 @@ public class RrPolygon
 		int i = rangen.nextInt(size());
 		for(int j = 0; j < size(); j++)
 		{
-			result.add(new Rr2Point(point(i)), new Integer((flag(i))));
+			result.add(new Rr2Point(point(i))); //, new Integer((flag(i))));
 			i++;
 			if(i >= size())
 				i = 0;
@@ -320,11 +325,11 @@ public class RrPolygon
 	 * @param distance to backtrack
 	 * @return index of the inserted point
 	 */
-	public int backStep(double d)
+	public int backStep(double d, boolean outline)
 	{
 		Rr2Point last, p;
 		int start = size() - 1;
-		if(flag(0) != LayerProducer.gapMaterial())
+		if(outline)
 			last = point(0);
 		else
 		{
@@ -335,7 +340,7 @@ public class RrPolygon
 		for(int i = start; i >= 0; i--)
 		{
 			p = point(i);
-			sum += Math.sqrt(Rr2Point.d_2(p, last));
+			sum += Rr2Point.d(p, last);
 			if(sum > d)
 			{
 				sum = sum - d;
@@ -346,11 +351,11 @@ public class RrPolygon
 				if(j < size())
 				{
 					points.add(j, p);
-					flags.add(j, flags.get(i));
+					//flags.add(j, flags.get(i));
 				} else
 				{
 					points.add(p);
-					flags.add(flags.get(i));					
+					//flags.add(flags.get(i));					
 				}
 				return(j);
 			}
@@ -400,7 +405,7 @@ public class RrPolygon
 		// We get back -1 if the points are in a straight line.
 		if (v1<0)
 			return new RrPolygon(this);
-		r.add(point(v1%leng), flag(v1%leng));
+		r.add(point(v1%leng)); //, flag(v1%leng));
 		int v2 = v1;
 		while(true)
 		{
@@ -408,7 +413,7 @@ public class RrPolygon
 			v2 = findAngleStart(v2, d2);
 			if((v2 > leng)||(v2<0))
 				return(r);
-			r.add(point(v2%leng), flag(v2%leng));
+			r.add(point(v2%leng)); //, flag(v2%leng));
 		}
 		// The compiler is very clever to spot that no return
 		// is needed here...
@@ -420,39 +425,40 @@ public class RrPolygon
 	 * @param tiny
 	 * @return filtered polygon object
 	 */
-	public RrPolygon filterShort(double tiny)
-	{
-		RrPolygon r = new RrPolygon(att);
-		int oldEdgeFlag = flag(size()-1);
-		int i, ii;
-		
-		for(i = 1; i <= size(); i++)
-		{
-			ii = i%size();
-			if(oldEdgeFlag == LayerProducer.gapMaterial() && flag(ii) == LayerProducer.gapMaterial())
-			{
-				double d = Rr2Point.sub(point(ii), point(i - 1)).mod();
-				if(d > tiny)
-					r.add(point(i - 1), flag(i - 1));
-				//else
-					//System.out.println("Tiny edge removed.");
-			} else
-				r.add(point(i - 1), flag(i - 1));
-			oldEdgeFlag = flag(i - 1);
-		}
-		
-		// Anything left?
-		
-		for(i = 0; i < r.size(); i++)
-		{
-			if(r.flag(i) != LayerProducer.gapMaterial())
-				return r;
-		}
-		
-		// Nothing left
-		
-		return new RrPolygon(att);
-	}
+	
+//	public RrPolygon filterShort(double tiny)
+//	{
+//		RrPolygon r = new RrPolygon(att);
+//		int oldEdgeFlag = flag(size()-1);
+//		int i, ii;
+//		
+//		for(i = 1; i <= size(); i++)
+//		{
+//			ii = i%size();
+//			if(oldEdgeFlag == LayerProducer.gapMaterial() && flag(ii) == LayerProducer.gapMaterial())
+//			{
+//				double d = Rr2Point.sub(point(ii), point(i - 1)).mod();
+//				if(d > tiny)
+//					r.add(point(i - 1), flag(i - 1));
+//				//else
+//					//System.out.println("Tiny edge removed.");
+//			} else
+//				r.add(point(i - 1), flag(i - 1));
+//			oldEdgeFlag = flag(i - 1);
+//		}
+//		
+//		// Anything left?
+//		
+//		for(i = 0; i < r.size(); i++)
+//		{
+//			if(r.flag(i) != LayerProducer.gapMaterial())
+//				return r;
+//		}
+//		
+//		// Nothing left
+//		
+//		return new RrPolygon(att);
+//	}
 	
 	// ****************************************************************************
 	
@@ -478,10 +484,10 @@ public class RrPolygon
 	 * @param a
 	 * @return the point
 	 */
-	private int listFlag(int i, List a)
-	{
-		return flag(((Integer)a.get(i)).intValue());
-	}
+//	private int listFlag(int i, List a)
+//	{
+//		return flag(((Integer)a.get(i)).intValue());
+//	}
 		
 	/**
 	 * find the top (+y) point of a polygon point list
@@ -696,14 +702,29 @@ public class RrPolygon
 		return points;
 	}
 	
+// 	private void flagSet(int f, List a)
+// 	{
+// 	 		for(int i = 0; i < a.size(); i++)
+//  			flag(((Integer)a.get(i)).intValue(), f);
+//  	}
+	
 	/**
 	 * Set all the flag values in a list the same
 	 * @param f
 	 */
-	private void flagSet(int f, List a)
+	private void flagSet(int f, List a, int[] flags)
 	{
-		for(int i = 0; i < a.size(); i++)
-			flag(((Integer)a.get(i)).intValue(), f);
+//		if(flags == null)
+//		{
+//			flags = new int[size()];
+//			for(int i = 0; i < a.size(); i++)
+//				flags[((Integer)a.get(i)).intValue()] = f;
+//		} else
+//		{
+			for(int i = 0; i < a.size(); i++)
+				flags[((Integer)a.get(i)).intValue()] = f;
+//		}
+
 	}	
 	
 	/**
@@ -712,16 +733,16 @@ public class RrPolygon
 	 * @param level
 	 * @return the section (null for none left)
 	 */
-	private List polSection(List a, int level)
+	private List polSection(List a, int level, int[] flags)
 	{
 		int flag, oldi;
 		oldi = a.size() - 1;
-		int oldFlag = listFlag(oldi, a);
+		int oldFlag = flags[((Integer)a.get(oldi)).intValue()]; //listFlag(oldi, a);
 
 		int ptr = -1;
 		for(int i = 0; i < a.size(); i++)
 		{
-			flag = listFlag(i, a);
+			flag = flags[((Integer)a.get(i)).intValue()];//listFlag(i, a);
 
 			if(flag < level && oldFlag >= level) 
 			{
@@ -740,7 +761,7 @@ public class RrPolygon
 		ptr++;
 		if(ptr > a.size() - 1)
 			ptr = 0;
-		while(listFlag(ptr, a) < level)
+		while(flags[((Integer)a.get(ptr)).intValue()] < level) //listFlag(ptr, a)
 		{
 			result.add(a.get(ptr));
 			ptr++;
@@ -759,9 +780,9 @@ public class RrPolygon
 	 * @param level
 	 * @return CSG representation
 	 */
-	private RrCSG toCSGRecursive(List a, int level, boolean closed)
+	private RrCSG toCSGRecursive(List a, int level, boolean closed, int[] flags)
 	{	
-		flagSet(level, a);	
+		flagSet(level, a, flags);	
 		level++;
 		List ch = convexHull(a);
 		if(ch.size() < 3)
@@ -770,7 +791,7 @@ public class RrPolygon
 			return RrCSG.nothing();
 		}
 		
-		flagSet(level, ch);
+		flagSet(level, ch, flags);
 		RrCSG hull;
 
 
@@ -795,8 +816,8 @@ public class RrPolygon
 		
 		for(i = start; i < a.size(); i++)
 		{
-			oldFlag = listFlag(oldi, a);
-			flag = listFlag(i, a);
+			oldFlag = flags[((Integer)a.get(oldi)).intValue()]; //listFlag(oldi, a);
+			flag = flags[((Integer)a.get(i)).intValue()]; //listFlag(i, a);
 
 			if(oldFlag == level && flag == level)
 			{
@@ -813,16 +834,16 @@ public class RrPolygon
 		// Finally deal with the sections on polygons that form the hull that
 		// are not themselves on the hull.
 		
-		List section = polSection(a, level);
+		List section = polSection(a, level, flags);
 		while(section != null)
 		{
 			if(level%2 == 1)
 				hull = RrCSG.intersection(hull,
-						toCSGRecursive(section, level, false));
+						toCSGRecursive(section, level, false, flags));
 			else
 				hull = RrCSG.union(hull, 
-						toCSGRecursive(section, level, false));
-			section = polSection(a, level);
+						toCSGRecursive(section, level, false, flags));
+			section = polSection(a, level, flags);
 		}
 		
 		return hull;
@@ -841,7 +862,8 @@ public class RrPolygon
 			copy = copy.negate();
 
 		List all = copy.allPoints();
-		RrCSG expression = copy.toCSGRecursive(all, 0, true);
+		int [] flags = new int[copy.size()];
+		RrCSG expression = copy.toCSGRecursive(all, 0, true, flags);
 
 		RrBox b = copy.box.scale(1.1);
 		//expression = expression.simplify(tolerance);

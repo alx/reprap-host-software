@@ -21,19 +21,19 @@ public class TestMain
 		Rr2Point ss = new Rr2Point(0.4, 0.3);    
 		
 		RrPolygon a = new RrPolygon(new Attributes(null, null, null, null));
-		a.add(p, 1);
-		a.add(q, 1);
-		a.add(r, 1);
-		a.add(s, 1);
+		a.add(p);
+		a.add(q);
+		a.add(r);
+		a.add(s);
 		
 		RrPolygonList c = new RrPolygonList();
 		c.add(a);
 		
 		a = new RrPolygon(new Attributes(null, null, null, null));
-		a.add(rr, 2);
-		a.add(qq, 2);
-		a.add(pp, 2);
-		a.add(ss, 2);
+		a.add(rr);
+		a.add(qq);
+		a.add(pp);
+		a.add(ss);
 		c.add(a);
 		
 		//RrPolygonList d = c.offset(0.03);
@@ -146,7 +146,7 @@ public class TestMain
 		
 		cp.divide(1.0e-6, 1);
 		//RrGraphics g = new RrGraphics(cp, true);
-		RrPolygonList hp = cp.megList(4, 3);
+		RrPolygonList hp = cp.megList();
 		System.out.println("polygons: " + hp.size());
 //		RrPolygonList hpl0 = new RrPolygonList();
 //		hpl0.add(hp.polygon(0));

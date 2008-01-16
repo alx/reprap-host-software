@@ -435,9 +435,9 @@ public class RrPolygonList
 	private void negate(int i)
 	{
 		RrPolygon p = polygon(i).negate();
-		int fl = p.flag(0);
-		p.flag(0, p.flag(p.size() - 1));
-		p.flag(p.size() - 1, fl);
+		//int fl = p.flag(0);
+		//p.flag(0, p.flag(p.size() - 1));
+		//p.flag(p.size() - 1, fl);
 		polygons.set(i, p);
 	}
 	
@@ -570,20 +570,20 @@ public class RrPolygonList
 	 * @param tiny
 	 * @return filtered polygon list
 	 */
-	public RrPolygonList filterShorts(double tiny)
-	{
-		RrPolygonList r = new RrPolygonList();
-		int i;
-		RrPolygon p;
-		
-		for(i = 0; i < size(); i++)
-		{
-			p = polygon(i).filterShort(tiny);
-			if(p.size() > 0)
-				r.add(polygon(i));
-		}
-		return r;
-	}
+//	public RrPolygonList filterShorts(double tiny)
+//	{
+//		RrPolygonList r = new RrPolygonList();
+//		int i;
+//		RrPolygon p;
+//		
+//		for(i = 0; i < size(); i++)
+//		{
+//			p = polygon(i).filterShort(tiny);
+//			if(p.size() > 0)
+//				r.add(polygon(i));
+//		}
+//		return r;
+//	}
 	
 	/**
 	 * Is polygon i inside CSG polygon j?

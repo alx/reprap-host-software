@@ -85,22 +85,22 @@ public class LayerProducer {
 	/**
 	 * Identifier for movements without depositing
 	 */
-	private static int gapMaterial = 0;
+	//private static int gapMaterial = 0;
 	
 	/**
 	 * Identifier for the actual depositing material
 	 */
-	private static int solidMaterial = 1;
+	//private static int solidMaterial = 1;
 	
 	/**
 	 * @return the gap material identifier
 	 */
-	public static int gapMaterial() { return gapMaterial; }
+	//public static int gapMaterial() { return gapMaterial; }
 	
 	/**
 	 * @return the filler material identifier
 	 */
-	public static int solidMaterial() { return solidMaterial; }
+	//public static int solidMaterial() { return solidMaterial; }
 
 	/**
 	 * The shape of the object built so far under the current layer
@@ -137,20 +137,6 @@ public class LayerProducer {
 	 */
 	private double z;
 	
-	/**
-	 * 
-	 */
-//	private int baseSpeed;
-	
-	/**
-	 * 
-	 */
-//	private int infillSpeed;
-	
-	/**
-	 * 
-	 */
-//	private int outlineSpeed;
 	
 	/**
 	 * 
@@ -188,19 +174,16 @@ public class LayerProducer {
 		RrCSGPolygonList offBorder = csgPols.offset(-0.5, printer.getExtruders());
 		RrCSGPolygonList offHatch = csgPols.offset(-1.5, printer.getExtruders());
 		
-		//csgPol.divide(Preferences.tiny(), 1.01);
-		//RrGraphics g = new RrGraphics(csgPol, true);
-		
 		offBorder.divide(Preferences.tiny(), 1.01);
 		offHatch.divide(Preferences.tiny(), 1.01);
 		
 		//RrGraphics g = new RrGraphics(offBorder, true);
 		
-		borderPolygons = offBorder.megList(solidMaterial, solidMaterial);
+		borderPolygons = offBorder.megList(); //(solidMaterial, solidMaterial);
 		
 		hatchedPolygons = new RrPolygonList();
-		hatchedPolygons.add(offHatch.hatch(hatchDirection, printer.getExtruders(),
-				solidMaterial, gapMaterial));	
+		hatchedPolygons.add(offHatch.hatch(hatchDirection, printer.getExtruders()));
+				//,solidMaterial, gapMaterial));	
 	
 //		RrPolygonList pllist = new RrPolygonList();
 //		pllist.add(borderPolygons);
@@ -223,6 +206,13 @@ public class LayerProducer {
 		return new Rr2Point(printer.getX(), printer.getY());
 	}
 	
+	/**
+	 * speed up for short lines
+	 * @param p
+	 * @return
+	 * @throws ReprapException
+	 * @throws IOException
+	 */
 	private boolean shortLine(Rr2Point p) throws ReprapException, IOException
 	{
 		double shortLen = printer.getExtruder().getShortLength();
@@ -241,8 +231,7 @@ public class LayerProducer {
 		Debug.d("Short segment at speed " +
 				LinePrinter.speedFix(currentSpeed, printer.getExtruder().getShortSpeed())
 				+" derived from speed: " + currentSpeed);
-		return true;
-		
+		return true;	
 	}
 	
 	/**
@@ -351,33 +340,37 @@ public class LayerProducer {
 			plotDist+=Rr2Point.d(lastPoint, n);
 			lastPoint=n;
 		}
-		if (plotDist<0.05) {
+		if (plotDist<Preferences.machineResolution()*0.5) {
 			Debug.d("Rejected line with "+leng+"points, length"+plotDist);
 			return;
 		}
 
 		
 		Attributes att = p.getAttributes();
+		
 		int baseSpeed = att.getExtruder(printer.getExtruders()).getXYSpeed();
 		int outlineSpeed = LinePrinter.speedFix(baseSpeed, 
 				att.getExtruder(printer.getExtruders()).getOutlineSpeed());
-			//(int)Math.round(baseSpeed*att.getExtruder(printer.getExtruders()).getOutlineSpeed());
 		int infillSpeed = LinePrinter.speedFix(baseSpeed, 
 				att.getExtruder(printer.getExtruders()).getInfillSpeed());
-			//(int)Math.round(baseSpeed*att.getExtruder(printer.getExtruders()).getInfillSpeed());
+			
 		
 		printer.selectExtruder(att);
 		
 		if(outline && printer.getExtruder().randomStart())
 			p = p.randomStart();
 		
-		int stopExtruding = p.backStep(printer.getExtruder().getExtrusionOverRun());
+		
+		int stopExtruding = leng + 10;
+		double backLength = printer.getExtruder().getExtrusionOverRun();
+		if(backLength > 0)
+			stopExtruding = p.backStep(backLength, outline);
 		
 		if (printer.isCancelled()) return;
 		
 		printer.setSpeed(printer.getFastSpeed());
 		move(p.point(0), p.point(1), true, false);
-//		printer.setSpeed(outlineSpeed);
+
 		plot(p.point(0), p.point(1), false);
 		// Print any lead-in.
 		printer.printStartDelay(printer.getExtruder().getExtrusionDelay());
@@ -510,8 +503,8 @@ public class LayerProducer {
 	{
 		int ib, jb, ih, jh;
 		
-		borderPolygons = borderPolygons.filterShorts(Preferences.machineResolution()*2);
-		hatchedPolygons = hatchedPolygons.filterShorts(Preferences.machineResolution()*2);
+		//borderPolygons = borderPolygons.filterShorts(Preferences.machineResolution()*2);
+		//hatchedPolygons = hatchedPolygons.filterShorts(Preferences.machineResolution()*2);
 		
 		ib = 0;
 		ih = 0;
