@@ -196,15 +196,20 @@ public class Producer {
 			Debug.d("Printing warmup segments, moving to (5,5)");
 			reprap.setSpeed(reprap.getExtruder().getXYSpeed());
 			reprap.moveTo(5, 5, 0, false, false);
+			
+			// Workaround to get the thing to start heating up
+			reprap.printTo(5, 5, 0, true);
 			// Take it slow and easy.
+			
+			Debug.d("Printing warmup segments, printing to (5,50)");
+			reprap.moveTo(5, 25, 0, false, false);
 			reprap.setSpeed(LinePrinter.speedFix(reprap.getExtruder().getXYSpeed(), 
 					reprap.getExtruder().getOutlineSpeed()));
-			Debug.d("Printing warmup segments, printing to (5,50)");
-			reprap.printTo(5, 50, 0, false);
+			reprap.printTo(5, 60, 0, false);
 			Debug.d("Printing warmup segments, printing to (7,50)");
-			reprap.printTo(7, 50, 0, false);
+			reprap.printTo(7, 60, 0, false);
 			Debug.d("Printing warmup segments, printing to (7,5)");
-			reprap.printTo(7, 5, 0, true);
+			reprap.printTo(7, 25, 0, true);
 			Debug.d("Warmup complete");
 			reprap.setSpeed(reprap.getFastSpeed());
 			

@@ -348,7 +348,7 @@ public class LayerProducer {
 		for (int i=1; i<leng; i++)
 		{
 			Rr2Point n=p.point(i);
-			plotDist+=distanceBetween(lastPoint,n);
+			plotDist+=Rr2Point.d(lastPoint, n);
 			lastPoint=n;
 		}
 		if (plotDist<0.05) {
@@ -373,10 +373,9 @@ public class LayerProducer {
 		
 		int stopExtruding = p.backStep(printer.getExtruder().getExtrusionOverRun());
 		
-		printer.setSpeed(printer.getFastSpeed());
-		
 		if (printer.isCancelled()) return;
 		
+		printer.setSpeed(printer.getFastSpeed());
 		move(p.point(0), p.point(1), true, false);
 //		printer.setSpeed(outlineSpeed);
 		plot(p.point(0), p.point(1), false);
@@ -393,43 +392,78 @@ public class LayerProducer {
 			currentSpeed = infillSpeed;			
 		}
 		
-		int f = p.flag(0);
-		for(int j = 1; j <= leng; j++)
+		if(outline)
 		{
-			int i = j%leng;
-			Rr2Point next = p.point((j+1)%leng);
-			
-			if (printer.isCancelled()) 
+			for(int j = 1; j <= leng; j++)
 			{
-				    printer.setSpeed(printer.getFastSpeed());
-					return;
-			}
-			
-			if(f != gapMaterial && j <= stopExtruding)
-				plot(p.point(i), next, false);
-			else
-			{
-				printer.stopExtruding();
-				if(f == gapMaterial)
+				int i = j%leng;
+				Rr2Point next = p.point((j+1)%leng);
+				
+				if (printer.isCancelled())
 				{
-					if(j == leng)
-					{
-						printer.setSpeed(printer.getFastSpeed());
-						return;
-					} else
-						move(p.point(i), next, true, false);
-				}else
+					printer.stopExtruding();
+					move(posNow(), posNow(), true, true);
+					return;
+				}
+				
+				if(j > stopExtruding)
+				{
+					printer.stopExtruding();
 					move(p.point(i), next, false, false);
+				} else
+					plot(p.point(i), next, false);
 			}
-			f = p.flag(i);
+		} else
+		{
+			for(int i = 1; i < leng; i++)
+			{
+				Rr2Point next = p.point((i+1)%leng);
+				
+				if (printer.isCancelled())
+				{
+					printer.stopExtruding();
+					move(posNow(), posNow(), true, true);
+					return;
+				}
+				
+				if(i > stopExtruding)
+				{
+					printer.stopExtruding();
+					move(p.point(i), next, false, false);
+				} else
+					plot(p.point(i), next, false);
+			}
 		}
-		printer.setSpeed(printer.getFastSpeed());
+		
+		move(posNow(), posNow(), true, true);
+		
+//		int f = p.flag(0);
+//		for(int j = 1; j <= leng; j++)
+//		{
+//			int i = j%leng;
+//			Rr2Point next = p.point((j+1)%leng);
+//			
+//			if (printer.isCancelled()) return;
+//			
+//			if(f != gapMaterial && j <= stopExtruding)
+//				plot(p.point(i), next, false);
+//			else
+//			{
+//				printer.stopExtruding();
+//				if(f == gapMaterial)
+//				{
+//					if(j == leng)
+//						return;
+//					else
+//						move(p.point(i), next, true, false);
+//				}else
+//					move(p.point(i), next, false, false);
+//			}
+//			f = p.flag(i);
+//		}
 	}
 	
-	// Calculate the distance between two points
-	private double distanceBetween(Rr2Point x, Rr2Point y) {
-		return Math.sqrt((x.x()*x.x())-(y.y()*y.y()));
-	}
+
 
 	private int plotOneMaterial(RrPolygonList polygons, int i, boolean outline)
 		throws ReprapException, IOException

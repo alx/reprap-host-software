@@ -565,7 +565,7 @@ public class Reprap implements CartesianPrinter {
 		if(extruders[extruder].getTemperatureTarget() <= Preferences.absoluteZero() + 1)
 			return;
 		
-		double threshold = extruders[extruder].getTemperatureTarget() * 0.65;	// Changed from 0.95 by Vik.
+		double threshold = extruders[extruder].getTemperatureTarget() * 0.90;	// Changed from 0.95 by Vik.
 		
 		if (extruders[extruder].getTemperature() >= threshold)
 			return;
@@ -832,8 +832,11 @@ public class Reprap implements CartesianPrinter {
 			// Moves nozzle over wiper
 			for (int w=0; w < freq; w++)
 			{
-				moveTo(datumX, datumY+(stroke/2), currentZ, false, false);
+				moveTo(50, datumY-(stroke/2), currentZ, false, false);
 				moveTo(datumX, datumY-(stroke/2), currentZ, false, false);
+				moveTo(datumX, datumY+(stroke/2), currentZ, false, false);
+				moveTo(50, datumY+(stroke/2), currentZ, false, false);
+			
 			}
 			
 			

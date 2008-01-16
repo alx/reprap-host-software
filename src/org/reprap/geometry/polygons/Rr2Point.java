@@ -268,6 +268,17 @@ public class Rr2Point
 	}
 	
 	/**
+	 * distance
+	 * @param a
+	 * @param b
+	 * @return squared distance
+	 */
+	public static double d(Rr2Point a, Rr2Point b)
+	{
+		return Math.sqrt(d_2(a, b));
+	}
+	
+	/**
 	 * The same, withing tolerance?
 	 * @param a
 	 * @param b
