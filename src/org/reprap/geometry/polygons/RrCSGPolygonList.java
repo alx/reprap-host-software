@@ -36,7 +36,7 @@ public class RrCSGPolygonList {
 		return result;
 	}
 	
-	public RrCSGPolygonList offset(double off, Extruder[] es)
+	public RrCSGPolygonList offset(Extruder[] es, boolean outline)
 	{
 		RrCSGPolygonList result = new RrCSGPolygonList();
 		for(int i = 0; i < size(); i++)
@@ -45,7 +45,13 @@ public class RrCSGPolygonList {
 			if(att == null)
 				System.err.println("offset(): null attribute!");
 			else
-				result.add(get(i).offset(off*att.getExtruder(es).getExtrusionSize()));
+			{
+				Extruder e = att.getExtruder(es);
+				if(outline)
+					result.add(get(i).offset(-0.5*e.getExtrusionSize()));
+				else
+					result.add(get(i).offset(-1.5*e.getExtrusionSize() + e.getInfillOverlap()));
+			}
 		}
 		return result;
 	}

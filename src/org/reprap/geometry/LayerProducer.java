@@ -171,8 +171,8 @@ public class LayerProducer {
 
 		z = zValue;
 		
-		RrCSGPolygonList offBorder = csgPols.offset(-0.5, printer.getExtruders());
-		RrCSGPolygonList offHatch = csgPols.offset(-1.5, printer.getExtruders());
+		RrCSGPolygonList offBorder = csgPols.offset(printer.getExtruders(), true);
+		RrCSGPolygonList offHatch = csgPols.offset(printer.getExtruders(), false);
 		
 		offBorder.divide(Preferences.tiny(), 1.01);
 		offHatch.divide(Preferences.tiny(), 1.01);

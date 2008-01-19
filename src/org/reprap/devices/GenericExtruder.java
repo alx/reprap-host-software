@@ -234,7 +234,13 @@ public class GenericExtruder extends Device implements Extruder{
 	/**
 	 * The name of this extruder's material
 	 */
-	private String material;  
+	private String material;
+	
+	/**
+	 * Number of mm to overlap the hatching infill with the outline.  0 gives none; -ve will 
+     * leave a gap between the two
+	 */
+	private double infillOverlap = 0;
 	
 	/**
 	 * Where to put the nozzle
@@ -337,13 +343,15 @@ public class GenericExtruder extends Device implements Extruder{
 		offsetY = prefs.loadDouble(prefName + "OffsetY(mm)");
 		offsetZ = prefs.loadDouble(prefName + "OffsetZ(mm)");
 		nozzleWipeEnabled = prefs.loadBool(prefName + "NozzleWipeEnabled");
-		nozzleWipeDatumX = prefs.loadInt(prefName + "NozzleWipeDatumX");
-		nozzleWipeDatumY = prefs.loadInt(prefName + "NozzleWipeDatumY");
-		nozzleWipeStroke = prefs.loadInt(prefName + "NozzleWipeStroke");
+		nozzleWipeDatumX = prefs.loadInt(prefName + "NozzleWipeDatumX(mm)");
+		nozzleWipeDatumY = prefs.loadInt(prefName + "NozzleWipeDatumY(mm)");
+		nozzleWipeStroke = prefs.loadInt(prefName + "NozzleWipeStroke(mm)");
 		nozzleWipeFreq = prefs.loadInt(prefName + "NozzleWipeFreq");
 		randSt = prefs.loadBool(prefName + "RandomStart");
-		shortLength = prefs.loadDouble(prefName + "ShortLength");
-		shortSpeed = prefs.loadDouble(prefName + "ShortSpeed");
+		shortLength = prefs.loadDouble(prefName + "ShortLength(mm)");
+		shortSpeed = prefs.loadDouble(prefName + "ShortSpeed(0..1)");
+		infillOverlap = prefs.loadDouble(prefName + "InfillOverlap(mm)");
+		
 		
 		Color3f col = new Color3f((float)prefs.loadDouble(prefName + "ColourR(0..1)"), 
 				(float)prefs.loadDouble(prefName + "ColourG(0..1)"), 
@@ -1223,5 +1231,15 @@ public class GenericExtruder extends Device implements Extruder{
     public double getShortSpeed()
     {
     	return shortSpeed; 
+    }
+    
+    /**
+     * Number of mm to overlap the hatching infill with the outline.  0 gives none; -ve will 
+     * leave a gap between the two
+     * @return
+     */
+    public double getInfillOverlap()
+    {
+    	return infillOverlap;
     }
 }

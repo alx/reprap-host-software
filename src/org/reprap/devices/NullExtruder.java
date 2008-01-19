@@ -182,6 +182,12 @@ public class NullExtruder implements Extruder{
 	private String materialType;
 	
 	/**
+	 * Number of mm to overlap the hatching infill with the outline.  0 gives none; -ve will 
+     * leave a gap between the two
+	 */
+	private double infillOverlap = 0;
+	
+	/**
 	 * Where to put the nozzle
 	 */
 	private double offsetX, offsetY, offsetZ;
@@ -269,13 +275,14 @@ public class NullExtruder implements Extruder{
 		offsetY = prefs.loadDouble(prefName + "OffsetY(mm)");
 		offsetZ = prefs.loadDouble(prefName + "OffsetZ(mm)");
 		nozzleWipeEnabled = prefs.loadBool(prefName + "NozzleWipeEnabled");
-		nozzleWipeDatumX = prefs.loadInt(prefName + "NozzleWipeDatumX");
-		nozzleWipeDatumY = prefs.loadInt(prefName + "NozzleWipeDatumY");
-		nozzleWipeStroke = prefs.loadInt(prefName + "NozzleWipeStroke");
+		nozzleWipeDatumX = prefs.loadInt(prefName + "NozzleWipeDatumX(mm)");
+		nozzleWipeDatumY = prefs.loadInt(prefName + "NozzleWipeDatumY(mm)");
+		nozzleWipeStroke = prefs.loadInt(prefName + "NozzleWipeStroke(mm)");
 		nozzleWipeFreq = prefs.loadInt(prefName + "NozzleWipeFreq");
 		randSt = prefs.loadBool(prefName + "RandomStart");
-		shortLength = prefs.loadDouble(prefName + "ShortLength");
-		shortSpeed = prefs.loadDouble(prefName + "ShortSpeed");
+		shortLength = prefs.loadDouble(prefName + "ShortLength(mm)");
+		shortSpeed = prefs.loadDouble(prefName + "ShortSpeed(0..1)");
+		infillOverlap = prefs.loadDouble(prefName + "InfillOverlap(mm)");
 		
 		materialColour = getAppearanceFromNumber(extruderId);		
 			
@@ -638,5 +645,15 @@ public class NullExtruder implements Extruder{
     public double getShortSpeed()
     {
     	return shortSpeed; 
+    }
+    
+    /**
+     * Number of mm to overlap the hatching infill with the outline.  0 gives none; -ve will 
+     * leave a gap between the two
+     * @return
+     */
+    public double getInfillOverlap()
+    {
+    	return infillOverlap;
     }
 }

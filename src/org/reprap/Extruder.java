@@ -227,4 +227,12 @@ public interface Extruder {
      * @return
      */
     public double getShortSpeed();
+    
+    /**
+     * Number of mm to overlap the hatching infill with the outline.  0 gives none; -ve will 
+     * leave a gap between the two
+     * @return
+     */
+    public double getInfillOverlap();
+    
 }
