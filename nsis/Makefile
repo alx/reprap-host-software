@@ -12,9 +12,12 @@ JAVA3DURL=http://download.java.net/media/java3d/builds/release/1.5.1
 JAVAURL=http://javadl.sun.com/webapps/download/AutoDL?BundleId=12798
 JAVAFILE=jre-6u3-windows-i586-p-s.exe
 
-.phony: clean all jar readme rxtx java3d firmware stls rxtxsource
+.phony: clean all jar readme rxtx java3d firmware stls rxtxsource installer
 
-all: jar readme rxtx java3d firmware rxtxsource ${JAVAFILE}
+all: jar readme rxtx java3d firmware rxtxsource ${JAVAFILE} installer
+
+installer:
+	makensis reprap-host.nsi
 
 jar:
 	(cd .. ; ant jar )
