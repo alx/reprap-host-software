@@ -6,11 +6,15 @@
 
 ; HM NIS Edit Wizard helper defines
 !define PRODUCT_NAME "Reprap Host"
-!define PRODUCT_VERSION "0.8.2-20071231c"
+!define PRODUCT_VERSION "0.8.4-20080125"
 !define PRODUCT_PUBLISHER "RepRap Research Foundation (RRRF)"
 !define PRODUCT_WEB_SITE "http://www.reprap.org"
 !define PRODUCT_UNINST_KEY "Software\Microsoft\Windows\CurrentVersion\Uninstall\${PRODUCT_NAME}"
 !define PRODUCT_UNINST_ROOT_KEY "HKLM"
+
+; File locations on build host
+!define HOST_DIR ".."
+!define RXTX_DIR "rxtx"
 
 ; MUI 1.67 compatible ------
 !include "MUI.nsh"
@@ -29,7 +33,7 @@ ShowUnInstDetails show
 ; Welcome page
 !insertmacro MUI_PAGE_WELCOME
 ; License page
-!insertmacro MUI_PAGE_LICENSE "reprap-host\LICENSE"
+!insertmacro MUI_PAGE_LICENSE "${HOST_DIR}\LICENSE"
 ; Directory page
 !insertmacro MUI_PAGE_DIRECTORY
 ; Instfiles page
@@ -48,11 +52,11 @@ ShowUnInstDetails show
 Section "MainSection" SEC01
   SetOutPath "$INSTDIR"
   SetOverwrite ifnewer
-  File "reprap-host\Reprap.jar"
-  File "reprap-host\README"
-  File "reprap-host\LICENSE"
-  File "reprap-host\reprap-host.bat"
-  File "reprap-host\reprap-wv.stl"
+  File "${HOST_DIR}\jar\reprap.jar"
+  File "${HOST_DIR}\README"
+  File "${HOST_DIR}\LICENSE"
+  File "${HOST_DIR}\reprap-host.bat"
+  File "${HOST_DIR}\lib\reprap-wv.stl"
 
   SetShellVarContext all
   CreateShortCut "$DESKTOP\${PRODUCT_NAME}.lnk" "$INSTDIR\reprap-host.bat"
@@ -63,15 +67,15 @@ Section "MainSection" SEC01
 
 ; Uncomment this if bundling firmware.  Omitted for initial testing.  JM 2007-12-31.
 ; Note: Corresponding !include in uninstall section should match this one.
-!include "reprap-firmware.nsi"
+; !include "reprap-firmware.nsi"
 
 ; Install RXTX Libraries
   SetOutPath "$PROGRAMFILES\Java\shared"
-  File "j3d-org-java3d-all.jar"
-  File "RXTXcomm.jar"
+  File "${HOST_DIR}\lib\j3d-org-java3d-all.jar"
+  File "${RXTX_DIR}\RXTXcomm.jar"
   SetOutPath "$SYSDIR"
-  File "rxtxParallel.dll"
-  File "rxtxSerial.dll"
+  File "${RXTX_DIR}\rxtxParallel.dll"
+  File "${RXTX_DIR}\rxtxSerial.dll"
 
 ; Check that Java is installed, install Java 6u3 if not.
   Call JVM
@@ -147,7 +151,7 @@ Section Uninstall
 ;!include "reprap-stls-uninstall.nsi"
 
 ; Uncomment this if bundling firmware.  Omitted for initial testing.  JM 2007-12-31.
-!include "reprap-firmware-uninstall.nsi"
+;!include "reprap-firmware-uninstall.nsi"
 
 !include "reprap-java3d-uninstall.nsi"
 

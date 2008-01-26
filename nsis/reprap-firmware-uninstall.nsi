@@ -4,16 +4,14 @@
 ;
 ; Authors: Bruce Wattendorf and Jonathan Marsden
 ;
-; Date: 2007-12-31
+; Date: 2008-01-25
 ;
-  Delete "$INSTDIR\firmware\200 step pic\stepmotor-small.hex"
-  Delete "$INSTDIR\firmware\200 step pic\extruder_0_.hex"
-  Delete "$INSTDIR\firmware\200 step pic\extruder_1_.hex"
-  Delete "$INSTDIR\firmware\200 step pic\iobox.hex"
-  Delete "$INSTDIR\firmware\200 step pic\stepmotor.hex"
-  Delete "$INSTDIR\firmware\200 step pic\stepmotorb.hex"
-  Delete "$INSTDIR\firmware\200 step pic\stepmotorc.hex"
+  Delete "$INSTDIR\firmware\extruder0.hex"
+  Delete "$INSTDIR\firmware\extruder1.hex"
+  Delete "$INSTDIR\firmware\stepmotorx.hex"
+  Delete "$INSTDIR\firmware\stepmotory.hex"
+  Delete "$INSTDIR\firmware\stepmotorz.hex"
 ;
-  RMDir "$INSTDIR\firmware\200 step pic"
+  RMDir "$INSTDIR\firmware"
 ;
 ; End of reprap-firmware-uninstall.nsi
