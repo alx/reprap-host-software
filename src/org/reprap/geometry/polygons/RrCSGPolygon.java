@@ -496,7 +496,7 @@ public class RrCSGPolygon
 			b = new RrBox(new Rr2Point(0,0), new Rr2Point(1,1));
 			return new RrCSGPolygon(RrCSG.nothing(), b, att);
 		}
-		Rr2Point p = new Rr2Point(Math.sqrt(2)*d, Math.sqrt(2)*d);
+		Rr2Point p = new Rr2Point(d, d);
 		b = new RrBox( Rr2Point.sub(box.sw(), p), Rr2Point.add(box.ne(), p) );
 		RrCSG expression = csg.offset(d);
 		expression = expression.simplify(Math.sqrt(resolution_2));
