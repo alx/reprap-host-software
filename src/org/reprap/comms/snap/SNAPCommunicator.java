@@ -113,6 +113,12 @@ public class SNAPCommunicator implements Communicator {
 
 		writeStream = port.getOutputStream();
 		readStream = port.getInputStream();
+
+		Debug.d("Attempting to initialize Arduino");
+        try {Thread.sleep(1000);} catch (Exception e) {}
+        for(int i = 0; i < 10; i++)
+                writeStream.write('0');
+        try {Thread.sleep(1000);} catch (Exception e) {}
 	}
 	
 	public void close()
