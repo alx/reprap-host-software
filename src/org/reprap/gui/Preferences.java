@@ -332,17 +332,15 @@ public class Preferences extends javax.swing.JDialog {
 					}
 					x += (longestExtruders[j] + longestExtruderVals[j])*tx + 3*gx;
 				}
-
 			}	
-
-			// Wrap it all up
-
-			getContentPane().setLayout(null);
-			setTitle("RepRap Preferences");
-			setSize(xall, yall);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
+		
+		// Wrap it all up
+		getContentPane().setLayout(null);
+		setTitle("RepRap Preferences");
+		setSize(xall, yall);
 	}
 	
 	/**
