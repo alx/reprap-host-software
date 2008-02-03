@@ -8,9 +8,6 @@
     &buildfile;
     <path id="project.classpath">
         <pathelement location="bin"/>
-	<fileset dir="/usr/share/java" casesensitive="yes">
-	    <include name="**/*.jar"/>
-	</fileset>
     </path>
     <target name="init">
         <mkdir dir="bin"/>
