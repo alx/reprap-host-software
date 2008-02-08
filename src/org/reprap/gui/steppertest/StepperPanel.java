@@ -89,6 +89,11 @@ public class StepperPanel extends JPanel implements ChangeListener {
 		double stepsPerMM = Preferences.loadGlobalDouble(axis + "AxisScale(steps/mm)");
 		double axisLength = Preferences.loadGlobalDouble("Working" + axis + "(mm)");
 		maxValue = (int)Math.round(stepsPerMM*axisLength);
+		
+		//this is the max for snap v0
+		if (maxValue > 65535)
+			maxValue = 65535;
+			
 		startingPosition = maxValue/6;
 		
 		updateTimer = new Timer();
