@@ -44,7 +44,7 @@ public class TestMain
 		//c.add(d); 
 		//c.add(e);
 		
-		new RrGraphics(c, false);
+		new RrGraphics(c);
 	}
 	
 	public static RrCSGPolygon hex()
@@ -119,18 +119,18 @@ public class TestMain
 	{
 		RrCSGPolygon cp = testPol();
 		//RrCSGPolygon cp = hex();
-		cp.divide(1.0e-6, 1.03);
+		
 		
 		//RrPolygonList pl = cp.megList(2, 3);
 		//RrGraphics g = new RrGraphics(pl, false);
 		//System.out.println(cp.toString());
-		RrGraphics g1 = new RrGraphics(cp.box().scale(1.1), false);
+		RrGraphics g1 = new RrGraphics(cp.box().scale(1.1));
 		//RrHalfPlane hatch = new RrHalfPlane(new Rr2Point(1, -1), new Rr2Point(-1, 1));
 		//RrHalfPlane hatch = new RrHalfPlane(new Rr2Point(1, 1), new Rr2Point(-1, -1));
 		//RrPolygonList h = cp.hatch(hatch, 0.05, 3, 0);
 		//System.out.println(h.toString());
 		//g1.addPol(h);
-		g1.addCSG(cp);
+		g1.add(cp);
 		
 //		RrLine hatch = new RrLine(new Rr2Point(-1, -1), new Rr2Point(1, 1));
 //		RrPolygon  h = cp.hatch_join(x, 0.005, 1, 3);
@@ -144,7 +144,7 @@ public class TestMain
 	{
 		RrCSGPolygon cp = testPol();
 		
-		cp.divide(1.0e-6, 1);
+
 		//RrGraphics g = new RrGraphics(cp, true);
 		RrPolygonList hp = cp.megList();
 		System.out.println("polygons: " + hp.size());
@@ -157,8 +157,8 @@ public class TestMain
 //		restored.divide(1.0e-6, 1);
 //		System.out.println(restored.toString());
 		RrGraphics g = new RrGraphics(new 
-				RrBox(new Rr2Point(0,0), new Rr2Point(1,1)), false);
-		g.addPol(hp);
+				RrBox(new Rr2Point(0,0), new Rr2Point(1,1)));
+		g.add(hp);
 		//g.addCSG(cp);
 		//g.addCSG(restored);
 		

@@ -192,15 +192,28 @@ public class RrLine
 	 * @return parameter value
 	 * @throws rr_ParallelLineException
 	 */
-	public double cross_t(RrLine a) throws RrParallelLineException 
+	public double crossParameter(RrLine a) throws RrParallelLineException 
 	{
 		double det = Rr2Point.op(a.direction, direction);
 		if (det == 0)
-			throw new RrParallelLineException("cross_t: parallel lines.");  
+			throw new RrParallelLineException("crossParameter: parallel lines.");  
 		Rr2Point d = Rr2Point.sub(a.origin, origin);
 		return Rr2Point.op(a.direction, d)/det;
 	}
 	
+	/**
+	 * Parameter value on a line where a plane crosses
+	 * @param a
+	 * @return parameter value
+	 * @throws RrParallelLineException
+	 */
+	public double crossParameter(RrHalfPlane plane) throws RrParallelLineException 
+	{
+		double det = Rr2Point.mul(direction(), plane.normal());
+		if (det == 0)
+			throw new RrParallelLineException("crossParameter: parallel lines.");  
+		return -plane.value(origin())/det;
+	}
 	
 	/**
 	 * The point where another line crosses
@@ -208,9 +221,20 @@ public class RrLine
 	 * @return crossing point 
 	 * @throws rr_ParallelLineException
 	 */
-	public Rr2Point cross_point(RrLine a) throws RrParallelLineException
+	public Rr2Point crossPoint(RrLine a) throws RrParallelLineException
 	{
-		return point(cross_t(a));
+		return point(crossParameter(a));
+	}
+	
+	/**
+	 * The point where a half plane crosses
+	 * @param a
+	 * @return crossing point 
+	 * @throws rr_ParallelLineException
+	 */
+	public Rr2Point crossPoint(RrHalfPlane plane) throws RrParallelLineException
+	{
+		return point(crossParameter(plane));
 	}
 	
 	/**
@@ -226,9 +250,9 @@ public class RrLine
 	/**
 	 * The squared distance of a point from a line
 	 * @param p
-	 * @return squared distance between point p and the line
+	 * @return squared distance between point p and the line and the parameter that's closest
 	 */
-	public Rr2Point d_2(Rr2Point p)
+	public Rr2Point dSquared(Rr2Point p)
 	{
 		double fsq = direction.x()*direction.x();
 		double gsq = direction.y()*direction.y();

@@ -92,17 +92,6 @@ public class RrBox
 	}
 	
 	/**
-	 * For when we need one that has just something in
-	 * @param a
-	 */
-	public RrBox(double a)
-	{
-		x = new RrInterval(0, a);
-		y = new RrInterval(0, a);
-		empty = false;
-	}
-	
-	/**
 	 * Copy constructor
 	 */
 	public RrBox(RrBox b)
@@ -125,6 +114,18 @@ public class RrBox
 	}
 	
 	/**
+	 * Make from X and Y intervals
+	 * @param sw
+	 * @param ne
+	 */
+	public RrBox(RrInterval xi, RrInterval yi)
+	{
+		x = new RrInterval(xi);
+		y = new RrInterval(yi);
+		empty = x.empty() || y.empty();
+	}
+	
+	/**
 	 * @return Return the x interval
 	 */
 	public RrInterval x() { return x; }
@@ -136,6 +137,11 @@ public class RrBox
 	 */
 	public RrInterval y() { return y; }
 	
+	/**
+	 * 
+	 * @return
+	 */
+	public boolean empty() { return empty; }
 	
 	/**
 	 * Expand the box to incorporate another box or a point
@@ -208,11 +214,11 @@ public class RrBox
 	}   
 	
 	/**
-	 * @return Centre point(?)
+	 * @return Centre point
 	 */
 	public Rr2Point centre()
 	{
-		return ((Rr2Point.mul(Rr2Point.add(ne(), sw()), 0.5)));
+		return new Rr2Point(x.cen(), y.cen());
 	}
 	
 	/**
@@ -247,22 +253,22 @@ public class RrBox
 	 * Squared diagonal
 	 * @return squared diagonal of the box
 	 */
-	public double d_2()
+	public double dSquared()
 	{
 		if(empty)
 			return 0;
-		return Rr2Point.d_2(sw(), ne());
+		return Rr2Point.dSquared(sw(), ne());
 	}
 
 	/**
 	 * Squared distance to a point
 	 * @return minimal squared distance to a point from one of the corners of the box
 	 */
-	public double d_2(Rr2Point p)
+	public double dSquared(Rr2Point p)
 	{
 		if(empty)
 			return Double.POSITIVE_INFINITY;
-		byte b = point_relative(p);
+		byte b = pointRelative(p);
 		double d1 = Double.POSITIVE_INFINITY, d2 = Double.POSITIVE_INFINITY;
 		switch(b)
 		{
@@ -270,44 +276,43 @@ public class RrBox
 			return 0;
 			
 		case 1:
-			d1 = Rr2Point.d_2(p, nw());
-			d2 = Rr2Point.d_2(p, ne());
+			d1 = Rr2Point.dSquared(p, nw());
+			d2 = Rr2Point.dSquared(p, ne());
 			break;
 			
 		case 2:
-			d1 = Rr2Point.d_2(p, ne());
-			d2 = Rr2Point.d_2(p, se());
+			d1 = Rr2Point.dSquared(p, ne());
+			d2 = Rr2Point.dSquared(p, se());
 			break;
 			
 		case 3:
-			return Rr2Point.d_2(p, ne());
+			return Rr2Point.dSquared(p, ne());
 			
 		case 4:
-			d1 = Rr2Point.d_2(p, sw());
-			d2 = Rr2Point.d_2(p, se());
+			d1 = Rr2Point.dSquared(p, sw());
+			d2 = Rr2Point.dSquared(p, se());
 			break;
 			
 		case 6:
-			return Rr2Point.d_2(p, se());
+			return Rr2Point.dSquared(p, se());
 			
 		case 8:
-			d1 = Rr2Point.d_2(p, sw());
-			d2 = Rr2Point.d_2(p, nw());
+			d1 = Rr2Point.dSquared(p, sw());
+			d2 = Rr2Point.dSquared(p, nw());
 			break;
 			
 		case 9:
-			return Rr2Point.d_2(p, nw());
+			return Rr2Point.dSquared(p, nw());
 			
 		case 12:
-			return Rr2Point.d_2(p, sw());
+			return Rr2Point.dSquared(p, sw());
 			
 		default:
-			System.err.println("RrBox.d_2(): dud value from point_relative()!");	
+			System.err.println("RrBox.dSquared(): dud value from pointRelative()!");	
 		}
-		if(d2 < d1)
-			return d2;
-		else
-			return d1;
+		
+		return Math.min(d1, d2);
+
 	}
 	
 
@@ -347,18 +352,40 @@ public class RrBox
 	 * @param p 
 	 * @return relative position of a point p (E, W, N or S)
 	 */
-	public byte point_relative(Rr2Point p)
+	public byte pointRelative(Rr2Point p)
 	{
 		byte result = 0;
-		if(p.x() >= x.high())
+		if(p.x() > x.high()) // !!! >=
 			result |= rr_E;
 		if(p.x() < x.low())
 			result |= rr_W;
-		if(p.y() >= y.high())
+		if(p.y() > y.high()) // !!! >=
 			result |= rr_N;
 		if(p.y() < y.low())
 			result |= rr_S;        
 		return result;
+	}
+	
+	/**
+	 * Intersection
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	public static RrBox intersection(RrBox a, RrBox b)
+	{
+		return new RrBox(RrInterval.intersection(a.x, b.x), RrInterval.intersection(a.y, b.y));	
+	}
+	
+	/**
+	 * Union
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	public static RrBox union(RrBox a, RrBox b)
+	{
+		return new RrBox(RrInterval.union(a.x, b.x), RrInterval.union(a.y, b.y));	
 	}
 }
 

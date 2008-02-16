@@ -5,29 +5,62 @@ import java.util.*;
 import org.reprap.Attributes;
 import org.reprap.Extruder;
 
-public class RrCSGPolygonList {
+/**
+ * It's convenient to have lists of CSG polygons (even though they
+ * can be multiple polygons themselves) so that you each entry
+ * can be one collection of polygons per material (attribute).
+ * 
+ * @author ensab
+ *
+ */
+public class RrCSGPolygonList 
+{
+	/**
+	 * 
+	 */
 	List<RrCSGPolygon> csgPolygons;
 	
+	/**
+	 * 
+	 *
+	 */
 	public RrCSGPolygonList()
 	{
 		csgPolygons = new ArrayList<RrCSGPolygon>();
 	}
 	
+	/**
+	 * 
+	 * @param c
+	 */
 	public void add(RrCSGPolygon c)
 	{
 		csgPolygons.add(c);
 	}
 	
+	/**
+	 * 
+	 * @param i
+	 * @return
+	 */
 	public RrCSGPolygon get(int i)
 	{
 		return csgPolygons.get(i);
 	}
 	
+	/**
+	 * 
+	 * @return
+	 */
 	public int size()
 	{
 		return csgPolygons.size();
 	}
 	
+	/**
+	 * 
+	 * @return
+	 */
 	public RrBox box()
 	{
 		RrBox result = new RrBox();
@@ -36,6 +69,12 @@ public class RrCSGPolygonList {
 		return result;
 	}
 	
+	/**
+	 * 
+	 * @param es
+	 * @param outline
+	 * @return
+	 */
 	public RrCSGPolygonList offset(Extruder[] es, boolean outline)
 	{
 		RrCSGPolygonList result = new RrCSGPolygonList();
@@ -55,28 +94,32 @@ public class RrCSGPolygonList {
 		}
 		return result;
 	}
-	
-	public void divide(double res_2, double swell)
-	{
-		for(int i = 0; i < size(); i++)
-			get(i).divide(res_2, swell);
-	}
-	
-	public RrPolygonList megList() //(int fg, int fs)
+		
+	/**
+	 * 
+	 * @return
+	 */
+	public RrPolygonList megList()
 	{
 		RrPolygonList result = new RrPolygonList();
 		for(int i = 0; i < size(); i++)
-			result.add(get(i).megList()); //fg, fs));
+			result.add(get(i).megList());
 		return result;
 	}
 	
-	public RrPolygonList hatch(RrHalfPlane hp, Extruder[] es) //, int fg, int fs)
+	/**
+	 * 
+	 * @param hp
+	 * @param es
+	 * @return
+	 */
+	public RrPolygonList hatch(RrHalfPlane hp, Extruder[] es)
 	{
 		RrPolygonList result = new RrPolygonList();
 		for(int i = 0; i < size(); i++)
 		{
 			Attributes att = get(i).getAttributes();
-			result.add(get(i).hatch(hp, att.getExtruder(es).getExtrusionInfillWidth())); //, fg, fs));
+			result.add(get(i).hatch(hp, att.getExtruder(es).getExtrusionInfillWidth()));
 		}
 		return result;
 	}

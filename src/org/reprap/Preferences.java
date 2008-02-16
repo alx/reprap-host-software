@@ -38,8 +38,6 @@ public class Preferences {
 	
 	private static final int grid = 100;             // Click outline polygons to a...
 	private static final double gridRes = 1.0/grid;  // ...10 micron grid
-	private static final double lessGridSquare = gridRes*gridRes*0.01;  // Small squared size of a gridsquare
-	private static final double tiny = 1.0e-12;      // A small number
 	private static final double swell = 1.01;        // Quad tree swell factor
 	private static final double machineResolution = 0.1; // RepRap step size in mm - should 
 	                                                     // derive this from Axis1Scale and Axis2Scale
@@ -49,10 +47,25 @@ public class Preferences {
 	
 	private static final Color3f black = new Color3f(0, 0, 0);
 	
+	/*
+	 * RepRap uses three resolutions (all right - fudge factors...) for
+	 * geometric calculations:
+	 * 
+	 *   gridResolution - polygon vertices from STL slices are clicked to this grid
+	 *   boxResolution - the smallest box in a quad-tree division worth considering
+	 *   pointResolution - two points closer than this are considered to be coincident
+	 *   
+	 *   They all have the dimensions of mm, so their squares are also available for
+	 *   Pythagoras-type calculations.
+	 */
 	public static int grid() { return grid; }
-	public static double gridRes() { return gridRes; }
-	public static double lessGridSquare() { return lessGridSquare; }
-	public static double tiny() { return tiny; }
+	public static double gridResolution() { return gridRes; }
+	public static double boxResolution() { return gridRes*0.01; }
+	public static double pointResolution() { return gridRes*0.001; }
+	public static double gridResolutionSquared() { return gridRes*gridRes; }
+	public static double boxResolutionSquared() { return gridRes*gridRes*0.0001; }
+	public static double pointResolutionSquared() { return gridRes*gridRes*0.000001; }
+
 	public static double swell() { return swell; }
 	public static double inchesToMillimetres() { return inToMM; }
 	public static double machineResolution() { return machineResolution; }

@@ -89,7 +89,7 @@ class chPair
 }
 
 /**
- * tree - class to hold lists to build a containment tree
+ * treeList - a class to hold lists to build a containment tree
  * (that is a representation of which polygon is inside which,
  * like a Venn diagram).
  */
@@ -297,7 +297,7 @@ public class RrPolygonList
 	/**
 	 * 
 	 */
-	private List polygons;
+	private List<RrPolygon> polygons;
 	
 	/**
 	 * 
@@ -309,7 +309,7 @@ public class RrPolygonList
 	 */
 	public RrPolygonList()
 	{
-		polygons = new ArrayList();
+		polygons = new ArrayList<RrPolygon>();
 		box = new RrBox();
 	}
 	
@@ -320,7 +320,12 @@ public class RrPolygonList
 	 */
 	public RrPolygon polygon(int i)
 	{
-		return (RrPolygon)polygons.get(i);
+		return polygons.get(i);
+	}
+	
+	public RrBox box()
+	{
+		return box;
 	}
 	
 	/**
@@ -337,6 +342,17 @@ public class RrPolygonList
 	public RrBox getBox() { return box; }
 	
 	/**
+	 * find the box after a modification
+	 *
+	 */
+	private void recomputeBox()
+	{
+		box = new RrBox();
+		for(int i = 0; i < size(); i++)
+			box.expand(polygons.get(i).getBox());
+	}
+	
+	/**
 	 * Overwrite one of the polygons
 	 * @param i index of polygon to overwrite
 	 * @param p polygon to set at index i
@@ -344,6 +360,7 @@ public class RrPolygonList
 	public void set(int i, RrPolygon p)
 	{
 		polygons.set(i, p);
+		recomputeBox();
 	}
 	
 	/**
@@ -353,6 +370,7 @@ public class RrPolygonList
 	public void remove(int i)
 	{
 		polygons.remove(i);
+		recomputeBox();
 	}
 	
 	/**
@@ -361,7 +379,7 @@ public class RrPolygonList
 	 */
 	public RrPolygonList(RrPolygonList lst)
 	{
-		polygons = new ArrayList();
+		polygons = new ArrayList<RrPolygon>();
 		box = new RrBox(lst.box);
 		for(int i = 0; i < lst.size(); i++)
 			polygons.add(new RrPolygon(lst.polygon(i)));
@@ -373,7 +391,7 @@ public class RrPolygonList
 	 */
 	public void add(RrPolygonList lst)
 	{
-		if(lst.size() == 0)
+		if(lst.size() <= 0)
 			return;
 		for(int i = 0; i < lst.size(); i++)
 			polygons.add(new RrPolygon(lst.polygon(i)));
@@ -397,7 +415,7 @@ public class RrPolygonList
 	 */
 	private void swap(int i, int j)
 	{
-		Object p = polygons.get(i);
+		RrPolygon p = polygons.get(i);
 		polygons.set(i, polygons.get(j));
 		polygons.set(j, p);
 	}
@@ -416,6 +434,16 @@ public class RrPolygonList
 	}
 	
 	/**
+	 * Negate one of the polygons
+	 * @param i
+	 */
+	private void negate(int i)
+	{
+		RrPolygon p = polygon(i).negate();
+		polygons.set(i, p);
+	}
+	
+	/**
 	 * Create a new polygon list with a random start vertex for each 
 	 * polygon in the list
 	 * @return new polygonlist
@@ -426,19 +454,6 @@ public class RrPolygonList
 		for(int i = 0; i < size(); i++)
 			result.add(polygon(i).randomStart());
 		return result;
-	}
-	
-	/**
-	 * Negate one of the polygons (also swaps a couple of flags)
-	 * @param i
-	 */
-	private void negate(int i)
-	{
-		RrPolygon p = polygon(i).negate();
-		//int fl = p.flag(0);
-		//p.flag(0, p.flag(p.size() - 1));
-		//p.flag(p.size() - 1, fl);
-		polygons.set(i, p);
 	}
 	
 	/**
@@ -495,7 +510,7 @@ public class RrPolygonList
 		for(int i = 0; i < size(); i++)
 		{
 			RrPolygon p = polygon(i);
-			if(p.getBox().d_2() > 2*d2)
+			if(p.getBox().dSquared() > 2*d2)
 				r.add(p.simplify(d));
 		}
 		
@@ -530,7 +545,7 @@ public class RrPolygonList
 			for(i = pg; i < r.size(); i++)
 			{
 				Rr2Point e1 = r.polygon(i).point(0);
-				double d2 = Rr2Point.d_2(end, e1);
+				double d2 = Rr2Point.dSquared(end, e1);
 				if(d2 < d)
 				{
 					near = i;
@@ -539,7 +554,7 @@ public class RrPolygonList
 				}
 				
 				e1 = r.polygon(i).point(r.polygon(i).size() - 1);
-				d2 = Rr2Point.d_2(end, e1);
+				d2 = Rr2Point.dSquared(end, e1);
 				if(d2 < d)
 				{
 					near = i;
@@ -605,49 +620,6 @@ public class RrPolygonList
 		return a;
 	}
 	
-	/**
-	 * Set every instance of m in the lists null, and replace m's
-	 * own list with null
-	 * @param m
-	 * @param contains
-	 */
-	private void getRidOf(int m, List contains)
-	{
-		for(int i = 0; i < size(); i++)
-		{
-			if(i == m)
-				contains.set(i, null);
-			else
-			{
-				if(contains.get(i) != null)
-				{
-					List contain = (ArrayList)contains.get(i);
-					for(int j = 0; j < contain.size(); j++)
-					{
-						if(contain.get(j) != null)
-						{
-							if(((Integer)contain.get(j)).intValue() == m)
-								contain.set(j, null);
-						}
-					}
-				}
-			}
-		}		
-	}
-	
-	/**
-	 * Count the non-null entries in a list.
-	 * @param a list with entries to be checked
-	 * @return number non-null entries in list a
-	 */
-	private int activeCount(List a)
-	{
-		int count = 0;
-		for(int i = 0; i < a.size(); i++)
-			if(a.get(i) != null)
-				count++;
-		return count;
-	}
 	
 	/**
 	 * Take a list of CSG expressions, each one corresponding with the entry of the same 
@@ -734,16 +706,15 @@ public class RrPolygonList
 	 * Compute the CSG representation of all the polygons in the list
 	 * @return CSG representation
 	 */
-	public RrCSGPolygon toCSG(double tolerance)
+	public RrCSGPolygon toCSG()
 	{		
-		List csgPols = new ArrayList();
+		List<RrCSG> csgPols = new ArrayList<RrCSG>();
 		
 		for(int i = 0; i < size(); i++)
-			csgPols.add(polygon(i).toCSG(tolerance).csg());
+			csgPols.add(polygon(i).toCSG().csg());
 		
 		RrCSGPolygon polygons = resolveInsides(csgPols);
 		//expression = expression.simplify(tolerance);
-		
 		return polygons;
 	}
 	
