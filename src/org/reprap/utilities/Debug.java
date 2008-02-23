@@ -42,6 +42,14 @@ public class Debug {
 		}				
 	}
 	
+	static public void sleep(long secs)
+	{
+		try {
+			Thread.sleep(secs);
+		} catch (InterruptedException e) {
+		}
+	}
+	
 	static public void d(String s)
 	{
 		initialiseIfNeedBe();
