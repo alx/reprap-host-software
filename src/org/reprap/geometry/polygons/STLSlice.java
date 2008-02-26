@@ -132,8 +132,8 @@ class LineSegment
 			}
 		}
 		
-		if(count != 2)
-			System.err.println("LineSegment.setQuad(): dud end count = " + count);
+		//if(count != 2)
+			//System.err.println("LineSegment.setQuad(): dud end count = " + count);
 	}
 }
 

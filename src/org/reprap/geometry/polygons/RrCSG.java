@@ -384,89 +384,229 @@ public class RrCSG
 	}
 	
 	
-	/**
-	 * Regularise a set with a contents of 3
-	 * This assumes simplify has been run over this set
-	 * @return regularised CSG object
-	 */	
-	private RrCSG reg_3_old()
-	{
-		RrCSG result = this;
-		
-		if(complexity != 3)
-			return result;
-		
-		boolean different = true;
-		boolean acomp = false;
-		RrCSG temp;
-		if(c1 == c2.c1)
-			different = false;
-		if(c1 == c2.c2)
-		{
-			different = false;
-			temp = c2.c2;
-			c2.c2 = c2.c1;
-			c2.c1 = temp;
-		}
-		
-		if(c1.comp != null)
-		{
-			if(c1.comp == c2.c1)
-			{
-				different = false;
-				acomp = true;
-			}
-			if(c1.comp == c2.c2) 
-			{
-				different = false;
-				acomp = true;
-				temp = c2.c2;
-				c2.c2 = c2.c1;
-				c2.c1 = temp;
-			}
-		}
-		
-		if(different)
-			return result;
-		
-		if(acomp)
-		{
-			if(op == RrCSGOp.UNION) 
-			{
-				if(c2.op == RrCSGOp.UNION)
-					result = universe();
-				else
-					result = union(c1, c2.c2);
-			}else 
-			{
-				if(c2.op == RrCSGOp.UNION)
-					result = intersection(c1, c2.c2);
-				else
-					result = nothing();
-			}            
-		} else
-		{
-			if(op == RrCSGOp.UNION) 
-			{
-				if(c2.op == RrCSGOp.UNION)
-					result = c2;
-				else
-					result = c1;
-			}else 
-			{
-				if(c2.op == RrCSGOp.UNION)
-					result = c1;
-				else
-					result = c2;
-			}
-		}
-		return result;
-	}
+//	/**
+//	 * Regularise a set with a contents of 3
+//	 * This assumes simplify has been run over this set
+//	 * @return regularised CSG object
+//	 */	
+//	private RrCSG reg_3_old()
+//	{
+//		RrCSG result = this;
+//		
+//		if(complexity != 3)
+//			return result;
+//		
+//		boolean different = true;
+//		boolean acomp = false;
+//		RrCSG temp;
+//		if(c1 == c2.c1)
+//			different = false;
+//		if(c1 == c2.c2)
+//		{
+//			different = false;
+//			temp = c2.c2;
+//			c2.c2 = c2.c1;
+//			c2.c1 = temp;
+//		}
+//		
+//		if(c1.comp != null)
+//		{
+//			if(c1.comp == c2.c1)
+//			{
+//				different = false;
+//				acomp = true;
+//			}
+//			if(c1.comp == c2.c2) 
+//			{
+//				different = false;
+//				acomp = true;
+//				temp = c2.c2;
+//				c2.c2 = c2.c1;
+//				c2.c1 = temp;
+//			}
+//		}
+//		
+//		if(different)
+//			return result;
+//		
+//		if(acomp)
+//		{
+//			if(op == RrCSGOp.UNION) 
+//			{
+//				if(c2.op == RrCSGOp.UNION)
+//					result = universe();
+//				else
+//					result = union(c1, c2.c2);
+//			}else 
+//			{
+//				if(c2.op == RrCSGOp.UNION)
+//					result = intersection(c1, c2.c2);
+//				else
+//					result = nothing();
+//			}            
+//		} else
+//		{
+//			if(op == RrCSGOp.UNION) 
+//			{
+//				if(c2.op == RrCSGOp.UNION)
+//					result = c2;
+//				else
+//					result = c1;
+//			}else 
+//			{
+//				if(c2.op == RrCSGOp.UNION)
+//					result = c1;
+//				else
+//					result = c2;
+//			}
+//		}
+//		return result;
+//	}
 	
 	
+//	/**
+//	 * Regularise a set with a contents of 3
+//	 * This assumes simplify has been run over this set
+//	 * @return regularised CSG object
+//	 */	
+//	private RrCSG reg_3()
+//	{
+//		RrCSG r = this;
+//		
+//		if(complexity != 3)
+//			return r;
+//		
+//		RrCSG a = c1;
+//		RrCSG b = c2.c1;
+//		RrCSG c = c2.c2;
+//		
+//		int caseVal = 0;
+//		boolean noEquals = true;
+//
+//		if(a == b)
+//			noEquals = false;
+//		if(a == c)
+//		{
+//			noEquals = false;
+//			caseVal |= 4;
+//		}
+//		if(b == c)
+//		{
+//			noEquals = false;
+//			caseVal |= 2;
+//			caseVal |= 4;
+//		}
+//		if(a == b.comp)
+//		{
+//			noEquals = false;
+//			caseVal |= 1;
+//		}
+//		if(a == c.comp)
+//		{
+//			noEquals = false;
+//			caseVal |= 1;
+//			caseVal |= 4;
+//		}
+//		if(b == c.comp)
+//		{
+//			noEquals = false;
+//			caseVal |= 1;
+//			caseVal |= 2;
+//			caseVal |= 4;
+//		}
+//		
+//		if(noEquals)
+//			return r;
+//		
+//		if(op == RrCSGOp.INTERSECTION)
+//			caseVal |= 8;
+//		if(c2.op == RrCSGOp.INTERSECTION)
+//			caseVal |= 16;
+//		
+//		switch(caseVal)
+//		{
+//		case 0: 
+//			r = RrCSG.union(a, c);
+//			break;
+//		case 1: 
+//			r = RrCSG.universe();
+//			break;
+//		case 4: 
+//			r = RrCSG.union(a, b);
+//			break;
+//		case 5: 
+//			r = RrCSG.universe();
+//			break;
+//		case 6: 
+//			r = RrCSG.union(b, a);
+//			break;
+//		case 7: 
+//			r = RrCSG.universe();
+//			break;
+//		case 8: 
+//			r = a;
+//			break;
+//		case 9: 
+//			r = RrCSG.union(a.complement(), c);
+//			break;
+//		case 12: 
+//			r = b;
+//			break;
+//		case 13: 
+//			r = RrCSG.union(a, b.complement());
+//			break;
+//		case 14: 
+//			r = RrCSG.union(b, a);
+//			break;
+//		case 15: 
+//			r = b;
+//			break;
+//		case 16: 
+//			r = a;
+//			break;
+//		case 17: 
+//			r = RrCSG.intersection(a.complement(), c);
+//			break;
+//		case 20: 
+//			r = b;
+//			break;
+//		case 21: 
+//			r = RrCSG.intersection(a, b.complement());
+//			break;
+//		case 22: 
+//			r = RrCSG.intersection(b, a);
+//			break;
+//		case 23: 
+//			r = b;
+//			break;
+//		case 24: 
+//			r = RrCSG.intersection(a, c);
+//			break;
+//		case 25: 
+//			r = RrCSG.nothing();
+//			break;
+//		case 28: 
+//			r = RrCSG.intersection(a, b);
+//			break;
+//		case 29: 
+//			r = RrCSG.nothing();
+//			break;
+//		case 30: 
+//			r = RrCSG.intersection(b, a);
+//			break;
+//		case 31: 
+//			r = RrCSG.nothing();
+//			break;		
+//		default:
+//			System.err.println("RrCSG.reg_3(): dud case value: " + caseVal);
+//		}
+//		
+//		return r;
+//	}
+	
 	/**
 	 * Regularise a set with a contents of 3
-	 * This assumes simplify has been run over this set
+	 * This assumes removeDuplicates has been run over this set
 	 * @return regularised CSG object
 	 */	
 	private RrCSG reg_3()
@@ -477,8 +617,11 @@ public class RrCSG
 			return r;
 		
 		RrCSG a = c1;
-		RrCSG b = c2.c1;
-		RrCSG c = c2.c2;
+		//RrCSG b = c2.c1;
+		//RrCSG c = c2.c2;
+		
+		RrCSG c = c2.c1;
+		RrCSG b = c2.c2;
 		
 		int caseVal = 0;
 		boolean noEquals = true;
@@ -523,80 +666,298 @@ public class RrCSG
 		if(c2.op == RrCSGOp.INTERSECTION)
 			caseVal |= 16;
 		
+		// The code in the following switch is automatically
+		// generated by the program CodeGenerator.java
+		
 		switch(caseVal)
 		{
 		case 0: 
-			r = RrCSG.union(a, c);
-			break;
-		case 1: 
-			r = RrCSG.universe();
-			break;
-		case 4: 
-			r = RrCSG.union(a, b);
-			break;
-		case 5: 
-			r = RrCSG.universe();
-			break;
-		case 6: 
-			r = RrCSG.union(b, a);
-			break;
-		case 7: 
-			r = RrCSG.universe();
-			break;
-		case 8: 
-			r = a;
-			break;
-		case 9: 
-			r = RrCSG.union(a.complement(), c);
-			break;
-		case 12: 
-			r = b;
-			break;
-		case 13: 
-			r = RrCSG.union(a, b.complement());
-			break;
-		case 14: 
-			r = RrCSG.union(b, a);
-			break;
-		case 15: 
-			r = b;
-			break;
-		case 16: 
-			r = a;
-			break;
-		case 17: 
-			r = RrCSG.intersection(a.complement(), c);
-			break;
-		case 20: 
-			r = b;
-			break;
-		case 21: 
-			r = RrCSG.intersection(a, b.complement());
-			break;
-		case 22: 
-			r = RrCSG.intersection(b, a);
-			break;
-		case 23: 
-			r = b;
-			break;
-		case 24: 
-			r = RrCSG.intersection(a, c);
-			break;
-		case 25: 
-			r = RrCSG.nothing();
-			break;
-		case 28: 
-			r = RrCSG.intersection(a, b);
-			break;
-		case 29: 
-			r = RrCSG.nothing();
-			break;
-		case 30: 
-			r = RrCSG.intersection(b, a);
-			break;
-		case 31: 
-			r = RrCSG.nothing();
-			break;		
+			// r = RrCSG.union(a, RrCSG.union(b, c));
+			// a = b ->
+
+			// a c 
+			// 0 0 | 0 
+			// 1 0 | 1 
+			// 0 1 | 1 
+			// 1 1 | 1 
+				r = RrCSG.union(a, c);
+				break;
+
+			case 1: 
+			// r = RrCSG.union(a, RrCSG.union(b, c));
+			// a = !b ->
+
+			// a c 
+			// 0 0 | 1 
+			// 1 0 | 1 
+			// 0 1 | 1 
+			// 1 1 | 1 
+				r = RrCSG.universe();
+				break;
+
+			case 4: 
+			// r = RrCSG.union(a, RrCSG.union(b, c));
+			// a = c ->
+
+			// a b 
+			// 0 0 | 0 
+			// 1 0 | 1 
+			// 0 1 | 1 
+			// 1 1 | 1 
+				r = RrCSG.union(a, b);
+				break;
+
+			case 5: 
+			// r = RrCSG.union(a, RrCSG.union(b, c));
+			// a = !c ->
+
+			// a b 
+			// 0 0 | 1 
+			// 1 0 | 1 
+			// 0 1 | 1 
+			// 1 1 | 1 
+				r = RrCSG.universe();
+				break;
+
+			case 6: 
+			// r = RrCSG.union(a, RrCSG.union(b, c));
+			// b = c ->
+
+			// a b 
+			// 0 0 | 0 
+			// 1 0 | 1 
+			// 0 1 | 1 
+			// 1 1 | 1 
+				r = RrCSG.union(b, a);
+				break;
+
+			case 7: 
+			// r = RrCSG.union(a, RrCSG.union(b, c));
+			// b = !c ->
+
+			// a b 
+			// 0 0 | 1 
+			// 1 0 | 1 
+			// 0 1 | 1 
+			// 1 1 | 1 
+				r = RrCSG.universe();
+				break;
+
+			case 8: 
+			// r = RrCSG.union(a, RrCSG.intersection(b, c));
+			// a = b ->
+
+			// a c 
+			// 0 0 | 0 
+			// 1 0 | 1 
+			// 0 1 | 0 
+			// 1 1 | 1 
+				r = a;
+				break;
+
+			case 9: 
+			// r = RrCSG.union(a, RrCSG.intersection(b, c));
+			// a = !b ->
+
+			// a c 
+			// 0 0 | 0 
+			// 1 0 | 1 
+			// 0 1 | 1 
+			// 1 1 | 1 
+				r = RrCSG.union(a, c);
+				break;
+
+			case 12: 
+			// r = RrCSG.union(a, RrCSG.intersection(b, c));
+			// a = c ->
+
+			// a b 
+			// 0 0 | 0 
+			// 1 0 | 1 
+			// 0 1 | 0 
+			// 1 1 | 1 
+				r = a;
+				break;
+
+			case 13: 
+			// r = RrCSG.union(a, RrCSG.intersection(b, c));
+			// a = !c ->
+
+			// a b 
+			// 0 0 | 0 
+			// 1 0 | 1 
+			// 0 1 | 1 
+			// 1 1 | 1 
+				r = RrCSG.union(a, b);
+				break;
+
+			case 14: 
+			// r = RrCSG.union(a, RrCSG.intersection(b, c));
+			// b = c ->
+
+			// a b 
+			// 0 0 | 0 
+			// 1 0 | 1 
+			// 0 1 | 1 
+			// 1 1 | 1 
+				r = RrCSG.union(b, a);
+				break;
+
+			case 15: 
+			// r = RrCSG.union(a, RrCSG.intersection(b, c));
+			// b = !c ->
+
+			// a b 
+			// 0 0 | 0 
+			// 1 0 | 1 
+			// 0 1 | 0 
+			// 1 1 | 1 
+				r = a;
+				break;
+
+			case 16: 
+			// r = RrCSG.intersection(a, RrCSG.union(b, c));
+			// a = b ->
+
+			// a c 
+			// 0 0 | 0 
+			// 1 0 | 1 
+			// 0 1 | 0 
+			// 1 1 | 1 
+				r = a;
+				break;
+
+			case 17: 
+			// r = RrCSG.intersection(a, RrCSG.union(b, c));
+			// a = !b ->
+
+			// a c 
+			// 0 0 | 0 
+			// 1 0 | 0 
+			// 0 1 | 0 
+			// 1 1 | 1 
+				r = RrCSG.intersection(a, c);
+				break;
+
+			case 20: 
+			// r = RrCSG.intersection(a, RrCSG.union(b, c));
+			// a = c ->
+
+			// a b 
+			// 0 0 | 0 
+			// 1 0 | 1 
+			// 0 1 | 0 
+			// 1 1 | 1 
+				r = a;
+				break;
+
+			case 21: 
+			// r = RrCSG.intersection(a, RrCSG.union(b, c));
+			// a = !c ->
+
+			// a b 
+			// 0 0 | 0 
+			// 1 0 | 0 
+			// 0 1 | 0 
+			// 1 1 | 1 
+				r = RrCSG.intersection(a, b);
+				break;
+
+			case 22: 
+			// r = RrCSG.intersection(a, RrCSG.union(b, c));
+			// b = c ->
+
+			// a b 
+			// 0 0 | 0 
+			// 1 0 | 0 
+			// 0 1 | 0 
+			// 1 1 | 1 
+				r = RrCSG.intersection(b, a);
+				break;
+
+			case 23: 
+			// r = RrCSG.intersection(a, RrCSG.union(b, c));
+			// b = !c ->
+
+			// a b 
+			// 0 0 | 0 
+			// 1 0 | 1 
+			// 0 1 | 0 
+			// 1 1 | 1 
+				r = a;
+				break;
+
+			case 24: 
+			// r = RrCSG.intersection(a, RrCSG.intersection(b, c));
+			// a = b ->
+
+			// a c 
+			// 0 0 | 0 
+			// 1 0 | 0 
+			// 0 1 | 0 
+			// 1 1 | 1 
+				r = RrCSG.intersection(a, c);
+				break;
+
+			case 25: 
+			// r = RrCSG.intersection(a, RrCSG.intersection(b, c));
+			// a = !b ->
+
+			// a c 
+			// 0 0 | 0 
+			// 1 0 | 0 
+			// 0 1 | 0 
+			// 1 1 | 0 
+				r = RrCSG.nothing();
+				break;
+
+			case 28: 
+			// r = RrCSG.intersection(a, RrCSG.intersection(b, c));
+			// a = c ->
+
+			// a b 
+			// 0 0 | 0 
+			// 1 0 | 0 
+			// 0 1 | 0 
+			// 1 1 | 1 
+				r = RrCSG.intersection(a, b);
+				break;
+
+			case 29: 
+			// r = RrCSG.intersection(a, RrCSG.intersection(b, c));
+			// a = !c ->
+
+			// a b 
+			// 0 0 | 0 
+			// 1 0 | 0 
+			// 0 1 | 0 
+			// 1 1 | 0 
+				r = RrCSG.nothing();
+				break;
+
+			case 30: 
+			// r = RrCSG.intersection(a, RrCSG.intersection(b, c));
+			// b = c ->
+
+			// a b 
+			// 0 0 | 0 
+			// 1 0 | 0 
+			// 0 1 | 0 
+			// 1 1 | 1 
+				r = RrCSG.intersection(b, a);
+				break;
+
+			case 31: 
+			// r = RrCSG.intersection(a, RrCSG.intersection(b, c));
+			// b = !c ->
+
+			// a b 
+			// 0 0 | 0 
+			// 1 0 | 0 
+			// 0 1 | 0 
+			// 1 1 | 0 
+				r = RrCSG.nothing();
+				break;
 		default:
 			System.err.println("RrCSG.reg_3(): dud case value: " + caseVal);
 		}
