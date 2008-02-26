@@ -70,6 +70,7 @@ package org.reprap.geometry.polygons;
 
 import java.io.*;
 import java.util.*;
+import org.reprap.geometry.LayerProducer;
 import org.reprap.Attributes;
 import org.reprap.Preferences;
 
@@ -86,7 +87,12 @@ public class RrPolygon
 	/**
 	 * The (X, Y) points rond the polygon as Rr2Points
 	 */
-	private List<Rr2Point> points;
+	private List points;
+	
+	/**
+	 * General purpose list of integer flag values, one for each point
+	 */
+	//private List flags = null;
 	
 	/**
 	 * The atributes of the STL object that this polygon represents
@@ -105,7 +111,8 @@ public class RrPolygon
 	{
 		if(a == null)
 			System.err.println("RrPolygon(): null attributes!");
-		points = new ArrayList<Rr2Point>();
+		points = new ArrayList();
+		//flags = null;
 		att = a;
 		box = new RrBox();
 	}
@@ -117,8 +124,19 @@ public class RrPolygon
 	 */
 	public Rr2Point point(int i)
 	{
-		return new Rr2Point(points.get(i));
+		return new Rr2Point((Rr2Point)points.get(i));
 	}
+	
+	/**
+	 * @param i
+	 * @return i-th flag
+	 */
+//	private int flag(int i)
+//	{
+//		if(flags == null)
+//			System.err.println("RrPolygon.flag(i): flags not initialized.");
+//		return ((Integer)flags.get(i)).intValue();
+//	}
 	
 	/**
 	 * As a string
@@ -137,6 +155,18 @@ public class RrPolygon
 	}
 	
 	/**
+	 * Change a flag value
+	 * @param i
+	 * @param f
+	 */
+//	private void flag(int i, int f)
+//	{
+//		if(flags == null)
+//			System.err.println("RrPolygon.flag(i): flags not initialized.");
+//		flags.set(i, new Integer(f));
+//	}
+	
+	/**
 	 * Length
 	 * @return number of points in polygon
 	 */
@@ -153,7 +183,7 @@ public class RrPolygon
 	{
 		this(p.att);
 		for(int i = 0; i < p.size(); i++)
-			add(new Rr2Point(p.point(i)));	
+			add(new Rr2Point(p.point(i))); //, new Integer((p.flag(i))));		
 	}
 	
 	/**
@@ -164,6 +194,7 @@ public class RrPolygon
 	public void add(Rr2Point p)
 	{
 		points.add(new Rr2Point(p));
+		//flags.add(new Integer(f));
 		box.expand(p);
 	}
 	
@@ -178,7 +209,7 @@ public class RrPolygon
 	public RrBox getBox() { return box; }
 	
 	/**
-	 * Put a new polygon on the end
+	 * Put a new polygon and its flag values on the end
 	 * (N.B. Attributes of the new polygon are ignored)
 	 * @param p
 	 */
@@ -187,27 +218,39 @@ public class RrPolygon
 		if(p.size() == 0)
 			return;
 		for(int i = 0; i < p.size(); i++)
+		{
 			points.add(new Rr2Point(p.point(i)));
+			//flags.add(new Integer(p.flag(i))); 
+		}
 		box.expand(p.box);
-	}
-	
-	private void recomputeBox()
-	{
-		box = new RrBox();
-		for(int i = 0; i < size(); i++)
-			box.expand(points.get(i));
 	}
 	
 	/**
 	 * Remove a point.
+	 * N.B. This does not ammend the enclosing box
 	 * @param i
 	 */
 	public void remove(int i)
 	{
 		points.remove(i);
-		recomputeBox();
+//		if(flags != null)
+//			flags.remove(i);
 	}
-		
+	
+	/**
+	 * Recompute the box (sometimes useful if points have been deleted) 
+	 */
+	public void re_box()
+	{
+		box = new RrBox();
+		int leng = size();
+		for(int i = 0; i < leng; i++)
+		{
+			box.expand((Rr2Point)points.get(i)); 
+		}
+	}
+	
+	
 	/**
 	 * Output the polygon in SVG XML format
 	 * @param opf
@@ -229,8 +272,15 @@ public class RrPolygon
 	public RrPolygon negate()
 	{
 		RrPolygon result = new RrPolygon(att);
+		int f;
 		for(int i = size() - 1; i >= 0; i--)
-			result.add(point(i));
+		{
+//			if(i > 0)
+//				f = flag(i-1);
+//			else
+//				f = flag(size() - 1);
+			result.add(point(i)); //, f);
+		}
 		return result;
 	}
 	
@@ -243,7 +293,7 @@ public class RrPolygon
 		int i = rangen.nextInt(size());
 		for(int j = 0; j < size(); j++)
 		{
-			result.add(new Rr2Point(point(i)));
+			result.add(new Rr2Point(point(i))); //, new Integer((flag(i))));
 			i++;
 			if(i >= size())
 				i = 0;
@@ -273,7 +323,6 @@ public class RrPolygon
 	/**
 	 * Backtrack a given distance, inserting a new point there and returning its index
 	 * @param distance to backtrack
-	 * @param outline - is this an outline or infill polygon
 	 * @return index of the inserted point
 	 */
 	public int backStep(double d, boolean outline)
@@ -300,9 +349,14 @@ public class RrPolygon
 				p = Rr2Point.add(point(i), Rr2Point.mul(sum, p));
 				int j = i + 1;
 				if(j < size())
+				{
 					points.add(j, p);
-				else
+					//flags.add(j, flags.get(i));
+				} else
+				{
 					points.add(p);
+					//flags.add(flags.get(i));					
+				}
 				return(j);
 			}
 			last = p;
@@ -326,7 +380,7 @@ public class RrPolygon
 			RrLine line = new RrLine(p1, point(v2%leng));
 			for (int j = v1+1; j < v2; j++)
 			{
-				if (line.dSquared(point(j%leng)).x() > d2)
+				if (line.d_2(point(j%leng)).x() > d2)
 					return v2 - 1;
 			}	
 		}
@@ -351,7 +405,7 @@ public class RrPolygon
 		// We get back -1 if the points are in a straight line.
 		if (v1<0)
 			return new RrPolygon(this);
-		r.add(point(v1%leng));
+		r.add(point(v1%leng)); //, flag(v1%leng));
 		int v2 = v1;
 		while(true)
 		{
@@ -359,8 +413,10 @@ public class RrPolygon
 			v2 = findAngleStart(v2, d2);
 			if((v2 > leng)||(v2<0))
 				return(r);
-			r.add(point(v2%leng));
+			r.add(point(v2%leng)); //, flag(v2%leng));
 		}
+		// The compiler is very clever to spot that no return
+		// is needed here...
 	}
 	
 	/**
@@ -417,16 +473,27 @@ public class RrPolygon
 	 * @param a
 	 * @return the point
 	 */
-	private Rr2Point listPoint(int i, List<Integer> a)
+	private Rr2Point listPoint(int i, List a)
 	{
-		return point((a.get(i)).intValue());
+		return point(((Integer)a.get(i)).intValue());
 	}
+		
+	/**
+	 * find a flag from a list of polygon points
+	 * @Param i 
+	 * @param a
+	 * @return the point
+	 */
+//	private int listFlag(int i, List a)
+//	{
+//		return flag(((Integer)a.get(i)).intValue());
+//	}
 		
 	/**
 	 * find the top (+y) point of a polygon point list
 	 * @return the index in the list of the point
 	 */
-	private int topPoint(List<Integer> a)
+	private int topPoint(List a)
 	{
 		int top = 0;
 		double yMax = listPoint(top, a).y();
@@ -449,7 +516,7 @@ public class RrPolygon
 	 * find the bottom (-y) point of a polygon point list
 	 * @return the index in the list of the point
 	 */
-	private int bottomPoint(List<Integer> a)
+	private int bottomPoint(List a)
 	{
 		int bot = 0;
 		double yMin = listPoint(bot, a).y();
@@ -472,7 +539,7 @@ public class RrPolygon
 	 * Put the points on a triangle (list a) in the right order
 	 * @param a
 	 */
-	private void clockWise(List<Integer> a)
+	private void clockWise(List a)
 	{
 		if(a.size() == 3)
 		{
@@ -480,7 +547,7 @@ public class RrPolygon
 			Rr2Point r = Rr2Point.sub(listPoint(2, a), listPoint(0, a));
 			if(Rr2Point.op(q, r) > 0)
 			{
-				Integer k = a.get(0);
+				Object k = a.get(0);
 				a.set(0, a.get(1));
 				a.set(1, k);
 			}
@@ -494,7 +561,7 @@ public class RrPolygon
 	 * @param hullPoints
 	 * @return CSG representation
 	 */	
-	public RrCSG toCSGHull(List<Integer> hullPoints)
+	public RrCSG toCSGHull(List hullPoints)
 	{
 		Rr2Point p, q;
 		RrCSG hull = RrCSG.universe();
@@ -514,13 +581,17 @@ public class RrPolygon
 	 * @param inConsideration
 	 * @param hull
 	 */		
-	private void outsideHull(List<Integer> inConsideration, RrCSG hull)
+	private void outsideHull(List inConsideration, RrCSG hull)
 	{
+		Rr2Point p;
+		double small = Math.sqrt(Preferences.tiny());
 		for(int i = inConsideration.size() - 1; i >= 0; i--)
 		{
-			Rr2Point p = listPoint(i, inConsideration);
-			if(hull.value(p) <= 0)
+			p = listPoint(i, inConsideration);
+			if(hull.value(p) <= small)	
+			{
 				inConsideration.remove(i);
+			}
 		}
 	}
 	
@@ -529,27 +600,34 @@ public class RrPolygon
 	 * @param points
 	 * @return list of point index pairs of the points on the hull
 	 */
-	private List<Integer> convexHull(List<Integer> points)
+	private List convexHull(List points)
 	{	
 		if(points.size() < 3)
 		{
 			System.err.println("convexHull(): attempt to compute hull for " + points.size() + " points!");
-			return new ArrayList<Integer>();
+			return new ArrayList();
 		}
 		
-		List<Integer> inConsideration = new ArrayList<Integer>(points);
+		List inConsideration = new ArrayList(points);
 		
 		int i;
-		List<Integer> result = new ArrayList<Integer>();
-		
+
 		// The top-most and bottom-most points must be on the hull
-				
-		int extreme = topPoint(inConsideration);
-		result.add(inConsideration.get(extreme));
-		inConsideration.remove(extreme);
-		extreme = bottomPoint(inConsideration);
-		result.add(inConsideration.get(extreme));
-		inConsideration.remove(extreme);
+		
+		List result = new ArrayList();
+		int t = topPoint(inConsideration);
+		int b = bottomPoint(inConsideration);
+		result.add(inConsideration.get(t));
+		result.add(inConsideration.get(b));
+		if(t > b)
+		{
+			inConsideration.remove(t);
+			inConsideration.remove(b);
+		} else
+		{
+			inConsideration.remove(b);
+			inConsideration.remove(t);			
+		}
 			
 		// Repeatedly add the point that's furthest outside the current hull
 		
@@ -560,10 +638,9 @@ public class RrPolygon
 		RrHalfPlane hp;
 		while(inConsideration.size() > 0)
 		{
-			vMax = 0;
+			vMax = 0;   // Need epsilon?
 			corner = -1;
 			after = -1;
-
 			for(int testPoint = inConsideration.size() - 1; testPoint >= 0; testPoint--)
 			{
 				p = listPoint(result.size() - 1, result);
@@ -590,8 +667,7 @@ public class RrPolygon
 				inConsideration.remove(corner);
 			} else if(inConsideration.size() > 0)
 			{
-				System.err.println("convexHull(): points left, but none included - number left: " + 
-						inConsideration.size() + ", vMax = " + vMax);
+				System.err.println("convexHull(): points left, but none included!");
 				return result;
 			}
 			
@@ -618,22 +694,37 @@ public class RrPolygon
 	 * Construct a list of all the points in the polygon
 	 * @return list of indices of points in the polygons
 	 */
-	private List<Integer> allPoints()
+	private List allPoints()
 	{
-		List<Integer> points = new ArrayList<Integer>();
+		List points = new ArrayList();
 		for(int i = 0; i < size(); i++)
 				points.add(new Integer(i));
 		return points;
 	}
 	
+// 	private void flagSet(int f, List a)
+// 	{
+// 	 		for(int i = 0; i < a.size(); i++)
+//  			flag(((Integer)a.get(i)).intValue(), f);
+//  	}
+	
 	/**
 	 * Set all the flag values in a list the same
 	 * @param f
 	 */
-	private void flagSet(int f, List<Integer> a, int[] flags)
+	private void flagSet(int f, List a, int[] flags)
 	{
+//		if(flags == null)
+//		{
+//			flags = new int[size()];
+//			for(int i = 0; i < a.size(); i++)
+//				flags[((Integer)a.get(i)).intValue()] = f;
+//		} else
+//		{
 			for(int i = 0; i < a.size(); i++)
-				flags[(a.get(i)).intValue()] = f;
+				flags[((Integer)a.get(i)).intValue()] = f;
+//		}
+
 	}	
 	
 	/**
@@ -642,16 +733,16 @@ public class RrPolygon
 	 * @param level
 	 * @return the section (null for none left)
 	 */
-	private List<Integer> polSection(List<Integer> a, int level, int[] flags)
+	private List polSection(List a, int level, int[] flags)
 	{
 		int flag, oldi;
 		oldi = a.size() - 1;
-		int oldFlag = flags[(a.get(oldi)).intValue()];
+		int oldFlag = flags[((Integer)a.get(oldi)).intValue()]; //listFlag(oldi, a);
 
 		int ptr = -1;
 		for(int i = 0; i < a.size(); i++)
 		{
-			flag = flags[(a.get(i)).intValue()];
+			flag = flags[((Integer)a.get(i)).intValue()];//listFlag(i, a);
 
 			if(flag < level && oldFlag >= level) 
 			{
@@ -665,12 +756,12 @@ public class RrPolygon
 		if(ptr < 0)
 			return null;
 		
-		List<Integer> result = new ArrayList<Integer>();
+		List result = new ArrayList();
 		result.add(a.get(ptr));
 		ptr++;
 		if(ptr > a.size() - 1)
 			ptr = 0;
-		while(flags[(a.get(ptr)).intValue()] < level)
+		while(flags[((Integer)a.get(ptr)).intValue()] < level) //listFlag(ptr, a)
 		{
 			result.add(a.get(ptr));
 			ptr++;
@@ -689,14 +780,14 @@ public class RrPolygon
 	 * @param level
 	 * @return CSG representation
 	 */
-	private RrCSG toCSGRecursive(List<Integer> a, int level, boolean closed, int[] flags)
+	private RrCSG toCSGRecursive(List a, int level, boolean closed, int[] flags)
 	{	
 		flagSet(level, a, flags);	
 		level++;
-		List<Integer> ch = convexHull(a);
+		List ch = convexHull(a);
 		if(ch.size() < 3)
 		{
-			System.err.println("toCSGRecursive() - null convex hull - point count: " + ch.size());
+			System.err.println("toCSGRecursive() - null convex hull!");
 			return RrCSG.nothing();
 		}
 		
@@ -725,8 +816,8 @@ public class RrPolygon
 		
 		for(i = start; i < a.size(); i++)
 		{
-			oldFlag = flags[(a.get(oldi)).intValue()];
-			flag = flags[(a.get(i)).intValue()];
+			oldFlag = flags[((Integer)a.get(oldi)).intValue()]; //listFlag(oldi, a);
+			flag = flags[((Integer)a.get(i)).intValue()]; //listFlag(i, a);
 
 			if(oldFlag == level && flag == level)
 			{
@@ -743,7 +834,7 @@ public class RrPolygon
 		// Finally deal with the sections on polygons that form the hull that
 		// are not themselves on the hull.
 		
-		List<Integer> section = polSection(a, level, flags);
+		List section = polSection(a, level, flags);
 		while(section != null)
 		{
 			if(level%2 == 1)
@@ -763,18 +854,19 @@ public class RrPolygon
 	 * @param tolerance
 	 * @return CSG polygon object based on polygon and tolerance 
 	 */
-	public RrCSGPolygon toCSG()
+	public RrCSGPolygon toCSG(double tolerance)
 	{
 		
 		RrPolygon copy = new RrPolygon(this);
 		if(copy.area() < 0)
 			copy = copy.negate();
 
-		List<Integer> all = copy.allPoints();
+		List all = copy.allPoints();
 		int [] flags = new int[copy.size()];
 		RrCSG expression = copy.toCSGRecursive(all, 0, true, flags);
 
 		RrBox b = copy.box.scale(1.1);
+		//expression = expression.simplify(tolerance);
 		if(att == null)
 			System.err.println("toCSG(): null attribute!");
 		RrCSGPolygon result = new RrCSGPolygon(expression, b, att);

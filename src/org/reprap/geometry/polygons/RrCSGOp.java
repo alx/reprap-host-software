@@ -54,12 +54,8 @@ http://www.gnu.org/
 package org.reprap.geometry.polygons;
 
 
-
-/**
- * CSG operators, operands (and the null and universal sets).
- * @author ensab
- *
- */ 
+// This is the proper one for Java 1.5...
+ 
 public enum RrCSGOp 
 {
     LEAF("LEAF SET"), 
@@ -86,5 +82,14 @@ public enum RrCSGOp
      */
     public String toString() { return name; }
 }
-
+//
+//// This is the nasty one for Java 1.4
+//
+//public class RrCSGOp {
+//	public static final int LEAF = 0;
+//	public static final int NULL = 1;
+//	public static final int UNIVERSE = 2;
+//	public static final int UNION = 3;
+//	public static final int INTERSECTION = 4; 
+//	}
 

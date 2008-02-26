@@ -63,7 +63,7 @@ import org.reprap.Attributes;
 import org.reprap.Preferences;
 
 /**
- * This class stores ends of the zig-zag infill pattern.
+ *
  */
 class snakeEnd
 {
@@ -117,27 +117,30 @@ public class RrCSGPolygon
 	/**
 	 * Quad tree division, respectively: NW, NE, SE, SW 
 	 */
-	private RrCSGPolygon q1, q2, q3, q4;
+	private RrCSGPolygon q1, q2, q3, q4;                             
 	
 	/**
-	 * This boxe's parent
+	 * Squared diagonal of the smallest box to go to 
 	 */
-	private RrCSGPolygon parent;
+	private double resolution_2; 
 	
 	/**
 	 * Used by the edge-generation software. 
 	 */
-	private boolean visit1, visit2;     
+	private boolean visit1, visit2;
 	
 	/**
-	 * A leaf quad can contain 0, 1 or 2 edges
-	 * 
+	 * Swell factor for division 
+	 */
+	private double sFactor;         
+	
+	/**
 	 * Number of edges in the box 
 	 */
 	private int edgeCount;          
 	
 	/**
-	 * Does this box contain a vertex? 
+	 * Is this box a vertex? 
 	 */
 	private boolean corner;         
 	
@@ -157,13 +160,11 @@ public class RrCSGPolygon
 	private Attributes att;
 	
 	/**
-	 * Set one up - private call, with no division (dummy is just a
-	 * distinguishing argument).
+	 * Set one up
 	 * @param p
 	 * @param bx
-	 * @param a
 	 */
-	private RrCSGPolygon(RrCSG p, RrBox bx, Attributes a, int dummy)
+	public RrCSGPolygon(RrCSG p, RrBox bx, Attributes a)
 	{
 		if(a == null)
 			System.err.println("RrCSGPolygon(): null attributes!");
@@ -173,10 +174,11 @@ public class RrCSGPolygon
 		q2 = null;
 		q3 = null;
 		q4 = null;
-		parent = null;
+		resolution_2 = box.d_2()*Preferences.tiny();
 		csg = p;
 		visit1 = false;
 		visit2 = false;
+		sFactor = Preferences.swell();
 		edgeCount = 0;
 		corner = false;
 		vertex = null;
@@ -185,30 +187,17 @@ public class RrCSGPolygon
 	}
 	
 	/**
-	 * Set one up - public call, always divides
-	 * @param p
-	 * @param bx
-	 * @param a
-	 */
-	public RrCSGPolygon(RrCSG p, RrBox bx, Attributes a)
-	{
-		this(p, bx, a, 1);
-		divide();
-	}
-	
-	
-	/**
 	 * Get children etc
 	 * @return children
 	 */
-	public RrCSGPolygon c1() { return q1; }
-	public RrCSGPolygon c2() { return q2; }
-	public RrCSGPolygon c3() { return q3; }
-	public RrCSGPolygon c4() { return q4; }
-	public RrCSGPolygon parent() { return parent; }
+	public RrCSGPolygon c_1() { return q1; }
+	public RrCSGPolygon c_2() { return q2; }
+	public RrCSGPolygon c_3() { return q3; }
+	public RrCSGPolygon c_4() { return q4; }
 	public RrCSG csg() { return csg; }
 	public RrBox box() { return box; }
-	public int complexity() { return csg.complexity(); }
+	public double resolution2() { return resolution_2; }
+	public double swell() { return sFactor; }
 	public int edges() { return edgeCount; }
 	public boolean corner() { return corner; }
 	public Rr2Point vertex() { return vertex; }
@@ -216,26 +205,6 @@ public class RrCSGPolygon
 	public RrInterval interval2() { return i2; }
 	public Attributes getAttributes() { return att; }
 	
-	/**
-	 * This quad is a leaf if it has no children; just check the first.
-	 * @return
-	 */
-	public boolean leaf()
-	{
-		return q1 == null;
-	}
-	
-	/**
-	 * Find the topmost quad
-	 * @return
-	 */
-	public RrCSGPolygon root()
-	{
-		if(parent != null)
-			return parent.root();
-		else
-			return this;
-	}
 	
 	/**
 	 * Convert to a string - internal recursive call
@@ -243,11 +212,15 @@ public class RrCSGPolygon
 	 */
 	private String toString_r(String quad)
 	{
-		quad = quad + csg.toString() + "\n";
+		if(csg.operator() == RrCSGOp.UNIVERSE)
+			quad = quad + "U";
+		else
+			quad = quad + Integer.toString(csg.complexity());
 		
 		if(q1 == null)
 		{
-			return quad;
+			String result = quad + "\n";
+			return result;
 		} else
 		{
 			return(q1.toString_r(quad + ":NW-") + 
@@ -266,74 +239,18 @@ public class RrCSGPolygon
 	}
 	
 	/**
-	 * Quad tree division - make the 4 sub quads.
-	 */
-	private void makeQuads()
-	{
-//		 Set up the quad-tree division
-		
-		Rr2Point sw = box.sw();
-		Rr2Point nw = box.nw();
-		Rr2Point ne = box.ne();
-		Rr2Point se = box.se();
-		
-		Rr2Point cen = box.centre();
-		
-		// Prune to slightly bigger boxes than the ones we end up using to make
-		// sure nothing slips down the cracks.
-		
-		double wb = cen.x() - (cen.x() - sw.x())*(Preferences.swell() - 1);
-		double wo = sw.x() - (cen.x() - sw.x())*(Preferences.swell() - 1);
-		double nb = cen.y() + (nw.y() - cen.y())*(Preferences.swell() - 1);
-		double no = nw.y() + (nw.y() - cen.y())*(Preferences.swell() - 1);
-		double eb = cen.x() + (se.x() - cen.x())*(Preferences.swell() - 1);
-		double eo = se.x() + (se.x() - cen.x())*(Preferences.swell() - 1);
-		double sb = cen.y() - (cen.y() - sw.y())*(Preferences.swell() - 1);
-		double so = sw.y() - (cen.y() - sw.y())*(Preferences.swell() - 1);
-//		double ws = cen.x() - (cen.x() - sw.x())*(Preferences.swell() - 1)*0.5;
-//		double ns = cen.y() + (nw.y() - cen.y())*(Preferences.swell() - 1)*0.5;
-//		double es = cen.x() + (se.x() - cen.x())*(Preferences.swell() - 1)*0.5;
-//		double ss = cen.y() - (cen.y() - sw.y())*(Preferences.swell() - 1)*0.5;
-		
-//		 Put the results in the children
-		
-		RrBox bb = new RrBox(new Rr2Point(wo, no), new Rr2Point(eb, sb));
-		//RrBox bs = new RrBox(nw, new Rr2Point(es, ss));
-		RrBox bs = new RrBox(nw, cen);
-		q1 = new RrCSGPolygon(csg.prune(bb), bs, att, 1);
-		q1.parent = this;
-
-		bb = new RrBox(new Rr2Point(eo, no), new Rr2Point(wb, sb));
-		//bs = new RrBox(ne, new Rr2Point(ws, ss));
-		bs = new RrBox(ne, cen);
-		q2 = new RrCSGPolygon(csg.prune(bb), bs, att, 1);
-		q2.parent = this;
-		
-		bb = new RrBox(new Rr2Point(eo, so), new Rr2Point(wb, nb));
-		//bs = new RrBox(se, new Rr2Point(ws, ns));
-		bs = new RrBox(se, cen);
-		q3 = new RrCSGPolygon(csg.prune(bb), bs, att, 1);
-		q3.parent = this;
-		
-		bb = new RrBox(new Rr2Point(wo, so), new Rr2Point(eb, nb));
-		//bs = new RrBox(sw, new Rr2Point(es, ns));
-		bs = new RrBox(sw, cen);
-		q4 = new RrCSGPolygon(csg.prune(bb), bs, att, 1);
-		q4.parent = this;
-	}
-	
-	
-	/**
 	 * Quad-tree division - recursive internal call
 	 * @param res_2
 	 * @param swell
 	 */
-	private void divide_r()
+	private void divide_r(double res_2, double swell)
 	{
-
+		resolution_2 = res_2;
+		sFactor = swell;
+		
 		// Anything as simple as a single corner, evaluate and go home
 		
-		if(complexity() < 3)
+		if(csg.complexity() < 3)
 		{
 			evaluate();
 			return;
@@ -341,7 +258,7 @@ public class RrCSGPolygon
 		
 		// Too small a box?
 		
-		if(box.dSquared() < Preferences.boxResolutionSquared())
+		if(box.d_2() < resolution_2)
 		{
 			System.err.println("RrCSGPolygon.divide(): hit resolution limit!  Complexity: " +
 					csg.complexity());
@@ -352,10 +269,10 @@ public class RrCSGPolygon
 		// For comlexities of 4 or less, check if regularization throws
 		// some away.
 		
-		if(complexity() < 5)
+		if(csg.complexity() < 5)
 		{
 			csg = csg.regularise();
-			if(complexity() < 3)
+			if(csg.complexity() < 3)
 			{
 				evaluate();
 				return;
@@ -364,14 +281,42 @@ public class RrCSGPolygon
 		
 		// Set up the quad-tree division
 		
-		makeQuads();
+		Rr2Point sw = box.sw();
+		Rr2Point nw = box.nw();
+		Rr2Point ne = box.ne();
+		Rr2Point se = box.se();
+		Rr2Point cen = box.centre();
+		double addX = 0.5*(ne.x() - sw.x())*(sFactor - 1);
+		double addY = 0.5*(ne.y() - sw.y())*(sFactor - 1);
+		
+		// Prune the set to the four boxes, and put the results in the children
+		
+		Rr2Point newSW = Rr2Point.mul(Rr2Point.add(sw, nw), 0.5);
+		Rr2Point newNE = Rr2Point.mul(Rr2Point.add(nw, ne), 0.5);
+		RrBox s = new RrBox(Rr2Point.add(newSW, new Rr2Point(0, -addY)), 
+				Rr2Point.add(newNE, new Rr2Point(addX, 0)));
+		q1 = new RrCSGPolygon(csg.prune(s), s, att);
+		
+		s = new RrBox(Rr2Point.add(cen, new Rr2Point(-addX, -addY)), 
+				ne);
+		q2 = new RrCSGPolygon(csg.prune(s), s, att);
+		
+		newSW = Rr2Point.mul(Rr2Point.add(sw, se), 0.5);
+		newNE = Rr2Point.mul(Rr2Point.add(se, ne), 0.5);
+		s = new RrBox(Rr2Point.add(newSW, new Rr2Point(-addX, 0)), 
+				Rr2Point.add(newNE, new Rr2Point(0, addY)));		
+		q3 = new RrCSGPolygon(csg.prune(s), s, att);
+		
+		s = new RrBox(sw, 
+				Rr2Point.add(cen, new Rr2Point(addX, addY)));		
+		q4 = new RrCSGPolygon(csg.prune(s), s, att);
 		
 		// Recursively divide the children
 		
-		q1.divide_r();
-		q2.divide_r();
-		q3.divide_r();
-		q4.divide_r();
+		q1.divide_r(resolution_2, sFactor);
+		q2.divide_r(resolution_2, sFactor);
+		q3.divide_r(resolution_2, sFactor);
+		q4.divide_r(resolution_2, sFactor);
 	}
 	
 	/**
@@ -379,13 +324,15 @@ public class RrCSGPolygon
 	 * which contains at most two planes.
 	 * Evaluate the leaves, and store lists of intersections with
 	 * the half-planes.
+	 * @param res_2
+	 * @param swell
 	 */
-	private void divide()
+	public void divide(double res_2, double swell)
 	{
-		csg.removeDuplicates();
+		csg = csg.simplify(Math.sqrt(res_2));
 		csg.clearCrossings();
-		divide_r();
-		csg.sortCrossings();
+		divide_r(res_2, swell);
+		csg.sortCrossings(true, this);
 	}
 	
 	/**
@@ -406,7 +353,7 @@ public class RrCSGPolygon
 			// One half-plane in the box:
 			
 		case LEAF:
-			i1 = RrInterval.bigInterval();
+			i1 = RrInterval.big_interval();
 			i1 = box.wipe(csg.plane().pLine(), i1);
 			if(i1.empty()) 
 				return;
@@ -419,26 +366,26 @@ public class RrCSGPolygon
 		case INTERSECTION:
 			if(csg.complexity() != 2)
 			{
-				System.err.println("RrCSGPolygon.evaluate(): complexity = " + 
+				System.err.println("RrCSGPolygon.evaluate(): complexity: " + 
 					csg.complexity());
 				return;
 			}
-			i1 = RrInterval.bigInterval();
-			i1 = box.wipe(csg.c1().plane().pLine(), i1);
+			i1 = RrInterval.big_interval();
+			i1 = box.wipe(csg.c_1().plane().pLine(), i1);
 			
-			i2 = RrInterval.bigInterval();
-			i2 = box.wipe(csg.c2().plane().pLine(), i2);
+			i2 = RrInterval.big_interval();
+			i2 = box.wipe(csg.c_2().plane().pLine(), i2);
 			
 			if(csg.operator() == RrCSGOp.INTERSECTION)
 			{
-				i2 = csg.c1().plane().wipe(csg.c2().plane().pLine(), i2);
-				i1 = csg.c2().plane().wipe(csg.c1().plane().pLine(), i1);
+				i2 = csg.c_1().plane().wipe(csg.c_2().plane().pLine(), i2);
+				i1 = csg.c_2().plane().wipe(csg.c_1().plane().pLine(), i1);
 			} else
 			{
-				i2 = csg.c1().plane().complement().wipe(
-						csg.c2().plane().pLine(), i2);
-				i1 = csg.c2().plane().complement().wipe(
-						csg.c1().plane().pLine(), i1);                    
+				i2 = csg.c_1().plane().complement().wipe(
+						csg.c_2().plane().pLine(), i2);
+				i1 = csg.c_2().plane().complement().wipe(
+						csg.c_1().plane().pLine(), i1);                    
 			}
 			
 			if(!i1.empty())
@@ -448,12 +395,20 @@ public class RrCSGPolygon
 			
 			try
 			{
-				vertex = csg.c1().plane().crossPoint(csg.c2().plane());
-				if(box.pointRelative(vertex) == 0)
+				vertex = csg.c_1().plane().cross_point(csg.c_2().plane());
+				if(box.point_relative(vertex) == 0)
+				{
 					corner = true;
-				else
+				} else
+				{
+					corner = false;
 					vertex = null;
-			} catch (RrParallelLineException ple) {}
+				}
+			} catch (RrParallelLineException ple)
+			{
+				corner = false;
+				vertex = null;
+			}
 			
 			// NB if the corner was in another box and this one (because of swell
 			// overlap) only the first gets recorded.
@@ -476,9 +431,9 @@ public class RrCSGPolygon
 	 */
 	public RrCSGPolygon quad(Rr2Point p)
 	{
-		if(leaf())
+		if(q1 == null)
 		{
-			if(box.pointRelative(p) != 0)
+			if(box.point_relative(p) != 0)
 				System.err.println("RrCSGPolygon.quad(): point not in the box.");
 		} else
 		{
@@ -516,42 +471,14 @@ public class RrCSGPolygon
 	}
 	
 	/**
-	 * The gradient at a point
-	 * @param p
-	 * @return
-	 */
-	public Rr2Point grad(Rr2Point p)
-	{
-		return(leaf(p).grad(p));
-	}
-	
-	/**
 	 * Find the potential at point p.
 	 * @param p
 	 * @return potential of point p
 	 */	
 	public double value(Rr2Point p)
 	{
-		// Conventional answer for when we're outside the box
-		
-		if(box.pointRelative(p) != 0)
-			return 1;
-		
-		// Inside - calculate.
-		
 		RrCSG c = leaf(p);
 		return c.value(p);
-	}
-	
-	/**
-	 * Plot it for debugging
-	 *
-	 */
-	public void debugPlot()
-	{
-		RrCSGPolygon temp = new RrCSGPolygon(csg, box, att);
-		//temp.divide();
-		new RrGraphics(temp);		
 	}
 	
 	/**
@@ -562,20 +489,20 @@ public class RrCSGPolygon
 	 * @return offset polygon object by distance d
 	 */
 	public RrCSGPolygon offset(double d)
-	{	
+	{
 		RrBox b;
 		if(-d >= 0.5*box.x().length() || -d >= 0.5*box.y().length())
 		{
 			b = new RrBox(new Rr2Point(0,0), new Rr2Point(1,1));
 			return new RrCSGPolygon(RrCSG.nothing(), b, att);
 		}
-		Rr2Point p = new Rr2Point(d,d);
+		Rr2Point p = new Rr2Point(d, d);
 		b = new RrBox( Rr2Point.sub(box.sw(), p), Rr2Point.add(box.ne(), p) );
 		RrCSG expression = csg.offset(d);
-		expression.removeDuplicates();
-		RrCSGPolygon result = new RrCSGPolygon(expression, b, att);
-//		if(!leaf())
-//			result.divide();
+		expression = expression.simplify(Math.sqrt(resolution_2));
+		RrCSGPolygon result = new RrCSGPolygon(csg.offset(d), b, att);
+		if(q1 != null)
+			result.divide(resolution_2, sFactor);
 		return result;
 	}
 	  
@@ -589,7 +516,7 @@ public class RrCSGPolygon
     	if(v2)
     		visit2 = false;
     	
-    	if(!leaf())
+    	if(q1 != null)
     	{
     		q1.clearVisited(v1, v2);
     		q2.clearVisited(v1, v2);
@@ -608,7 +535,7 @@ public class RrCSGPolygon
     	if(corner && !(visit1 && v1) && !(visit2 && v2))
     		return this;
  
-    	if(!leaf())
+    	if(q1 != null)
     	{
     		result = q1.findCorner(v1, v2);
     		if(result != null)
@@ -632,15 +559,16 @@ public class RrCSGPolygon
 	 * @param flag
      * @return the polygon 
      */
-    public RrPolygon meg()
+    public RrPolygon meg() //(int flag)
     {
+    	int flag = 1;
     	RrPolygon result = new RrPolygon(att);
     	
     	RrCSGPolygon c = this;
     	RrHalfPlane now, next;
-    	now = csg.c1().plane();
-    	if(now.find(c)%2 == 1)      // Subtle, or what?  Finds the line with an even index so
-    		now = csg.c2().plane(); // we head off along it in the right direction.
+    	now = csg.c_1().plane();
+    	if(now.find(c)%2 == 1)  // Subtle, or what?
+    		now = csg.c_2().plane();
     	
     	if(now.find(c)%2 == 1)
     	{
@@ -659,15 +587,12 @@ public class RrCSGPolygon
     		nextIndex = now.find(c) + 1;
     		
     		if(nextIndex < 0 | nextIndex >= now.size())
-    		{
     			System.err.println("RrCSGPolygon.meg(): fallen off the end of the line!");
-    			return result; // Best we can do in the circs...
-    		}
     		
     		c = now.getQuad(nextIndex);
-    		next = c.csg.c1().plane();
+    		next = c.csg.c_1().plane();
     		if(next == now)
-    			next = c.csg.c2().plane();
+    			next = c.csg.c_2().plane();
     		now = next;
     	} while (c != this);
     	
@@ -682,7 +607,7 @@ public class RrCSGPolygon
 	 * @param fs
      * @return a polygon list as the result
      */
-    public RrPolygonList megList()
+    public RrPolygonList megList() //(int fg, int fs)
     {
     	clearVisited(true, true);
 
@@ -692,9 +617,10 @@ public class RrCSGPolygon
     	RrCSGPolygon vtx = findCorner(true, true);
     	while(vtx != null)
     	{
-    		m = vtx.meg();
+    		m = vtx.meg(); //(fg);
     		if(m.size() > 0)
     		{
+    			//m.flag(0, fs);
     			if(m.size() > 2)
     				result.add(m);
     			else
@@ -717,14 +643,38 @@ public class RrCSGPolygon
 		if(newRange.empty())
 			return;
 		
-		if(!leaf())
+		if(q1 != null)
 		{
 			q1.lineIntersect_r(hp, newRange);
 			q2.lineIntersect_r(hp, newRange);
 			q3.lineIntersect_r(hp, newRange);
 			q4.lineIntersect_r(hp, newRange);
 		} else
-			hp.maybeAdd(this, newRange);
+		{			
+			switch(csg.operator())
+			{
+			case NULL:
+			case UNIVERSE:	
+				break;
+				
+			case LEAF:
+				hp.maybeAdd(this, range);
+				break;
+				
+			case INTERSECTION:
+			case UNION:
+				if(csg.complexity() != 2)
+				{
+					System.err.println("intersect_r(): comlexity = " + csg.complexity());
+					return;
+				}
+				hp.maybeAdd(this, range);
+				break;
+				
+			default:
+				System.err.println("intersect_r(): dud CSG operator!");
+			}
+		}
 	}
 	
     /**
@@ -734,52 +684,12 @@ public class RrCSGPolygon
 	 * @param range
 	 * @param up
 	 */
-	public void lineIntersect(RrHalfPlane hp, RrInterval range)
+	public void lineIntersect(RrHalfPlane hp, RrInterval range, boolean up)
 	{
 		hp.removeCrossings();
-//		lineIntersect_r(hp, range);
-//		hp.sort();
-//		hp.solidSet(this);
-		
-		RrBox b = box.scale(1.01);
-		
-		range = b.wipe(hp.pLine(), range);
-		
-		double step = Preferences.machineResolution()/hp.pLine().direction().mod();
-		double tOld = range.low();
-		Rr2Point p = hp.pLine().point(tOld);
-		double vOld = csg().value(p);
-		if(vOld <= 0)
-		{
-			System.err.println("RrCSGPolygon.lineIntersect(): starting potential 0 or negative: " + vOld);
-			vOld = -1;
-		}
-		double t = tOld;
-		double v = vOld;
-		while(t < range.high())
-		{
-			t += step;
-			p = hp.pLine().point(t);
-			v = value(p);
-			if(v == 0)
-				v = -vOld;
-			if(v*vOld < 0)
-			{
-				RrInterval ti = new RrInterval(tOld, t);
-				LineIntersection bc = hp.binaryChop(this, ti);
-				if(bc == null)
-					System.err.println("RrCSGPolygon.lineIntersect(): no intersection found in: " + 
-							ti.toString() + " values: " + vOld + " " + v);
-				else
-					hp.add(bc);
-			}
-			vOld = v;
-			tOld = t;
-		}
-		if(v <= 0)
-			System.err.println("RrCSGPolygon.lineIntersect(): ending potential 0 or negative: " + v);		
-		
-		hp.solidSet(this);
+		lineIntersect_r(hp, range);
+		hp.sort(up, this);
+		//hp.solidSet(this);
 	}
 
     /**
@@ -792,14 +702,14 @@ public class RrCSGPolygon
      * @return polygon edge between start/originaPlane and targetPlane
      */
     public snakeEnd megGoToPlane(Rr2Point start, RrHalfPlane modelEdge, RrHalfPlane originPlane,
-    		RrHalfPlane targetPlane)
+    		RrHalfPlane targetPlane) //, int flag)
     {
     	int beforeIndex = -1;
 
     	double t = modelEdge.pLine().nearest(start);
     	for(int i = 0; i < modelEdge.size(); i++)
     	{
-    		if (modelEdge.getParameter(i) >= t)
+    		if (modelEdge.getParameter(i) > t)
     			break;
        		beforeIndex = i;
     	}
@@ -852,9 +762,9 @@ public class RrCSGPolygon
         	   		
     		c = now.getQuad(nextIndex);
     		rPol.add(c.vertex);
-    		next = c.csg.c1().plane();
+    		next = c.csg.c_1().plane();
     		if(next == now)
-    			next = c.csg.c2().plane();
+    			next = c.csg.c_2().plane();
     		now = next;
     	} while (c != startQuad);
     	
@@ -871,40 +781,38 @@ public class RrCSGPolygon
      * @param fs
      * @return zigzag hatch polygon
      */
-	private RrPolygon snakeGrow(List<RrHalfPlane> hatches, int thisHatch, int thisPt)
+	private RrPolygon snakeGrow(List hatches, int thisHatch, int thisPt) //, int fg, int fs)
 	{
 		RrPolygon result = new RrPolygon(att);
 		
-		RrHalfPlane h = hatches.get(thisHatch);
+		RrHalfPlane h = (RrHalfPlane)hatches.get(thisHatch);
 		Rr2Point pt = h.pLine().point(h.getParameter(thisPt));
 		result.add(pt);
-		snakeEnd jump = null;
+		snakeEnd jump;
 		
 		do
 		{
 			h.remove(thisPt);
 			if(thisPt%2 != 0)
 				thisPt--;
-			if(h.size() > thisPt)
-			{
-				pt = h.pLine().point(h.getParameter(thisPt));
-				result.add(pt);
-				thisHatch++;
-				if(thisHatch < hatches.size())
-					jump = megGoToPlane(pt, h.getPlane(thisPt), h, 
-							hatches.get(thisHatch));
-				else 
-					jump = null;
-				h.remove(thisPt);
-				if(jump != null)
-				{
-					result.add(jump.p);
-					h = jump.h;
-					thisPt = jump.index;
-				}
-			} else
+			pt = h.pLine().point(h.getParameter(thisPt));
+			result.add(pt);
+			thisHatch++;
+			if(thisHatch < hatches.size())
+				jump = megGoToPlane(pt, h.getPlane(thisPt), h, 
+					(RrHalfPlane)hatches.get(thisHatch)); //, fg);
+			else 
 				jump = null;
+			h.remove(thisPt);
+			if(jump != null)
+			{
+				result.add(jump.p);
+				h = jump.h;
+				thisPt = jump.index;
+			}
 		} while(jump != null);
+		
+		//result.flag(result.size()-1, fs);
 		
 		return result;
 	}
@@ -915,12 +823,12 @@ public class RrCSGPolygon
 	 * @param gap
 	 * @param fg
 	 * @param fs
-	 * @return a polygon list as the result
+	 * @return a polygon list as the result with flag values f
 	 */
-	public RrPolygonList hatch(RrHalfPlane hp, double gap)
+	public RrPolygonList hatch(RrHalfPlane hp, double gap) //, int fg, int fs)
 	{
 		RrBox big = box.scale(1.1);
-		double d = Math.sqrt(big.dSquared());
+		double d = Math.sqrt(big.d_2());
 		
 		Rr2Point orth = hp.normal();
 		
@@ -952,21 +860,17 @@ public class RrCSGPolygon
 		RrHalfPlane hatcher = new 
 			RrHalfPlane(org, Rr2Point.add(org, hp.pLine().direction()));
 
-		List<RrHalfPlane> hatches = new ArrayList<RrHalfPlane>();
+		List hatches = new ArrayList();
 		
 		double g = 0;		
 		while (g < d)
 		{
-			lineIntersect(hatcher, RrInterval.bigInterval());
+			lineIntersect(hatcher, RrInterval.big_interval(), true);
 			if(hatcher.size() > 0)
 				hatches.add(hatcher);
 			hatcher = hatcher.offset(gap);
 			g += gap;
 		}
-		
-		//new RrGraphics(this, hatches);
-		//RrPolygonList pgl = megList();
-		//new RrGraphics(pgl);
 		
 		RrPolygonList snakes = new RrPolygonList();
 		int segment;
@@ -975,7 +879,7 @@ public class RrCSGPolygon
 			segment = -1;
 			for(int i = 0; i < hatches.size(); i++)
 			{
-				if((hatches.get(i)).size() > 0)
+				if(((RrHalfPlane)hatches.get(i)).size() > 0)
 				{
 					segment = i;
 					break;
@@ -983,7 +887,7 @@ public class RrCSGPolygon
 			}
 			if(segment >= 0)
 			{
-				snakes.add(snakeGrow(hatches, segment, 0));
+				snakes.add(snakeGrow(hatches, segment, 0)); //, fg, fs));
 			}
 		} while(segment >= 0);
 		

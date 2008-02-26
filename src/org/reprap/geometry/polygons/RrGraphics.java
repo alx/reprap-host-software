@@ -57,21 +57,10 @@
 package org.reprap.geometry.polygons;
 
 import java.awt.*;
-import java.awt.event.*;
 import javax.swing.*;
-import java.util.List;
-import org.reprap.gui.*;
 
 public class RrGraphics 
 {
-	static final Color background = Color.white;
-	static final Color boxes = Color.blue;
-	static final Color polygon1 = Color.red;
-	static final Color polygon0 = Color.black;	
-	static final Color infill = Color.pink;
-	static final Color hatch1 = Color.magenta;
-	static final Color hatch0 = Color.orange;
-	
 	/**
 	 * Pixels 
 	 */
@@ -90,27 +79,17 @@ public class RrGraphics
 	/**
 	 * 
 	 */
-	private RrPolygonList p_list = null;
+	private RrPolygonList p_list;
 	
 	/**
 	 * 
 	 */
-	private RrCSGPolygon csg_p = null;
+	private RrCSGPolygon csg_p;
 	
 	/**
 	 * 
 	 */
-	private boolean csgSolid = true;
-	
-	/**
-	 * 
-	 */
-	private STLSlice stlc = null;
-	
-	/**
-	 * 
-	 */
-	private List<RrHalfPlane> hp = null;
+	private STLSlice stlc;
 	
 	/**
 	 * 
@@ -127,8 +106,6 @@ public class RrGraphics
 	 */
 	private Rr2Point pos;
 	
-	private RrBox scaledBox, originalBox;
-	
 	/**
 	 * 
 	 */
@@ -137,14 +114,17 @@ public class RrGraphics
 	/**
 	 * 
 	 */
-	private boolean plot_box = false;
+	private boolean plot_box;
 	
+	/**
+	 * @param b
+	 */
 	private void setScales(RrBox b)
 	{
-		scaledBox = b.scale(1.2);
+		RrBox big = b.scale(1.2);
 		
-		double width = scaledBox.x().length();
-		double height = scaledBox.y().length();
+		double width = big.x().length();
+		double height = big.y().length();
 		if(width > height)
 		{
 			frameWidth = frame;
@@ -160,55 +140,19 @@ public class RrGraphics
 		if (xs < ys)
 			scale = xs;
 		else
-			scale = ys;	
+			scale = ys;
 		
-		// God alone knows why the 5 and 20 are needed next...
+		// God alone knows why the 5 and 10 are needed next...
 		
-		p_0 = new Rr2Point((frameWidth - (width + 2*scaledBox.x().low())*scale)*0.5,
-				(frameHeight - (height + 2*scaledBox.y().low())*scale)*0.5);
+		p_0 = new Rr2Point((frameWidth - (width + 2*big.x().low())*scale)*0.5 - 5,
+				10 + (frameHeight - (height + 2*big.y().low())*scale)*0.5);
 		
 		pos = new Rr2Point(width*0.5, height*0.5);
-	}
-	
-	/**
-	 * @param b
-	 */
-	private void init(RrBox b)
-	{
-		originalBox = b;
-		setScales(b);
 		
 		jframe = new JFrame();
 		jframe.setSize(frameWidth, frameHeight);
 		jframe.getContentPane().add(new MyComponent());
 		jframe.setVisible(true);
-		jframe.setCursor(Cursor.CROSSHAIR_CURSOR);
-		jframe.addMouseListener(new myMouse());
-		jframe.addKeyListener(new myKB());
-		
-		StatusMessage statusWindow = new StatusMessage(new JFrame());
-		statusWindow.setButton("Continue");
-		statusWindow.setMessage("Left mouse - magnify\n" +
-				"Middle mouse - evaluate\n" +
-				"Right mouse - full image\n" +
-				"b - toggle boxes\n" + 
-				"s - toggle solid shading\n\n" 
-				);
-		statusWindow.setLocation(new Point(frameWidth + 20, 0));
-		statusWindow.setVisible(true);
-		
-		boolean loop = true;
-		while(loop)
-		{
-			try {
-				Thread.sleep(100);
-				loop = !statusWindow.isCancelled();
-			} catch (InterruptedException e) 
-			{
-				
-			}
-		}
-		jframe.dispose();
 	}
 	
 	/**
@@ -216,7 +160,7 @@ public class RrGraphics
 	 * @param pl
 	 * @param pb
 	 */
-	public RrGraphics(RrPolygonList pl) 
+	public RrGraphics(RrPolygonList pl, boolean pb) 
 	{
 		if(pl.size() <= 0)
 		{
@@ -225,40 +169,26 @@ public class RrGraphics
 		}
 		
 		p_list = pl;
-		hp = null;
 		csg_p = null;
 		stlc = null;
+		plot_box = pb;
 		
-		init(pl.getBox());
+		setScales(pl.getBox());
 	}
 	
 	/**
 	 * Constructor for CSG polygon
 	 * @param cp
-	 */
-	public RrGraphics(RrCSGPolygon cp) 
-	{
-		p_list = null;
-		hp = null;
-		csg_p = cp;
-		stlc = null;
-		
-		init(csg_p.box());
-	}
-	
-	/**
-	 * Constructor for CSG polygon and crossing lines
-	 * @param cp
 	 * @param pb
 	 */
-	public RrGraphics(RrCSGPolygon cp, List<RrHalfPlane> h) 
+	public RrGraphics(RrCSGPolygon cp, boolean pb) 
 	{
 		p_list = null;
 		csg_p = cp;
-		hp = h;
 		stlc = null;
+		plot_box = pb;
 		
-		init(csg_p.box());
+		setScales(csg_p.box());
 	}
 	
 	/**
@@ -266,14 +196,14 @@ public class RrGraphics
 	 * @param s
 	 * @param pb
 	 */
-	public RrGraphics(STLSlice s) 
+	public RrGraphics(STLSlice s, boolean pb) 
 	{
 		p_list = null;
 		csg_p = null;
-		hp = null;
 		stlc = s;
+		plot_box = pb;
 		
-		init(stlc.box());
+		setScales(stlc.box());
 	}
 	
 	/**
@@ -281,20 +211,20 @@ public class RrGraphics
 	 * @param b
 	 * @param pb
 	 */
-	public RrGraphics(RrBox b) 
+	public RrGraphics(RrBox b, boolean pb) 
 	{
 		p_list = null;
 		csg_p = null;
 		stlc = null;
-		hp = null;
+		plot_box = pb;
 		
-		init(b);
+		setScales(b);
 	}
 	
 	/**
 	 * @param pl
 	 */
-	public void add(RrPolygonList pl)
+	public void addPol(RrPolygonList pl)
 	{
 		p_list = pl;
 	}
@@ -302,7 +232,7 @@ public class RrGraphics
 	/**
 	 * @param cp
 	 */
-	public void add(RrCSGPolygon cp)
+	public void addCSG(RrCSGPolygon cp)
 	{
 		csg_p = cp;
 	}
@@ -310,17 +240,9 @@ public class RrGraphics
 	/**
 	 * @param s
 	 */
-	public void add(STLSlice s)
+	public void addSTL(STLSlice s)
 	{
 		stlc = s;
-	}
-	
-	/**
-	 * @param h
-	 */
-	public void add(List<RrHalfPlane>h)
-	{
-		hp = h;
 	}
 	
 	/**
@@ -332,17 +254,6 @@ public class RrGraphics
 	{
 		return new Rr2Point(p_0.x() + scale*p.x(), (double)frameHeight - 
 				(p_0.y() + scale*p.y()));
-	}
-	
-	/**
-	 * Pixels to real-world coordinates
-	 * @param p
-	 * @return
-	 */
-	private Rr2Point iTransform(int x, int y)
-	{
-		return new Rr2Point(((double)x - p_0.x())/scale, ((double)(frameHeight - y)
-				- p_0.y())/scale);
 	}
 	
 	/**
@@ -361,11 +272,55 @@ public class RrGraphics
 	private void plot(Rr2Point p)
 	{
 		Rr2Point a = transform(p);
-		g2d.drawLine((int)Math.round(pos.x()), (int)Math.round(pos.y()), 
-				(int)Math.round(a.x()), (int)Math.round(a.y()));
+		g2d.drawLine((int)(pos.x() + 0.5), (int)(pos.y() + 0.5), 
+				(int)(a.x() + 0.5), (int)(a.y() + 0.5));
 		pos = a;
 	}
 	
+	/**
+	 * Set the plotting colour
+	 * @param c
+	 */
+	private void colour(int c)
+	{
+		switch(c)
+		{
+		case 0:
+			g2d.setColor(Color.white);
+			break;
+			
+		case 1:
+			g2d.setColor(Color.black);
+			break;
+			
+		case 2:
+			g2d.setColor(Color.red);
+			break;
+			
+		case 3:
+			g2d.setColor(Color.green);
+			break;
+			
+		case 4:
+			g2d.setColor(Color.blue);
+			break;
+			
+		case 5:
+			g2d.setColor(Color.magenta);
+			break;
+			
+		case 6:
+			g2d.setColor(Color.pink);
+			
+		case 7:
+			g2d.setColor(Color.gray);
+			
+		default:
+			g2d.setColor(Color.orange);
+		break;
+		
+		}
+	}
 	
 	/**
 	 * Plot a box
@@ -373,10 +328,6 @@ public class RrGraphics
 	 */
 	private void plot(RrBox b)
 	{
-		if(RrBox.intersection(b, scaledBox).empty())
-			return;
-		
-		g2d.setColor(boxes);
 		move(b.sw());
 		plot(b.nw());
 		plot(b.ne());
@@ -385,49 +336,39 @@ public class RrGraphics
 	}
 	
 	/**
-	 * Plot the half-plane lust
-	 * @param b
-	 */
-	private void plot(List<RrHalfPlane> hl)
-	{
-		for(int i = 0; i < hl.size(); i++)
-		{
-			RrHalfPlane h = hl.get(i);
-			if(!scaledBox.wipe(h.pLine(), RrInterval.bigInterval()).empty())
-			{
-				if(h.size() > 0)
-				{
-					move(h.getPoint(0));
-					boolean even = false;
-					for(int j = 1; j < h.size(); j++)
-					{
-						even = !even;
-						if(even)
-							g2d.setColor(hatch1);
-						else
-							g2d.setColor(hatch0);
-						plot(h.getPoint(j));
-					}
-				}
-			}
-		}
-	}
-	
-	/**
 	 * Plot a polygon
 	 * @param p
 	 */
 	private void plot(RrPolygon p)
 	{
-		if(RrBox.intersection(p.getBox(), scaledBox).empty())
-			return;
+		if(plot_box)
+		{
+			colour(5);
+			plot(p.getBox());
+		}
+		
+//		colour(4);
+//		plot(p.point(0));
 		
 		move(p.point(0));
-		g2d.setColor(polygon1);
-		for(int i = 1; i < p.size(); i++)	
+		
+		int leng = p.size();
+		for(int j = 1; j <= leng; j++)
+		{
+			int i = j%leng;
+			//int f = p.flag(j-1);
+			if(j == leng)
+			{
+				colour(1);
 				plot(p.point(i));
-		g2d.setColor(polygon0);
-		plot(p.point(0));
+			} else
+			{
+				colour(7);
+				plot(p.point(i));
+			}
+		}
+		
+
 	}
 	
 	/**
@@ -443,116 +384,43 @@ public class RrGraphics
 	}
 	
 	/**
-	 * Recursively fill a CSG quad where it's solid.
+	 * Plot a set in a box
 	 * @param q
 	 */
-	private void fillCSG(RrCSGPolygon q)
+	private void plotLeaf(RrCSGPolygon q)
 	{
-		if(RrBox.intersection(q.box(), scaledBox).empty())
-			return;
-		
-		if(q.c1() != null)
+		if(plot_box)
 		{
-			fillCSG(q.c1());
-			fillCSG(q.c2());
-			fillCSG(q.c3());
-			fillCSG(q.c4());
-			return;
+			colour(4);
+			plot(q.box());
 		}
 		
-		if(q.csg().operator() == RrCSGOp.NULL)
-			return;
-			
-		g2d.setColor(infill);
-		Rr2Point sw = transform(q.box().sw());
-		Rr2Point ne = transform(q.box().ne());
-		int x0 = (int)Math.round(sw.x());
-		int y0 = (int)Math.round(sw.y());
-		int x1 = (int)Math.round(ne.x());
-		int y1 = (int)Math.round(ne.y());
+		colour(2);
 		
-		if(q.csg().operator() == RrCSGOp.UNIVERSE)
+		if(q.csg().complexity() == 1)
+			plot(q.csg().plane().pLine(), q.interval1());
+		else if (q.csg().complexity() == 2)
 		{
-			g2d.fillRect(x0, y1, x1 - x0 + 1, y0 - y1 + 1);
-			return;
+			plot(q.csg().c_1().plane().pLine(), q.interval1());
+			plot(q.csg().c_2().plane().pLine(), q.interval2());
 		}
-		
-		for(int x = x0; x <= x1; x++)
-		{
-			for(int y = y1; y <= y0; y++)  // Bloody backwards coordinates...
-			{
-				Rr2Point p = iTransform(x, y);
-				double v = q.csg().value(p);
-				if(v <= 0)
-					g2d.fillRect(x, y, 1, 1);
-			}
-		}
-		
-	}
-	
-	private void boxCSG(RrCSGPolygon q)
-	{
-		if(RrBox.intersection(q.box(), scaledBox).empty())
-			return;
-		
-		if(q.c1() != null)
-		{
-			boxCSG(q.c1());
-			boxCSG(q.c2());
-			boxCSG(q.c3());
-			boxCSG(q.c4());
-			return;
-		}
-		plot(q.box());
 	}
 	
 	/**
 	 * Plot a divided CSG polygon recursively
 	 * @param p
 	 */
-	private void plot(RrCSGPolygon q)
+	private void plot(RrCSGPolygon p)
 	{
-		if(RrBox.intersection(q.box(), scaledBox).empty())
-			return;		
-		
-		if(q.c1() != null)
+		if(p.c_1() == null)
 		{
-			plot(q.c1());
-			plot(q.c2());
-			plot(q.c3());
-			plot(q.c4());
-			return;
-		}
-		
-		g2d.setColor(polygon1);
-		if(q.csg().complexity() == 1)
-			plot(q.csg().plane().pLine(), q.interval1());
-		else if (q.csg().complexity() == 2)
-		{
-			plot(q.csg().c1().plane().pLine(), q.interval1());
-			plot(q.csg().c2().plane().pLine(), q.interval2());
-		}
-	}
-	
-	/**
-	 * Recursively plot the boxes for an STL object
-	 * @param s
-	 */
-	private void boxSTL(STLSlice s)
-	{
-		if(RrBox.intersection(s.box(), scaledBox).empty())
-			return;
-		
-		if(s.leaf())
-		{
-			g2d.setColor(boxes);
-			plot(s.box());
+			plotLeaf(p);
 		} else
 		{
-			boxSTL(s.c1());
-			boxSTL(s.c2());
-			boxSTL(s.c3());
-			boxSTL(s.c4());
+			plot(p.c_1());
+			plot(p.c_2());
+			plot(p.c_3());
+			plot(p.c_4());
 		}
 	}
 	
@@ -562,12 +430,14 @@ public class RrGraphics
 	 */
 	private void plot(STLSlice s)
 	{
-		if(RrBox.intersection(s.box(), scaledBox).empty())
-			return;
-		
 		if(s.leaf())
 		{
-			g2d.setColor(polygon1);
+			if(plot_box)
+			{
+				colour(4);
+				plot(s.box());
+			}
+			colour(1);
 			for(int i = 0; i < s.edges().size(); i++)
 			{
 				move(s.segment(i).a);
@@ -575,10 +445,10 @@ public class RrGraphics
 			}
 		} else
 		{
-			plot(s.c1());
-			plot(s.c2());
-			plot(s.c3());
-			plot(s.c4());
+			plot(s.c_1());
+			plot(s.c_2());
+			plot(s.c_3());
+			plot(s.c_4());
 		}
 	}
 	
@@ -588,127 +458,17 @@ public class RrGraphics
 	private void plot()
 	{
 		if(csg_p != null)
-		{
-			if(csgSolid)
-				fillCSG(csg_p);
-			
-			if(plot_box)
-				boxCSG(csg_p);
-			else
-				plot(csg_p.box());
-			
 			plot(csg_p);
-		}
-		
 		if(p_list != null)
 		{
 			int leng = p_list.size();
 			for(int i = 0; i < leng; i++)
 				plot(p_list.polygon(i));
-			if(plot_box)
-			{
-				for(int i = 0; i < leng; i++)
-					plot(p_list.polygon(i).getBox());
-			} else
-				plot(p_list.getBox());
 		}
-		
 		if(stlc != null)
 		{
-			if(plot_box)
-				boxSTL(stlc);
-			else
-				plot(stlc.box());
-			
 			plot(stlc);
 		}
-
-		if(hp != null)
-		{
-			plot(hp);
-		}
-	}
-	
-	class myKB implements KeyListener
-	{
-		public void keyTyped(KeyEvent k)
-		{
-			switch(k.getKeyChar())
-			{
-			case 'b':
-			case 'B':
-				plot_box = !plot_box;
-				break;
-				
-			case 's':
-			case 'S':
-				csgSolid = !csgSolid;
-				
-			default:
-			}
-			jframe.repaint();
-		}
-		
-		public void keyPressed(KeyEvent k)
-		{	
-		}
-		
-		public void keyReleased(KeyEvent k)
-		{	
-		}
-	}
-	
-	/**
-	 * Clicking the mouse magnifies
-	 * @author ensab
-	 *
-	 */
-	class myMouse implements MouseListener
-	{
-		private RrBox magBox(RrBox b, int ix, int iy)
-		{
-			Rr2Point cen = iTransform(ix, iy);
-			//System.out.println("Mouse: " + cen.toString() + "; box: " +  scaledBox.toString());
-			Rr2Point off = new Rr2Point(b.x().length()*0.05, b.y().length()*0.05);
-			return new RrBox(Rr2Point.sub(cen, off), Rr2Point.add(cen, off));
-		}
-		
-		public void mousePressed(MouseEvent e) {
-		}
-	    public void mouseReleased(MouseEvent e) {
-	    }
-	    public void mouseEntered(MouseEvent e) {
-	    }
-	    public void mouseExited(MouseEvent e) {
-	    }
-	    
-	    public void mouseClicked(MouseEvent e) 
-	    {
-			int ix = e.getX() - 5;  // Why needed??
-			int iy = e.getY() - 25; //  "     "
-			
-			switch(e.getButton())
-			{
-			case MouseEvent.BUTTON1:
-				setScales(magBox(scaledBox, ix, iy));
-				break;
-
-			case MouseEvent.BUTTON2:
-				if(csg_p != null)
-				{
-					Rr2Point pc = iTransform(ix, iy);
-					System.out.println("Potential at " + pc.toString() + " is " + csg_p.value(pc));
-					System.out.println("Quad: " + csg_p.quad(pc).toString());
-				}
-				break;
-				
-			case MouseEvent.BUTTON3:
-
-			default:
-				setScales(originalBox);
-			}
-			jframe.repaint();
-	    } 
 	}
 	
 	/**

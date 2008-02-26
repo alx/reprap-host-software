@@ -81,6 +81,26 @@ class segmentSpeeds
  *
  */
 public class LayerProducer {
+	
+	/**
+	 * Identifier for movements without depositing
+	 */
+	//private static int gapMaterial = 0;
+	
+	/**
+	 * Identifier for the actual depositing material
+	 */
+	//private static int solidMaterial = 1;
+	
+	/**
+	 * @return the gap material identifier
+	 */
+	//public static int gapMaterial() { return gapMaterial; }
+	
+	/**
+	 * @return the filler material identifier
+	 */
+	//public static int solidMaterial() { return solidMaterial; }
 
 	/**
 	 * The shape of the object built so far under the current layer
@@ -154,15 +174,16 @@ public class LayerProducer {
 		RrCSGPolygonList offBorder = csgPols.offset(printer.getExtruders(), true);
 		RrCSGPolygonList offHatch = csgPols.offset(printer.getExtruders(), false);
 		
-//		offBorder.divide();
-//		offHatch.divide();
+		offBorder.divide(Preferences.tiny(), 1.01);
+		offHatch.divide(Preferences.tiny(), 1.01);
 		
 		//RrGraphics g = new RrGraphics(offBorder, true);
 		
-		borderPolygons = offBorder.megList();
+		borderPolygons = offBorder.megList(); //(solidMaterial, solidMaterial);
 		
 		hatchedPolygons = new RrPolygonList();
 		hatchedPolygons.add(offHatch.hatch(hatchDirection, printer.getExtruders()));
+				//,solidMaterial, gapMaterial));	
 	
 //		RrPolygonList pllist = new RrPolygonList();
 //		pllist.add(borderPolygons);

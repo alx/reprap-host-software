@@ -14,7 +14,6 @@ import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFileChooser;
-import javax.swing.filechooser.FileFilter;
 import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
@@ -45,51 +44,6 @@ import org.reprap.gui.Utility;
  *  
  */
 
-class ExtensionFileFilter extends FileFilter {
-	  String description;
-
-	  String extensions[];
-
-	  public ExtensionFileFilter(String description, String extension) {
-	    this(description, new String[] { extension });
-	  }
-
-	  public ExtensionFileFilter(String description, String extensions[]) {
-	    if (description == null) {
-	      this.description = extensions[0];
-	    } else {
-	      this.description = description;
-	    }
-	    this.extensions = (String[]) extensions.clone();
-	    toLower(this.extensions);
-	  }
-
-	  private void toLower(String array[]) {
-	    for (int i = 0, n = array.length; i < n; i++) {
-	      array[i] = array[i].toLowerCase();
-	    }
-	  }
-
-	  public String getDescription() {
-	    return description;
-	  }
-
-	  public boolean accept(File file) {
-	    if (file.isDirectory()) {
-	      return true;
-	    } else {
-	      String path = file.getAbsolutePath().toLowerCase();
-	      for (int i = 0, n = extensions.length; i < n; i++) {
-	        String extension = extensions[i];
-	        if ((path.endsWith(extension) && (path.charAt(path.length() - extension.length() - 1)) == '.')) {
-	          return true;
-	        }
-	      }
-	    }
-	    return false;
-	  }
-	}
-
 public class Main {
 
     // Window to walk the file tree
@@ -110,12 +64,16 @@ public class Main {
 	
 	public Main() {
         chooser = new JFileChooser();
- 
-        // Do we want just to list .stl files, or all?
-        // If all, comment out the next two lines
         
-        FileFilter filter = new ExtensionFileFilter("STL", new String[] { "STL" });
-        chooser.setFileFilter(filter);   
+         // Do we want just to list .stl files, or all?
+        
+        // Note: source for ExampleFileFilter can be found in FileChooserDemo,
+        // under the demo/jfc directory in the Java 2 SDK, Standard Edition.
+        //ExampleFileFilter filter = new ExampleFileFilter();
+        //filter.addExtension("stl");
+        //filter.setDescription("STL files");
+        //chooser.setFileFilter(filter);       
+
 	}
 
 	private void createAndShowGUI() throws Exception {

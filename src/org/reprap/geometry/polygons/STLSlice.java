@@ -84,33 +84,7 @@ class LineSegment
 	 */
 	public Attributes att;
 	
-	/**
-	 * Are two the same within tolerance?
-	 * @param p
-	 * @param q
-	 * @param tol_2
-	 * @return
-	 */
-	public static boolean same(LineSegment p, LineSegment q)
-	{
-		if(Rr2Point.same(p.a, q.a))
-			return Rr2Point.same(p.b, q.b);
-		
-		if(Rr2Point.same(p.a, q.b))
-			return Rr2Point.same(p.b, q.a);
-		
-		return false;
-	}
-	
-	/**
-	 * Squared length
-	 * @return
-	 */
-	public double dSqured()
-	{
-		Rr2Point p = Rr2Point.sub(a, b);
-		return Rr2Point.dSquared(a, b);
-	}
+
 	
 	/**
 	 * Constructor takes two intersection points with an STL triangle edge.
@@ -132,94 +106,26 @@ class LineSegment
 	{
 		return "edge ends: (" + a.toString() + ") to (" + b.toString() + ")"; 
 	}
-	
-	/**
-	 * Occasionally we get a quad with little spikes in that double back on themselves; 
-	 * remove them.  Also single unmatched lines.
-	 * @param q
-	 */
-	public static void removeSpikes(STLSlice q)
-	{
-		if(q.edges().size() != 4 && q.edges().size() != 1)
-			return;
-		
-		// One rogue edge
-		
-		if(q.edges().size() == 1)
-		{
-			// Find its other end
-			
-			STLSlice otherEnd = q.segment(0).qa;
-			if(otherEnd == q)
-				otherEnd = q.segment(0).qb;
-			if(otherEnd.edges().size() != 1)
-			{
-				System.err.println("LineSegment.removeSpikes(): far end doesn't contain 1 point; it has " + otherEnd.edges().size());
-				return;
-			}
-			
-			// Remove both ends
-			
-			otherEnd.remove(0);
-			q.remove(0);
-			return;
-		}
-		
-		// 4 in here; are two coincident?  If so junk 'em
-		
-		for(int i = 0; i < 3; i++)
-			for(int j = i + 1; j < 4; j++)
-			{
-				LineSegment lsi = q.segment(i);
-				LineSegment lsj = q.segment(j);
-				if(same(lsi, lsj))
-				{
-					// Find their other ends and remove them from their quad too
-					
-					STLSlice otherEndi = lsi.qa;
-					if(otherEndi == q)
-						otherEndi = lsi.qb;
-					STLSlice otherEndj = lsj.qa;
-					if(otherEndj == q)
-						otherEndj = lsj.qb;
-					if(otherEndi != otherEndj)
-					{
-						System.err.println("LineSegment.removeSpikes(): far ends don't match!");
-						return;
-					}
-					if(otherEndi.edges().size() != 2)
-					{
-						System.err.println("LineSegment.removeSpikes(): far end doesn't contain 2 points; it has " + otherEndi.edges().size());
-						return;
-					}
-					otherEndi.remove(0);
-					otherEndi.remove(0);
-					
-					// Now remove ours
-					
-					q.remove(j);
-					q.remove(i);
-					return;
-				}
-			}
-	}
 
 	/**
 	 * A quad contains (we hope...) the ends of two segments - record that
 	 * @param q
 	 */
 	public static void setQuad(STLSlice q)
-	{	
+	{
+		if(q.edges().size() != 2)
+			Debug.d("LineSegment.setQuad(): dud edge count: " + q.edges().size());
+		
 		int count = 0;
 		
 		for(int i = 0; i < q.edges().size(); i++)
 		{
-			if(q.box().pointRelative(q.segment(i).a) == 0)
+			if(q.box().point_relative(q.segment(i).a) == 0)
 			{
 				q.segment(i).qa = q;
 				count++;
 			}
-			if(q.box().pointRelative(q.segment(i).b) == 0)
+			if(q.box().point_relative(q.segment(i).b) == 0)
 			{
 				q.segment(i).qb = q;
 				count++;
@@ -236,13 +142,13 @@ class LineSegment
  * @author ensab
  *
  */
-class TrackPolygon
+class trackPolygon
 {
 	public STLSlice nextQ;
 	public LineSegment nextE;
 	public Rr2Point here;
 	
-	public TrackPolygon()
+	public trackPolygon()
 	{
 		nextQ = null;
 		nextE = null;
@@ -290,7 +196,7 @@ class MaterialLists
 			System.err.println("MaterialLists(): " + ex.toString());
 		}
 		
-		ats = new ArrayList[extruderCount]; // JavaNonsense: Why can't this be ats = new ArrayList<AandT>[extruderCount]; then?
+		ats = new ArrayList[extruderCount]; // Javanonsense: Why can't this be ats = new ArrayList<AandT>[extruderCount]; then?
 		for(int i = 0; i < extruderCount; i++)
 			ats[i] = new ArrayList<AandT>();
 	}
@@ -356,6 +262,16 @@ public class STLSlice
 	private ArrayList<Double> yCoords;
 	
 	/**
+	 * Squared diagonal of the smallest box to go to 
+	 */
+	private static double resolution_2 = Preferences.tiny();
+	
+	/**
+	 * Swell factor for division
+	 */
+	private static double sFactor = 1;
+	
+	/**
 	 * All the STL triangles and part-triangles below slice-height, Z 
 	 */
 	private List<Point3d> triangles;
@@ -369,6 +285,10 @@ public class STLSlice
 	 * The lists of parts sorted by material
 	 */
 	private MaterialLists mls;
+	/**
+	 * For debugging
+	 */
+	RrGraphics qp;
 	
 	/**
 	 * Just initialises a few things, or cleans the data structure
@@ -466,19 +386,19 @@ public class STLSlice
 	 * get the quad children
 	 * @return
 	 */
-	public STLSlice c1()
+	public STLSlice c_1()
 	{
 		return q1;
 	}
-	public STLSlice c2()
+	public STLSlice c_2()
 	{
 		return q2;
 	}
-	public STLSlice c3()
+	public STLSlice c_3()
 	{
 		return q3;
 	}
-	public STLSlice c4()
+	public STLSlice c_4()
 	{
 		return q4;
 	}
@@ -493,15 +413,6 @@ public class STLSlice
 	}
 	
 	/**
-	 * Remove a segment
-	 * @param i
-	 */
-	public void remove(int i)
-	{
-		edges.remove(i);
-	}
-	
-	/**
 	 * Get the triangulation below the current slice level.
 	 * @return
 	 */
@@ -512,14 +423,14 @@ public class STLSlice
 	
 	/**
 	 * FIXME: Not sure about this - at the moment it clicks all points
-	 * onto a Preferences.gridResolution mm grid.
+	 * onto an 0.01 mm grid.
 	 * @param x
 	 * @return grid value nearest x
 	 */
 	private double toGrid(double x)
 	{
 		//return x;
-		return (double)((int)(x*Preferences.grid() + 0.5))*Preferences.gridResolution();
+		return (double)((int)(x*Preferences.grid() + 0.5))*Preferences.gridRes();
 	}
 	
 	/**
@@ -605,7 +516,7 @@ public class STLSlice
 		e2 = new Rr2Point(toGrid(e2.x()), toGrid(e2.y()));
 		
 		// Too short?
-		if(!Rr2Point.same(e1, e2))
+		if(!Rr2Point.same(e1, e2, Preferences.lessGridSquare()))
 		{
 			add(e1, e2, att);
 			box.expand(e1);
@@ -726,8 +637,8 @@ public class STLSlice
 			Rr2Point aa = segment(i).a;
 			Rr2Point bb = segment(i).b;
 			
-			boolean aIn = (box.pointRelative(aa) == 0);
-			boolean bIn = (box.pointRelative(bb) == 0);
+			boolean aIn = (box.point_relative(aa) == 0);
+			boolean bIn = (box.point_relative(bb) == 0);
 			
 			if(aIn || bIn)
 				result.add(segment(i));
@@ -774,7 +685,7 @@ public class STLSlice
 			{
 				v = coords.get(p).doubleValue();
 				g = v - vpOld;
-				if(g > Preferences.boxResolution())
+				if(g > Preferences.gridRes()*0.1)
 				{
 					return 0.5*(vpOld + v);
 				}
@@ -788,7 +699,7 @@ public class STLSlice
 			{
 				v = coords.get(m).doubleValue();
 				g = vmOld - v;
-				if(g > Preferences.boxResolution())
+				if(g > Preferences.gridRes()*0.1)
 				{
 					return 0.5*(v + vmOld);
 				}
@@ -799,7 +710,7 @@ public class STLSlice
 			}
 		}
 		
-		if(biggest.length() > Preferences.boxResolution())
+		if(biggest.length() > Preferences.gridRes()*0.1)
 			return biggest.low() + 0.5*biggest.length();
 		else
 		{
@@ -817,10 +728,16 @@ public class STLSlice
 	private Rr2Point biggestGap()
 	{
 		Rr2Point result = new Rr2Point(findGap(xCoords, box.x()), findGap(yCoords, box.y()));
+		//System.out.println("Box: " + box.toString() + "   centre: " + result.toString());
+		
+		// Not needed any more
+		
+		//xCoords = new ArrayList<Double>();
+		//yCoords = new ArrayList<Double>();
 		
 		// Sanity check
 		
-		if(box.pointRelative(result) != 0)
+		if(box.point_relative(result) != 0)
 			Debug.d("STLSlice.biggestGap(): point outside box! point: " + 
 					result.toString() + ", box: " + box.toString());
 		
@@ -840,10 +757,10 @@ public class STLSlice
 		Rr2Point se = box.se();
 		
 		Rr2Point cen = biggestGap();
-		double w = cen.x() - (cen.x() - sw.x())*(Preferences.swell() - 1);
-		double n = cen.y() + (nw.y() - cen.y())*(Preferences.swell() - 1);
-		double e = cen.x() + (se.x() - cen.x())*(Preferences.swell() - 1);
-		double s = cen.y() - (cen.y() - sw.y())*(Preferences.swell() - 1);
+		double w = cen.x() - (cen.x() - sw.x())*(sFactor - 1);
+		double n = cen.y() + (nw.y() - cen.y())*(sFactor - 1);
+		double e = cen.x() + (se.x() - cen.x())*(sFactor - 1);
+		double s = cen.y() - (cen.y() - sw.y())*(sFactor - 1);
 		
 //		 Put the results in the children
 		
@@ -873,7 +790,7 @@ public class STLSlice
 		if(edges.size() <= 0)
 			return;
 		
-		if(box.dSquared() < Preferences.boxResolutionSquared())
+		if(box.d_2() < resolution_2)
 		{
 			Debug.d("STLSlice.divide(): hit resolution limit! Edge end count: " + edges.size());
 			for(int i = 0; i < edges.size(); i++)
@@ -894,8 +811,8 @@ public class STLSlice
 
 		for(int i = 0; i < edges.size(); i++)
 		{
-			if(box.pointRelative(segment(i).a) == 0 &&  
-					box.pointRelative(segment(i).b) == 0)
+			if(box.point_relative(segment(i).a) == 0 &&  
+					box.point_relative(segment(i).b) == 0)
 			{
 				makeQuads();
 				q1.divide();
@@ -907,26 +824,12 @@ public class STLSlice
 		}
 
 		if(edges.size() == 1)
-			System.err.println("STLSlice.divide(): only one end in box: " + edges.get(0).toString() + " box: " + box.toString());
-		
-		LineSegment.setQuad(this);
-	}
-	
-	/**
-	 * Recursively walk the tree cleaning out any lines that double back on themselves
-	 * and any single lines.
-	 */
-	
-	private void cleanSpikes()
-	{
-		if(!leaf())
 		{
-			q1.cleanSpikes();
-			q2.cleanSpikes();
-			q3.cleanSpikes();
-			q4.cleanSpikes();
+			Debug.d("STLSlice.divide(): only one end in box: " + edges.get(0).toString() + " box: " + box.toString());
+			edges.remove(0);
 		} else
-			LineSegment.removeSpikes(this);
+			LineSegment.setQuad(this);
+
 	}
 	
 	 /**
@@ -962,7 +865,18 @@ public class STLSlice
      */
     private static void quickPlot(STLSlice s)
     {
-    	RrGraphics g = new RrGraphics(s.box.scale(1.5));
+    	s.qp = new RrGraphics(s.box.scale(1.5), true);
+		s.qp.addSTL(s);
+		System.out.print("Type any character: ");
+		System.out.flush();
+		try
+		{
+			System.in.read();
+		} catch(IOException err)
+		{
+			System.err.print("Uh?");
+		}
+		//g = null;
     }
     
     public void recursiveReport()
@@ -1010,9 +924,9 @@ public class STLSlice
      * edge we're running along from the quad we're in and finds the 
      * next quad and next edge at its other end.
      */
-    private TrackPolygon processThisQuad(LineSegment edge)
+    private trackPolygon processThisQuad(LineSegment edge)
     {
-    	TrackPolygon result = new TrackPolygon();
+    	trackPolygon result = new trackPolygon();
     	
     	if(edges.size() <= 0)
     		return result;
@@ -1035,11 +949,11 @@ public class STLSlice
     	}
     	
     	if(dud)
-    		System.err.println("STLSlice.processThisQuad(): edge not found!");
+    		Debug.d("processThisQuad(): edge not found!");
     	
     	if(edges.size() <= 0)
     	{
-    		System.err.println("STLSlice.processThisQuad(): entered quad with no exit!");
+    		Debug.d("processThisQuad(): entered quad with no exit!");
     		return result;
     	}
     	
@@ -1079,13 +993,13 @@ public class STLSlice
 	 * @param fs
 	 * @return a list of all the resulting polygons.
 	 */
-	private RrPolygonList conquer()
+	private static RrPolygonList conquer(STLSlice root) //, int fg, int fs)
 	{
 		RrPolygonList pgl = new RrPolygonList();
 		
 		STLSlice corner, startCorner;
 		LineSegment edge;
-		startCorner = findCorner();
+		startCorner = root.findCorner();
 		
 		while(startCorner != null)
 		{
@@ -1094,7 +1008,7 @@ public class STLSlice
 			RrPolygon pg = new RrPolygon(edge.att);
 			do
 			{
-				TrackPolygon tp = corner.processThisQuad(edge);
+				trackPolygon tp = corner.processThisQuad(edge);
 				if(tp.here != null)
 					pg.add(tp.here);
 				corner = tp.nextQ;
@@ -1102,9 +1016,12 @@ public class STLSlice
 			} while (corner != startCorner && corner != null);
 			
 			if(pg.size() > 2)  // Throw away "noise"...
+			{
+				//pg.flag(pg.size() - 1, fs);
 				pgl.add(pg);
+			}
 
-			startCorner = findCorner();
+			startCorner = root.findCorner();
 		}
 		return pgl;
 	}
@@ -1133,9 +1050,9 @@ public class STLSlice
 	 * build a 2D polygon list of all edges in the plane z
 	 * from all the objects in shapeList then turn it in CSG form.
 	 * @param z
-	 * @return a CSG representation of all the polygons in the slice, one polygon per material
+	 * @return a CSG representation of all the polygons in the slice
 	 */
-	public RrCSGPolygonList slice(double z)
+	public RrCSGPolygonList slice(double z) //, int fg, int fs)
 	{
 		RrCSGPolygonList rl = new RrCSGPolygonList();
 
@@ -1179,7 +1096,9 @@ public class STLSlice
 
 				// Make sure nothing falls down the cracks.
 
-				box = box.scale(Preferences.swell());
+				sFactor = Preferences.swell();
+				box = box.scale(sFactor);
+				resolution_2 = box.d_2()*Preferences.tiny();
 
 				// Recursively generate the quad tree.  The aim is to have each
 				// leaf quad containing either 0 or 2 ends of different line
@@ -1188,29 +1107,23 @@ public class STLSlice
 
 				divide();
 				
-				cleanSpikes();
-				
 				// Run round joining up all the pairs of ends...
 
-				RrPolygonList pgl = conquer();
+				RrPolygonList pgl = conquer(this); //, fg, fs);
 
 				// Remove wrinkles
 
-				pgl = pgl.simplify(Preferences.gridResolution()*1.5);
+				pgl = pgl.simplify(Preferences.gridRes()*1.5);
 				
 				//RrGraphics g = new RrGraphics(pgl, false);
 
 				// Check for a silly result.
 				
 				if(pgl.size() > 0)
-				{
-					RrCSGPolygon cpgl = pgl.toCSG();
-					//cpgl.debugPlot();
-					rl.add(cpgl);
-				}
+					rl.add(pgl.toCSG(Preferences.tiny()));
 			}
 		}
-		
+
 		return rl;
 	}
 }

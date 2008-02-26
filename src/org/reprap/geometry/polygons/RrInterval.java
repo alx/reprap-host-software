@@ -53,10 +53,7 @@
  
  */
 
-
 package org.reprap.geometry.polygons;
-
-import org.reprap.Preferences;
 
 /**
  * Real 1D intervals
@@ -82,6 +79,8 @@ public class RrInterval
 		low = l;
 		high = h;
 		empty = (low > high);
+		if(empty)
+			System.err.println("RrInterval: low value bigger than high.");
 	}
 	
 	/**
@@ -106,7 +105,7 @@ public class RrInterval
 	 * The biggest possible
 	 * @return biggest possible interval
 	 */
-	public static RrInterval bigInterval()
+	public static RrInterval big_interval()
 	{
 		return new RrInterval(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 	}
@@ -158,14 +157,7 @@ public class RrInterval
 	{
 		return high - low;
 	}
-	/**
-	 * Middle
-	 * @return
-	 */
-	public double cen()
-	{
-		return (high + low)*0.5;
-	}
+	
 	
 	/**
 	 * Interval addition
@@ -285,7 +277,7 @@ public class RrInterval
 	
 	/**
 	 * Negative, zero, or positive?
-	 * @return true if interval is negative
+	 * @return true if interval is negative (?)
 	 */
 	public boolean neg()
 	{
@@ -293,11 +285,11 @@ public class RrInterval
 	}
 	
 	/**
-	 * @return true if intervale is positive
+	 * @return true if intervale is positive (?)
 	 */
 	public boolean pos()
 	{
-		return low > 0; //** >=
+		return low >= 0;
 	}
 	
 	/**
@@ -326,14 +318,14 @@ public class RrInterval
 	 * @param tolerance
 	 * @return true if intervals a and b are identical within the tolerance
 	 */
-	public static boolean same(RrInterval a, RrInterval b)
+	public static boolean same(RrInterval a, RrInterval b, double tolerance)
 	{
 		if(a.empty() && b.empty())   //??? !!!
 			return true;
 		
-		if( Math.abs(a.low - b.low) > Preferences.pointResolution())
+		if( Math.abs(a.low - b.low) > tolerance)
 			return false;
-		if (Math.abs(a.high - b.high) > Preferences.pointResolution())
+		if (Math.abs(a.high - b.high) > tolerance)
 			return false;
 		return true;
 	}
@@ -363,11 +355,23 @@ public class RrInterval
 	}
 	
 	/**
+	 * Sign of an interval
+	 * @param x
+	 * @return sign of the interval
+	 */
+	public static double sign(double x) 
+	{ 
+		if (x < 0) return -1; 
+		else if (x > 0) return 1; 
+		else return 0;
+	}
+	
+	/**
 	 * @return new interval object based on ?
 	 */
 	public RrInterval sign()
 	{
-		return( new RrInterval(Math.signum(low), Math.signum(high)) );
+		return( new RrInterval(sign(low), sign(high)) );
 	}
 	
 	/**
@@ -396,27 +400,5 @@ public class RrInterval
 		if (a.low < b.low) result = new RrInterval(a.low, result.high);
 		if (a.high < b.high) result = new RrInterval(result.low, a.high);
 		return(result);
-	}
-	
-	/**
-	 * Intersection
-	 * @param a
-	 * @param b
-	 * @return
-	 */
-	public static RrInterval intersection(RrInterval a, RrInterval b)
-	{
-		return new RrInterval(Math.max(a.low, b.low), Math.min(a.high, b.high));	
-	}
-	
-	/**
-	 * Union
-	 * @param a
-	 * @param b
-	 * @return
-	 */
-	public static RrInterval union(RrInterval a, RrInterval b)
-	{
-		return new RrInterval(Math.min(a.low, b.low), Math.max(a.high, b.high));	
 	}
 }

@@ -57,8 +57,6 @@
 
 package org.reprap.geometry.polygons;
 
-import org.reprap.Preferences;
-
 /**
  * Class for (x, y) points and vectors
  */
@@ -263,7 +261,7 @@ public class Rr2Point
 	 * @param b
 	 * @return squared distance
 	 */
-	public static double dSquared(Rr2Point a, Rr2Point b)
+	public static double d_2(Rr2Point a, Rr2Point b)
 	{
 		Rr2Point c = sub(a, b);
 		return mul(c, c);
@@ -273,11 +271,11 @@ public class Rr2Point
 	 * distance
 	 * @param a
 	 * @param b
-	 * @return distance
+	 * @return squared distance
 	 */
 	public static double d(Rr2Point a, Rr2Point b)
 	{
-		return Math.sqrt(dSquared(a, b));
+		return Math.sqrt(d_2(a, b));
 	}
 	
 	/**
@@ -286,11 +284,11 @@ public class Rr2Point
 	 * @param b
 	 * @param tol_2
 	 * @return true if the squared distance between points a and b 
-	 * is within tolerance, otherwise false
+	 * is within tolerance tol_2, otherwise false
 	 */
-	public static boolean same(Rr2Point a, Rr2Point b)
+	public static boolean same(Rr2Point a, Rr2Point b, double tol_2)
 	{
-		return dSquared(a, b) < Preferences.pointResolutionSquared();
+		return d_2(a, b) < tol_2;
 	}
 }
 
