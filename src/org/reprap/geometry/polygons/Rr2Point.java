@@ -261,7 +261,7 @@ public class Rr2Point
 	 * @param b
 	 * @return squared distance
 	 */
-	public static double d_2(Rr2Point a, Rr2Point b)
+	public static double dSquared(Rr2Point a, Rr2Point b)
 	{
 		Rr2Point c = sub(a, b);
 		return mul(c, c);
@@ -275,7 +275,7 @@ public class Rr2Point
 	 */
 	public static double d(Rr2Point a, Rr2Point b)
 	{
-		return Math.sqrt(d_2(a, b));
+		return Math.sqrt(dSquared(a, b));
 	}
 	
 	/**
@@ -288,7 +288,7 @@ public class Rr2Point
 	 */
 	public static boolean same(Rr2Point a, Rr2Point b, double tol_2)
 	{
-		return d_2(a, b) < tol_2;
+		return dSquared(a, b) < tol_2;
 	}
 }
 

@@ -174,7 +174,7 @@ public class RrCSGPolygon
 		q2 = null;
 		q3 = null;
 		q4 = null;
-		resolution_2 = box.d_2()*Preferences.tiny();
+		resolution_2 = box.dSquared()*Preferences.tiny();
 		csg = p;
 		visit1 = false;
 		visit2 = false;
@@ -258,7 +258,7 @@ public class RrCSGPolygon
 		
 		// Too small a box?
 		
-		if(box.d_2() < resolution_2)
+		if(box.dSquared() < resolution_2)
 		{
 			System.err.println("RrCSGPolygon.divide(): hit resolution limit!  Complexity: " +
 					csg.complexity());
@@ -353,7 +353,7 @@ public class RrCSGPolygon
 			// One half-plane in the box:
 			
 		case LEAF:
-			i1 = RrInterval.big_interval();
+			i1 = RrInterval.bigInterval();
 			i1 = box.wipe(csg.plane().pLine(), i1);
 			if(i1.empty()) 
 				return;
@@ -370,10 +370,10 @@ public class RrCSGPolygon
 					csg.complexity());
 				return;
 			}
-			i1 = RrInterval.big_interval();
+			i1 = RrInterval.bigInterval();
 			i1 = box.wipe(csg.c_1().plane().pLine(), i1);
 			
-			i2 = RrInterval.big_interval();
+			i2 = RrInterval.bigInterval();
 			i2 = box.wipe(csg.c_2().plane().pLine(), i2);
 			
 			if(csg.operator() == RrCSGOp.INTERSECTION)
@@ -396,7 +396,7 @@ public class RrCSGPolygon
 			try
 			{
 				vertex = csg.c_1().plane().cross_point(csg.c_2().plane());
-				if(box.point_relative(vertex) == 0)
+				if(box.pointRelative(vertex) == 0)
 				{
 					corner = true;
 				} else
@@ -433,7 +433,7 @@ public class RrCSGPolygon
 	{
 		if(q1 == null)
 		{
-			if(box.point_relative(p) != 0)
+			if(box.pointRelative(p) != 0)
 				System.err.println("RrCSGPolygon.quad(): point not in the box.");
 		} else
 		{
@@ -828,7 +828,7 @@ public class RrCSGPolygon
 	public RrPolygonList hatch(RrHalfPlane hp, double gap) //, int fg, int fs)
 	{
 		RrBox big = box.scale(1.1);
-		double d = Math.sqrt(big.d_2());
+		double d = Math.sqrt(big.dSquared());
 		
 		Rr2Point orth = hp.normal();
 		
@@ -865,7 +865,7 @@ public class RrCSGPolygon
 		double g = 0;		
 		while (g < d)
 		{
-			lineIntersect(hatcher, RrInterval.big_interval(), true);
+			lineIntersect(hatcher, RrInterval.bigInterval(), true);
 			if(hatcher.size() > 0)
 				hatches.add(hatcher);
 			hatcher = hatcher.offset(gap);

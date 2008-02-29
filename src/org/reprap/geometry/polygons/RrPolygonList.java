@@ -495,7 +495,7 @@ public class RrPolygonList
 		for(int i = 0; i < size(); i++)
 		{
 			RrPolygon p = polygon(i);
-			if(p.getBox().d_2() > 2*d2)
+			if(p.getBox().dSquared() > 2*d2)
 				r.add(p.simplify(d));
 		}
 		
@@ -530,7 +530,7 @@ public class RrPolygonList
 			for(i = pg; i < r.size(); i++)
 			{
 				Rr2Point e1 = r.polygon(i).point(0);
-				double d2 = Rr2Point.d_2(end, e1);
+				double d2 = Rr2Point.dSquared(end, e1);
 				if(d2 < d)
 				{
 					near = i;
@@ -539,7 +539,7 @@ public class RrPolygonList
 				}
 				
 				e1 = r.polygon(i).point(r.polygon(i).size() - 1);
-				d2 = Rr2Point.d_2(end, e1);
+				d2 = Rr2Point.dSquared(end, e1);
 				if(d2 < d)
 				{
 					near = i;

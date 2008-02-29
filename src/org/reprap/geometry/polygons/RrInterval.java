@@ -79,8 +79,6 @@ public class RrInterval
 		low = l;
 		high = h;
 		empty = (low > high);
-		if(empty)
-			System.err.println("RrInterval: low value bigger than high.");
 	}
 	
 	/**
@@ -105,7 +103,7 @@ public class RrInterval
 	 * The biggest possible
 	 * @return biggest possible interval
 	 */
-	public static RrInterval big_interval()
+	public static RrInterval bigInterval()
 	{
 		return new RrInterval(Double.NEGATIVE_INFINITY, Double.POSITIVE_INFINITY);
 	}
@@ -158,6 +156,14 @@ public class RrInterval
 		return high - low;
 	}
 	
+	/**
+	 * Middle
+	 * @return
+	 */
+	public double cen()
+	{
+		return (high + low)*0.5;
+	}	
 	
 	/**
 	 * Interval addition
@@ -359,20 +365,10 @@ public class RrInterval
 	 * @param x
 	 * @return sign of the interval
 	 */
-	public static double sign(double x) 
-	{ 
-		if (x < 0) return -1; 
-		else if (x > 0) return 1; 
-		else return 0;
-	}
-	
-	/**
-	 * @return new interval object based on ?
-	 */
 	public RrInterval sign()
 	{
-		return( new RrInterval(sign(low), sign(high)) );
-	}
+		return( new RrInterval(Math.signum(low), Math.signum(high)) );
+	}	
 	
 	/**
 	 * Max
@@ -400,5 +396,28 @@ public class RrInterval
 		if (a.low < b.low) result = new RrInterval(a.low, result.high);
 		if (a.high < b.high) result = new RrInterval(result.low, a.high);
 		return(result);
+	}
+	
+	
+	/**
+	 * Intersection
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	public static RrInterval intersection(RrInterval a, RrInterval b)
+	{
+		return new RrInterval(Math.max(a.low, b.low), Math.min(a.high, b.high));	
+	}
+	
+	/**
+	 * Union
+	 * @param a
+	 * @param b
+	 * @return
+	 */
+	public static RrInterval union(RrInterval a, RrInterval b)
+	{
+		return new RrInterval(Math.min(a.low, b.low), Math.max(a.high, b.high));	
 	}
 }

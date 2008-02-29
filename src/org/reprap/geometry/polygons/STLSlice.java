@@ -120,12 +120,12 @@ class LineSegment
 		
 		for(int i = 0; i < q.edges().size(); i++)
 		{
-			if(q.box().point_relative(q.segment(i).a) == 0)
+			if(q.box().pointRelative(q.segment(i).a) == 0)
 			{
 				q.segment(i).qa = q;
 				count++;
 			}
-			if(q.box().point_relative(q.segment(i).b) == 0)
+			if(q.box().pointRelative(q.segment(i).b) == 0)
 			{
 				q.segment(i).qb = q;
 				count++;
@@ -637,8 +637,8 @@ public class STLSlice
 			Rr2Point aa = segment(i).a;
 			Rr2Point bb = segment(i).b;
 			
-			boolean aIn = (box.point_relative(aa) == 0);
-			boolean bIn = (box.point_relative(bb) == 0);
+			boolean aIn = (box.pointRelative(aa) == 0);
+			boolean bIn = (box.pointRelative(bb) == 0);
 			
 			if(aIn || bIn)
 				result.add(segment(i));
@@ -737,7 +737,7 @@ public class STLSlice
 		
 		// Sanity check
 		
-		if(box.point_relative(result) != 0)
+		if(box.pointRelative(result) != 0)
 			Debug.d("STLSlice.biggestGap(): point outside box! point: " + 
 					result.toString() + ", box: " + box.toString());
 		
@@ -790,7 +790,7 @@ public class STLSlice
 		if(edges.size() <= 0)
 			return;
 		
-		if(box.d_2() < resolution_2)
+		if(box.dSquared() < resolution_2)
 		{
 			Debug.d("STLSlice.divide(): hit resolution limit! Edge end count: " + edges.size());
 			for(int i = 0; i < edges.size(); i++)
@@ -811,8 +811,8 @@ public class STLSlice
 
 		for(int i = 0; i < edges.size(); i++)
 		{
-			if(box.point_relative(segment(i).a) == 0 &&  
-					box.point_relative(segment(i).b) == 0)
+			if(box.pointRelative(segment(i).a) == 0 &&  
+					box.pointRelative(segment(i).b) == 0)
 			{
 				makeQuads();
 				q1.divide();
@@ -865,18 +865,7 @@ public class STLSlice
      */
     private static void quickPlot(STLSlice s)
     {
-    	s.qp = new RrGraphics(s.box.scale(1.5), true);
-		s.qp.addSTL(s);
-		System.out.print("Type any character: ");
-		System.out.flush();
-		try
-		{
-			System.in.read();
-		} catch(IOException err)
-		{
-			System.err.print("Uh?");
-		}
-		//g = null;
+    	s.qp = new RrGraphics(s);
     }
     
     public void recursiveReport()
@@ -1098,7 +1087,7 @@ public class STLSlice
 
 				sFactor = Preferences.swell();
 				box = box.scale(sFactor);
-				resolution_2 = box.d_2()*Preferences.tiny();
+				resolution_2 = box.dSquared()*Preferences.tiny();
 
 				// Recursively generate the quad tree.  The aim is to have each
 				// leaf quad containing either 0 or 2 ends of different line

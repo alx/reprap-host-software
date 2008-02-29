@@ -260,7 +260,7 @@ public class RrHalfPlane
 			double pi = getParameter(i);
 			double pi1 = getParameter(i+1);
 			v = 0.5*(pi + pi1);
-			boolean tiny = Math.abs(pi1 - pi) < 2*Math.sqrt(p.box().d_2()); // Is this too coarse a limit?
+			boolean tiny = Math.abs(pi1 - pi) < 2*Math.sqrt(p.box().dSquared()); // Is this too coarse a limit?
 			v = p.value(pLine().point(v));
 			if(odd)
 			{
@@ -390,9 +390,9 @@ public class RrHalfPlane
 	{		
 		if(qc.corner())
 		{
-			RrInterval range = RrInterval.big_interval();
+			RrInterval range = RrInterval.bigInterval();
 			boolean b = qc.csg().c_1().plane().maybeAdd(qc, range);
-			range = RrInterval.big_interval();
+			range = RrInterval.bigInterval();
 			b = b & qc.csg().c_2().plane().maybeAdd(qc, range);
 			return (b);
 		}
