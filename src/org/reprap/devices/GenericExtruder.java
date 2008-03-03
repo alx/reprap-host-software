@@ -306,6 +306,11 @@ public class GenericExtruder extends Device implements Extruder{
 	 * Number of wipe cycles per method call
 	 */
 	private int nozzleWipeFreq;
+	
+	/**
+	 * Number of seconds to run to re-start the nozzle before a wipe
+	 */
+	private double nozzleClearTime;
 
 	
 	public GenericExtruder(Communicator communicator, Address address, Preferences prefs, int extruderId) {
@@ -347,6 +352,7 @@ public class GenericExtruder extends Device implements Extruder{
 		nozzleWipeDatumY = prefs.loadInt(prefName + "NozzleWipeDatumY(mm)");
 		nozzleWipeStroke = prefs.loadInt(prefName + "NozzleWipeStroke(mm)");
 		nozzleWipeFreq = prefs.loadInt(prefName + "NozzleWipeFreq");
+		nozzleClearTime = prefs.loadDouble(prefName + "NozzleClearTime(s)");
 		randSt = prefs.loadBool(prefName + "RandomStart");
 		shortLength = prefs.loadDouble(prefName + "ShortLength(mm)");
 		shortSpeed = prefs.loadDouble(prefName + "ShortSpeed(0..1)");
@@ -1203,6 +1209,15 @@ public class GenericExtruder extends Device implements Extruder{
     {
     	return nozzleWipeFreq;
     }
+    
+    /**
+     * @return the time to extrude before wiping the nozzle
+     */
+    public double getNozzleClearTime()
+    {
+    	return nozzleClearTime;
+    }
+    
     
     /**
      * Start polygons at a random location round their perimiter

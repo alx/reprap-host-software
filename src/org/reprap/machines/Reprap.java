@@ -828,6 +828,19 @@ public class Reprap implements CartesianPrinter {
 			int stroke = getExtruder().getNozzleWipeStroke();
 			
 			setSpeed(fastSpeedXY);
+			double clearTime = getExtruder().getNozzleClearTime();
+			if(clearTime > 0)
+			{
+				moveTo(datumX, datumY-(stroke/2), currentZ, false, false);
+				extruders[extruder].setExtrusion(extruders[extruder].getExtruderSpeed());
+				try
+				{
+					Thread.sleep((long)(1000*clearTime));
+				} catch (Exception ex)
+				{			
+				}
+				extruders[extruder].setExtrusion(0); 
+			}
 			
 			// Moves nozzle over wiper
 			for (int w=0; w < freq; w++)

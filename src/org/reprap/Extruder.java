@@ -209,6 +209,11 @@ public interface Extruder {
     public int getNozzleWipeFreq();
     
     /**
+     * @return the time to extrude before wiping the nozzle
+     */
+    public double getNozzleClearTime();
+    
+    /**
      * Start polygons at a random location round their perimiter
      * @return
      */
