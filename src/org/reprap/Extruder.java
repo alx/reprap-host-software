@@ -191,17 +191,22 @@ public interface Extruder {
     /**
      * @return the X-cord for the nozzle wiper
      */
-    public int getNozzleWipeDatumX();
+    public double getNozzleWipeDatumX();
 
     /**
      * @return the Y-cord for the nozzle wiper
      */
-    public int getNozzleWipeDatumY();
+    public double getNozzleWipeDatumY();
     
     /**
-     * @return the length of the nozzle movement over the wiper
+     * @return the X length of the nozzle movement over the wiper
      */
-    public int getNozzleWipeStroke();
+    public double getNozzleWipeStrokeX();
+    
+    /**
+     * @return the Y length of the nozzle movement over the wiper
+     */
+    public double getNozzleWipeStrokeY();
     
     /**
      * @return the number of times the nozzle moves over the wiper

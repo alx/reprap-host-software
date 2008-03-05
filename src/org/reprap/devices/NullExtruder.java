@@ -222,15 +222,20 @@ public class NullExtruder implements Extruder{
 	private boolean nozzleWipeEnabled;
 	
 	/**
-	 * Nozzle wiper co-ordinates
+	 * Co-ordinates for the nozzle wiper
 	 */
-	private int nozzleWipeDatumX;
-	private int nozzleWipeDatumY;
+	private double nozzleWipeDatumX;
+	private double nozzleWipeDatumY;
 	
 	/**
-	 * Distance to move nozzle past wiper
+	 * X Distance to move nozzle over wiper
 	 */
-	private int nozzleWipeStroke;
+	private double nozzleWipeStrokeX;
+	
+	/**
+	 * Y Distance to move nozzle over wiper
+	 */
+	private double nozzleWipeStrokeY;
 	
 	/**
 	 * Number of wipes per procedure
@@ -280,9 +285,10 @@ public class NullExtruder implements Extruder{
 		offsetY = prefs.loadDouble(prefName + "OffsetY(mm)");
 		offsetZ = prefs.loadDouble(prefName + "OffsetZ(mm)");
 		nozzleWipeEnabled = prefs.loadBool(prefName + "NozzleWipeEnabled");
-		nozzleWipeDatumX = prefs.loadInt(prefName + "NozzleWipeDatumX(mm)");
-		nozzleWipeDatumY = prefs.loadInt(prefName + "NozzleWipeDatumY(mm)");
-		nozzleWipeStroke = prefs.loadInt(prefName + "NozzleWipeStroke(mm)");
+		nozzleWipeDatumX = prefs.loadDouble(prefName + "NozzleWipeDatumX(mm)");
+		nozzleWipeDatumY = prefs.loadDouble(prefName + "NozzleWipeDatumY(mm)");
+		nozzleWipeStrokeX = prefs.loadDouble(prefName + "NozzleWipeStrokeX(mm)");
+		nozzleWipeStrokeY = prefs.loadDouble(prefName + "NozzleWipeStrokeY(mm)");
 		nozzleWipeFreq = prefs.loadInt(prefName + "NozzleWipeFreq");
 		nozzleClearTime = prefs.loadDouble(prefName + "NozzleClearTime(s)");
 		randSt = prefs.loadBool(prefName + "RandomStart");
@@ -592,10 +598,11 @@ public class NullExtruder implements Extruder{
     	return nozzleWipeEnabled;
     }    
     
+    
     /**
      * @return the X-cord for the nozzle wiper
      */
-    public int getNozzleWipeDatumX()
+    public double getNozzleWipeDatumX()
     {
     	return nozzleWipeDatumX;
     }
@@ -603,7 +610,7 @@ public class NullExtruder implements Extruder{
     /**
      * @return the Y-cord for the nozzle wiper
      */
-    public int getNozzleWipeDatumY()
+    public double getNozzleWipeDatumY()
     {
     	return nozzleWipeDatumY;
     }
@@ -611,9 +618,17 @@ public class NullExtruder implements Extruder{
     /**
      * @return the length of the nozzle movement over the wiper
      */
-    public int getNozzleWipeStroke()
+    public double getNozzleWipeStrokeX()
     {
-    	return nozzleWipeStroke;
+    	return nozzleWipeStrokeX;
+    }
+    
+    /**
+     * @return the length of the nozzle movement over the wiper
+     */
+    public double getNozzleWipeStrokeY()
+    {
+    	return nozzleWipeStrokeY;
     }
     
     /**

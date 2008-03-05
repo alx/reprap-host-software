@@ -462,6 +462,9 @@ public class NullCartesianMachine implements CartesianPrinter {
 		return extruders;
 	}
 	
+	/**
+	 * Moves nozzle back and forth over wiper
+	 */
 	public void wipeNozzle() throws ReprapException, IOException {
 		
 		if (getExtruder().getNozzleWipeEnabled() == false) return;
@@ -469,19 +472,37 @@ public class NullCartesianMachine implements CartesianPrinter {
 		else {
 			
 			int freq = getExtruder().getNozzleWipeFreq();
-			int datumX = getExtruder().getNozzleWipeDatumX();
-			int datumY = getExtruder().getNozzleWipeDatumY();
-			int stroke = getExtruder().getNozzleWipeStroke();
+			double datumX = getExtruder().getNozzleWipeDatumX();
+			double datumY = getExtruder().getNozzleWipeDatumY();
+			double strokeX = getExtruder().getNozzleWipeStrokeX();
+			double strokeY = getExtruder().getNozzleWipeStrokeY();
 			
-			//setSpeed(fastSpeedXY);
+			double clearTime = getExtruder().getNozzleClearTime();
+			if(clearTime > 0)
+			{
+				moveTo(datumX, datumY + strokeY, currentZ, false, false);
+				extruders[extruder].setExtrusion(extruders[extruder].getExtruderSpeed());
+				try
+				{
+					Thread.sleep((long)(1000*clearTime));
+				} catch (Exception ex)
+				{			
+				}
+				extruders[extruder].setExtrusion(0); 
+			}
 			
-			// Moves nozzle back and forth over wiper
+			// Moves nozzle over wiper
 			for (int w=0; w < freq; w++)
 			{
-				moveTo(datumX, datumY+(stroke/2), currentZ, false, false);
-				moveTo(datumX, datumY-(stroke/2), currentZ, false, false);
+				moveTo(datumX, datumY  + strokeY, currentZ, false, false);
+				moveTo(datumX, datumY, currentZ, false, false);
+				moveTo(datumX + strokeX, datumY, currentZ, false, false);
+				moveTo(datumX + strokeX, datumY  + strokeY, currentZ, false, false);
 			}
+			
+			
 		}
 	}
+
 	
 }
