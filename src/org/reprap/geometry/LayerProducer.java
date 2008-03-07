@@ -82,26 +82,6 @@ class segmentSpeeds
  *
  */
 public class LayerProducer {
-	
-	/**
-	 * Identifier for movements without depositing
-	 */
-	//private static int gapMaterial = 0;
-	
-	/**
-	 * Identifier for the actual depositing material
-	 */
-	//private static int solidMaterial = 1;
-	
-	/**
-	 * @return the gap material identifier
-	 */
-	//public static int gapMaterial() { return gapMaterial; }
-	
-	/**
-	 * @return the filler material identifier
-	 */
-	//public static int solidMaterial() { return solidMaterial; }
 
 	/**
 	 * The shape of the object built so far under the current layer
@@ -114,53 +94,54 @@ public class LayerProducer {
 	private Printer printer;
 	
 	/**
-	 * 
+	 * The polygons to infill
 	 */
 	private RrPolygonList hatchedPolygons;
 	
 	/**
-	 * 
+	 * The polygons to outline
 	 */
 	private RrPolygonList borderPolygons;
 	
 	/**
-	 * 
+	 * CSG representation of the polygons as input
 	 */
 	private RrCSGPolygon csg_p;
 	
 	/**
 	 * 
 	 */
-	private double scale;
+	//private double scale;
 	
 	/**
-	 * 
+	 * The height of the current layer
 	 */
 	private double z;
 	
 	
 	/**
-	 * 
+	 * Counters use so that each material is plotted completely before
+	 * moving on to the next.
 	 */
 	private int commonBorder, commonHatch;
 	
 	/**
-	 * 
+	 * The clue is in the name...
 	 */
 	private int currentSpeed;
 	
 	/**
 	 * 
 	 */
-	private Rr2Point p_0;
+	//private Rr2Point p_0;
 	
 	/**
 	 * 
 	 */
-	private Rr2Point pos;
+	//private Rr2Point pos;
 	
 	/**
-	 * 
+	 * Count of how many up we are (the bottom is layer 0)
 	 */
 	private int layerNumber;
 	
@@ -279,7 +260,7 @@ public class LayerProducer {
 
 			printer.setSpeed(ss.speed(currentSpeed, printer.getExtruder().getAngleSpeedFactor()));
 			printer.printTo(ss.p3.x(), ss.p3.y(), z, true);
-			pos = ss.p3;
+			//pos = ss.p3;
 		// Leave speed set for the start of the next line.
 		} else
 			printer.printTo(first.x(), first.y(), z, true);
@@ -323,7 +304,7 @@ public class LayerProducer {
 
 			printer.setSpeed(ss.speed(currentSpeed, printer.getExtruder().getAngleSpeedFactor()));
 			printer.moveTo(ss.p3.x(), ss.p3.y(), z, startUp, endUp);
-			pos = ss.p3;
+			//pos = ss.p3;
 			// Leave speed set for the start of the next movement.
 		} else
 			printer.moveTo(first.x(), first.y(), z, startUp, endUp);
@@ -400,10 +381,10 @@ public class LayerProducer {
 		
 		if(outline)
 		{
-			for(int j = 1; j <= leng; j++)
+			for(int j = 1; j <= p.size(); j++)
 			{
-				int i = j%leng;
-				Rr2Point next = p.point((j+1)%leng);
+				int i = j%p.size();
+				Rr2Point next = p.point((j+1)%p.size());
 				
 				if (printer.isCancelled())
 				{
@@ -421,9 +402,9 @@ public class LayerProducer {
 			}
 		} else
 		{
-			for(int i = 1; i < leng; i++)
+			for(int i = 1; i < p.size(); i++)
 			{
-				Rr2Point next = p.point((i+1)%leng);
+				Rr2Point next = p.point((i+1)%p.size());
 				
 				if (printer.isCancelled())
 				{
