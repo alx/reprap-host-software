@@ -13,6 +13,7 @@ import java.util.ArrayList;
 import javax.media.j3d.Appearance;
 import javax.media.j3d.Material;
 import javax.vecmath.Color3f;
+import org.reprap.utilities.Debug;
 
 /**
  * A single centralised repository of the current preference settings.  This also
@@ -95,8 +96,11 @@ public class Preferences {
 			fallbackPreferences.load(fallbackUrl.openStream());
 		
 		if (mainFile.exists())
+		{
 			mainPreferences.load(mainUrl.openStream());
-		else
+			if(fallbackUrl != null)
+				comparePreferences();
+		} else
 		{
 			// If we don't have a local preferences file copy the default
 			// file into it.
@@ -104,6 +108,62 @@ public class Preferences {
 			save();
 		}
 
+	}
+	
+	/**
+	 * Compare the users preferences with the distribution one and report any
+	 * different names.
+	 */
+	private void comparePreferences()
+	{
+		Enumeration usersLot = mainPreferences.propertyNames();
+		Enumeration distLot = fallbackPreferences.propertyNames();
+		
+		String result = "";
+		int count = 0;
+		
+		while(usersLot.hasMoreElements())
+		{
+			String next = (String)usersLot.nextElement();
+			if (!fallbackPreferences.containsKey(next))
+			{
+				result += " " + next + "\n";
+				count++;
+			}
+		}
+		if(count > 0)
+		{
+			result = "Your preferences file contains:\n" + result + "which ";
+			if(count > 1)
+				result += "are";
+			else
+				result += "is";
+			result += " not in the distribution preferences file.";
+			Debug.d(result);
+		}
+		
+		result = "";
+		count = 0;
+		while(distLot.hasMoreElements())
+		{
+			String next = (String)distLot.nextElement();
+			if (!mainPreferences.containsKey(next))
+			{
+				result += " " + next + "\n";
+				count++;
+			}
+		}
+		
+		if(count > 0)
+		{
+			result =  "The distribution preferences file contains:\n" + result + "which ";
+			if(count > 1)
+				result += "are";
+			else
+				result += "is";
+			result += " not in your preferences file.";
+			Debug.d(result);
+		}
 	}
 
 	public void save() throws FileNotFoundException, IOException {

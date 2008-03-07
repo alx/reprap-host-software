@@ -23,7 +23,7 @@ import javax.swing.JTextField;
  * in which case they are assumed to be global characteristics of the entire machine.
  * 
  * The keys should end with their dimensions: "Extruder3_temp(C)", "Axis2Scale(steps/mm)", but
- * regretably can't contain unescaped space characters (see java.util.Properties).
+ * regrettably can't contain un-escaped space characters (see java.util.Properties).
  * 
  * Some weak type checking is done to prevent obvious crassness being put in the edit
  * boxes.  This is done at save time and prevents the junk being written, but doesn't give
@@ -32,7 +32,7 @@ import javax.swing.JTextField;
  * Extensively adapted from Simon's old version by Adrian to construct itself from
  * the preferences file.
  * 
- * TODO: make booleans use check boxes, not "true" or "false".
+ * TODO: make booleans use check boxes or radio buttons, not "true" or "false".
  */
 
 //Boxes must contain one of three types:
@@ -434,7 +434,7 @@ public class Preferences extends javax.swing.JDialog {
 	}
 	
 	/**
-	 * Work out the heighest height of all the lists
+	 * Work out the highest height of all the lists
 	 * @return
 	 */
 	private int yAll()
