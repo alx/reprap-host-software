@@ -248,10 +248,16 @@ public class NullExtruder implements Extruder{
 	private double nozzleClearTime;
 	
 	/**
-	 * Start polygons at random perimiter points? 
+	 * Start polygons at random perimiter points
 	 */
 	private boolean randSt = false;
+	
+	/**
+	 * Start polygons at incremented perimiter points 
+	 */
+	private boolean incrementedSt = false;
 
+	
 	/**
 	 * @param prefs
 	 * @param extruderId
@@ -292,6 +298,7 @@ public class NullExtruder implements Extruder{
 		nozzleWipeFreq = prefs.loadInt(prefName + "NozzleWipeFreq");
 		nozzleClearTime = prefs.loadDouble(prefName + "NozzleClearTime(s)");
 		randSt = prefs.loadBool(prefName + "RandomStart");
+		incrementedSt = prefs.loadBool(prefName + "IncrementedStart");
 		shortLength = prefs.loadDouble(prefName + "ShortLength(mm)");
 		shortSpeed = prefs.loadDouble(prefName + "ShortSpeed(0..1)");
 		infillOverlap = prefs.loadDouble(prefName + "InfillOverlap(mm)");
@@ -656,12 +663,21 @@ public class NullExtruder implements Extruder{
     {
     	return randSt;
     }
+    
+    /**
+     * Start polygons at a incremented location round their perimiter
+     * @return
+     */
+    public boolean incrementedStart()
+    {
+    	return incrementedSt;
+    }
+    
     /**
      * get short lengths which need to be plotted faster
      * set -ve to turn this off.
      * @return
      */
-    
     public double getShortLength()
     {
     	return shortLength; 

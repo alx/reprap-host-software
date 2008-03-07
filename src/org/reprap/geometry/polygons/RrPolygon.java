@@ -302,6 +302,23 @@ public class RrPolygon
 	}
 	
 	/**
+	 * @return same polygon starting at point incremented from last polgon
+	 */
+	public RrPolygon incrementedStart(int layerNumber)
+	{
+		RrPolygon result = new RrPolygon(att);
+		int i = layerNumber % size();
+		for(int j = 0; j < size(); j++)
+		{
+			result.add(new Rr2Point(point(i))); //, new Integer((flag(i))));
+			i++;
+			if(i >= size())
+				i = 0;
+		}
+		return result;
+	}
+	
+	/**
 	 * Signed area (-ve result means polygon goes anti-clockwise)
 	 * @return signed area
 	 */

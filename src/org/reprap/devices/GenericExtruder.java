@@ -259,9 +259,14 @@ public class GenericExtruder extends Device implements Extruder{
 	private int myExtruderID;
 	
 	/**
-	 * Start polygons at random perimiter points? 
+	 * Start polygons at random perimiter points 
 	 */
 	private boolean randSt = false;
+
+	/**
+	 * Start polygons at incremented perimiter points 
+	 */
+	private boolean incrementedSt = false;
 	
 	/**
 	 * Flag indicating if initialisation succeeded.  Usually this
@@ -360,10 +365,10 @@ public class GenericExtruder extends Device implements Extruder{
 		nozzleWipeFreq = prefs.loadInt(prefName + "NozzleWipeFreq");
 		nozzleClearTime = prefs.loadDouble(prefName + "NozzleClearTime(s)");
 		randSt = prefs.loadBool(prefName + "RandomStart");
+		incrementedSt = prefs.loadBool(prefName + "IncrementedStart");
 		shortLength = prefs.loadDouble(prefName + "ShortLength(mm)");
 		shortSpeed = prefs.loadDouble(prefName + "ShortSpeed(0..1)");
 		infillOverlap = prefs.loadDouble(prefName + "InfillOverlap(mm)");
-		
 		
 		Color3f col = new Color3f((float)prefs.loadDouble(prefName + "ColourR(0..1)"), 
 				(float)prefs.loadDouble(prefName + "ColourG(0..1)"), 
@@ -381,8 +386,6 @@ public class GenericExtruder extends Device implements Extruder{
 		}
 		
 		isCommsAvailable = true;
-		
-
 		
 		/*pollThread = new Thread() {
 			public void run() {
@@ -1240,6 +1243,15 @@ public class GenericExtruder extends Device implements Extruder{
     public boolean randomStart()
     {
     	return randSt;
+    }
+
+    /**
+     * Start polygons at an incremented location round their perimiter
+     * @return
+     */
+    public boolean incrementedStart()
+    {
+    	return incrementedSt;
     }
     
     /**

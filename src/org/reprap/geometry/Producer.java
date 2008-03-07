@@ -32,6 +32,7 @@ public class Producer {
 	 * 
 	 */
 	protected RepRapBuild bld;
+
 	
 	/**
 	 * @param preview
@@ -201,16 +202,19 @@ public class Producer {
 			reprap.printTo(5, 5, 0, true);
 			// Take it slow and easy.
 			
-			Debug.d("Printing warmup segments, printing to (5,50)");
-			reprap.moveTo(5, 25, 0, false, false);
-			reprap.setSpeed(LinePrinter.speedFix(reprap.getExtruder().getXYSpeed(), 
-					reprap.getExtruder().getOutlineSpeed()));
-			reprap.printTo(5, 60, 0, false);
-			Debug.d("Printing warmup segments, printing to (7,50)");
-			reprap.printTo(7, 60, 0, false);
-			Debug.d("Printing warmup segments, printing to (7,5)");
-			reprap.printTo(7, 25, 0, true);
-			Debug.d("Warmup complete");
+//			if(reprap.getExtruder().getNozzleClearTime() <= 0)
+			{
+				Debug.d("Printing warmup segments, printing to (5,50)");
+				reprap.moveTo(5, 25, 0, false, false);
+				reprap.setSpeed(LinePrinter.speedFix(reprap.getExtruder().getXYSpeed(), 
+						reprap.getExtruder().getOutlineSpeed()));
+				reprap.printTo(5, 60, 0, false);
+				Debug.d("Printing warmup segments, printing to (7,50)");
+				reprap.printTo(7, 60, 0, false);
+				Debug.d("Printing warmup segments, printing to (7,5)");
+				reprap.printTo(7, 25, 0, true);
+				Debug.d("Warmup complete");
+			}
 			reprap.setSpeed(reprap.getFastSpeed());
 			
 		}
@@ -255,7 +259,10 @@ public class Producer {
 		
 		}
 		
+		int layerNumber = 0;
+		
 		for(double z = startZ; subtractive ? z > endZ : z < endZ; z += stepZ) {
+			
 			
 			if (reprap.isCancelled())
 				break;
@@ -312,7 +319,7 @@ public class Producer {
 				BranchGroup lowerShell = stlc.getBelow();
 				if(slice.size() > 0)
 					layer = new LayerProducer(reprap, z, slice, lowerShell,
-						isEvenLayer?evenHatchDirection:oddHatchDirection);
+						isEvenLayer?evenHatchDirection:oddHatchDirection, layerNumber);
 				else
 					layer = null;
 
@@ -322,6 +329,8 @@ public class Producer {
 				layer.plot();
 		
 			isEvenLayer = !isEvenLayer;
+			
+			layerNumber++;
 		}
 
 		if (subtractive)

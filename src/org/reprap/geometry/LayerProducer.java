@@ -14,6 +14,7 @@ import org.reprap.ReprapException;
 import org.reprap.geometry.polygons.*;
 import org.reprap.devices.pseudo.LinePrinter;
 import org.reprap.utilities.Debug;
+import org.reprap.geometry.Producer;
 
 /**
  *
@@ -157,6 +158,12 @@ public class LayerProducer {
 	 * 
 	 */
 	private Rr2Point pos;
+	
+	/**
+	 * 
+	 */
+	private int layerNumber;
+	
 		
 	/**
 	 * @param printer
@@ -165,7 +172,11 @@ public class LayerProducer {
 	 * @param ls
 	 * @param hatchDirection
 	 */
-	public LayerProducer(Printer printer, double zValue, RrCSGPolygonList csgPols, BranchGroup ls, RrHalfPlane hatchDirection) {
+	public LayerProducer(Printer printer, double zValue, RrCSGPolygonList csgPols, 
+			BranchGroup ls, RrHalfPlane hatchDirection, int layerNo) {
+		
+		layerNumber = layerNo;
+		
 		this.printer = printer;
 		lowerShell = ls;
 
@@ -357,9 +368,11 @@ public class LayerProducer {
 		
 		printer.selectExtruder(att);
 		
-		if(outline && printer.getExtruder().randomStart())
+		// Warning: if incrementedStart is activated, this will override the randomStart
+		if(outline && printer.getExtruder().incrementedStart())
+			p = p.incrementedStart(layerNumber);
+		else if(outline && printer.getExtruder().randomStart())
 			p = p.randomStart();
-		
 		
 		int stopExtruding = leng + 10;
 		double backLength = printer.getExtruder().getExtrusionOverRun();

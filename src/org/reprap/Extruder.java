@@ -225,6 +225,12 @@ public interface Extruder {
     public boolean randomStart();
 
     /**
+     * Start polygons at an incremented location round their perimiter
+     * @return
+     */
+    public boolean incrementedStart();
+    
+    /**
      * get short lengths which need to be plotted faster
      * set -ve to turn this off.
      * @return
