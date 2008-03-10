@@ -829,10 +829,10 @@ public class Reprap implements CartesianPrinter {
 			double strokeY = getExtruder().getNozzleWipeStrokeY();
 			
 			setSpeed(fastSpeedXY);
+			moveTo(datumX, datumY + strokeY, currentZ, false, false);
 			double clearTime = getExtruder().getNozzleClearTime();
 			if(clearTime > 0)
 			{
-				moveTo(datumX, datumY + strokeY, currentZ, false, false);
 				extruders[extruder].setExtrusion(extruders[extruder].getExtruderSpeed());
 				try
 				{
@@ -843,13 +843,19 @@ public class Reprap implements CartesianPrinter {
 				extruders[extruder].setExtrusion(0); 
 			}
 			
+			double step = 0.5*strokeX/freq;
+			double xInc = 0;
+			
 			// Moves nozzle over wiper
+			
 			for (int w=0; w < freq; w++)
 			{
-				moveTo(datumX, datumY  + strokeY, currentZ, false, false);
-				moveTo(datumX, datumY, currentZ, false, false);
-				moveTo(datumX + strokeX, datumY, currentZ, false, false);
-				moveTo(datumX + strokeX, datumY  + strokeY, currentZ, false, false);
+				moveTo(datumX + xInc, datumY, currentZ, false, false);
+				xInc += step;
+				moveTo(datumX + xInc, datumY, currentZ, false, false);
+				moveTo(datumX + xInc, datumY  + strokeY, currentZ, false, false);
+				xInc += step;
+				moveTo(datumX + xInc, datumY  + strokeY, currentZ, false, false);
 			}
 			
 			
