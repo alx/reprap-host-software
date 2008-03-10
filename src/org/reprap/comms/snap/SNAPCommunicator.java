@@ -115,9 +115,9 @@ public class SNAPCommunicator implements Communicator {
 		readStream = port.getInputStream();
 
 		Debug.d("Attempting to initialize Arduino");
-        try {Thread.sleep(1000);} catch (Exception e) {}
-        for(int i = 0; i < 10; i++)
-                writeStream.write('0');
+        try {Thread.sleep(2000);} catch (Exception e) {}
+		for(int i = 0; i < 10; i++)
+               writeStream.write('0');
         try {Thread.sleep(1000);} catch (Exception e) {}
 	}
 	
@@ -233,27 +233,57 @@ public class SNAPCommunicator implements Communicator {
 		} catch (UnsupportedCommOperationException e) {
 			Debug.d("Read timeouts unsupported on this platform");
 		}
+		String debugMsg = "debug";
 		String msgHex = "rx: ";
 		String msgDec = " ( = ";
+		Boolean debug = false;
+
 		for(;;) {
 			int c = readByte(timeout);
-			msgDec += Integer.toString(c) + " ";
-			msgHex += Integer.toHexString(c) + " ";
-			if (c == -1)
-				throw new IOException("Timeout receiving byte");
-			if (packet == null) {
-				if (c != 0x54)  // Always wait for a sync byte before doing anything
-					continue;
-				packet = new SNAPPacket();
+			
+			if (debug == true)
+			{
+				if (c == '\n')
+				{
+					Debug.c(debugMsg);
+					debug = false;
+				}
+				else
+					debugMsg += (char)c;
 			}
-			if (packet.receiveByte((byte)c)) {
-				// Packet is complete
-				if (packet.validate()) {
-					Debug.c(msgHex + msgDec + ")");
-					return packet;
-				} else {
-					System.err.println("CRC error");
-					throw new IOException("CRC error");
+			else
+			{
+				msgDec += Integer.toString(c) + " ";
+				msgHex += Integer.toHexString(c) + " ";
+				
+				if (c == -1)
+					throw new IOException("Timeout receiving byte");
+					
+				if (packet == null) {
+
+					if (c != 0x54)  // Always wait for a sync byte before doing anything
+					{
+						if (c == 'd')
+						{
+							debug = true;
+							debugMsg = "From firmware: ";
+							msgHex = "rx: ";
+							msgDec = " ( = ";
+						}
+						continue;
+					}
+					else
+						packet = new SNAPPacket();
+				}
+				if (packet.receiveByte((byte)c)) {
+					// Packet is complete
+					if (packet.validate()) {
+						Debug.c(msgHex + msgDec + ")");
+						return packet;
+					} else {
+						System.err.println("CRC error");
+						throw new IOException("CRC error");
+					}
 				}
 			}
 		}	
