@@ -62,21 +62,21 @@ public class RrCSGPolygonList {
 			get(i).divide(res_2, swell);
 	}
 	
-	public RrPolygonList megList() //(int fg, int fs)
+	public RrPolygonList megList()
 	{
 		RrPolygonList result = new RrPolygonList();
 		for(int i = 0; i < size(); i++)
-			result.add(get(i).megList()); //fg, fs));
+			result.add(get(i).megList());
 		return result;
 	}
 	
-	public RrPolygonList hatch(RrHalfPlane hp, Extruder[] es) //, int fg, int fs)
+	public RrPolygonList hatch(RrHalfPlane hp, Extruder[] es, Rr2Point startNearHere) 
 	{
 		RrPolygonList result = new RrPolygonList();
 		for(int i = 0; i < size(); i++)
 		{
 			Attributes att = get(i).getAttributes();
-			result.add(get(i).hatch(hp, att.getExtruder(es).getExtrusionInfillWidth())); //, fg, fs));
+			result.add(get(i).hatch(hp, att.getExtruder(es).getExtrusionInfillWidth()));
 		}
 		return result;
 	}

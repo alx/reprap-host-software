@@ -145,6 +145,11 @@ public class LayerProducer {
 	 */
 	private int layerNumber;
 	
+	/**
+	 * Record the end of each polygon as a clue where to start next
+	 */
+	private Rr2Point startNearHere;
+	
 		
 	/**
 	 * @param printer
@@ -157,6 +162,7 @@ public class LayerProducer {
 			BranchGroup ls, RrHalfPlane hatchDirection, int layerNo) {
 		
 		layerNumber = layerNo;
+		startNearHere = null;
 		
 		this.printer = printer;
 		lowerShell = ls;
@@ -171,11 +177,11 @@ public class LayerProducer {
 		
 		//RrGraphics g = new RrGraphics(offBorder, true);
 		
-		borderPolygons = offBorder.megList(); //(solidMaterial, solidMaterial);
-		
+		borderPolygons = offBorder.megList();
+		RrPolygon last = borderPolygons.polygon(borderPolygons.size()-1);
+		Rr2Point startNearHere = last.point(last.size() - 1);
 		hatchedPolygons = new RrPolygonList();
-		hatchedPolygons.add(offHatch.hatch(hatchDirection, printer.getExtruders()));
-				//,solidMaterial, gapMaterial));	
+		hatchedPolygons.add(offHatch.hatch(hatchDirection, printer.getExtruders(), startNearHere));	
 	
 //		RrPolygonList pllist = new RrPolygonList();
 //		pllist.add(borderPolygons);
@@ -315,13 +321,17 @@ public class LayerProducer {
 	 * Plot a polygon
 	 * @throws IOException
 	 * @throws ReprapException
+	 * @return
 	 */
 	private void plot(RrPolygon p, boolean outline) throws ReprapException, IOException
 	{
 		int leng = p.size();
 		
 		if(leng <= 1)
+		{
+			startNearHere = null;
 			return;
+		}
 		// If the length of the plot is <0.05mm, don't bother with it.
 		// This will not spot an attempt to plot 10,000 points in 1mm.
 		double plotDist=0;
@@ -334,6 +344,7 @@ public class LayerProducer {
 		}
 		if (plotDist<Preferences.machineResolution()*0.5) {
 			Debug.d("Rejected line with "+leng+"points, length"+plotDist);
+			startNearHere = null;
 			return;
 		}
 
@@ -354,6 +365,10 @@ public class LayerProducer {
 			p = p.incrementedStart(layerNumber);
 		else if(outline && printer.getExtruder().randomStart())
 			p = p.randomStart();
+		
+		// The last point is near where we want to start next
+		
+		startNearHere = p.point(p.size() - 1);
 		
 		int stopExtruding = leng + 10;
 		double backLength = printer.getExtruder().getExtrusionOverRun();
@@ -424,30 +439,6 @@ public class LayerProducer {
 		
 		move(posNow(), posNow(), true, true);
 		
-//		int f = p.flag(0);
-//		for(int j = 1; j <= leng; j++)
-//		{
-//			int i = j%leng;
-//			Rr2Point next = p.point((j+1)%leng);
-//			
-//			if (printer.isCancelled()) return;
-//			
-//			if(f != gapMaterial && j <= stopExtruding)
-//				plot(p.point(i), next, false);
-//			else
-//			{
-//				printer.stopExtruding();
-//				if(f == gapMaterial)
-//				{
-//					if(j == leng)
-//						return;
-//					else
-//						move(p.point(i), next, true, false);
-//				}else
-//					move(p.point(i), next, false, false);
-//			}
-//			f = p.flag(i);
-//		}
 	}
 	
 
@@ -522,6 +513,7 @@ public class LayerProducer {
 			ih = commonHatch;
 			
 			ib = plotOneMaterial(borderPolygons, ib, true);
+			hatchedPolygons = hatchedPolygons.nearEnds(startNearHere);
 			ih = plotOneMaterial(hatchedPolygons, ih, false);	
 		}
 		

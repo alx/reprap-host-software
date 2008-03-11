@@ -781,11 +781,11 @@ public class RrCSGPolygon
      * @param fs
      * @return zigzag hatch polygon
      */
-	private RrPolygon snakeGrow(List hatches, int thisHatch, int thisPt) //, int fg, int fs)
+	private RrPolygon snakeGrow(List<RrHalfPlane> hatches, int thisHatch, int thisPt) 
 	{
 		RrPolygon result = new RrPolygon(att);
 		
-		RrHalfPlane h = (RrHalfPlane)hatches.get(thisHatch);
+		RrHalfPlane h = hatches.get(thisHatch);
 		Rr2Point pt = h.pLine().point(h.getParameter(thisPt));
 		result.add(pt);
 		snakeEnd jump;
@@ -800,7 +800,7 @@ public class RrCSGPolygon
 			thisHatch++;
 			if(thisHatch < hatches.size())
 				jump = megGoToPlane(pt, h.getPlane(thisPt), h, 
-					(RrHalfPlane)hatches.get(thisHatch)); //, fg);
+					hatches.get(thisHatch)); 
 			else 
 				jump = null;
 			h.remove(thisPt);
@@ -811,9 +811,7 @@ public class RrCSGPolygon
 				thisPt = jump.index;
 			}
 		} while(jump != null);
-		
-		//result.flag(result.size()-1, fs);
-		
+				
 		return result;
 	}
 	
@@ -825,7 +823,7 @@ public class RrCSGPolygon
 	 * @param fs
 	 * @return a polygon list as the result with flag values f
 	 */
-	public RrPolygonList hatch(RrHalfPlane hp, double gap) //, int fg, int fs)
+	public RrPolygonList hatch(RrHalfPlane hp, double gap)
 	{
 		RrBox big = box.scale(1.1);
 		double d = Math.sqrt(big.dSquared());
@@ -860,7 +858,7 @@ public class RrCSGPolygon
 		RrHalfPlane hatcher = new 
 			RrHalfPlane(org, Rr2Point.add(org, hp.pLine().direction()));
 
-		List hatches = new ArrayList();
+		List<RrHalfPlane> hatches = new ArrayList<RrHalfPlane>();
 		
 		double g = 0;		
 		while (g < d)
@@ -879,7 +877,7 @@ public class RrCSGPolygon
 			segment = -1;
 			for(int i = 0; i < hatches.size(); i++)
 			{
-				if(((RrHalfPlane)hatches.get(i)).size() > 0)
+				if((hatches.get(i)).size() > 0)
 				{
 					segment = i;
 					break;
@@ -887,10 +885,10 @@ public class RrCSGPolygon
 			}
 			if(segment >= 0)
 			{
-				snakes.add(snakeGrow(hatches, segment, 0)); //, fg, fs));
+				snakes.add(snakeGrow(hatches, segment, 0));
 			}
 		} while(segment >= 0);
 		
-		return snakes.nearEnds();
+		return snakes;
 	}
 }

@@ -505,10 +505,10 @@ public class RrPolygonList
 	/**
 	 * Re-order and (if need be) reverse the order of the polygons
 	 * in a list so the end of the first is near the start of the second and so on.
-	 * This is a heuristic - it does not do a full travelling salesman...
+	 * This is a heuristic - it does not do a full traveling salesman...
 	 * @return new ordered polygon list
 	 */
-	public RrPolygonList nearEnds()
+	public RrPolygonList nearEnds(Rr2Point startNearHere)
 	{
 		RrPolygonList r = new RrPolygonList();
 		if(size() <= 0)
@@ -519,18 +519,63 @@ public class RrPolygonList
 		for(i = 0; i < size(); i++)
 			r.add(polygon(i));
 		
+		// Make the nearest end point on any polygon to startNearHere
+		// go to polygon 0 and get it the right way round.
+		
+		boolean neg = false;
+		double d = Double.POSITIVE_INFINITY;
+		double d2;
+		int near = -1;
+		Rr2Point e1;
+		
+		if(startNearHere != null)
+		{
+			for(i = 0; i < size(); i++)
+			{
+				e1 = r.polygon(i).point(0);
+				d2 = Rr2Point.dSquared(startNearHere, e1);
+				if(d2 < d)
+				{
+					near = i;
+					d = d2;
+					neg = false;
+				}
+				e1 = r.polygon(i).point(r.polygon(i).size() - 1);
+				d2 = Rr2Point.dSquared(startNearHere, e1);
+				if(d2 < d)
+				{
+					near = i;
+					d = d2;
+					neg = true;
+				}
+			}
+
+			if(near < 0)
+			{
+				System.err.println("RrPolygonList.nearEnds(): no nearest end found to start point!");
+				return r;
+			}
+
+			r.swap(0, near);
+			if(neg)
+				r.negate(0);
+		}
+		
+		
+		// Go through the rest of the polygons getting them as close as
+		// reasonable.
+		
 		int pg = 0;
 		while(pg < r.size() - 1)
 		{
 			Rr2Point end = r.polygon(pg).point(r.polygon(pg).size() - 1);
-			boolean neg = false;
-			int near = -1;
-			double d = Double.POSITIVE_INFINITY;
-			pg++;
-			for(i = pg; i < r.size(); i++)
+			neg = false;
+			near = -1;
+			d = Double.POSITIVE_INFINITY;
+			for(i = pg+1; i < r.size(); i++)
 			{
-				Rr2Point e1 = r.polygon(i).point(0);
-				double d2 = Rr2Point.dSquared(end, e1);
+				e1 = r.polygon(i).point(0);
+				d2 = Rr2Point.dSquared(end, e1);
 				if(d2 < d)
 				{
 					near = i;
@@ -555,9 +600,12 @@ public class RrPolygonList
 				return r;
 			}
 			
-			r.swap(pg, near);
+			if(near != pg+1)
+				r.swap(pg+1, near);
 			if(neg)
-				r.negate(pg);
+				r.negate(pg+1);
+			
+			pg++;
 		}
 		
 		return r;
