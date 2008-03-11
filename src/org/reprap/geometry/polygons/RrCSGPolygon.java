@@ -586,9 +586,11 @@ public class RrCSGPolygon
     		c.visit2 = true;
     		nextIndex = now.find(c) + 1;
     		
-    		if(nextIndex < 0 | nextIndex >= now.size())
+    		if(nextIndex < 0 | nextIndex >= now.size()) {
     			System.err.println("RrCSGPolygon.meg(): fallen off the end of the line!");
-    		
+    			break;
+    		}
+    			
     		c = now.getQuad(nextIndex);
     		next = c.csg.c_1().plane();
     		if(next == now)
