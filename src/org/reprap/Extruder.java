@@ -147,11 +147,6 @@ public interface Extruder {
      * @return the extrusion overrun in millimeters
      */
     public double getExtrusionOverRun();
- 
-    /**
-     * @return the extrusion delay in seconds
-     */
-    public long getExtrusionDelay();
 
     /**
      * @return the cooling period in seconds
@@ -250,5 +245,17 @@ public interface Extruder {
      * @return
      */
     public double getInfillOverlap();
+    
+    /**
+	 * Gets the number of milliseconds to wait before starting a border track
+	 * @return
+     */
+    public int getExtrusionDelayForBorder();
+    
+    /**
+	 * Gets the number of milliseconds to wait before starting a hatch track
+	 * @return
+     */
+    public int getExtrusionDelayForHatch();
     
 }

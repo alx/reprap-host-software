@@ -179,7 +179,8 @@ public class LayerProducer {
 		
 		borderPolygons = offBorder.megList();
 		RrPolygon last = borderPolygons.polygon(borderPolygons.size()-1);
-		Rr2Point startNearHere = last.point(last.size() - 1);
+//		Rr2Point startNearHere = last.point(last.size() - 1);
+		Rr2Point startNearHere = last.point(1);
 		hatchedPolygons = new RrPolygonList();
 		hatchedPolygons.add(offHatch.hatch(hatchDirection, printer.getExtruders(), startNearHere));	
 	
@@ -382,8 +383,9 @@ public class LayerProducer {
 
 		plot(p.point(0), p.point(1), false);
 		// Print any lead-in.
-		printer.printStartDelay(printer.getExtruder().getExtrusionDelay());
-		
+		if (outline) printer.printStartDelay(printer.getExtruder().getExtrusionDelayForBorder());
+		else printer.printStartDelay(printer.getExtruder().getExtrusionDelayForHatch());
+				
 		if(outline)
 		{
 			printer.setSpeed(outlineSpeed);

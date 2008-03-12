@@ -127,11 +127,6 @@ public class NullExtruder implements Extruder{
 	private double extrusionOverRun;
 	
 	/**
-	 * The number of ms to wait before starting a track
-	 */
-	private int extrusionDelay;
-	
-	/**
 	 * The number of s to cool between layers
 	 */
 	private int coolingPeriod; 
@@ -257,6 +252,15 @@ public class NullExtruder implements Extruder{
 	 */
 	private boolean incrementedSt = false;
 
+	/**
+	 * The number of milliseconds to wait before starting a border track
+	 */
+	private int extrusionDelayForBorder = 0;
+	
+	/**
+	 * The number of milliseconds to wait before starting a hatch track
+	 */
+	private int extrusionDelayForHatch = 0;
 	
 	/**
 	 * @param prefs
@@ -278,7 +282,6 @@ public class NullExtruder implements Extruder{
 		extrusionHeight = prefs.loadDouble(prefName + "ExtrusionHeight(mm)");
 		extrusionInfillWidth = prefs.loadDouble(prefName + "ExtrusionInfillWidth(mm)");
 		extrusionOverRun = prefs.loadDouble(prefName + "ExtrusionOverRun(mm)");
-		extrusionDelay = prefs.loadInt(prefName + "ExtrusionDelay(ms)");
 		coolingPeriod = prefs.loadInt(prefName + "CoolingPeriod(s)");
 		xySpeed = prefs.loadInt(prefName + "XYSpeed(0..255)");
 		t0 = prefs.loadInt(prefName + "t0(0..255)");
@@ -302,6 +305,9 @@ public class NullExtruder implements Extruder{
 		shortLength = prefs.loadDouble(prefName + "ShortLength(mm)");
 		shortSpeed = prefs.loadDouble(prefName + "ShortSpeed(0..1)");
 		infillOverlap = prefs.loadDouble(prefName + "InfillOverlap(mm)");
+		extrusionDelayForBorder = prefs.loadInt(prefName + "ExtrusionDelay(ms)");
+		extrusionDelayForHatch = prefs.loadInt(prefName + "ExtrusionDelay(ms)");
+
 		
 		materialColour = getAppearanceFromNumber(extruderId);		
 			
@@ -508,14 +514,6 @@ public class NullExtruder implements Extruder{
     } 
     
     /* (non-Javadoc)
-     * @see org.reprap.Extruder#getExtrusionDelay()
-     */
-    public long getExtrusionDelay()
-    {
-    	return extrusionDelay;
-    } 
-    
-    /* (non-Javadoc)
      * @see org.reprap.Extruder#getCoolingPeriod()
      */
     public int getCoolingPeriod()
@@ -701,5 +699,23 @@ public class NullExtruder implements Extruder{
     public double getInfillOverlap()
     {
     	return infillOverlap;
+    }
+    
+    /**
+	 * Gets the number of milliseconds to wait before starting a border track
+	 * @return
+     */
+    public int getExtrusionDelayForBorder()
+    {
+    	return extrusionDelayForBorder; 
+    }
+    
+    /**
+	 * Gets the number of milliseconds to wait before starting a hatch track
+	 * @return
+     */
+    public int getExtrusionDelayForHatch()
+    {
+    	return extrusionDelayForHatch; 
     }
 }

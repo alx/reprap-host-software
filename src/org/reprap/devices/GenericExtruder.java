@@ -182,11 +182,6 @@ public class GenericExtruder extends Device implements Extruder{
 	private double extrusionOverRun; 
 	
 	/**
-	 * The number of milliseconds to wait before starting a track
-	 */
-	private int extrusionDelay;
-	
-	/**
 	 * The number of seconds to cool between layers
 	 */
 	private int coolingPeriod;
@@ -321,6 +316,16 @@ public class GenericExtruder extends Device implements Extruder{
 	 * Number of seconds to run to re-start the nozzle before a wipe
 	 */
 	private double nozzleClearTime;
+	
+	/**
+	 * The number of milliseconds to wait before starting a border track
+	 */
+	private int extrusionDelayForBorder = 0;
+	
+	/**
+	 * The number of milliseconds to wait before starting a hatch track
+	 */
+	private int extrusionDelayForHatch = 0;
 
 	
 	public GenericExtruder(Communicator communicator, Address address, Preferences prefs, int extruderId) {
@@ -345,7 +350,6 @@ public class GenericExtruder extends Device implements Extruder{
 		extrusionHeight = prefs.loadDouble(prefName + "ExtrusionHeight(mm)");
 		extrusionInfillWidth = prefs.loadDouble(prefName + "ExtrusionInfillWidth(mm)");
 		extrusionOverRun = prefs.loadDouble(prefName + "ExtrusionOverRun(mm)");
-		extrusionDelay = prefs.loadInt(prefName + "ExtrusionDelay(ms)");
 		coolingPeriod = prefs.loadInt(prefName + "CoolingPeriod(s)");
 		xySpeed = prefs.loadInt(prefName + "XYSpeed(0..255)");
 		t0 = prefs.loadInt(prefName + "t0(0..255)");
@@ -369,6 +373,8 @@ public class GenericExtruder extends Device implements Extruder{
 		shortLength = prefs.loadDouble(prefName + "ShortLength(mm)");
 		shortSpeed = prefs.loadDouble(prefName + "ShortSpeed(0..1)");
 		infillOverlap = prefs.loadDouble(prefName + "InfillOverlap(mm)");
+		extrusionDelayForBorder = prefs.loadInt(prefName + "ExtrusionDelayForBorder(ms)");
+		extrusionDelayForHatch = prefs.loadInt(prefName + "ExtrusionDelayForHatch(ms)");
 		
 		Color3f col = new Color3f((float)prefs.loadDouble(prefName + "ColourR(0..1)"), 
 				(float)prefs.loadDouble(prefName + "ColourG(0..1)"), 
@@ -1123,14 +1129,7 @@ public class GenericExtruder extends Device implements Extruder{
     	return extrusionOverRun;
     } 
     
-    /* (non-Javadoc)
-     * @see org.reprap.Extruder#getExtrusionDelay()
-     */
-    public long getExtrusionDelay()
-    {
-    	return extrusionDelay;
-    } 
-    
+  
     /* (non-Javadoc)
      * @see org.reprap.Extruder#getCoolingPeriod()
      */
@@ -1283,4 +1282,23 @@ public class GenericExtruder extends Device implements Extruder{
     {
     	return infillOverlap;
     }
+    
+    /**
+	 * Gets the number of milliseconds to wait before starting a border track
+	 * @return
+     */
+    public int getExtrusionDelayForBorder()
+    {
+    	return extrusionDelayForBorder; 
+    }
+    
+    /**
+	 * Gets the number of milliseconds to wait before starting a hatch track
+	 * @return
+     */
+    public int getExtrusionDelayForHatch()
+    {
+    	return extrusionDelayForHatch; 
+    }
+    
 }
