@@ -368,8 +368,10 @@ public class LayerProducer {
 			p = p.randomStart();
 		
 		// The last point is near where we want to start next
-		
-		startNearHere = p.point(p.size() - 1);
+		if(outline)
+			startNearHere = p.point(0);	
+		else
+			startNearHere = p.point(p.size() - 1);
 		
 		int stopExtruding = leng + 10;
 		double backLength = printer.getExtruder().getExtrusionOverRun();

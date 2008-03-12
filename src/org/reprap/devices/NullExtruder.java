@@ -305,8 +305,8 @@ public class NullExtruder implements Extruder{
 		shortLength = prefs.loadDouble(prefName + "ShortLength(mm)");
 		shortSpeed = prefs.loadDouble(prefName + "ShortSpeed(0..1)");
 		infillOverlap = prefs.loadDouble(prefName + "InfillOverlap(mm)");
-		extrusionDelayForBorder = prefs.loadInt(prefName + "ExtrusionDelay(ms)");
-		extrusionDelayForHatch = prefs.loadInt(prefName + "ExtrusionDelay(ms)");
+		extrusionDelayForBorder = prefs.loadInt(prefName + "ExtrusionDelayForBorder(ms)");
+		extrusionDelayForHatch = prefs.loadInt(prefName + "ExtrusionDelayForHatch(ms)");
 
 		
 		materialColour = getAppearanceFromNumber(extruderId);		
