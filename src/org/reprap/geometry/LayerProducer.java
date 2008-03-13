@@ -179,10 +179,8 @@ public class LayerProducer {
 		
 		borderPolygons = offBorder.megList();
 		RrPolygon last = borderPolygons.polygon(borderPolygons.size()-1);
-//		Rr2Point startNearHere = last.point(last.size() - 1);
-		Rr2Point startNearHere = last.point(1);
 		hatchedPolygons = new RrPolygonList();
-		hatchedPolygons.add(offHatch.hatch(hatchDirection, printer.getExtruders(), startNearHere));	
+		hatchedPolygons.add(offHatch.hatch(hatchDirection, printer.getExtruders()));	
 	
 //		RrPolygonList pllist = new RrPolygonList();
 //		pllist.add(borderPolygons);

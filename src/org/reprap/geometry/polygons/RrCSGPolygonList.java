@@ -70,7 +70,7 @@ public class RrCSGPolygonList {
 		return result;
 	}
 	
-	public RrPolygonList hatch(RrHalfPlane hp, Extruder[] es, Rr2Point startNearHere) 
+	public RrPolygonList hatch(RrHalfPlane hp, Extruder[] es) 
 	{
 		RrPolygonList result = new RrPolygonList();
 		for(int i = 0; i < size(); i++)
