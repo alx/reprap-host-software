@@ -5,29 +5,60 @@ import java.util.*;
 import org.reprap.Attributes;
 import org.reprap.Extruder;
 
+/**
+ * It's convenient to have lists of CSG polygons (even though they
+ * can be multiple polygons themselves) so that you each entry
+ * can be one collection of polygons per material (attribute).
+ * 
+ * @author Adrian
+ *
+ */
 public class RrCSGPolygonList {
+	/**
+	 * The list of polygons
+	 */
 	List<RrCSGPolygon> csgPolygons;
 	
+	/**
+	 * 
+	 */
 	public RrCSGPolygonList()
 	{
 		csgPolygons = new ArrayList<RrCSGPolygon>();
 	}
 	
+	/**
+	 * Add polygon c
+	 * @param c
+	 */
 	public void add(RrCSGPolygon c)
 	{
 		csgPolygons.add(c);
 	}
 	
+	/**
+	 * Get the ith polygon in the list
+	 * @param i
+	 * @return
+	 */
 	public RrCSGPolygon get(int i)
 	{
 		return csgPolygons.get(i);
 	}
 	
+	/**
+	 * How many polygons?
+	 * @return
+	 */
 	public int size()
 	{
 		return csgPolygons.size();
 	}
 	
+	/**
+	 * The minimum enclosing rectangle
+	 * @return
+	 */
 	public RrBox box()
 	{
 		RrBox result = new RrBox();
@@ -36,6 +67,12 @@ public class RrCSGPolygonList {
 		return result;
 	}
 	
+	/**
+	 * Offset the lot by appropriate extruder widths
+	 * @param es
+	 * @param outline
+	 * @return
+	 */
 	public RrCSGPolygonList offset(Extruder[] es, boolean outline)
 	{
 		RrCSGPolygonList result = new RrCSGPolygonList();
@@ -56,12 +93,21 @@ public class RrCSGPolygonList {
 		return result;
 	}
 	
+	/**
+	 * Recursively divide the lot
+	 * @param res_2
+	 * @param swell
+	 */
 	public void divide(double res_2, double swell)
 	{
 		for(int i = 0; i < size(); i++)
 			get(i).divide(res_2, swell);
 	}
 	
+	/**
+	 * Generate boundary lists for the lot
+	 * @return
+	 */
 	public RrPolygonList megList()
 	{
 		RrPolygonList result = new RrPolygonList();
@@ -70,6 +116,12 @@ public class RrCSGPolygonList {
 		return result;
 	}
 	
+	/**
+	 * Cross hatch the lot
+	 * @param hp
+	 * @param es
+	 * @return
+	 */
 	public RrPolygonList hatch(RrHalfPlane hp, Extruder[] es) 
 	{
 		RrPolygonList result = new RrPolygonList();

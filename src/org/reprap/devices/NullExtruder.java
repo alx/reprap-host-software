@@ -243,6 +243,11 @@ public class NullExtruder implements Extruder{
 	private double nozzleClearTime;
 	
 	/**
+	 * Number of seconds to wait after restarting the nozzle
+	 */
+	private double nozzleWaitTime;
+	
+	/**
 	 * Start polygons at random perimiter points
 	 */
 	private boolean randSt = false;
@@ -300,6 +305,7 @@ public class NullExtruder implements Extruder{
 		nozzleWipeStrokeY = prefs.loadDouble(prefName + "NozzleWipeStrokeY(mm)");
 		nozzleWipeFreq = prefs.loadInt(prefName + "NozzleWipeFreq");
 		nozzleClearTime = prefs.loadDouble(prefName + "NozzleClearTime(s)");
+		nozzleWaitTime = prefs.loadDouble(prefName + "NozzleWaitTime(s)");
 		randSt = prefs.loadBool(prefName + "RandomStart");
 		incrementedSt = prefs.loadBool(prefName + "IncrementedStart");
 		shortLength = prefs.loadDouble(prefName + "ShortLength(mm)");
@@ -652,6 +658,13 @@ public class NullExtruder implements Extruder{
     	return nozzleClearTime;
     }
     
+    /**
+     * @return the time to wait after extruding before wiping the nozzle
+     */
+    public double getNozzleWaitTime()
+    {
+    	return nozzleWaitTime;
+    }
     
     /**
      * Start polygons at a random location round their perimiter

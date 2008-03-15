@@ -316,6 +316,12 @@ public class GenericExtruder extends Device implements Extruder{
 	 * Number of seconds to run to re-start the nozzle before a wipe
 	 */
 	private double nozzleClearTime;
+
+	/**
+	 * Number of seconds to wait after restarting the nozzle
+	 */
+	private double nozzleWaitTime;
+	
 	
 	/**
 	 * The number of milliseconds to wait before starting a border track
@@ -368,6 +374,7 @@ public class GenericExtruder extends Device implements Extruder{
 		nozzleWipeStrokeY = prefs.loadDouble(prefName + "NozzleWipeStrokeY(mm)");
 		nozzleWipeFreq = prefs.loadInt(prefName + "NozzleWipeFreq");
 		nozzleClearTime = prefs.loadDouble(prefName + "NozzleClearTime(s)");
+		nozzleWaitTime = prefs.loadDouble(prefName + "NozzleWaitTime(s)");
 		randSt = prefs.loadBool(prefName + "RandomStart");
 		incrementedSt = prefs.loadBool(prefName + "IncrementedStart");
 		shortLength = prefs.loadDouble(prefName + "ShortLength(mm)");
@@ -1232,6 +1239,14 @@ public class GenericExtruder extends Device implements Extruder{
     public double getNozzleClearTime()
     {
     	return nozzleClearTime;
+    }
+    
+    /**
+     * @return the time to wait after extruding before wiping the nozzle
+     */
+    public double getNozzleWaitTime()
+    {
+    	return nozzleWaitTime;
     }
     
     

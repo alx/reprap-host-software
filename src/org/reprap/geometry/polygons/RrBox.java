@@ -320,7 +320,7 @@ public class RrBox
 			return Rr2Point.dSquared(p, sw());
 			
 		default:
-			System.err.println("RrBox.d_2(): dud value from point_relative()!");	
+			System.err.println("RrBox.dSquared(): dud value from point_relative()!");	
 		}
 		
 		return Math.min(d1, d2);
@@ -334,7 +334,7 @@ public class RrBox
      * (if any) in the box.
 	 * @param a
 	 * @param oldRange
-	 * @return itersection interval
+	 * @return intersection interval
 	 */
 	public RrInterval wipe(RrLine a, RrInterval oldRange)
 	{

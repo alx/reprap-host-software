@@ -813,53 +813,126 @@ public class Reprap implements CartesianPrinter {
 	}
 	
 
+//	/**
+//	 * Moves nozzle back and forth over wiper
+//	 */
+//	public void wipeNozzle() throws ReprapException, IOException {
+//		
+//		if (getExtruder().getNozzleWipeEnabled() == false) return;
+//		
+//		else {
+//			
+//			int freq = getExtruder().getNozzleWipeFreq();
+//			double datumX = getExtruder().getNozzleWipeDatumX();
+//			double datumY = getExtruder().getNozzleWipeDatumY();
+//			double strokeX = getExtruder().getNozzleWipeStrokeX();
+//			double strokeY = getExtruder().getNozzleWipeStrokeY();
+//			
+//			setSpeed(fastSpeedXY);
+//			//moveTo(datumX, datumY + strokeY, currentZ, false, false);
+//			moveTo(datumX, datumY, currentZ, false, false);
+//			double clearTime = getExtruder().getNozzleClearTime();
+//			if(clearTime > 0)
+//			{
+//				extruders[extruder].setExtrusion(extruders[extruder].getExtruderSpeed());
+//				try
+//				{
+//					Thread.sleep((long)(1000*clearTime));
+//				} catch (Exception ex)
+//				{			
+//				}
+//				extruders[extruder].setExtrusion(0); 
+//			}
+//			
+//			try
+//			{
+//				Thread.sleep((long)(10000));
+//			} catch (Exception ex)
+//			{			
+//			}
+//			
+//			moveTo(datumX, datumY + strokeY, currentZ, false, false);
+//			
+////			double step = 0.5*strokeX/freq;
+////			double xInc = 0;
+////			
+////			// Moves nozzle over wiper
+////			
+////			for (int w=0; w < freq; w++)
+////			{
+////				moveTo(datumX + xInc, datumY, currentZ, false, false);
+////				xInc += step;
+////				moveTo(datumX + xInc, datumY, currentZ, false, false);
+////				moveTo(datumX + xInc, datumY  + strokeY, currentZ, false, false);
+////				xInc += step;
+////				moveTo(datumX + xInc, datumY  + strokeY, currentZ, false, false);
+////			}
+//			
+//			
+//		}
+//	}
+	
 	/**
-	 * Moves nozzle back and forth over wiper
+	 * Deals with all the actions that need to be done between one layer
+	 * and the next.
 	 */
-	public void wipeNozzle() throws ReprapException, IOException {
+	public void betweenLayers(int layerNumber) throws Exception
+	{
+		double storedX = getX();
+		double storedY = getY();
+		double datumX = getExtruder().getNozzleWipeDatumX();
+		double datumY = getExtruder().getNozzleWipeDatumY();
+		double strokeX = getExtruder().getNozzleWipeStrokeX();
+		double strokeY = getExtruder().getNozzleWipeStrokeY();
+		double coolTime = getExtruder().getCoolingPeriod();
 		
-		if (getExtruder().getNozzleWipeEnabled() == false) return;
+		// Run the cooling fan if we need to
 		
-		else {
+		if(coolTime > 0 && (layerNumber != 0))
+		{
+			Debug.d("Start of cooling period");
 			
-			int freq = getExtruder().getNozzleWipeFreq();
-			double datumX = getExtruder().getNozzleWipeDatumX();
-			double datumY = getExtruder().getNozzleWipeDatumY();
-			double strokeX = getExtruder().getNozzleWipeStrokeX();
-			double strokeY = getExtruder().getNozzleWipeStrokeY();
+			// On with the fan.
 			
-			setSpeed(fastSpeedXY);
-			moveTo(datumX, datumY + strokeY, currentZ, false, false);
+			getExtruder().setCooler(true);
+			setSpeed(getFastSpeed());
+			
+			// Go home, X first
+			
+			homeToZeroX();
+			homeToZeroY();
+			
+			// Wait for cooling time
+			
+			Thread.sleep((long)(1000*coolTime));
+			getExtruder().setCooler(false);
+			Thread.sleep((long)(200 * coolTime));			
+			Debug.d("End of cooling period");
+		} else
+		{
+			// Go home, X first
+			
+			homeToZeroX();
+			homeToZeroY();			
+		}
+		
+		// Wipe the nozzle on the doctor blade
+		
+		if (getExtruder().getNozzleWipeEnabled())
+		{
+			moveTo(datumX, datumY, currentZ, false, false);
 			double clearTime = getExtruder().getNozzleClearTime();
+			double waitTime = getExtruder().getNozzleWaitTime();
 			if(clearTime > 0)
 			{
-				extruders[extruder].setExtrusion(extruders[extruder].getExtruderSpeed());
-				try
-				{
-					Thread.sleep((long)(1000*clearTime));
-				} catch (Exception ex)
-				{			
-				}
-				extruders[extruder].setExtrusion(0); 
+				getExtruder().setExtrusion(extruders[extruder].getExtruderSpeed());
+				Thread.sleep((long)(1000*clearTime));
+				getExtruder().setExtrusion(0); 
+				Thread.sleep((long)(1000*waitTime));
 			}
-			
-			double step = 0.5*strokeX/freq;
-			double xInc = 0;
-			
-			// Moves nozzle over wiper
-			
-			for (int w=0; w < freq; w++)
-			{
-				moveTo(datumX + xInc, datumY, currentZ, false, false);
-				xInc += step;
-				moveTo(datumX + xInc, datumY, currentZ, false, false);
-				moveTo(datumX + xInc, datumY  + strokeY, currentZ, false, false);
-				xInc += step;
-				moveTo(datumX + xInc, datumY  + strokeY, currentZ, false, false);
-			}
-			
-			
+			moveTo(datumX, datumY + strokeY, currentZ, false, false);
 		}
+			
 	}
 
 }

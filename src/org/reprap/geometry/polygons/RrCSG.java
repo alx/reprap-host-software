@@ -50,8 +50,6 @@
 
 package org.reprap.geometry.polygons;
 
-import javax.media.j3d.Link;
-
 /**
  * RepRap Constructive Solid Geometry class
  * 
@@ -80,8 +78,6 @@ public class RrCSG
 	 * Type of set
 	 */
 	private RrCSGOp op;
-
-	//private int op;			   ///< Will go at Java 1.5
 	
 	/**
 	 * Non-leaf child operands 
@@ -183,7 +179,6 @@ public class RrCSG
 	public RrCSG c_1() { return c1; }
 	public RrCSG c_2() { return c2; }
 	public RrCSGOp operator() { return op; }
-	//public int operator() { return op; }
 	public RrHalfPlane plane() { return hp; }
 	public int complexity() { return complexity; }
 	
@@ -382,227 +377,6 @@ public class RrCSG
 		r = RrCSG.intersection(r, new RrCSG(new RrHalfPlane(b.sw(), b.nw())));
 		return r;
 	}
-	
-	
-//	/**
-//	 * Regularise a set with a contents of 3
-//	 * This assumes simplify has been run over this set
-//	 * @return regularised CSG object
-//	 */	
-//	private RrCSG reg_3_old()
-//	{
-//		RrCSG result = this;
-//		
-//		if(complexity != 3)
-//			return result;
-//		
-//		boolean different = true;
-//		boolean acomp = false;
-//		RrCSG temp;
-//		if(c1 == c2.c1)
-//			different = false;
-//		if(c1 == c2.c2)
-//		{
-//			different = false;
-//			temp = c2.c2;
-//			c2.c2 = c2.c1;
-//			c2.c1 = temp;
-//		}
-//		
-//		if(c1.comp != null)
-//		{
-//			if(c1.comp == c2.c1)
-//			{
-//				different = false;
-//				acomp = true;
-//			}
-//			if(c1.comp == c2.c2) 
-//			{
-//				different = false;
-//				acomp = true;
-//				temp = c2.c2;
-//				c2.c2 = c2.c1;
-//				c2.c1 = temp;
-//			}
-//		}
-//		
-//		if(different)
-//			return result;
-//		
-//		if(acomp)
-//		{
-//			if(op == RrCSGOp.UNION) 
-//			{
-//				if(c2.op == RrCSGOp.UNION)
-//					result = universe();
-//				else
-//					result = union(c1, c2.c2);
-//			}else 
-//			{
-//				if(c2.op == RrCSGOp.UNION)
-//					result = intersection(c1, c2.c2);
-//				else
-//					result = nothing();
-//			}            
-//		} else
-//		{
-//			if(op == RrCSGOp.UNION) 
-//			{
-//				if(c2.op == RrCSGOp.UNION)
-//					result = c2;
-//				else
-//					result = c1;
-//			}else 
-//			{
-//				if(c2.op == RrCSGOp.UNION)
-//					result = c1;
-//				else
-//					result = c2;
-//			}
-//		}
-//		return result;
-//	}
-	
-	
-//	/**
-//	 * Regularise a set with a contents of 3
-//	 * This assumes simplify has been run over this set
-//	 * @return regularised CSG object
-//	 */	
-//	private RrCSG reg_3()
-//	{
-//		RrCSG r = this;
-//		
-//		if(complexity != 3)
-//			return r;
-//		
-//		RrCSG a = c1;
-//		RrCSG b = c2.c1;
-//		RrCSG c = c2.c2;
-//		
-//		int caseVal = 0;
-//		boolean noEquals = true;
-//
-//		if(a == b)
-//			noEquals = false;
-//		if(a == c)
-//		{
-//			noEquals = false;
-//			caseVal |= 4;
-//		}
-//		if(b == c)
-//		{
-//			noEquals = false;
-//			caseVal |= 2;
-//			caseVal |= 4;
-//		}
-//		if(a == b.comp)
-//		{
-//			noEquals = false;
-//			caseVal |= 1;
-//		}
-//		if(a == c.comp)
-//		{
-//			noEquals = false;
-//			caseVal |= 1;
-//			caseVal |= 4;
-//		}
-//		if(b == c.comp)
-//		{
-//			noEquals = false;
-//			caseVal |= 1;
-//			caseVal |= 2;
-//			caseVal |= 4;
-//		}
-//		
-//		if(noEquals)
-//			return r;
-//		
-//		if(op == RrCSGOp.INTERSECTION)
-//			caseVal |= 8;
-//		if(c2.op == RrCSGOp.INTERSECTION)
-//			caseVal |= 16;
-//		
-//		switch(caseVal)
-//		{
-//		case 0: 
-//			r = RrCSG.union(a, c);
-//			break;
-//		case 1: 
-//			r = RrCSG.universe();
-//			break;
-//		case 4: 
-//			r = RrCSG.union(a, b);
-//			break;
-//		case 5: 
-//			r = RrCSG.universe();
-//			break;
-//		case 6: 
-//			r = RrCSG.union(b, a);
-//			break;
-//		case 7: 
-//			r = RrCSG.universe();
-//			break;
-//		case 8: 
-//			r = a;
-//			break;
-//		case 9: 
-//			r = RrCSG.union(a.complement(), c);
-//			break;
-//		case 12: 
-//			r = b;
-//			break;
-//		case 13: 
-//			r = RrCSG.union(a, b.complement());
-//			break;
-//		case 14: 
-//			r = RrCSG.union(b, a);
-//			break;
-//		case 15: 
-//			r = b;
-//			break;
-//		case 16: 
-//			r = a;
-//			break;
-//		case 17: 
-//			r = RrCSG.intersection(a.complement(), c);
-//			break;
-//		case 20: 
-//			r = b;
-//			break;
-//		case 21: 
-//			r = RrCSG.intersection(a, b.complement());
-//			break;
-//		case 22: 
-//			r = RrCSG.intersection(b, a);
-//			break;
-//		case 23: 
-//			r = b;
-//			break;
-//		case 24: 
-//			r = RrCSG.intersection(a, c);
-//			break;
-//		case 25: 
-//			r = RrCSG.nothing();
-//			break;
-//		case 28: 
-//			r = RrCSG.intersection(a, b);
-//			break;
-//		case 29: 
-//			r = RrCSG.nothing();
-//			break;
-//		case 30: 
-//			r = RrCSG.intersection(b, a);
-//			break;
-//		case 31: 
-//			r = RrCSG.nothing();
-//			break;		
-//		default:
-//			System.err.println("RrCSG.reg_3(): dud case value: " + caseVal);
-//		}
-//		
-//		return r;
-//	}
 	
 	/**
 	 * Regularise a set with a contents of 3
@@ -1154,7 +928,7 @@ public class RrCSG
 	 * @param leaf
 	 * @param tolerance
 	 */		
-	private void replace_all_same_leaves(RrCSG leaf, double tolerance)
+	private void replaceAllSameLeaves(RrCSG leaf, double tolerance)
 	{	
 		switch(op)
 		{
@@ -1172,14 +946,14 @@ public class RrCSG
 				if(RrHalfPlane.same(hp, c1.hp, tolerance))
 					c1 = leaf;
 			} else
-				c1.replace_all_same_leaves(leaf, tolerance);
+				c1.replaceAllSameLeaves(leaf, tolerance);
 			
 			if(c2.op == RrCSGOp.LEAF)
 			{
 				if(RrHalfPlane.same(hp, c2.hp, tolerance))
 					c2 = leaf;                        
 			} else
-				c2.replace_all_same_leaves(leaf, tolerance);
+				c2.replaceAllSameLeaves(leaf, tolerance);
 			break;
 			
 		default:
@@ -1198,6 +972,9 @@ public class RrCSG
 		switch(op)
 		{
 		case LEAF:
+			root.replaceAllSameLeaves(this, tolerance);
+			break;
+			
 		case NULL:   
 		case UNIVERSE:
 			//System.out.println("simplify_r(): at a leaf!");
@@ -1205,16 +982,8 @@ public class RrCSG
 			
 		case UNION:
 		case INTERSECTION:    
-			if(c1.op == RrCSGOp.LEAF)
-				root.replace_all_same_leaves(c1, tolerance);
-			else
-				c1.simplify_r(root, tolerance);
-			
-			if(c2.op == RrCSGOp.LEAF)
-				root.replace_all_same_leaves(c2, tolerance);
-			else
-				c2.simplify_r(root, tolerance);
-			
+			c1.simplify_r(root, tolerance);
+			c2.simplify_r(root, tolerance);
 			break;
 			
 		default:
@@ -1354,18 +1123,18 @@ public class RrCSG
 	/**
 	 * "Potential" value of a point; i.e. a membership test
 	 * -ve means inside; 0 means on the surface; +ve means outside
-	 * TODO - this should work independently of a call to leaf(); that's more efficient
+	 *
 	 * @param p
-	 * @return value of a point
+	 * @return potential value of a point
 	 */
 	public double value(Rr2Point p)
 	{
 		double result = 1;
-		RrCSG c = leaf(p);
-		switch(c.op)
+//		RrCSG c = leaf(p);
+		switch(op)
 		{
 		case LEAF:
-			result = c.hp.value(p);
+			result = hp.value(p);
 			break;
 			
 		case NULL:
@@ -1377,13 +1146,52 @@ public class RrCSG
 			break;
 			
 		case UNION:
+			result = Math.min(c1.value(p), c2.value(p));
+			break;
+			
 		case INTERSECTION:
+			result = Math.max(c1.value(p), c2.value(p));
+			break;
 			
 		default:
-			System.err.println("value(Rr2Point): non-leaf operator.");
+			System.err.println("RrCSG.value(): dud operator.");
 		}
 		return result;
 	}
+	
+//	/**
+//	 * "Potential" value of a point; i.e. a membership test
+//	 * -ve means inside; 0 means on the surface; +ve means outside
+//	 * TODO - this should work independently of a call to leaf(); that's more efficient
+//	 * @param p
+//	 * @return value of a point
+//	 */
+//	public double value(Rr2Point p)
+//	{
+//		double result = 1;
+//		RrCSG c = leaf(p);
+//		switch(c.op)
+//		{
+//		case LEAF:
+//			result = c.hp.value(p);
+//			break;
+//			
+//		case NULL:
+//			result = 1;
+//			break;
+//			
+//		case UNIVERSE:
+//			result = -1;
+//			break;
+//			
+//		case UNION:
+//		case INTERSECTION:
+//			
+//		default:
+//			System.err.println("value(Rr2Point): non-leaf operator.");
+//		}
+//		return result;
+//	}
 	
 	/**
 	 * The interval value of a box (analagous to point)

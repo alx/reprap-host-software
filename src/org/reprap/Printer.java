@@ -260,6 +260,11 @@ public interface Printer {
 	/**
 	 * Wipes the nozzle
 	 */
-    public void wipeNozzle() throws ReprapException, IOException;
+    //public void wipeNozzle() throws ReprapException, IOException;
+	
+	/**
+	 * Do whatever needs to be done between one layer and the next
+	 */
+	public void betweenLayers(int layerNumber) throws Exception;
          
 }

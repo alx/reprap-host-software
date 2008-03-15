@@ -63,7 +63,7 @@ import org.reprap.Attributes;
 import org.reprap.Preferences;
 
 /**
- *
+ * This class stores ends of the zig-zag infill pattern.
  */
 class snakeEnd
 {
@@ -117,7 +117,12 @@ public class RrCSGPolygon
 	/**
 	 * Quad tree division, respectively: NW, NE, SE, SW 
 	 */
-	private RrCSGPolygon q1, q2, q3, q4;                             
+	private RrCSGPolygon q1, q2, q3, q4;  
+	
+	/**
+	 * This box's parent
+	 */
+	private RrCSGPolygon parent;
 	
 	/**
 	 * Squared diagonal of the smallest box to go to 
@@ -158,6 +163,8 @@ public class RrCSGPolygon
 	 * the attributes of this polygon
 	 */
 	private Attributes att;
+	
+	
 	
 	/**
 	 * Set one up
@@ -205,22 +212,26 @@ public class RrCSGPolygon
 	public RrInterval interval2() { return i2; }
 	public Attributes getAttributes() { return att; }
 	
-	
 	/**
-	 * Convert to a string - internal recursive call
-	 * @param quad
+	 * This quad is a leaf if it has no children; just check the first.
+	 * @return
 	 */
+	public boolean leaf()
+	{
+		return q1 == null;
+	}
+	
 	private String toString_r(String quad)
 	{
-		if(csg.operator() == RrCSGOp.UNIVERSE)
-			quad = quad + "U";
-		else
-			quad = quad + Integer.toString(csg.complexity());
+		quad = quad + csg.toString() + "\n";
+
+
+
 		
-		if(q1 == null)
+		if(leaf())
 		{
-			String result = quad + "\n";
-			return result;
+			return quad;
+
 		} else
 		{
 			return(q1.toString_r(quad + ":NW-") + 
@@ -229,6 +240,30 @@ public class RrCSGPolygon
 					q4.toString_r(quad + ":SW-"));
 		}      
 	}
+	
+//	/**
+//	 * Convert to a string - internal recursive call
+//	 * @param quad
+//	 */
+//	private String toString_r(String quad)
+//	{
+//		if(csg.operator() == RrCSGOp.UNIVERSE)
+//			quad = quad + "U";
+//		else
+//			quad = quad + Integer.toString(csg.complexity());
+//		
+//		if(q1 == null)
+//		{
+//			String result = quad + "\n";
+//			return result;
+//		} else
+//		{
+//			return(q1.toString_r(quad + ":NW-") + 
+//					q2.toString_r(quad + ":NE-") +
+//					q3.toString_r(quad + ":SE-") +
+//					q4.toString_r(quad + ":SW-"));
+//		}      
+//	}
 	
 	/**
 	 * Convert to a string
@@ -431,7 +466,7 @@ public class RrCSGPolygon
 	 */
 	public RrCSGPolygon quad(Rr2Point p)
 	{
-		if(q1 == null)
+		if(leaf())
 		{
 			if(box.pointRelative(p) != 0)
 				System.err.println("RrCSGPolygon.quad(): point not in the box.");
@@ -477,6 +512,13 @@ public class RrCSGPolygon
 	 */	
 	public double value(Rr2Point p)
 	{
+		// Conventional answer for when we're outside the box
+		
+		if(box.pointRelative(p) != 0)
+			return 1;
+		
+		// Inside - calculate.
+		
 		RrCSG c = leaf(p);
 		return c.value(p);
 	}
@@ -501,7 +543,7 @@ public class RrCSGPolygon
 		RrCSG expression = csg.offset(d);
 		expression = expression.simplify(Math.sqrt(resolution_2));
 		RrCSGPolygon result = new RrCSGPolygon(csg.offset(d), b, att);
-		if(q1 != null)
+		if(!leaf())
 			result.divide(resolution_2, sFactor);
 		return result;
 	}
@@ -516,7 +558,7 @@ public class RrCSGPolygon
     	if(v2)
     		visit2 = false;
     	
-    	if(q1 != null)
+    	if(!leaf())
     	{
     		q1.clearVisited(v1, v2);
     		q2.clearVisited(v1, v2);
@@ -535,7 +577,7 @@ public class RrCSGPolygon
     	if(corner && !(visit1 && v1) && !(visit2 && v2))
     		return this;
  
-    	if(q1 != null)
+    	if(!leaf())
     	{
     		result = q1.findCorner(v1, v2);
     		if(result != null)
@@ -559,16 +601,24 @@ public class RrCSGPolygon
 	 * @param flag
      * @return the polygon 
      */
-    public RrPolygon meg() //(int flag)
+    public RrPolygon meg()
     {
+    	
     	int flag = 1;
     	RrPolygon result = new RrPolygon(att);
+    	
+    	if(!corner)
+    	{
+			System.err.println("RrCSGPolygon.meg(): starting at non-corner quad!");
+			return result;
+    	}
     	
     	RrCSGPolygon c = this;
     	RrHalfPlane now, next;
     	now = csg.c_1().plane();
-    	if(now.find(c)%2 == 1)  // Subtle, or what?
-    		now = csg.c_2().plane();
+    	if(now.find(c)%2 == 1)  		// Subtle, or what?  Finds the line with an even index so
+    		now = csg.c_2().plane();	// we head off along it in the right direction.
+    		
     	
     	if(now.find(c)%2 == 1)
     	{
@@ -609,7 +659,7 @@ public class RrCSGPolygon
 	 * @param fs
      * @return a polygon list as the result
      */
-    public RrPolygonList megList() //(int fg, int fs)
+    public RrPolygonList megList()
     {
     	clearVisited(true, true);
 
@@ -619,10 +669,9 @@ public class RrCSGPolygon
     	RrCSGPolygon vtx = findCorner(true, true);
     	while(vtx != null)
     	{
-    		m = vtx.meg(); //(fg);
+    		m = vtx.meg();
     		if(m.size() > 0)
     		{
-    			//m.flag(0, fs);
     			if(m.size() > 2)
     				result.add(m);
     			else
@@ -645,7 +694,7 @@ public class RrCSGPolygon
 		if(newRange.empty())
 			return;
 		
-		if(q1 != null)
+		if(!leaf())
 		{
 			q1.lineIntersect_r(hp, newRange);
 			q2.lineIntersect_r(hp, newRange);
@@ -704,7 +753,7 @@ public class RrCSGPolygon
      * @return polygon edge between start/originaPlane and targetPlane
      */
     public snakeEnd megGoToPlane(Rr2Point start, RrHalfPlane modelEdge, RrHalfPlane originPlane,
-    		RrHalfPlane targetPlane) //, int flag)
+    		RrHalfPlane targetPlane) 
     {
     	int beforeIndex = -1;
 
@@ -823,7 +872,7 @@ public class RrCSGPolygon
 	 * @param gap
 	 * @param fg
 	 * @param fs
-	 * @return a polygon list as the result with flag values f
+	 * @return a polygon list of hatch lines as the result
 	 */
 	public RrPolygonList hatch(RrHalfPlane hp, double gap)
 	{
