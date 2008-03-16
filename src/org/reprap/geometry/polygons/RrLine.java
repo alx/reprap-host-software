@@ -64,12 +64,44 @@ public class RrLine
 	/**
 	 * direction 
 	 */
-	private Rr2Point direction;
+	private Rr2Point direction = null;
 	
 	/**
 	 * origin
 	 */
-	private Rr2Point origin;
+	private Rr2Point origin = null;
+	
+	/**
+	 * Flag to prevent cyclic graphs going round forever
+	 */
+	private boolean beingDestroyed = false;
+	
+	/**
+	 * Destroy me and all that I point to
+	 */
+	public void destroy() 
+	{
+		if(beingDestroyed) // Prevent infinite loop
+			return;
+		beingDestroyed = true;
+		if(direction != null)
+			direction.destroy();
+		direction = null;
+		if(origin != null)
+			origin.destroy();
+		origin = null;
+		beingDestroyed = false;
+	}
+	
+	/**
+	 * Destroy just me
+	 */
+	protected void finalize() throws Throwable
+	{
+		direction = null;
+		origin = null;
+		super.finalize();
+	}
 	
 	/**
 	 * Line between two points

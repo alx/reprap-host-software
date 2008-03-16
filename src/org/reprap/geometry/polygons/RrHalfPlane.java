@@ -73,7 +73,34 @@ class lineIntersection
 	/**
 	 * Quad containing hit plane 
 	 */
-	private RrCSGPolygon quad;
+	private RrCSGPolygon quad = null;
+	
+	/**
+	 * Flag to prevent cyclic graphs going round forever
+	 */
+	private boolean beingDestroyed = false;
+	
+	/**
+	 * Destroy me and all that I point to
+	 */
+	public void destroy() 
+	{
+		if(beingDestroyed) // Prevent infinite loop
+			return;
+		beingDestroyed = true;
+		if(quad != null)
+			quad.destroy();
+		quad = null;
+	}
+	
+	/**
+	 * Destroy just me
+	 */
+	protected void finalize() throws Throwable
+	{
+		quad = null;
+		super.finalize();
+	}
 	
 	/**
 	 * @param v
@@ -106,18 +133,60 @@ public class RrHalfPlane
 	/**
 	 * The half-plane is normal*(x, y) + offset <= 0 
 	 */
-	private Rr2Point normal; 
+	private Rr2Point normal = null; 
 	private double offset;
 	
 	/**
 	 * Keep the parametric equivalent to save computing it
 	 */
-	private RrLine p;
+	private RrLine p = null;
 	
 	/**
 	 * List of intersections with others
 	 */
-	private List crossings;
+	private List<lineIntersection> crossings = null;
+	
+	/**
+	 * Flag to prevent cyclic graphs going round forever
+	 */
+	private boolean beingDestroyed = false;
+	
+	/**
+	 * Destroy me and all that I point to
+	 */
+	public void destroy() 
+	{
+		if(beingDestroyed) // Prevent infinite loop
+			return;
+		beingDestroyed = true;
+		if(normal != null)
+			normal.destroy();
+		normal = null;
+		if(p != null)
+			p.destroy();
+		p = null;
+		if(crossings != null)
+		{
+			for(int i = 0; i < size(); i++)
+			{
+				crossings.get(i).destroy();
+				crossings.set(i, null);
+			}
+		}
+		crossings = null;
+		beingDestroyed = false;
+	}
+	
+	/**
+	 * Destroy just me
+	 */
+	protected void finalize() throws Throwable
+	{
+		normal = null;
+		p = null;
+		crossings = null;
+		super.finalize();
+	}
 	
 	/**
 	 * Convert a parametric line
@@ -129,7 +198,7 @@ public class RrHalfPlane
 		p.norm();
 		normal = new Rr2Point(-p.direction().y(), p.direction().x());
 		offset = -Rr2Point.mul(l.origin(), normal());
-		crossings = new ArrayList();
+		crossings = new ArrayList<lineIntersection>();
 	}
 	
 	/**
@@ -151,7 +220,7 @@ public class RrHalfPlane
 		normal = new Rr2Point(a.normal);
 		offset = a.offset;
 		p = new RrLine(a.p);
-		crossings = new ArrayList(); // No point in deep copy -
+		crossings = new ArrayList<lineIntersection>(); // No point in deep copy -
 		                             // No pointers would match
 	}
 	
@@ -180,7 +249,7 @@ public class RrHalfPlane
 	 */
 	public double getParameter(int i)
 	{
-		return ((lineIntersection)crossings.get(i)).parameter();
+		return (crossings.get(i)).parameter();
 	}
 	
 	/**
@@ -200,7 +269,7 @@ public class RrHalfPlane
 	 */
 	public RrCSGPolygon getQuad(int i)
 	{
-		return ((lineIntersection)crossings.get(i)).quad();
+		return (crossings.get(i)).quad();
 	}
 	
 	/**
@@ -287,7 +356,7 @@ public class RrHalfPlane
 		if (size()%2 != 0)    // Nasty hack that seems to work...
 		{
 			System.err.println("RrHalfPlane.solidSet(): odd number of crossings: " +
-					crossings.size());
+					size());
 			crossings.remove(size() - 1);
 		}
 	}
@@ -305,7 +374,7 @@ public class RrHalfPlane
 	{	
 		// Ensure no duplicates
 		
-		for(int i = 0; i < crossings.size(); i++)
+		for(int i = 0; i < size(); i++)
 		{
 			if(getPlane(i) == p)
 				return false;     // Because we've already got it
@@ -407,7 +476,7 @@ public class RrHalfPlane
 	 */
 	public int find(RrCSGPolygon q)
 	{	
-		for(int i = 0; i < crossings.size(); i++)
+		for(int i = 0; i < size(); i++)
 		{
 			if(getQuad(i) == q)
 				return i;
@@ -423,7 +492,7 @@ public class RrHalfPlane
 	 */
 	public int find(RrHalfPlane h)
 	{	
-		for(int i = 0; i < crossings.size(); i++)
+		for(int i = 0; i < size(); i++)
 		{
 			if(getPlane(i) == h)
 				return i;
@@ -437,7 +506,7 @@ public class RrHalfPlane
 	 */
 	public void removeCrossings()
 	{
-		crossings = new ArrayList();
+		crossings = new ArrayList<lineIntersection>();
 	}
 		
 	/**
@@ -490,10 +559,10 @@ public class RrHalfPlane
 					}
 			);
 		}		
-		if(crossings.size()%2 != 0)
+		if(size()%2 != 0)
 		{
 			//System.err.println("RrHalfPlane.sort(): odd number of crossings: " +
-					//crossings.size());
+					//size());
 			solidSet(q);
 		}
 	}

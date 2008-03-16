@@ -54,7 +54,6 @@
 package org.reprap.geometry.polygons;
 
 import java.util.*;
-import java.io.*;
 import javax.media.j3d.*;
 import javax.vecmath.*;
 import com.sun.j3d.utils.geometry.GeometryInfo;
@@ -72,19 +71,64 @@ class LineSegment
 	/**
 	 * The ends of the line segment
 	 */
-	public Rr2Point a, b;
+	public Rr2Point a = null, b = null;
 	
 	/**
 	 * The quads that the ends lie in
 	 */
-	public STLSlice qa, qb;
+	public STLSlice qa = null, qb = null;
 	
 	/**
 	 * The attribute (i.e. RepRap material) of the segment.
 	 */
-	public Attributes att;
+	public Attributes att = null;
 	
-
+	/**
+	 * Flag to prevent cyclic graphs going round forever
+	 */
+	private boolean beingDestroyed = false;
+	
+	/**
+	 * Destroy me and all that I point to
+	 */
+	public void destroy() 
+	{
+		if(beingDestroyed) // Prevent infinite loop
+			return;
+		beingDestroyed = true;
+		if(a != null)
+			a.destroy();
+		a = null;
+		if(b != null)
+			b.destroy();
+		b = null;
+		if(qa != null)
+			qa.destroyLayer();
+		qa = null;
+		if(qb != null)
+			qb.destroyLayer();
+		qb = null;
+		
+		// Don't destroy the attribute - it may be needed
+		
+		//if(att != null)
+		//	att.destroy();
+		att = null;
+		
+	}
+	
+	/**
+	 * Destroy just me
+	 */
+	protected void finalize() throws Throwable
+	{
+		a = null;
+		b = null;
+		qa = null;
+		qb = null;
+		att = null;
+		super.finalize();
+	}
 	
 	/**
 	 * Constructor takes two intersection points with an STL triangle edge.
@@ -144,9 +188,45 @@ class LineSegment
  */
 class trackPolygon
 {
-	public STLSlice nextQ;
-	public LineSegment nextE;
-	public Rr2Point here;
+	public STLSlice nextQ = null;
+	public LineSegment nextE = null;
+	public Rr2Point here = null;
+	
+	/**
+	 * Flag to prevent cyclic graphs going round forever
+	 */
+	private boolean beingDestroyed = false;
+	
+	/**
+	 * Destroy me and all that I point to
+	 */
+	public void destroy() 
+	{
+		if(beingDestroyed) // Prevent infinite loop
+			return;
+		beingDestroyed = true;
+		if(nextQ != null)
+			nextQ.destroyLayer();
+		nextQ = null;
+		if(nextE != null)
+			nextE.destroy();
+		nextE = null;
+		if(here != null)
+			here.destroy();
+		here = null;
+		
+	}
+	
+	/**
+	 * Destroy just me
+	 */
+	protected void finalize() throws Throwable
+	{
+		nextQ = null;
+		nextE = null;
+		here = null;
+		super.finalize();
+	}
 	
 	public trackPolygon()
 	{
@@ -164,8 +244,42 @@ class trackPolygon
  */
 class AandT
 {
-	public Attributes att;
-	public Transform3D trans;
+	public Attributes att = null;
+	public Transform3D trans = null;
+	
+	/**
+	 * Flag to prevent cyclic graphs going round forever
+	 */
+	private boolean beingDestroyed = false;
+	
+	/**
+	 * Destroy me and all that I point to
+	 */
+	public void destroy() 
+	{
+		if(beingDestroyed) // Prevent infinite loop
+			return;
+		beingDestroyed = true;
+		
+		// Both the attribute and transform may be needed again
+		
+		if(att != null)
+		//	att.destroy();
+		att = null;
+		//if(trans != null)
+		//	trans.destroy();
+		trans = null;
+	}
+	
+	/**
+	 * Destroy just me
+	 */
+	protected void finalize() throws Throwable
+	{
+		att = null;
+		trans = null;
+		super.finalize();
+	}
 	
 	public AandT(Attributes a, Transform3D t)
 	{
@@ -181,8 +295,46 @@ class AandT
  */
 class MaterialLists
 {
-	private ArrayList<AandT> ats[];
+	private ArrayList<AandT> ats[] = null;
 	int extruderCount;
+	
+	/**
+	 * Flag to prevent cyclic graphs going round forever
+	 */
+	private boolean beingDestroyed = false;
+	
+	/**
+	 * Destroy me and all that I point to
+	 */
+	public void destroy() 
+	{
+		if(beingDestroyed) // Prevent infinite loop
+			return;
+		beingDestroyed = true;
+		if(ats != null)
+		{
+			for(int i = 0; i < ats.length; i++)
+			{
+				for(int j = 0; j < ats[i].size(); j++)
+				{
+					ats[i].get(j).destroy();
+					ats[i].set(j, null);
+				}
+				ats[i] = null;
+			}
+			
+		}
+		ats = null;
+	}
+		
+	/**
+	 * Destroy just me
+	 */
+	protected void finalize() throws Throwable
+	{
+		ats = null;
+		super.finalize();
+	}	
 	
 	public MaterialLists()
 	{
@@ -234,32 +386,32 @@ public class STLSlice
 	/**
 	 * The STL objects in 3D
 	 */
-	private List<STLObject> shapeList;
+	private List<STLObject> shapeList = null;
 	
 	/**
 	 * List of the edges with points in this quad
 	 */
-	private List<LineSegment> edges;
+	private List<LineSegment> edges = null;
 	
 	/**
 	 * Its enclosing box
 	 */
-	private RrBox box;
+	private RrBox box = null;
 	
 	/**
 	 * Quad tree division - NW, NE, SE, SW
 	 */
-	private STLSlice q1, q2, q3, q4;
+	private STLSlice q1 = null, q2 = null, q3 = null, q4 = null;
 	
 	/**
 	 * Lists of the x coordinates of the segment endpoints in this quad
 	 */
-	private ArrayList<Double> xCoords;
+	private ArrayList<Double> xCoords = null;
 	
 	/**
 	 * Lists of the y coordinates of the segment endpoints in this quad
 	 */	
-	private ArrayList<Double> yCoords;
+	private ArrayList<Double> yCoords = null;
 	
 	/**
 	 * Squared diagonal of the smallest box to go to 
@@ -274,27 +426,121 @@ public class STLSlice
 	/**
 	 * All the STL triangles and part-triangles below slice-height, Z 
 	 */
-	private List<Point3d> triangles;
+	private List<Point3d> triangles = null;
 	
 	/**
 	 * Made from the below-Z triangles 
 	 */
-	private BranchGroup below;
+	private BranchGroup below = null;
 	
 	/**
 	 * The lists of parts sorted by material
 	 */
-	private MaterialLists mls;
+	private MaterialLists mls = null;
 	/**
 	 * For debugging
 	 */
-	RrGraphics qp;
+	RrGraphics qp = null;
 	
 	/**
-	 * Just initialises a few things, or cleans the data structure
-	 * between slices.
+	 * Flag to prevent cyclic graphs going round forever
 	 */
-	private void cleanUp()
+	private boolean beingDestroyed = false;
+	
+	/**
+	 * Destroy me and (almost) all that I point to,
+	 * setting things up for the next layer
+	 */
+	public void destroyLayer() 
+	{
+		if(beingDestroyed) // Prevent infinite loop
+			return;
+		beingDestroyed = true;
+		
+		// Don't destroy the shapeList - we need it for the next layer
+		
+//		if(shapeList != null)
+//		{
+//			for(int i = 0; i < shapeList.size(); i++)
+//			{
+//				shapeList.get(i).destroy();
+//				shapeList.set(i, null);
+//			}
+//		}
+//		shapeList = null;
+		
+		if(edges != null)
+		{
+			for(int i = 0; i < edges.size(); i++)
+			{
+				edges.get(i).destroy();
+				edges.set(i, null);
+			}
+		}
+		edges = null;
+		if(box != null)
+			box.destroy();
+		box = null;
+		if(q1 != null)
+			q1.destroyLayer();
+		q1 = null;
+		if(q2 != null)
+			q2.destroyLayer();
+		q2 = null;
+		if(q3 != null)
+			q3.destroyLayer();
+		q3 = null;
+		if(q4 != null)
+			q4.destroyLayer();
+		q4 = null;
+		xCoords = null;
+		yCoords = null;
+		triangles = null;
+		
+		// We need below
+		//below = null;
+		
+		// We need the material lists next time
+		
+		//if(mls != null)
+		//	mls.destroy();
+		//mls = null;
+		
+		qp = null;		
+		
+		edges = new ArrayList<LineSegment>();
+		xCoords = new ArrayList<Double>();
+		yCoords = new ArrayList<Double>();
+		box = new RrBox();
+		triangles = new ArrayList<Point3d>();
+		beingDestroyed = false;
+	}
+	
+	/**
+	 * Destroy just me
+	 */
+	protected void finalize() throws Throwable
+	{
+		shapeList = null;
+		edges = null;
+		box = null;
+		q1 = null;
+		q2 = null;
+		q3 = null;
+		q4 = null;
+		xCoords = null;
+		yCoords = null;
+		triangles = null;
+		below = null;
+		mls = null;
+		qp = null;				
+		super.finalize();
+	}	
+	
+	/**
+	 * Initialises a few things
+	 */
+	private void setUp()
 	{
 		edges = new ArrayList<LineSegment>();
 		q1 = null;
@@ -313,7 +559,7 @@ public class STLSlice
 	 */
 	public STLSlice(List<STLObject> s)
 	{
-		cleanUp();
+		setUp();
 		shapeList = s;
 		mls = new MaterialLists();
 		
@@ -1041,7 +1287,7 @@ public class STLSlice
 	 * @param z
 	 * @return a CSG representation of all the polygons in the slice
 	 */
-	public RrCSGPolygonList slice(double z) //, int fg, int fs)
+	public RrCSGPolygonList slice(double z)
 	{
 		RrCSGPolygonList rl = new RrCSGPolygonList();
 
@@ -1049,7 +1295,7 @@ public class STLSlice
 		
 		for(int mat = 0; mat < mls.getExtruderCount(); mat++)
 		{
-			cleanUp();
+			destroyLayer();
 			ArrayList<AandT> aats = mls.getAandTs(mat);
 
 			if(aats.size() > 0)

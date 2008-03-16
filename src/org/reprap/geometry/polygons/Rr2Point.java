@@ -68,6 +68,23 @@ public class Rr2Point
 	private double x, y;
 	
 	/**
+	 * Destroy me and all I point to
+	 */
+	public void destroy()
+	{
+		// I don't point to anything
+	}
+	
+	/**
+	 * Destroy just me
+	 */
+	protected void finalize() throws Throwable
+	{
+		super.finalize();
+	}
+	
+	
+	/**
 	 * Default to the origin
 	 */
 	public Rr2Point()

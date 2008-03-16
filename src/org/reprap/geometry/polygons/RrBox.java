@@ -71,17 +71,49 @@ public class RrBox
 	/**
 	 * X interval
 	 */
-	private RrInterval x;
+	private RrInterval x = null;
 	
 	/**
 	 * Y interval
 	 */
-	private RrInterval y;
+	private RrInterval y = null;
 	
 	/**
 	 * Anyone home?
 	 */
 	private boolean empty;
+	
+	/**
+	 * Flag to prevent cyclic graphs going round forever
+	 */
+	private boolean beingDestroyed = false;
+	
+	/**
+	 * Destroy me and all that I point to
+	 */
+	public void destroy() 
+	{
+		if(beingDestroyed) // Prevent infinite loop
+			return;
+		beingDestroyed = true;
+		if(x != null)
+			x.destroy();
+		x = null;
+		if(y != null)
+			y.destroy();		
+		y = null;
+		beingDestroyed = false;
+	}
+	
+	/**
+	 * Destroy just me
+	 */
+	protected void finalize() throws Throwable
+	{
+		x = null;
+		y = null;
+		super.finalize();
+	}
 	
 	/**
 	 * Default is empty

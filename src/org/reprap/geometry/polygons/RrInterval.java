@@ -64,6 +64,22 @@ public class RrInterval
 	private double high;
 	private boolean empty;
 	
+	/**
+	 * Destroy me and all that I point to
+	 */
+	public void destroy() 
+	{
+		// I don't point to anything
+	}
+	
+	/**
+	 * Destroy just me
+	 */
+	protected void finalize() throws Throwable
+	{
+		super.finalize();
+	}
+	
 	public RrInterval()
 	{
 		empty = true;

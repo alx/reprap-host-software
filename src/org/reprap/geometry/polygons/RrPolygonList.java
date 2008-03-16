@@ -78,6 +78,22 @@ class chPair
 	public int vertex;
 	
 	/**
+	 * Destroy me and all I point to
+	 */
+	public void destroy()
+	{
+		// I don't point to anything
+	}
+	
+	/**
+	 * Destroy just me
+	 */
+	protected void finalize() throws Throwable
+	{
+		super.finalize();
+	}
+	
+	/**
 	 * @param p
 	 * @param v
 	 */
@@ -103,18 +119,55 @@ class treeList
 	/**
 	 * The polygons inside this one
 	 */
-	private List<treeList> children;
+	private List<treeList> children = null;
 	
 	/**
 	 * The polygon that contains this one
 	 */
-	private treeList parent;
+	private treeList parent = null;
+	
+	/**
+	 * Flag to prevent cyclic graphs going round forever
+	 */
+	private boolean beingDestroyed = false;
+	
+	/**
+	 * Destroy me and all that I point to
+	 */
+	public void destroy() 
+	{
+		if(beingDestroyed) // Prevent infinite loop
+			return;
+		beingDestroyed = true;
+		if(children != null)
+		{
+			for(int i = 0; i < children.size(); i++)
+			{
+				children.get(i).destroy();
+				children.set(i, null);
+			}
+		}
+		children = null;
+		if(parent != null)
+			parent.destroy();
+		parent = null;	
+	}
+	
+	/**
+	 * Destroy just me
+	 */
+	protected void finalize() throws Throwable
+	{
+		children = null;
+		parent = null;	
+		super.finalize();
+	}
 	
 	/**
 	 * Constructor builds from a polygon index
 	 * @param i
 	 */
-	treeList(int i)
+	public treeList(int i)
 	{
 		index = i;
 		children = null;
@@ -297,19 +350,57 @@ public class RrPolygonList
 	/**
 	 * 
 	 */
-	private List polygons;
+	private List<RrPolygon> polygons = null;
 	
 	/**
 	 * 
 	 */
-	private RrBox box;
+	private RrBox box = null;
+	
+	/**
+	 * Flag to prevent cyclic graphs going round forever
+	 */
+	private boolean beingDestroyed = false;
+	
+	/**
+	 * Destroy me and all that I point to
+	 */
+	public void destroy() 
+	{
+		if(beingDestroyed) // Prevent infinite loop
+			return;
+		beingDestroyed = true;
+		if(polygons != null)
+		{
+			for(int i = 0; i < size(); i++)
+			{
+				polygons.get(i).destroy();
+				polygons.set(i,null);
+			}
+			polygons = null;
+		}
+		if(box != null)
+			box.destroy();
+		box = null;
+		beingDestroyed = false;
+	}
+	
+	/**
+	 * Destroy just me
+	 */
+	protected void finalize() throws Throwable
+	{
+		polygons = null;
+		box = null;
+		super.finalize();
+	}
 	
 	/**
 	 * Empty constructor
 	 */
 	public RrPolygonList()
 	{
-		polygons = new ArrayList();
+		polygons = new ArrayList<RrPolygon>();
 		box = new RrBox();
 	}
 	
@@ -320,7 +411,7 @@ public class RrPolygonList
 	 */
 	public RrPolygon polygon(int i)
 	{
-		return (RrPolygon)polygons.get(i);
+		return polygons.get(i);
 	}
 	
 	/**
@@ -361,7 +452,7 @@ public class RrPolygonList
 	 */
 	public RrPolygonList(RrPolygonList lst)
 	{
-		polygons = new ArrayList();
+		polygons = new ArrayList<RrPolygon>();
 		box = new RrBox(lst.box);
 		for(int i = 0; i < lst.size(); i++)
 			polygons.add(new RrPolygon(lst.polygon(i)));
@@ -397,7 +488,7 @@ public class RrPolygonList
 	 */
 	private void swap(int i, int j)
 	{
-		Object p = polygons.get(i);
+		RrPolygon p = polygons.get(i);
 		polygons.set(i, polygons.get(j));
 		polygons.set(j, p);
 	}
@@ -429,7 +520,7 @@ public class RrPolygonList
 	}
 	
 	/**
-	 * Negate one of the polygons (also swaps a couple of flags)
+	 * Negate one of the polygons
 	 * @param i
 	 */
 	private void negate(int i)
@@ -653,49 +744,49 @@ public class RrPolygonList
 		return a;
 	}
 	
-	/**
-	 * Set every instance of m in the lists null, and replace m's
-	 * own list with null
-	 * @param m
-	 * @param contains
-	 */
-	private void getRidOf(int m, List contains)
-	{
-		for(int i = 0; i < size(); i++)
-		{
-			if(i == m)
-				contains.set(i, null);
-			else
-			{
-				if(contains.get(i) != null)
-				{
-					List contain = (ArrayList)contains.get(i);
-					for(int j = 0; j < contain.size(); j++)
-					{
-						if(contain.get(j) != null)
-						{
-							if(((Integer)contain.get(j)).intValue() == m)
-								contain.set(j, null);
-						}
-					}
-				}
-			}
-		}		
-	}
+//	/**
+//	 * Set every instance of m in the lists null, and replace m's
+//	 * own list with null
+//	 * @param m
+//	 * @param contains
+//	 */
+//	private void getRidOf(int m, List<ArrayList> contains)
+//	{
+//		for(int i = 0; i < size(); i++)
+//		{
+//			if(i == m)
+//				contains.set(i, null);
+//			else
+//			{
+//				if(contains.get(i) != null)
+//				{
+//					List<Integer> contain = contains.get(i);
+//					for(int j = 0; j < contain.size(); j++)
+//					{
+//						if(contain.get(j) != null)
+//						{
+//							if((contain.get(j)).intValue() == m)
+//								contain.set(j, null);
+//						}
+//					}
+//				}
+//			}
+//		}		
+//	}
 	
-	/**
-	 * Count the non-null entries in a list.
-	 * @param a list with entries to be checked
-	 * @return number non-null entries in list a
-	 */
-	private int activeCount(List a)
-	{
-		int count = 0;
-		for(int i = 0; i < a.size(); i++)
-			if(a.get(i) != null)
-				count++;
-		return count;
-	}
+//	/**
+//	 * Count the non-null entries in a list.
+//	 * @param a list with entries to be checked
+//	 * @return number non-null entries in list a
+//	 */
+//	private int activeCount(List a)
+//	{
+//		int count = 0;
+//		for(int i = 0; i < a.size(); i++)
+//			if(a.get(i) != null)
+//				count++;
+//		return count;
+//	}
 	
 	/**
 	 * Take a list of CSG expressions, each one corresponding with the entry of the same 
@@ -784,7 +875,7 @@ public class RrPolygonList
 	 */
 	public RrCSGPolygon toCSG(double tolerance)
 	{		
-		List csgPols = new ArrayList();
+		List<RrCSG> csgPols = new ArrayList<RrCSG>();
 		
 		for(int i = 0; i < size(); i++)
 			csgPols.add(polygon(i).toCSG(tolerance).csg());

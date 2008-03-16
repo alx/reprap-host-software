@@ -258,13 +258,21 @@ public interface Printer {
 	public Extruder[] getExtruders();
 	
 	/**
-	 * Wipes the nozzle
+	 * Just finished a layer
+	 * @param layerNumber
 	 */
-    //public void wipeNozzle() throws ReprapException, IOException;
+	public void finishedLayer(int layerNumber) throws Exception;
 	
 	/**
 	 * Do whatever needs to be done between one layer and the next
+	 * @param layerNumber
 	 */
 	public void betweenLayers(int layerNumber) throws Exception;
+	
+	/**
+	 * Just about to start the next layer
+	 * @param layerNumber
+	 */
+	public void startingLayer(int layerNumber) throws Exception;
          
 }

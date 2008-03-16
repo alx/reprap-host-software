@@ -70,12 +70,12 @@ class snakeEnd
 	/**
 	 * 
 	 */
-	public RrPolygon p;
+	public RrPolygon p = null;
 	
 	/**
 	 * 
 	 */
-	public RrHalfPlane h;
+	public RrHalfPlane h = null;
 	
 	/**
 	 * 
@@ -83,11 +83,42 @@ class snakeEnd
 	public int index;
 	
 	/**
+	 * Flag to prevent cyclic graphs going round forever
+	 */
+	private boolean beingDestroyed = false;
+	
+	/**
+	 * Destroy me and all that I point to
+	 */
+	public void destroy() 
+	{
+		if(beingDestroyed) // Prevent infinite loop
+			return;
+		beingDestroyed = true;
+		if(p != null)
+			p.destroy();
+		p = null;
+		if(h != null)
+			h.destroy();
+		h = null;
+	}
+	
+	/**
+	 * Make just me go away
+	 */
+	protected void finalize() throws Throwable
+	{
+		p = null;
+		h = null;
+		super.finalize();
+	}
+	
+	/**
 	 * @param pl
 	 * @param hs
 	 * @param i
 	 */
-	snakeEnd(RrPolygon pl, RrHalfPlane hs, int i)
+	public snakeEnd(RrPolygon pl, RrHalfPlane hs, int i)
 	{
 		p = pl;
 		h = hs;
@@ -107,22 +138,22 @@ public class RrCSGPolygon
 	/**
 	 * The polygon 
 	 */
-	private RrCSG csg;
+	private RrCSG csg = null;
 	
 	/**
 	 * Its enclosing box
 	 */
-	private RrBox box;   
+	private RrBox box = null;   
 	
 	/**
 	 * Quad tree division, respectively: NW, NE, SE, SW 
 	 */
-	private RrCSGPolygon q1, q2, q3, q4;  
+	private RrCSGPolygon q1 = null, q2 = null, q3 = null, q4 = null;  
 	
 	/**
 	 * This box's parent
 	 */
-	private RrCSGPolygon parent;
+	private RrCSGPolygon parent = null;
 	
 	/**
 	 * Squared diagonal of the smallest box to go to 
@@ -152,19 +183,88 @@ public class RrCSGPolygon
 	/**
 	 * Edge parametric intervals
 	 */
-	private RrInterval i1, i2;     
+	private RrInterval i1 = null, i2 = null;     
 	
 	/**
 	 * The vertex, if it exists
 	 */
-	private Rr2Point vertex;
+	private Rr2Point vertex = null;
 	
 	/**
 	 * the attributes of this polygon
 	 */
-	private Attributes att;
+	private Attributes att = null;
 	
+	/**
+	 * Flag to prevent cyclic graphs going round forever
+	 */
+	private boolean beingDestroyed = false;
 	
+	/**
+	 * Destroy me and all that I point to
+	 */
+	public void destroy() 
+	{
+		if(beingDestroyed) // Prevent infinite loop
+			return;
+		beingDestroyed = true;
+		if(csg != null)
+			csg.destroy();
+		csg = null;
+		if(box != null)
+			box.destroy();
+		box = null;
+		if(q1 != null)
+			q1.destroy();
+		q1 = null;
+		if(q2 != null)
+			q2.destroy();
+		q2 = null;
+		if(q3 != null)
+			q3.destroy();
+		q3 = null;
+		if(q4 != null)
+			q4.destroy();		
+		q4 = null;
+		if(parent != null)
+			parent.destroy();
+		parent = null;
+		if(i1 != null)
+			i1.destroy();
+		i1 = null;
+		if(i2 != null)
+			i2.destroy();
+		i2 = null;
+		if(vertex != null)
+			vertex.destroy();
+		vertex = null;
+		
+		// Don't destroy the attribute - that may be needed again
+		
+		//if(att != null)
+		//	att.destroy();
+		att = null;
+		beingDestroyed = false;
+	}
+	
+	/**
+	 * Destroy just me
+	 */
+	protected void finalize() throws Throwable
+	{
+		csg = null;
+		box = null;
+		q1 = null;
+		q2 = null;
+		q3 = null;	
+		q4 = null;
+		parent = null;
+		i1 = null;
+		i2 = null;
+		vertex = null;
+		att = null;
+		super.finalize();
+	}
 	
 	/**
 	 * Set one up

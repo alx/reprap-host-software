@@ -86,32 +86,39 @@ public class LayerProducer {
 	/**
 	 * The shape of the object built so far under the current layer
 	 */
-	private BranchGroup lowerShell;
+	private BranchGroup lowerShell = null;
 
 	/**
 	 * 
 	 */
-	private Printer printer;
+	private Printer printer = null;
 	
 	/**
 	 * The polygons to infill
 	 */
-	private RrPolygonList hatchedPolygons;
+	private RrPolygonList hatchedPolygons = null;
 	
 	/**
 	 * The polygons to outline
 	 */
-	private RrPolygonList borderPolygons;
+	private RrPolygonList borderPolygons = null;
 	
 	/**
 	 * CSG representation of the polygons as input
 	 */
-	private RrCSGPolygon csg_p;
+	private RrCSGPolygonList csgP = null;
 	
 	/**
-	 * 
+	 * CSG representation of the polygons offset by the width of
+	 * the extruders
 	 */
-	//private double scale;
+	RrCSGPolygonList offBorder = null;
+	
+	/**
+	 * CSG representation of the polygons offset by the factor of the
+	 * width of the extruders needed to lay down internal cross-hatching
+	 */	
+	RrCSGPolygonList offHatch = null;
 	
 	/**
 	 * The height of the current layer
@@ -131,16 +138,6 @@ public class LayerProducer {
 	private int currentSpeed;
 	
 	/**
-	 * 
-	 */
-	//private Rr2Point p_0;
-	
-	/**
-	 * 
-	 */
-	//private Rr2Point pos;
-	
-	/**
 	 * Count of how many up we are (the bottom is layer 0)
 	 */
 	private int layerNumber;
@@ -148,7 +145,77 @@ public class LayerProducer {
 	/**
 	 * Record the end of each polygon as a clue where to start next
 	 */
-	private Rr2Point startNearHere;
+	private Rr2Point startNearHere = null;
+	
+	/**
+	 * Flag to prevent cyclic graphs going round forever
+	 */
+	private boolean beingDestroyed = false;
+	
+	/**
+	 * Destroy me and all that I point to
+	 */
+	public void destroy() 
+	{
+		if(beingDestroyed) // Prevent infinite loop
+			return;
+		beingDestroyed = true;
+		
+		// Keep the lower shell - the graphics system is using it
+		
+		//lowerShell = null;
+
+		// Keep the printer; that's needed for the next layer
+
+		//printer = null;
+		
+		if(hatchedPolygons != null)
+			hatchedPolygons.destroy();
+		hatchedPolygons = null;
+		
+		if(borderPolygons != null)
+			borderPolygons.destroy();
+		borderPolygons = null;
+		
+		if(csgP != null)
+			csgP.destroy();
+		csgP = null;
+		
+		if(offBorder != null)
+			offBorder.destroy();
+		offBorder = null;
+		
+		if(offHatch != null)
+			offHatch.destroy();
+		offHatch = null;
+		
+		if(startNearHere != null)
+			startNearHere.destroy();
+		startNearHere = null;
+		beingDestroyed = false;
+	}
+	
+	/**
+	 * Destroy just me
+	 */
+	protected void finalize() throws Throwable
+	{
+		// Keep the lower shell - the graphics system is using it
+		
+		//lowerShell = null;
+
+		// Keep the printer; that's needed for the next layer
+
+		//printer = null;
+		
+		hatchedPolygons = null;
+		borderPolygons = null;
+		csgP = null;
+		offBorder = null;
+		offHatch = null;
+		startNearHere = null;
+		super.finalize();
+	}
 	
 		
 	/**
@@ -159,18 +226,20 @@ public class LayerProducer {
 	 * @param hatchDirection
 	 */
 	public LayerProducer(Printer printer, double zValue, RrCSGPolygonList csgPols, 
-			BranchGroup ls, RrHalfPlane hatchDirection, int layerNo) {
+			BranchGroup ls, RrHalfPlane hatchDirection, int layerNo) throws Exception {
 		
 		layerNumber = layerNo;
 		startNearHere = null;
 		
 		this.printer = printer;
 		lowerShell = ls;
+		
+		csgP = csgPols;
 
 		z = zValue;
 		
-		RrCSGPolygonList offBorder = csgPols.offset(printer.getExtruders(), true);
-		RrCSGPolygonList offHatch = csgPols.offset(printer.getExtruders(), false);
+		offBorder = csgPols.offset(printer.getExtruders(), true);
+		offHatch = csgPols.offset(printer.getExtruders(), false);
 		
 		offBorder.divide(Preferences.tiny(), 1.01);
 		offHatch.divide(Preferences.tiny(), 1.01);
@@ -178,7 +247,6 @@ public class LayerProducer {
 		//RrGraphics g = new RrGraphics(offBorder, true);
 		
 		borderPolygons = offBorder.megList();
-		RrPolygon last = borderPolygons.polygon(borderPolygons.size()-1);
 		hatchedPolygons = new RrPolygonList();
 		hatchedPolygons.add(offHatch.hatch(hatchDirection, printer.getExtruders()));	
 	
@@ -186,8 +254,6 @@ public class LayerProducer {
 //		pllist.add(borderPolygons);
 //		pllist.add(hatchedPolygons);
 //		RrGraphics g = new RrGraphics(pllist, false);
-
-		csg_p = null;
 		
 		RrBox big = csgPols.box().scale(1.1);
 		

@@ -72,7 +72,7 @@ public class RrCSG
 	/**
 	 * Leaf half plane 
 	 */
-	private RrHalfPlane hp;
+	private RrHalfPlane hp = null;
 	
 	/**
 	 * Type of set
@@ -82,17 +82,58 @@ public class RrCSG
 	/**
 	 * Non-leaf child operands 
 	 */
-	private RrCSG c1, c2; 
+	private RrCSG c1 = null;
+	private RrCSG c2 = null; 
 	
 	/**
 	 * The complement (if there is one) 
 	 */
-	private RrCSG comp;        
+	private RrCSG comp = null;        
 	
 	/**
 	 * How much is in here (leaf count)?
 	 */
 	private int complexity;
+	
+	/**
+	 * Flag to prevent cyclic graphs going round forever
+	 */
+	private boolean beingDestroyed = false;
+	
+	/**
+	 * Destroy me and all that I point to
+	 */
+	public void destroy() 
+	{
+		if(beingDestroyed) // Prevent infinite loop
+			return;
+		beingDestroyed = true;
+		if(c1 != null)
+			c1.destroy();
+		c1 = null;
+		if(c2 != null)
+			c2.destroy();
+		c2 = null;
+		if(comp != null)
+			comp.destroy();
+		comp = null;
+		if(hp != null)
+			hp.destroy();
+		hp = null;
+		beingDestroyed = false;
+	}
+	
+	/**
+	 * Destroy just me
+	 */
+	protected void finalize() throws Throwable
+	{
+		c1 = null;
+		c2 = null;
+		comp = null;
+		hp = null;
+		super.finalize();
+	}
 	
 	/**
 	 * Make a leaf from a single half-plane
@@ -348,6 +389,7 @@ public class RrCSG
 		// (I do hope that the Java garbage collector is up to 
 		// spotting this deadly embrace, or we - I mean it - has
 		// a memory leak.)
+		// It turned out it was dumb.  Hence addition of finalize() above...
 		
 		comp = result;
 		result.comp = this;

@@ -17,7 +17,41 @@ public class RrCSGPolygonList {
 	/**
 	 * The list of polygons
 	 */
-	List<RrCSGPolygon> csgPolygons;
+	List<RrCSGPolygon> csgPolygons = null;
+	
+	/**
+	 * Flag to prevent cyclic graphs going round forever
+	 */
+	private boolean beingDestroyed = false;
+	
+	/**
+	 * Destroy me and all that I point to
+	 */
+	public void destroy() 
+	{
+		if(beingDestroyed) // Prevent infinite loop
+			return;
+		beingDestroyed = true;
+		if(csgPolygons != null)
+		{
+			for(int i = 0; i < csgPolygons.size(); i++)
+			{
+				csgPolygons.get(i).destroy();
+				csgPolygons.set(i, null);
+			}
+		}
+		csgPolygons = null;
+		beingDestroyed = false;
+	}
+	
+	/**
+	 * Destroy just me
+	 */
+	protected void finalize() throws Throwable
+	{
+		csgPolygons = null;
+		super.finalize();
+	}
 	
 	/**
 	 * 

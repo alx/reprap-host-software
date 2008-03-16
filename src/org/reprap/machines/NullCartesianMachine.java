@@ -467,9 +467,32 @@ public class NullCartesianMachine implements CartesianPrinter {
 //	 */
 //	public void wipeNozzle() throws ReprapException, IOException {
 //	}
-
-	public void betweenLayers(int layerNumber)
+	
+	/**
+	 * Just finished a layer
+	 * @param layerNumber
+	 */
+	public void finishedLayer(int layerNumber) throws Exception
 	{
-		
+
 	}
+	
+	/**
+	 * Deals with all the actions that need to be done between one layer
+	 * and the next.
+	 */
+	public void betweenLayers(int layerNumber) throws Exception
+	{
+
+	}
+	
+	/**
+	 * Just about to start the next layer
+	 * @param layerNumber
+	 */
+	public void startingLayer(int layerNumber) throws Exception
+	{
+
+	}
+
 }

@@ -89,27 +89,27 @@ public class Producer {
 		reprap.getExtruder().heatOn();
 		
 		// A "warmup" segment to get things in working order
-		if (!subtractive) {
-			
-			Debug.d("Printing warmup segments, moving to (5,5)");
+		if (!subtractive) 
+		{
 			reprap.setSpeed(reprap.getExtruder().getXYSpeed());
-			reprap.moveTo(5, 5, 0, false, false);
+			reprap.moveTo(1, 1, 0, false, false);
 			
 			// Workaround to get the thing to start heating up
-			reprap.printTo(5, 5, 0, true);
-			// Take it slow and easy.
+			reprap.printTo(1, 1, 0, true);
 			
 			if(reprap.getExtruder().getNozzleClearTime() <= 0)
 			{
-				Debug.d("Printing warmup segments, printing to (5,50)");
-				reprap.moveTo(5, 25, 0, false, false);
+				Debug.d("Printing warmup segments, moving to (1,1)");
+				// Take it slow and easy.
+				Debug.d("Printing warmup segments, printing to (1,60)");
+				reprap.moveTo(1, 25, 0, false, false);
 				reprap.setSpeed(LinePrinter.speedFix(reprap.getExtruder().getXYSpeed(), 
 						reprap.getExtruder().getOutlineSpeed()));
-				reprap.printTo(5, 60, 0, false);
-				Debug.d("Printing warmup segments, printing to (7,50)");
-				reprap.printTo(7, 60, 0, false);
-				Debug.d("Printing warmup segments, printing to (7,5)");
-				reprap.printTo(7, 25, 0, true);
+				reprap.printTo(1, 60, 0, false);
+				Debug.d("Printing warmup segments, printing to (3,60)");
+				reprap.printTo(3, 60, 0, false);
+				Debug.d("Printing warmup segments, printing to (3,25)");
+				reprap.printTo(3, 25, 0, true);
 				Debug.d("Warmup complete");
 			}
 			reprap.setSpeed(reprap.getFastSpeed());
@@ -122,32 +122,24 @@ public class Producer {
 		boolean isEvenLayer = true;
 		STLSlice stlc;
 		double zMax;
-//		if(testPiece)
-//		{
-//			stlc = null;
-//			zMax = 5;
-//		} else
-//		{
-			bld.mouseToWorld();
-			stlc = new STLSlice(bld.getSTLs());
-			zMax = stlc.maxZ();
-			// zMax = 1.6;  // For testing.
-//		}
-		
+
+		bld.mouseToWorld();
+		stlc = new STLSlice(bld.getSTLs());
+		zMax = stlc.maxZ();
+
 		double startZ;
 		double endZ;
 		double stepZ;
-		if (subtractive) {
+		if (subtractive) 
+		{
 			// Subtractive construction works from the top, downwards
 			startZ = zMax;
 			endZ = 0;
 			stepZ = -reprap.getExtruder().getExtrusionHeight();
 			reprap.setZManual(startZ);
-		} else {
+		} else 
+		{
 			// Normal constructive fabrication, start at the bottom and work up.
-			
-			// Note that we start extruding one layer off the baseboard...
-			// startZ = reprap.getExtruder().getExtrusionHeight();
 			
 			startZ = 0;
 			endZ = zMax;
@@ -167,70 +159,37 @@ public class Producer {
 
 			// Change Z height
 			reprap.moveTo(reprap.getX(), reprap.getY(), z, false, false);
-
-			// Layer cooling phase - after we've just raised the head.
-			//Only if we're not a null device.
-//			if ((z != startZ && reprap.getExtruder().getCoolingPeriod() > 0)&&!(reprap instanceof NullCartesianMachine)) {
-//				Debug.d("Starting a cooling period");
-//				// Save where we are. We'll come back after we've cooled off.
-//				double storedX=reprap.getX();
-//				double storedY=reprap.getY();
-//				reprap.getExtruder().setCooler(true);	// On with the fan.
-//				//reprap.homeToZeroX();		// Seek (0,0)
-//				//reprap.homeToZeroY();
-//				reprap.setSpeed(reprap.getFastSpeed());
-//				reprap.moveTo(0, 0, z, true, true);
-//				Thread.sleep(1000 * reprap.getExtruder().getCoolingPeriod());
-//				reprap.getExtruder().setCooler(false);
-//				Debug.d("Brief delay for head to warm up.");
-//				Thread.sleep(200 * reprap.getExtruder().getCoolingPeriod());
-//				Debug.d("End of cooling period");
-//				// TODO: BUG! Strangely, this only restores Y axis!
-//				//System.out.println("stored X and Y: " + storedX + "   " + storedY);
-//				
-//				// The next layer will go where it wants to.
-//				
-//				//reprap.moveTo(storedX, storedY, z, true, true);
-//				//reprap.setSpeed(reprap.getExtruder().getXYSpeed());
-//				//reprap.moveTo(storedX, reprap.getY(), z, true, true);
-//			}
 			
 			if (reprap.isCancelled())
 				break;
 
 			Preferences prefs;
 			
-			//Debug.d("Attempting to wiping nozzle");
-			//reprap.wipeNozzle(); // Wipes current active extruder, if wipe function enabled
-			
-			// Do all the actions (cooling, nozzle wipe) that need to be
-			// done between one layer and the next.
-			
+			reprap.finishedLayer(layerNumber);
 			reprap.betweenLayers(layerNumber);
 			
-			LayerProducer layer;
-//			if(testPiece)
-//			{
-//				layer = new LayerProducer(reprap, z, hex(), null,
-//						isEvenLayer?evenHatchDirection:oddHatchDirection);
-//			} else
-//			{
-				RrCSGPolygonList slice = stlc.slice(z+reprap.getExtruder().getExtrusionHeight()*0.5); 
-						// ,LayerProducer.solidMaterial(), LayerProducer.gapMaterial());
-				BranchGroup lowerShell = stlc.getBelow();
-				if(slice.size() > 0)
-					layer = new LayerProducer(reprap, z, slice, lowerShell,
+			RrCSGPolygonList slice = stlc.slice(z+reprap.getExtruder().getExtrusionHeight()*0.5); 
+			BranchGroup lowerShell = stlc.getBelow();
+			
+			LayerProducer layer = null;
+			if(slice.size() > 0)
+				layer = new LayerProducer(reprap, z, slice, lowerShell,
 						isEvenLayer?evenHatchDirection:oddHatchDirection, layerNumber);
-				else
-					layer = null;
-
-//			}
+			
+			reprap.startingLayer(layerNumber);
 			
 			if(layer != null)
+			{
 				layer.plot();
-		
-			isEvenLayer = !isEvenLayer;
+				layer.destroy();
+			}
+			layer = null;
 			
+			slice.destroy();
+			stlc.destroyLayer();
+
+			isEvenLayer = !isEvenLayer;
+
 			layerNumber++;
 		}
 

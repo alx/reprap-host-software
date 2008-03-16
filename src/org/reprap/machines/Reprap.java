@@ -627,7 +627,7 @@ public class Reprap implements CartesianPrinter {
 	 */
 	private void moveToHeatingZone() throws ReprapException, IOException {
 		setSpeed(fastSpeedXY);
-		moveTo(5, 5, currentZ, true, false);
+		moveTo(1, 1, currentZ, true, false);
 	}
 
 	/* (non-Javadoc)
@@ -872,68 +872,119 @@ public class Reprap implements CartesianPrinter {
 //		}
 //	}
 	
+
+	
 	/**
-	 * Deals with all the actions that need to be done between one layer
-	 * and the next.
+	 * Just finished a layer
+	 * @param layerNumber
 	 */
-	public void betweenLayers(int layerNumber) throws Exception
+	public void finishedLayer(int layerNumber) throws Exception
 	{
-		double storedX = getX();
-		double storedY = getY();
 		double datumX = getExtruder().getNozzleWipeDatumX();
 		double datumY = getExtruder().getNozzleWipeDatumY();
 		double strokeX = getExtruder().getNozzleWipeStrokeX();
 		double strokeY = getExtruder().getNozzleWipeStrokeY();
 		double coolTime = getExtruder().getCoolingPeriod();
 		
-		// Run the cooling fan if we need to
+		if(coolTime > 0 && (layerNumber != 0))
+			getExtruder().setCooler(true);
+		
+		setSpeed(getFastSpeed());
+			
+		// Go home, X first
+			
+		homeToZeroX();
+		homeToZeroY();
+		
+		// If wiping, nudge the clearer blade
+		
+		if (getExtruder().getNozzleWipeEnabled())
+		{
+			moveTo(datumX, datumY, currentZ, false, false);
+			
+			setSpeed(getExtruder().getXYSpeed());
+			
+			moveTo(datumX + strokeX, datumY, currentZ, false, false);
+			moveTo(datumX, datumY, currentZ, false, false);
+		}
+	}
+	
+	/**
+	 * Deals with all the actions that need to be done between one layer
+	 * and the next.
+	 */
+	public void betweenLayers(int layerNumber) throws Exception
+	{
+		double datumX = getExtruder().getNozzleWipeDatumX();
+		double datumY = getExtruder().getNozzleWipeDatumY();
+		double strokeX = getExtruder().getNozzleWipeStrokeX();
+		double strokeY = getExtruder().getNozzleWipeStrokeY();
+		double coolTime = getExtruder().getCoolingPeriod();
+		double clearTime = getExtruder().getNozzleClearTime();
+		double waitTime = getExtruder().getNozzleWaitTime();
+				
+		// Do half the extrusion between layers now
+		
+		if (getExtruder().getNozzleWipeEnabled())
+		{
+			if(clearTime > 0)
+			{
+				getExtruder().setExtrusion(extruders[extruder].getExtruderSpeed());
+				Thread.sleep((long)(500*clearTime));
+				getExtruder().setExtrusion(0); 
+			}
+		}
+		
+		// Now is a good time to garbage collect
+		
+		System.gc();
+		
+		// Cooling period
 		
 		if(coolTime > 0 && (layerNumber != 0))
-		{
+		{	
 			Debug.d("Start of cooling period");
-			
-			// On with the fan.
-			
-			getExtruder().setCooler(true);
-			setSpeed(getFastSpeed());
-			
-			// Go home, X first
-			
-			homeToZeroX();
-			homeToZeroY();
-			
 			// Wait for cooling time
 			
 			Thread.sleep((long)(1000*coolTime));
 			getExtruder().setCooler(false);
 			Thread.sleep((long)(200 * coolTime));			
 			Debug.d("End of cooling period");
-		} else
-		{
-			// Go home, X first
-			
-			homeToZeroX();
-			homeToZeroY();			
 		}
+	}
+	
+	/**
+	 * Just about to start the next layer
+	 * @param layerNumber
+	 */
+	public void startingLayer(int layerNumber) throws Exception
+	{
+		double datumX = getExtruder().getNozzleWipeDatumX();
+		double datumY = getExtruder().getNozzleWipeDatumY();
+		double strokeX = getExtruder().getNozzleWipeStrokeX();
+		double strokeY = getExtruder().getNozzleWipeStrokeY();
+		double coolTime = getExtruder().getCoolingPeriod();
+		double clearTime = getExtruder().getNozzleClearTime();
+		double waitTime = getExtruder().getNozzleWaitTime();
 		
+		// Do the other half of the clearing extrude then
 		// Wipe the nozzle on the doctor blade
-		
+
 		if (getExtruder().getNozzleWipeEnabled())
 		{
-			moveTo(datumX, datumY, currentZ, false, false);
-			double clearTime = getExtruder().getNozzleClearTime();
-			double waitTime = getExtruder().getNozzleWaitTime();
 			if(clearTime > 0)
 			{
 				getExtruder().setExtrusion(extruders[extruder].getExtruderSpeed());
-				Thread.sleep((long)(1000*clearTime));
+				Thread.sleep((long)(500*clearTime));
 				getExtruder().setExtrusion(0); 
 				Thread.sleep((long)(1000*waitTime));
 			}
 			moveTo(datumX, datumY + strokeY, currentZ, false, false);
 		}
-			
+		
+		setSpeed(getFastSpeed());
 	}
+
 
 }
 
