@@ -756,7 +756,8 @@ public class Reprap implements CartesianPrinter {
 	 */
 	public void setLowerShell(BranchGroup ls)
 	{
-		previewer.setLowerShell(ls);
+		if(previewer != null)
+			previewer.setLowerShell(ls);
 	}
 
 	/* (non-Javadoc)

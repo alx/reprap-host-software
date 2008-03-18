@@ -443,6 +443,11 @@ public class STLSlice
 	RrGraphics qp = null;
 	
 	/**
+	 * Do we need the lower shell for the simulation window?
+	 */
+	private boolean generateLowerTriangles = true;
+	
+	/**
 	 * Flag to prevent cyclic graphs going round forever
 	 */
 	private boolean beingDestroyed = false;
@@ -562,6 +567,11 @@ public class STLSlice
 		setUp();
 		shapeList = s;
 		mls = new MaterialLists();
+		try
+		{
+			generateLowerTriangles = Preferences.loadGlobalBool("DisplaySimulation");
+		} catch (Exception e)
+		{}
 		
 		// For each object, record its material and transform
 		
@@ -664,7 +674,10 @@ public class STLSlice
 	 */
 	public BranchGroup getBelow()
 	{
-		return below;
+		if(generateLowerTriangles)
+			return below;
+		else
+			return null;
 	}
 	
 	/**
@@ -709,9 +722,12 @@ public class STLSlice
 			
 		// All below
 		case 7:
-			triangles.add(new Point3d(p));
-			triangles.add(new Point3d(q));
-			triangles.add(new Point3d(r));
+			if(generateLowerTriangles)
+			{
+				triangles.add(new Point3d(p));
+				triangles.add(new Point3d(q));
+				triangles.add(new Point3d(r));
+			}
 			return;
 			
 		// q, r below, p above	
@@ -775,13 +791,16 @@ public class STLSlice
 		{
 			even1.add((Tuple3d)odd);
 			even2.add((Tuple3d)odd);
-			triangles.add(new Point3d(even1));
-			triangles.add(new Point3d(even2));
-			triangles.add(new Point3d(e3_1));
-			triangles.add(new Point3d(e3_2));
-			triangles.add(new Point3d(e3_1));
-			triangles.add(new Point3d(even2));
-		} else
+			if(generateLowerTriangles)
+			{
+				triangles.add(new Point3d(even1));
+				triangles.add(new Point3d(even2));
+				triangles.add(new Point3d(e3_1));
+				triangles.add(new Point3d(e3_2));
+				triangles.add(new Point3d(e3_1));
+				triangles.add(new Point3d(even2));
+			}
+		} else if(generateLowerTriangles)
 		{
 			triangles.add(new Point3d(odd));
 			triangles.add(new Point3d(e3_1));
@@ -1291,7 +1310,10 @@ public class STLSlice
 	{
 		RrCSGPolygonList rl = new RrCSGPolygonList();
 
-		below = new BranchGroup();
+		if(generateLowerTriangles)
+			below = new BranchGroup();
+		else
+			below = null;
 		
 		for(int mat = 0; mat < mls.getExtruderCount(); mat++)
 		{
@@ -1310,22 +1332,25 @@ public class STLSlice
 					recursiveSetEdges(attr.getPart(), trans, z, attr);
 				}
 
-				if(triangles.size() > 0)
+				if(generateLowerTriangles)
 				{
-					GeometryInfo gi = new GeometryInfo(GeometryInfo.TRIANGLE_ARRAY);
-					Point3d t_array[] = new Point3d[triangles.size()];
+					if(triangles.size() > 0)
+					{
+						GeometryInfo gi = new GeometryInfo(GeometryInfo.TRIANGLE_ARRAY);
+						Point3d t_array[] = new Point3d[triangles.size()];
 
-					for(int i = 0; i < triangles.size(); i++)
-						t_array[i] = triangles.get(i);
+						for(int i = 0; i < triangles.size(); i++)
+							t_array[i] = triangles.get(i);
 
-					gi.setCoordinates(t_array);
+						gi.setCoordinates(t_array);
 
-					NormalGenerator normalGenerator = new NormalGenerator();
-					normalGenerator.generateNormals(gi);
+						NormalGenerator normalGenerator = new NormalGenerator();
+						normalGenerator.generateNormals(gi);
 
-					below.addChild(new Shape3D(gi.getGeometryArray(), ap));
+						below.addChild(new Shape3D(gi.getGeometryArray(), ap));
 
-					triangles = new ArrayList<Point3d>();
+						triangles = new ArrayList<Point3d>();
+					}
 				}
 
 

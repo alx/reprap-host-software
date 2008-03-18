@@ -97,7 +97,7 @@ public class Main {
     private JFileChooser chooser;
     private JFrame mainFrame;
     private RepRapBuild builder;
-    private PreviewPanel preview;
+    private PreviewPanel preview = null;
     private JCheckBoxMenuItem viewBuilder;
     private JCheckBoxMenuItem viewPreview;
     private JCheckBoxMenuItem segmentPause;
@@ -267,7 +267,8 @@ public class Main {
         cancelMenuItem.setEnabled(false);
         cancelMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				preview.setCancelled(true);
+				if(preview != null)
+					preview.setCancelled(true);
 			}});
         produceMenu.add(cancelMenuItem);
         
@@ -401,7 +402,10 @@ public class Main {
         panel.setOneTouchExpandable(true);
         panel.setContinuousLayout(true);
         panel.setLeftComponent(builderFrame);
-        panel.setRightComponent(createPreviewPanel());
+        if(org.reprap.Preferences.loadGlobalBool("DisplaySimulation"))
+        	panel.setRightComponent(createPreviewPanel());
+        else
+        	preview = null;
         panel.setDividerLocation(panel.getPreferredSize().width);
         
         mainFrame.getContentPane().add(panel);
@@ -414,39 +418,13 @@ public class Main {
 	}
 
 	private Box createPreviewPanel() throws Exception {
-		/*JSplitPane splitter = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-		splitter.setMinimumSize(new Dimension(0, 0));
-		splitter.setResizeWeight(1.0);
-		splitter.setOneTouchExpandable(true);
-		splitter.setContinuousLayout(true);
-		splitter.setDividerLocation(1.0);*/
 		
         Box pane = new Box(BoxLayout.Y_AXIS);
         pane.add(new JLabel("Build progress"));
 		preview = new PreviewPanel();
 		pane.setMinimumSize(new Dimension(0,0));
-		pane.add(preview);
-		
-		/*JPanel controls = new JPanel(new FlowLayout());
-		controls.setMinimumSize(new Dimension(0, 0));
-
-		JCheckBox pauseSegment = new JCheckBox("Segment pause");
-		pauseSegment.setMinimumSize(new Dimension(0, 0));
-		controls.add(pauseSegment);
-
-		JCheckBox pauseLayer = new JCheckBox("Layer pause");
-		pauseLayer.setMinimumSize(new Dimension(0, 0));
-		controls.add(pauseLayer);
-
-		JButton continueButton = new JButton("Next");
-		continueButton.setMinimumSize(new Dimension(0, 0));
-		continueButton.setEnabled(false);
-		controls.add(continueButton);
-
-		pane.add(controls);*/
-		
-		//splitter.setTopComponent(pane);
-		//splitter.setBottomComponent(controls);
+		if(preview != null)
+			pane.add(preview);
 		
 		return pane;
 	}
@@ -465,8 +443,11 @@ public class Main {
 						updateView();
 					}
 
-					preview.setSegmentPause(segmentPause);
-					preview.setLayerPause(layerPause);
+					if(preview != null)
+					{
+						preview.setSegmentPause(segmentPause);
+						preview.setLayerPause(layerPause);
+					}
 					
 					Producer producer = new Producer(preview, builder);
 					producer.produce();
@@ -499,9 +480,12 @@ public class Main {
 						viewPreview.setSelected(true);
 						updateView();
 					}
-
-					preview.setSegmentPause(segmentPause);
-					preview.setLayerPause(layerPause);
+					
+					if(preview != null)
+					{
+						preview.setSegmentPause(segmentPause);
+						preview.setLayerPause(layerPause);
+					}
 					
 					Producer producer = new Producer(preview, builder);
 					producer.produce();

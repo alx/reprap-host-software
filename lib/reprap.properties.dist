@@ -9,6 +9,7 @@ BaudRate=19200
 BoundFactor=3.0
 CommsDebug=false
 Debug=false
+DisplaySimulation=true
 Extruder0_NozzleClearTime(s)=-1
 Extruder1_NozzleClearTime(s)=-1
 Extruder0_Address=8

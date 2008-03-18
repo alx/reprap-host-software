@@ -43,7 +43,8 @@ public class Producer {
 		
 		reprap = MachineFactory.create();
 		reprap.setPreviewer(preview);
-		preview.setMachine(reprap);
+		if(preview != null)
+			preview.setMachine(reprap);
 		bld = builder;
 
 		//		Original hatch vectors
@@ -162,8 +163,9 @@ public class Producer {
 			
 			if (reprap.isCancelled())
 				break;
-
-			Preferences prefs;
+			
+			// Pretend we've just finished a layer first time;
+			// All other times we really will have.
 			
 			reprap.finishedLayer(layerNumber);
 			reprap.betweenLayers(layerNumber);
