@@ -980,6 +980,8 @@ public class Reprap implements CartesianPrinter {
 				getExtruder().setExtrusion(0); 
 				Thread.sleep((long)(1000*waitTime));
 			}
+			setSpeed(LinePrinter.speedFix(getExtruder().getXYSpeed(), 
+					getExtruder().getOutlineSpeed()));
 			moveTo(datumX, datumY + strokeY, currentZ, false, false);
 		}
 		
