@@ -887,25 +887,26 @@ public class Reprap implements CartesianPrinter {
 		double strokeY = getExtruder().getNozzleWipeStrokeY();
 		double coolTime = getExtruder().getCoolingPeriod();
 		
-		if(coolTime > 0 && (layerNumber != 0))
+		if(coolTime > 0 && (layerNumber != 0)) {
 			getExtruder().setCooler(true);
-		
-		setSpeed(getFastSpeed());
+			setSpeed(getFastSpeed());
 			
-		// Go home, X first
-			
-		homeToZeroX();
-		homeToZeroY();
+			// Go home. Seek (0,0) then callibrate X first
+			moveTo(0, 0, currentZ, false, false);
+			homeToZeroX();
+			homeToZeroY();
+		}
 		
 		// If wiping, nudge the clearer blade
-		
 		if (getExtruder().getNozzleWipeEnabled())
 		{
+
+			// Now hunt down the wiper.
 			moveTo(datumX, datumY, currentZ, false, false);
 			
 			setSpeed(getExtruder().getXYSpeed());
 			
-			moveTo(datumX + strokeX, datumY, currentZ, false, false);
+			moveTo(datumX + strokeX, datumY+strokeY, currentZ, false, false);
 			moveTo(datumX, datumY, currentZ, false, false);
 		}
 	}
@@ -916,13 +917,8 @@ public class Reprap implements CartesianPrinter {
 	 */
 	public void betweenLayers(int layerNumber) throws Exception
 	{
-		double datumX = getExtruder().getNozzleWipeDatumX();
-		double datumY = getExtruder().getNozzleWipeDatumY();
-		double strokeX = getExtruder().getNozzleWipeStrokeX();
-		double strokeY = getExtruder().getNozzleWipeStrokeY();
 		double coolTime = getExtruder().getCoolingPeriod();
 		double clearTime = getExtruder().getNozzleClearTime();
-		double waitTime = getExtruder().getNozzleWaitTime();
 				
 		// Do half the extrusion between layers now
 		
@@ -962,9 +958,7 @@ public class Reprap implements CartesianPrinter {
 	{
 		double datumX = getExtruder().getNozzleWipeDatumX();
 		double datumY = getExtruder().getNozzleWipeDatumY();
-		double strokeX = getExtruder().getNozzleWipeStrokeX();
 		double strokeY = getExtruder().getNozzleWipeStrokeY();
-		double coolTime = getExtruder().getCoolingPeriod();
 		double clearTime = getExtruder().getNozzleClearTime();
 		double waitTime = getExtruder().getNozzleWaitTime();
 		
