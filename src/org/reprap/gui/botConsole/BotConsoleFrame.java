@@ -6,16 +6,84 @@
 
 package org.reprap.gui.botConsole;
 
+import org.reprap.Preferences;
+import org.reprap.comms.Communicator;
+import org.reprap.comms.snap.SNAPAddress;
+import org.reprap.comms.snap.SNAPCommunicator;
+import org.reprap.devices.GenericExtruder;
+import org.reprap.gui.Utility;
+import javax.swing.JOptionPane;
 /**
  *
- * @author  en0es
+ * @author  Ed Sells
  */
 public class BotConsoleFrame extends javax.swing.JFrame {
     
     /** Creates new form BotConsoleFrame */
     public BotConsoleFrame() {
+        try {
+            initComms();
+        }
+        catch (Exception e) {
+            System.out.println("Failure trying to initialise comms in botConsole: " + e);
+            JOptionPane.showMessageDialog(null, e.getMessage());
+            return;
+        }
         initComponents();
     }
+    
+    // Comms variables
+    private final int localNodeNumber = 0;
+    private Communicator communicator;
+    private GenericExtruder extruder = null;
+    
+    
+    private void initComms() throws Exception {
+        SNAPAddress myAddress = new SNAPAddress(localNodeNumber);
+		
+        String port = Preferences.loadGlobalString("Port(name)");
+        String err = "";
+
+        try {
+                communicator = new SNAPCommunicator(port, myAddress);
+        }
+        catch (gnu.io.NoSuchPortException e)
+        {
+                err = "There was an error opening " + port + ".\n\n";
+                err += "Check to make sure that is the right path.\n";
+                err += "Check that you have your serial connector plugged in.";
+
+                throw new Exception(err);
+        }
+        catch (gnu.io.PortInUseException e)
+        {
+                err = "The " + port + " port is already in use by another program.";
+
+                throw new Exception(err);
+        }
+
+        if (err.length() == 0)
+        {
+                extruder = new GenericExtruder(communicator,
+                                new SNAPAddress(Preferences.loadGlobalString("Extruder0_Address")),
+                                Preferences.getGlobalPreferences(), 0);
+        }
+    }
+    
+//    	public void dispose() {
+//
+//		super.dispose();
+//		if (extruder != null)
+//			extruder.dispose();
+//		if (motorX != null)
+//			motorX.dispose();
+//		if (motorY != null)
+//			motorY.dispose();
+//		if (motorZ != null)
+//			motorZ.dispose();
+//		if (communicator != null)
+//			communicator.dispose();
+//	}
     
     /** This method is called from within the constructor to
      * initialize the form.
