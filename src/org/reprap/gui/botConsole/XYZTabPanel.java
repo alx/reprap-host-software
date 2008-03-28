@@ -6,17 +6,35 @@
 
 package org.reprap.gui.botConsole;
 
+import java.io.IOException;
+import javax.swing.JOptionPane;
+import org.reprap.Preferences;
+
 /**
  *
  * @author  en0es
  */
 public class XYZTabPanel extends javax.swing.JPanel {
     
+    private int XYfastSpeed;
+    private int ZfastSpeed;
+    
     /** Creates new form XYZTabPanel */
     public XYZTabPanel() {
-        initComponents();
-    }
+   
+        initComponents(); 
+
+        try {
+            setPrefs(); 
+        }
+        catch (Exception e) {
+            System.out.println("Failure trying to initialise preferences: " + e);
+            JOptionPane.showMessageDialog(null, e.getMessage());
+            return;
+        }
     
+    }
+
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -30,13 +48,13 @@ public class XYZTabPanel extends javax.swing.JPanel {
         jSlider2 = new javax.swing.JSlider();
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
-        jRadioButton1 = new javax.swing.JRadioButton();
-        jRadioButton2 = new javax.swing.JRadioButton();
-        jRadioButton3 = new javax.swing.JRadioButton();
+        stepSizeRB1 = new javax.swing.JRadioButton();
+        stepSizeRB2 = new javax.swing.JRadioButton();
+        stepSizeRB3 = new javax.swing.JRadioButton();
         jPanel3 = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
-        jCheckBox1 = new javax.swing.JCheckBox();
-        jTextField1 = new javax.swing.JTextField();
+        goButton = new javax.swing.JButton();
+        plotCheck = new javax.swing.JCheckBox();
+        extruderToPlot = new javax.swing.JTextField();
         genericStepperPositionPanel1 = new org.reprap.gui.botConsole.GenericStepperPositionPanel();
         genericStepperPositionPanel2 = new org.reprap.gui.botConsole.GenericStepperPositionPanel();
         genericStepperPositionPanel3 = new org.reprap.gui.botConsole.GenericStepperPositionPanel();
@@ -44,9 +62,9 @@ public class XYZTabPanel extends javax.swing.JPanel {
         jLabel1 = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
-        jTextField2 = new javax.swing.JTextField();
+        xySpeedField = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
-        jTextField3 = new javax.swing.JTextField();
+        zSpeedField = new javax.swing.JTextField();
 
         setPreferredSize(new java.awt.Dimension(750, 310));
 
@@ -74,11 +92,30 @@ public class XYZTabPanel extends javax.swing.JPanel {
 
         jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Step size (mm)"));
 
-        jRadioButton1.setText("0.1");
+        buttonGroup1.add(stepSizeRB1);
+        stepSizeRB1.setSelected(true);
+        stepSizeRB1.setText("0.1");
+        stepSizeRB1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                stepSizeRB1ActionPerformed(evt);
+            }
+        });
 
-        jRadioButton2.setText("1.0");
+        buttonGroup1.add(stepSizeRB2);
+        stepSizeRB2.setText("1.0");
+        stepSizeRB2.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                stepSizeRB2ActionPerformed(evt);
+            }
+        });
 
-        jRadioButton3.setText("10.0");
+        buttonGroup1.add(stepSizeRB3);
+        stepSizeRB3.setText("10.0");
+        stepSizeRB3.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                stepSizeRB3ActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
@@ -86,31 +123,36 @@ public class XYZTabPanel extends javax.swing.JPanel {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(jRadioButton1)
+                .addComponent(stepSizeRB1)
                 .addGap(18, 18, 18)
-                .addComponent(jRadioButton2)
+                .addComponent(stepSizeRB2)
                 .addGap(18, 18, 18)
-                .addComponent(jRadioButton3)
+                .addComponent(stepSizeRB3)
                 .addContainerGap(168, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
-                .addContainerGap(14, Short.MAX_VALUE)
+                .addContainerGap(16, Short.MAX_VALUE)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jRadioButton1)
-                    .addComponent(jRadioButton2)
-                    .addComponent(jRadioButton3)))
+                    .addComponent(stepSizeRB1)
+                    .addComponent(stepSizeRB2)
+                    .addComponent(stepSizeRB3)))
         );
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Axes position"));
 
-        jButton1.setText("GO");
+        goButton.setText("GO");
+        goButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                goButtonActionPerformed(evt);
+            }
+        });
 
-        jCheckBox1.setText("Plot using Extruder #");
+        plotCheck.setText("Plot using Extruder #");
 
-        jTextField1.setColumns(1);
-        jTextField1.setText("0");
+        extruderToPlot.setColumns(1);
+        extruderToPlot.setText("0");
 
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
@@ -123,12 +165,12 @@ public class XYZTabPanel extends javax.swing.JPanel {
                     .addComponent(genericStepperPositionPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(genericStepperPositionPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel3Layout.createSequentialGroup()
-                        .addComponent(jCheckBox1)
+                        .addComponent(plotCheck)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addComponent(extruderToPlot, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(27, Short.MAX_VALUE))
+                        .addComponent(goButton, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(79, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -140,9 +182,9 @@ public class XYZTabPanel extends javax.swing.JPanel {
                 .addComponent(genericStepperPositionPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 15, Short.MAX_VALUE)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jCheckBox1)
-                    .addComponent(jTextField1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(jButton1))
+                    .addComponent(plotCheck)
+                    .addComponent(extruderToPlot, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(goButton))
                 .addContainerGap())
         );
 
@@ -153,21 +195,21 @@ public class XYZTabPanel extends javax.swing.JPanel {
         jLabel1.setFont(jLabel1.getFont().deriveFont((float)12));
         jLabel1.setText("Z");
 
-        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Axis speeds (mm/s)"));
+        jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Axis speeds (mm/min)"));
 
         jLabel2.setFont(new java.awt.Font("Tahoma", 0, 12));
         jLabel2.setText("X & Y");
 
-        jTextField2.setColumns(4);
-        jTextField2.setFont(new java.awt.Font("Tahoma", 0, 12));
-        jTextField2.setText("0000");
+        xySpeedField.setColumns(4);
+        xySpeedField.setFont(new java.awt.Font("Tahoma", 0, 12));
+        xySpeedField.setText("0000");
 
         jLabel3.setFont(new java.awt.Font("Tahoma", 0, 12));
         jLabel3.setText("Z");
 
-        jTextField3.setColumns(4);
-        jTextField3.setFont(new java.awt.Font("Tahoma", 0, 12));
-        jTextField3.setText("0000");
+        zSpeedField.setColumns(4);
+        zSpeedField.setFont(new java.awt.Font("Tahoma", 0, 12));
+        zSpeedField.setText("0000");
 
         javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
         jPanel4.setLayout(jPanel4Layout);
@@ -176,20 +218,20 @@ public class XYZTabPanel extends javax.swing.JPanel {
             .addGroup(jPanel4Layout.createSequentialGroup()
                 .addComponent(jLabel2)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(xySpeedField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(zSpeedField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(220, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                 .addComponent(jLabel2)
-                .addComponent(jTextField2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(xySpeedField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addComponent(jLabel3)
-                .addComponent(jTextField3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(zSpeedField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
@@ -212,7 +254,7 @@ public class XYZTabPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jSlider3, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1))
-                .addContainerGap(74, Short.MAX_VALUE))
+                .addContainerGap(33, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -236,18 +278,65 @@ public class XYZTabPanel extends javax.swing.JPanel {
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addComponent(jSlider1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(38, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void setPrefs() throws IOException {
+        
+        XYfastSpeed = Preferences.loadGlobalInt("FastSpeed(0..255)");
+        ZfastSpeed = Preferences.loadGlobalInt("MovementSpeedZ(0..255)");
+        
+        xySpeedField.setText(String.valueOf(XYfastSpeed));
+        zSpeedField.setText(String.valueOf(ZfastSpeed));
+    }
     
+    private void stepSizeRB1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stepSizeRB1ActionPerformed
+        stepSize = Double.parseDouble(stepSizeRB1.getText());
+}//GEN-LAST:event_stepSizeRB1ActionPerformed
+
+    private void stepSizeRB2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stepSizeRB2ActionPerformed
+        stepSize = Double.parseDouble(stepSizeRB2.getText());
+}//GEN-LAST:event_stepSizeRB2ActionPerformed
+
+    private void stepSizeRB3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stepSizeRB3ActionPerformed
+        stepSize = Double.parseDouble(stepSizeRB3.getText());
+}//GEN-LAST:event_stepSizeRB3ActionPerformed
+
+    private void goButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goButtonActionPerformed
+        
+        genericStepperPositionPanel3.setSpeed(Integer.parseInt(zSpeedField.getText()));
+        genericStepperPositionPanel3.moveToTargetBlocking();
+        
+        genericStepperPositionPanel1.setSpeed(Integer.parseInt(xySpeedField.getText()));
+        genericStepperPositionPanel1.moveToTarget();
+        
+        genericStepperPositionPanel2.setSpeed(Integer.parseInt(xySpeedField.getText()));
+        genericStepperPositionPanel2.moveToTarget();
+        
+
+    }//GEN-LAST:event_goButtonActionPerformed
+
+    
+
+    
+    public double getStepSize() {
+        if (stepSize == 0) {
+            stepSizeRB1.setSelected(true);
+            stepSize = Double.parseDouble(stepSizeRB1.getText());
+        }
+        return stepSize;
+    }
+    
+    private double stepSize = 0;
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
+    private javax.swing.JTextField extruderToPlot;
     private org.reprap.gui.botConsole.GenericStepperPositionPanel genericStepperPositionPanel1;
     private org.reprap.gui.botConsole.GenericStepperPositionPanel genericStepperPositionPanel2;
     private org.reprap.gui.botConsole.GenericStepperPositionPanel genericStepperPositionPanel3;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JCheckBox jCheckBox1;
+    private javax.swing.JButton goButton;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -255,15 +344,15 @@ public class XYZTabPanel extends javax.swing.JPanel {
     private javax.swing.JPanel jPanel2;
     private javax.swing.JPanel jPanel3;
     private javax.swing.JPanel jPanel4;
-    private javax.swing.JRadioButton jRadioButton1;
-    private javax.swing.JRadioButton jRadioButton2;
-    private javax.swing.JRadioButton jRadioButton3;
     private javax.swing.JSlider jSlider1;
     private javax.swing.JSlider jSlider2;
     private javax.swing.JSlider jSlider3;
-    private javax.swing.JTextField jTextField1;
-    private javax.swing.JTextField jTextField2;
-    private javax.swing.JTextField jTextField3;
+    private javax.swing.JCheckBox plotCheck;
+    private javax.swing.JRadioButton stepSizeRB1;
+    private javax.swing.JRadioButton stepSizeRB2;
+    private javax.swing.JRadioButton stepSizeRB3;
+    private javax.swing.JTextField xySpeedField;
+    private javax.swing.JTextField zSpeedField;
     // End of variables declaration//GEN-END:variables
     
 }

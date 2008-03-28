@@ -90,16 +90,25 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="&lt;"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="stepUpButtonActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="stepDownButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="&gt;"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="stepDownButtonActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="homeButton">
       <Properties>
         <Property name="text" type="java.lang.String" value="Home"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="homeButtonActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="endButton">
       <Properties>

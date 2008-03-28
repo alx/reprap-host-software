@@ -34,7 +34,7 @@ public class BotConsoleFrame extends javax.swing.JFrame {
     
     // Comms variables
     private final int localNodeNumber = 0;
-    private Communicator communicator;
+    private static Communicator communicator;
     private GenericExtruder extruder = null;
     
     
@@ -135,5 +135,16 @@ public class BotConsoleFrame extends javax.swing.JFrame {
     private org.reprap.gui.botConsole.PrintTabPanel printTabPanel1;
     private org.reprap.gui.botConsole.XYZTabPanel xYZTabPanel1;
     // End of variables declaration//GEN-END:variables
+    
+    public static Communicator getCommunicator() {
+        return communicator;
+    }
+    
+    private static int motorID = 0;
+    
+    public static int getMotorID() {
+        motorID++;
+        return motorID;
+    }
     
 }

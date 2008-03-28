@@ -10,13 +10,70 @@ package org.reprap.gui.botConsole;
  *
  * @author  en0es
  */
+
+import java.io.IOException;
+import javax.swing.JOptionPane;
+import org.reprap.Preferences;
+import org.reprap.comms.Communicator;
+import org.reprap.comms.snap.SNAPAddress;
+import org.reprap.devices.GenericStepperMotor;
+
 public class GenericStepperPositionPanel extends javax.swing.JPanel {
     
     /** Creates new form GenericStepperPositionPanel */
     public GenericStepperPositionPanel() {
+        
+        try {
+            setupComms(); 
+        }
+        catch (Exception e) {
+            System.out.println("Failure trying to initialise steppers in botConsole: " + e);
+            JOptionPane.showMessageDialog(null, e.getMessage());
+            return;
+        }
+      
         initComponents();
     }
     
+    private Communicator communicator;
+    private int motorID;
+    private String axis;
+    private GenericStepperMotor motor;
+
+    private int fastSpeed;
+    private double stepsPerMM;
+    private double axisLength;
+        
+    private void setupComms() throws IOException {
+        communicator = BotConsoleFrame.getCommunicator();
+        motorID = BotConsoleFrame.getMotorID();
+
+        switch(motorID)
+        {
+        case 1:
+                axis = "X";
+                break;
+        case 2:
+                axis = "Y";
+                break;
+        case 3:
+                axis = "Z";
+                break;
+        default:
+                axis = "X";
+                System.err.println("StepperPanel - dud axis id:" + motorID);
+        }
+        
+        int address = Preferences.loadGlobalInt(axis + "Axis" + "Address");
+        
+        motor = new GenericStepperMotor(communicator, new SNAPAddress(address), Preferences.getGlobalPreferences(), motorID);
+
+        stepsPerMM = Preferences.loadGlobalDouble(axis + "AxisScale(steps/mm)");
+	axisLength = Preferences.loadGlobalDouble("Working" + axis + "(mm)");
+    }
+    
+
+        
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -49,10 +106,25 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
         jLabel3.setText("mm");
 
         stepUpButton.setText("<");
+        stepUpButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                stepUpButtonActionPerformed(evt);
+            }
+        });
 
         stepDownButton.setText(">");
+        stepDownButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                stepDownButtonActionPerformed(evt);
+            }
+        });
 
         homeButton.setText("Home");
+        homeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                homeButtonActionPerformed(evt);
+            }
+        });
 
         endButton.setText("End");
 
@@ -90,7 +162,60 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
                 .addComponent(endButton))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void homeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_homeButtonActionPerformed
+        try {
+            motor.homeReset(fastSpeed);
+        } catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Could not home motor: " + ex);
+        }
+    }//GEN-LAST:event_homeButtonActionPerformed
+
+    private void stepDownButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stepDownButtonActionPerformed
+        try {
+            motor.stepForward();
+        } 
+        catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Could not step motor: " + ex);
+        }
+    }//GEN-LAST:event_stepDownButtonActionPerformed
+
+    private void stepUpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stepUpButtonActionPerformed
+        try {
+            motor.stepBackward();
+        } 
+        catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, "Could not step motor: " + ex);
+        }
+    }//GEN-LAST:event_stepUpButtonActionPerformed
     
+    public void setSpeed(int speed) {
+        fastSpeed = speed;
+    }
+    
+    private int getTargetPosition() {
+        double targetMM = Integer.parseInt(targetPositionField.getText());
+        if (targetMM > axisLength) targetMM = axisLength;         
+        return (int)Math.round(targetMM * stepsPerMM);
+    }
+    
+    public void moveToTarget() {
+        try {
+            motor.seek(fastSpeed, getTargetPosition());
+        } 
+        catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, axis + " motor could not seek: " + ex);
+        }
+    }
+    
+    public void moveToTargetBlocking() {
+        try {
+            motor.seekBlocking(fastSpeed, getTargetPosition());
+        } 
+        catch (Exception ex) {
+            JOptionPane.showMessageDialog(null, axis + " motor could not block: " + ex);
+        }
+    }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel axisLabel;
@@ -102,5 +227,6 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
     private javax.swing.JButton stepUpButton;
     private javax.swing.JTextField targetPositionField;
     // End of variables declaration//GEN-END:variables
+
     
 }
