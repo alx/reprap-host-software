@@ -6,6 +6,7 @@ package org.reprap.devices;
 import java.io.IOException;
 import org.reprap.Device;
 import org.reprap.Extruder;
+import org.reprap.Printer;
 import org.reprap.Preferences;
 import org.reprap.ReprapException;
 import javax.media.j3d.Appearance;
@@ -19,7 +20,7 @@ import javax.media.j3d.Material;
 public class NullExtruder implements Extruder{
 	
 	/**
-	 * Offset of 0 degrees centigrade from absolute zero
+	 * Offset of 0 degrees celcius from absolute zero
 	 */
 	private static final double absZero = 273.15;
 	
@@ -267,6 +268,11 @@ public class NullExtruder implements Extruder{
 	 */
 	private int extrusionDelayForHatch = 0;
 	
+    /**
+     * The smallest allowable free-movement height above the base
+     */
+	private double minLiftedZ = 1;
+	
 	/**
 	 * @param prefs
 	 * @param extruderId
@@ -313,7 +319,7 @@ public class NullExtruder implements Extruder{
 		infillOverlap = prefs.loadDouble(prefName + "InfillOverlap(mm)");
 		extrusionDelayForBorder = prefs.loadInt(prefName + "ExtrusionDelayForBorder(ms)");
 		extrusionDelayForHatch = prefs.loadInt(prefName + "ExtrusionDelayForHatch(ms)");
-
+		minLiftedZ = prefs.loadDouble(prefName + "MinimumZClearance(mm)");
 		
 		materialColour = getAppearanceFromNumber(extruderId);		
 			
@@ -731,4 +737,17 @@ public class NullExtruder implements Extruder{
     {
     	return extrusionDelayForHatch; 
     }
+    
+    /**
+     * The smallest allowable free-movement height above the base
+     * @return
+     */
+    public double getMinLiftedZ()
+    {
+    	return minLiftedZ;
+    }
+    
+	public void finishedLayer(int layerNumber, Printer printer) throws Exception {}
+	public void betweenLayers(int layerNumber, Printer printer) throws Exception {}
+	public void startingLayer(int layerNumber, Printer printer) throws Exception {}
 }

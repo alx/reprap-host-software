@@ -17,6 +17,7 @@ import org.reprap.gui.CalibrateZAxis;
 import org.reprap.gui.Previewer;
 import org.reprap.Extruder;
 import org.reprap.utilities.Debug;
+import org.reprap.utilities.Timer;
 
 /**
  * 
@@ -117,6 +118,11 @@ public class Reprap implements CartesianPrinter {
 	 * 
 	 */
 	private long startTime;
+	
+	/**
+	 *
+	 */
+	private double startCooling;
 	
 	/**
 	 * 
@@ -887,14 +893,18 @@ public class Reprap implements CartesianPrinter {
 		double strokeY = getExtruder().getNozzleWipeStrokeY();
 		double coolTime = getExtruder().getCoolingPeriod();
 		
+		startCooling = -1;
+		
 		if(coolTime > 0 && (layerNumber != 0)) {
 			getExtruder().setCooler(true);
+			Debug.d("Start of cooling period");
 			setSpeed(getFastSpeed());
 			
 			// Go home. Seek (0,0) then callibrate X first
 			moveTo(0, 0, currentZ, false, false);
 			homeToZeroX();
 			homeToZeroY();
+			startCooling = Timer.elapsed();
 		}
 		
 		// If wiping, nudge the clearer blade
@@ -917,7 +927,6 @@ public class Reprap implements CartesianPrinter {
 	 */
 	public void betweenLayers(int layerNumber) throws Exception
 	{
-		double coolTime = getExtruder().getCoolingPeriod();
 		double clearTime = getExtruder().getNozzleClearTime();
 				
 		// Do half the extrusion between layers now
@@ -935,19 +944,6 @@ public class Reprap implements CartesianPrinter {
 		// Now is a good time to garbage collect
 		
 		System.gc();
-		
-		// Cooling period
-		
-		if(coolTime > 0 && (layerNumber != 0))
-		{	
-			Debug.d("Start of cooling period");
-			// Wait for cooling time
-			
-			Thread.sleep((long)(1000*coolTime));
-			getExtruder().setCooler(false);
-			Thread.sleep((long)(200 * coolTime));			
-			Debug.d("End of cooling period");
-		}
 	}
 	
 	/**
@@ -961,6 +957,38 @@ public class Reprap implements CartesianPrinter {
 		double strokeY = getExtruder().getNozzleWipeStrokeY();
 		double clearTime = getExtruder().getNozzleClearTime();
 		double waitTime = getExtruder().getNozzleWaitTime();
+		double coolTime = getExtruder().getCoolingPeriod();
+		
+		// Cooling period
+		
+		// How long has the fan been on?
+		
+		double cool = Timer.elapsed();
+		if(startCooling >= 0)
+			cool = cool - startCooling;
+		else
+			cool = 0;
+		
+		// Wait the remainder of the cooling period
+		
+		if(coolTime > cool && (layerNumber != 0))
+		{	
+			cool = coolTime - cool;
+			Thread.sleep((long)(1000*cool));
+		}
+		
+		// Fan off
+		
+		getExtruder().setCooler(false);
+		
+		// If we were cooling, wait for warm-up
+		
+		if(coolTime > 0 && (layerNumber != 0))
+		{
+			Thread.sleep((long)(200 * coolTime));			
+			Debug.d("End of cooling period");			
+		}
+		
 		
 		// Do the other half of the clearing extrude then
 		// Wipe the nozzle on the doctor blade

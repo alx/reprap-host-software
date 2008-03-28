@@ -112,7 +112,7 @@ public class LinePrinter {
 	}
 	
 	/**
-	 * Correct a speed change (in (0, 1])for the fact that it's click times that get
+	 * Correct a speed change (in (0, 1]) for the fact that it's click times that get
 	 * send to the controller.
 	 * @param oldSpeed
 	 * @param factor
@@ -163,14 +163,6 @@ public class LinePrinter {
 		// to be printed
 		double dx = endX - currentX;
 		double dy = endY - currentY;
-//		double h = Math.sqrt(dx * dx + dy * dy);
-//		double speedFraction;
-//		if (dx > dy)
-//			speedFraction = h / (dx * Math.sqrt(2.0));
-//		else
-//			speedFraction = h / (dy * Math.sqrt(2.0));
-
-		//extruder.setExtrusion((int)Math.round(extruderSpeed * speedFraction));
 		extruder.setExtrusion(extruderSpeed);
 		moveTo(endX, endY, angleSpeed(movementSpeed, dx, dy));
 		if(turnOff)

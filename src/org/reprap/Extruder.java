@@ -263,4 +263,15 @@ public interface Extruder {
      */
     public int getExtrusionDelayForHatch();
     
+    /**
+     * The smallest allowable free-movement height above the base
+     * @return
+     */
+    public double getMinLiftedZ();
+    
+	public void finishedLayer(int layerNumber, Printer printer) throws Exception;
+	public void betweenLayers(int layerNumber, Printer printer) throws Exception;
+	public void startingLayer(int layerNumber, Printer printer) throws Exception;
+	
+    
 }

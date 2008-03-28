@@ -93,4 +93,16 @@ public class Timer {
 		newTime();
 		return " [" + d3dp(tim.t*0.001) + "s/" + tim.delta + "ms]";
 	}
+	
+	/**
+	 * Get the time from the start in seconds
+	 * @return
+	 */
+	static public double elapsed()
+	{
+		initialiseIfNeedBe();
+		Date d = new Date();
+		long e = d.getTime() - tim.t0;
+		return 0.001*(double)e;
+	}
 }
