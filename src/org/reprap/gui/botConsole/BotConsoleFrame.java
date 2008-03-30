@@ -15,7 +15,10 @@ import org.reprap.gui.Utility;
 import javax.swing.JOptionPane;
 /**
  *
- * @author  Ed Sells
+ * @author  Ed Sells, March 2008
+ * 
+ * Console to operate the RepRap printer manually.
+ * 
  */
 public class BotConsoleFrame extends javax.swing.JFrame {
     

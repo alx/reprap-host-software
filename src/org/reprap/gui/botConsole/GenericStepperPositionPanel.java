@@ -33,6 +33,7 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
         }
       
         initComponents();
+        axisLabel.setText(axis);
     }
     
     private Communicator communicator;
@@ -41,8 +42,9 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
     private GenericStepperMotor motor;
 
     private int fastSpeed;
-    private double stepsPerMM;
+    private double motorStepsPerMM;
     private double axisLength;
+    private double nudgeSize;
         
     private void setupComms() throws IOException {
         communicator = BotConsoleFrame.getCommunicator();
@@ -52,12 +54,15 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
         {
         case 1:
                 axis = "X";
+                axisLength = 160; // TODO: Replace with Prefs when Java3D parameters work for small wv's.
                 break;
         case 2:
                 axis = "Y";
+                axisLength = 160; // TODO: Replace with Prefs when Java3D parameters work for small wv's.
                 break;
         case 3:
                 axis = "Z";
+                axisLength = 80; // TODO: Replace with Prefs when Java3D parameters work for small wv's.
                 break;
         default:
                 axis = "X";
@@ -68,12 +73,15 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
         
         motor = new GenericStepperMotor(communicator, new SNAPAddress(address), Preferences.getGlobalPreferences(), motorID);
 
-        stepsPerMM = Preferences.loadGlobalDouble(axis + "AxisScale(steps/mm)");
-	axisLength = Preferences.loadGlobalDouble("Working" + axis + "(mm)");
-    }
-    
+        motorStepsPerMM = Preferences.loadGlobalDouble(axis + "AxisScale(steps/mm)");
+	
+//      TODO: Activate this code when the Java3D parameters allow a small enough working volume. Currently I get a black screen.
+//      axisLength = Preferences.loadGlobalDouble("Working" + axis + "(mm)");
 
-        
+    }
+
+    
+    
     /** This method is called from within the constructor to
      * initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is
@@ -86,8 +94,8 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
         currentPositionLabel = new javax.swing.JLabel();
         targetPositionField = new javax.swing.JTextField();
         jLabel3 = new javax.swing.JLabel();
+        stepDownButton1 = new javax.swing.JButton();
         stepUpButton = new javax.swing.JButton();
-        stepDownButton = new javax.swing.JButton();
         homeButton = new javax.swing.JButton();
         endButton = new javax.swing.JButton();
 
@@ -95,27 +103,34 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
         axisLabel.setText("X");
 
         currentPositionLabel.setFont(new java.awt.Font("Tahoma", 0, 12));
-        currentPositionLabel.setText("(0000)");
+        currentPositionLabel.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
+        currentPositionLabel.setText("(?)");
+        currentPositionLabel.setHorizontalTextPosition(javax.swing.SwingConstants.RIGHT);
+        currentPositionLabel.setMaximumSize(new java.awt.Dimension(50, 15));
+        currentPositionLabel.setPreferredSize(new java.awt.Dimension(50, 15));
 
         targetPositionField.setColumns(4);
         targetPositionField.setFont(targetPositionField.getFont().deriveFont((float)12));
         targetPositionField.setHorizontalAlignment(javax.swing.JTextField.RIGHT);
-        targetPositionField.setText("0000");
+        targetPositionField.setText("0");
+        targetPositionField.setEnabled(false);
 
         jLabel3.setFont(new java.awt.Font("Tahoma", 0, 12));
         jLabel3.setText("mm");
 
-        stepUpButton.setText("<");
-        stepUpButton.addActionListener(new java.awt.event.ActionListener() {
+        stepDownButton1.setText("<");
+        stepDownButton1.setEnabled(false);
+        stepDownButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                stepUpButtonActionPerformed(evt);
+                stepDownButton1ActionPerformed(evt);
             }
         });
 
-        stepDownButton.setText(">");
-        stepDownButton.addActionListener(new java.awt.event.ActionListener() {
+        stepUpButton.setText(">");
+        stepUpButton.setEnabled(false);
+        stepUpButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                stepDownButtonActionPerformed(evt);
+                stepUpButtonActionPerformed(evt);
             }
         });
 
@@ -127,6 +142,12 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
         });
 
         endButton.setText("End");
+        endButton.setEnabled(false);
+        endButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                endButtonActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -135,15 +156,15 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
                 .addComponent(axisLabel)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(currentPositionLabel)
+                .addComponent(currentPositionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(targetPositionField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(stepUpButton)
+                .addComponent(stepDownButton1)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(stepDownButton)
+                .addComponent(stepUpButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(homeButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -153,55 +174,105 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                 .addComponent(axisLabel)
-                .addComponent(currentPositionLabel)
+                .addComponent(currentPositionLabel, javax.swing.GroupLayout.PREFERRED_SIZE, 15, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addComponent(targetPositionField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addComponent(jLabel3)
+                .addComponent(stepDownButton1)
                 .addComponent(stepUpButton)
-                .addComponent(stepDownButton)
                 .addComponent(homeButton)
                 .addComponent(endButton))
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private boolean axisBeenHomed = false;
+    
+    public boolean hasAxisBeenHomed() {
+        return axisBeenHomed;
+    }
+    
     private void homeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_homeButtonActionPerformed
+        homeAxis();
+    }//GEN-LAST:event_homeButtonActionPerformed
+
+    public void homeAxis() {
         try {
             motor.homeReset(fastSpeed);
+            currentPositionLabel.setText("(Home)");
+            axisBeenHomed = true;
+            targetPositionField.setEnabled(true);
+            stepDownButton1.setEnabled(true);
+            stepUpButton.setEnabled(true);
+            endButton.setEnabled(true);
+            targetPositionField.setText("0");
         } catch (Exception ex) {
             JOptionPane.showMessageDialog(null, "Could not home motor: " + ex);
         }
-    }//GEN-LAST:event_homeButtonActionPerformed
-
-    private void stepDownButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stepDownButtonActionPerformed
-        try {
-            motor.stepForward();
-        } 
-        catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, "Could not step motor: " + ex);
-        }
-    }//GEN-LAST:event_stepDownButtonActionPerformed
-
+    }
+    
+    double newTargetAfterNudge;
+    
     private void stepUpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stepUpButtonActionPerformed
+        
+        System.out.println(nudgeSize);
+        newTargetAfterNudge = getTargetPositionInMM() + nudgeSize;
+        targetPositionField.setText("" + round(newTargetAfterNudge, 2));
+        moveToTarget();
+        
+}//GEN-LAST:event_stepUpButtonActionPerformed
+
+    private void stepDownButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stepDownButton1ActionPerformed
+
+        System.out.println(nudgeSize);
+        double newTargetAfterNudge = getTargetPositionInMM() - nudgeSize;
+        targetPositionField.setText("" + round(newTargetAfterNudge, 2));
+        moveToTarget();
+
+}//GEN-LAST:event_stepDownButton1ActionPerformed
+
+    public double round(double Rval, int r2dp) {
+        double p = (Double)Math.pow(10,r2dp);
+        Rval = Rval * p;
+        float tmp = Math.round(Rval);
+        return (double)tmp/p;
+    }
+    
+    private void endButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_endButtonActionPerformed
+        targetPositionField.setText("" + axisLength);
         try {
-            motor.stepBackward();
+            motor.seek(fastSpeed, getTargetPositionInSteps());
+            setCurrentPositionLabelsToTargetPosition();
         } 
         catch (Exception ex) {
-            JOptionPane.showMessageDialog(null, "Could not step motor: " + ex);
+            JOptionPane.showMessageDialog(null, axis + " motor could not seek: " + ex);
         }
-    }//GEN-LAST:event_stepUpButtonActionPerformed
+    }//GEN-LAST:event_endButtonActionPerformed
     
     public void setSpeed(int speed) {
         fastSpeed = speed;
     }
     
-    private int getTargetPosition() {
-        double targetMM = Integer.parseInt(targetPositionField.getText());
-        if (targetMM > axisLength) targetMM = axisLength;         
-        return (int)Math.round(targetMM * stepsPerMM);
+    private double getTargetPositionInMM() {
+        double targetMM = Double.parseDouble(targetPositionField.getText());
+        if (targetMM > axisLength) {
+            targetMM = axisLength;
+            targetPositionField.setText("" + targetMM);
+        }
+        if (targetMM < 0) {
+            targetMM = 0;
+            targetPositionField.setText("" + targetMM);
+        }
+        return targetMM;
+    }
+    
+    private int getTargetPositionInSteps() {
+        double targetMM = getTargetPositionInMM();
+        return (int)Math.round(targetMM * motorStepsPerMM);
     }
     
     public void moveToTarget() {
         try {
-            motor.seek(fastSpeed, getTargetPosition());
+            motor.seek(fastSpeed, getTargetPositionInSteps());
+            setCurrentPositionLabelsToTargetPosition();
         } 
         catch (Exception ex) {
             JOptionPane.showMessageDialog(null, axis + " motor could not seek: " + ex);
@@ -210,11 +281,21 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
     
     public void moveToTargetBlocking() {
         try {
-            motor.seekBlocking(fastSpeed, getTargetPosition());
+            motor.seekBlocking(fastSpeed, getTargetPositionInSteps());
+            setCurrentPositionLabelsToTargetPosition();
         } 
         catch (Exception ex) {
             JOptionPane.showMessageDialog(null, axis + " motor could not block: " + ex);
         }
+    }
+    
+    public void setCurrentPositionLabelsToTargetPosition() {
+        currentPositionLabel.setText("(" + getTargetPositionInMM() + ")");
+         
+    }
+    
+    public void setNudgeSize(double size) {
+        nudgeSize = size;
     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
@@ -223,7 +304,7 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
     private javax.swing.JButton endButton;
     private javax.swing.JButton homeButton;
     private javax.swing.JLabel jLabel3;
-    private javax.swing.JButton stepDownButton;
+    private javax.swing.JButton stepDownButton1;
     private javax.swing.JButton stepUpButton;
     private javax.swing.JTextField targetPositionField;
     // End of variables declaration//GEN-END:variables

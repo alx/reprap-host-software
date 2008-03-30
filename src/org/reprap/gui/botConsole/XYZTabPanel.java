@@ -32,7 +32,17 @@ public class XYZTabPanel extends javax.swing.JPanel {
             JOptionPane.showMessageDialog(null, e.getMessage());
             return;
         }
+        
+        setMotorSpeeds();
+        setNudgeSize(Double.parseDouble(nudgeSizeRB1.getText()));
+    }
     
+    private void setMotorSpeeds() {
+        
+        genericStepperPositionPanel1.setSpeed(Integer.parseInt(xySpeedField.getText()));
+        genericStepperPositionPanel2.setSpeed(Integer.parseInt(xySpeedField.getText()));
+        genericStepperPositionPanel3.setSpeed(Integer.parseInt(zSpeedField.getText()));
+        
     }
 
     /** This method is called from within the constructor to
@@ -48,9 +58,9 @@ public class XYZTabPanel extends javax.swing.JPanel {
         jSlider2 = new javax.swing.JSlider();
         jPanel1 = new javax.swing.JPanel();
         jPanel2 = new javax.swing.JPanel();
-        stepSizeRB1 = new javax.swing.JRadioButton();
-        stepSizeRB2 = new javax.swing.JRadioButton();
-        stepSizeRB3 = new javax.swing.JRadioButton();
+        nudgeSizeRB1 = new javax.swing.JRadioButton();
+        nudgeSizeRB2 = new javax.swing.JRadioButton();
+        nudgeSizeRB3 = new javax.swing.JRadioButton();
         jPanel3 = new javax.swing.JPanel();
         goButton = new javax.swing.JButton();
         plotCheck = new javax.swing.JCheckBox();
@@ -58,6 +68,7 @@ public class XYZTabPanel extends javax.swing.JPanel {
         genericStepperPositionPanel1 = new org.reprap.gui.botConsole.GenericStepperPositionPanel();
         genericStepperPositionPanel2 = new org.reprap.gui.botConsole.GenericStepperPositionPanel();
         genericStepperPositionPanel3 = new org.reprap.gui.botConsole.GenericStepperPositionPanel();
+        goButton1 = new javax.swing.JButton();
         jSlider3 = new javax.swing.JSlider();
         jLabel1 = new javax.swing.JLabel();
         jPanel4 = new javax.swing.JPanel();
@@ -90,30 +101,30 @@ public class XYZTabPanel extends javax.swing.JPanel {
             .addGap(0, 200, Short.MAX_VALUE)
         );
 
-        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Step size (mm)"));
+        jPanel2.setBorder(javax.swing.BorderFactory.createTitledBorder("Nudge size (mm)"));
 
-        buttonGroup1.add(stepSizeRB1);
-        stepSizeRB1.setSelected(true);
-        stepSizeRB1.setText("0.1");
-        stepSizeRB1.addActionListener(new java.awt.event.ActionListener() {
+        buttonGroup1.add(nudgeSizeRB1);
+        nudgeSizeRB1.setSelected(true);
+        nudgeSizeRB1.setText("0.1");
+        nudgeSizeRB1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                stepSizeRB1ActionPerformed(evt);
+                nudgeSizeRB1ActionPerformed(evt);
             }
         });
 
-        buttonGroup1.add(stepSizeRB2);
-        stepSizeRB2.setText("1.0");
-        stepSizeRB2.addActionListener(new java.awt.event.ActionListener() {
+        buttonGroup1.add(nudgeSizeRB2);
+        nudgeSizeRB2.setText("1.0");
+        nudgeSizeRB2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                stepSizeRB2ActionPerformed(evt);
+                nudgeSizeRB2ActionPerformed(evt);
             }
         });
 
-        buttonGroup1.add(stepSizeRB3);
-        stepSizeRB3.setText("10.0");
-        stepSizeRB3.addActionListener(new java.awt.event.ActionListener() {
+        buttonGroup1.add(nudgeSizeRB3);
+        nudgeSizeRB3.setText("10.0");
+        nudgeSizeRB3.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                stepSizeRB3ActionPerformed(evt);
+                nudgeSizeRB3ActionPerformed(evt);
             }
         });
 
@@ -123,21 +134,21 @@ public class XYZTabPanel extends javax.swing.JPanel {
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addContainerGap()
-                .addComponent(stepSizeRB1)
+                .addComponent(nudgeSizeRB1)
                 .addGap(18, 18, 18)
-                .addComponent(stepSizeRB2)
+                .addComponent(nudgeSizeRB2)
                 .addGap(18, 18, 18)
-                .addComponent(stepSizeRB3)
-                .addContainerGap(168, Short.MAX_VALUE))
+                .addComponent(nudgeSizeRB3)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
                 .addContainerGap(16, Short.MAX_VALUE)
                 .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(stepSizeRB1)
-                    .addComponent(stepSizeRB2)
-                    .addComponent(stepSizeRB3)))
+                    .addComponent(nudgeSizeRB1)
+                    .addComponent(nudgeSizeRB2)
+                    .addComponent(nudgeSizeRB3)))
         );
 
         jPanel3.setBorder(javax.swing.BorderFactory.createTitledBorder("Axes position"));
@@ -154,23 +165,32 @@ public class XYZTabPanel extends javax.swing.JPanel {
         extruderToPlot.setColumns(1);
         extruderToPlot.setText("0");
 
+        goButton1.setText("Home all");
+        goButton1.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                goButton1ActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
         jPanel3.setLayout(jPanel3Layout);
         jPanel3Layout.setHorizontalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel3Layout.createSequentialGroup()
                 .addContainerGap()
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(genericStepperPositionPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
                     .addComponent(genericStepperPositionPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(genericStepperPositionPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(jPanel3Layout.createSequentialGroup()
                         .addComponent(plotCheck)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(extruderToPlot, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                        .addComponent(goButton, javax.swing.GroupLayout.PREFERRED_SIZE, 116, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                .addContainerGap(79, Short.MAX_VALUE))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(goButton1)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(goButton))
+                    .addComponent(genericStepperPositionPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -180,11 +200,12 @@ public class XYZTabPanel extends javax.swing.JPanel {
                 .addComponent(genericStepperPositionPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(genericStepperPositionPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 15, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 13, Short.MAX_VALUE)
                 .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(plotCheck)
                     .addComponent(extruderToPlot, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addComponent(goButton))
+                    .addComponent(goButton)
+                    .addComponent(goButton1))
                 .addContainerGap())
         );
 
@@ -223,7 +244,7 @@ public class XYZTabPanel extends javax.swing.JPanel {
                 .addComponent(jLabel3)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(zSpeedField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(220, Short.MAX_VALUE))
+                .addContainerGap(153, Short.MAX_VALUE))
         );
         jPanel4Layout.setVerticalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -254,7 +275,7 @@ public class XYZTabPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(jSlider3, javax.swing.GroupLayout.PREFERRED_SIZE, 22, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel1))
-                .addContainerGap(33, Short.MAX_VALUE))
+                .addContainerGap(86, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -262,23 +283,21 @@ public class XYZTabPanel extends javax.swing.JPanel {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
-                        .addComponent(jLabel1)
+                        .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jSlider3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                        .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                     .addGroup(layout.createSequentialGroup()
-                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                            .addGroup(layout.createSequentialGroup()
-                                .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jSlider2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                        .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                    .addComponent(jSlider1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
-                .addContainerGap(38, Short.MAX_VALUE))
+                        .addComponent(jSlider2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jSlider1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel1)
+                        .addGap(4, 4, 4)
+                        .addComponent(jSlider3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(14, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -291,44 +310,60 @@ public class XYZTabPanel extends javax.swing.JPanel {
         zSpeedField.setText(String.valueOf(ZfastSpeed));
     }
     
-    private void stepSizeRB1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stepSizeRB1ActionPerformed
-        stepSize = Double.parseDouble(stepSizeRB1.getText());
-}//GEN-LAST:event_stepSizeRB1ActionPerformed
+    private void nudgeSizeRB1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nudgeSizeRB1ActionPerformed
+        setNudgeSize(Double.parseDouble(nudgeSizeRB1.getText()));
+}//GEN-LAST:event_nudgeSizeRB1ActionPerformed
 
-    private void stepSizeRB2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stepSizeRB2ActionPerformed
-        stepSize = Double.parseDouble(stepSizeRB2.getText());
-}//GEN-LAST:event_stepSizeRB2ActionPerformed
+    private void nudgeSizeRB2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nudgeSizeRB2ActionPerformed
+        setNudgeSize(Double.parseDouble(nudgeSizeRB2.getText()));
+}//GEN-LAST:event_nudgeSizeRB2ActionPerformed
 
-    private void stepSizeRB3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stepSizeRB3ActionPerformed
-        stepSize = Double.parseDouble(stepSizeRB3.getText());
-}//GEN-LAST:event_stepSizeRB3ActionPerformed
+    private void nudgeSizeRB3ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_nudgeSizeRB3ActionPerformed
+        setNudgeSize(Double.parseDouble(nudgeSizeRB3.getText()));
+}//GEN-LAST:event_nudgeSizeRB3ActionPerformed
 
     private void goButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goButtonActionPerformed
         
-        genericStepperPositionPanel3.setSpeed(Integer.parseInt(zSpeedField.getText()));
-        genericStepperPositionPanel3.moveToTargetBlocking();
-        
-        genericStepperPositionPanel1.setSpeed(Integer.parseInt(xySpeedField.getText()));
-        genericStepperPositionPanel1.moveToTarget();
-        
-        genericStepperPositionPanel2.setSpeed(Integer.parseInt(xySpeedField.getText()));
-        genericStepperPositionPanel2.moveToTarget();
-        
+        // Check all motors have been homed first
+        if( genericStepperPositionPanel1.hasAxisBeenHomed() && genericStepperPositionPanel2.hasAxisBeenHomed() && genericStepperPositionPanel3.hasAxisBeenHomed() ) 
+        {
+                // Refresh speeds
+                setMotorSpeeds();
+
+                // Move axes, Z separately to avoid power overload
+                genericStepperPositionPanel3.moveToTargetBlocking();
+                genericStepperPositionPanel1.moveToTarget();
+                genericStepperPositionPanel2.moveToTarget();
+        }
+        else {
+            JOptionPane.showMessageDialog(null, "You must home all axes first!");
+        }        
 
     }//GEN-LAST:event_goButtonActionPerformed
 
+    private void goButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goButton1ActionPerformed
+        genericStepperPositionPanel3.homeAxis();
+        genericStepperPositionPanel1.homeAxis();
+        genericStepperPositionPanel2.homeAxis();
+    }//GEN-LAST:event_goButton1ActionPerformed
     
-
-    
-    public double getStepSize() {
-        if (stepSize == 0) {
-            stepSizeRB1.setSelected(true);
-            stepSize = Double.parseDouble(stepSizeRB1.getText());
+    public void checkNudgeSize() {
+        if (nudgeSize == 0) {
+            nudgeSizeRB1.setSelected(true);
+            nudgeSize = Double.parseDouble(nudgeSizeRB1.getText());
         }
-        return stepSize;
     }
     
-    private double stepSize = 0;
+    public void setNudgeSize(Double size) {
+        
+        nudgeSize = size;
+        
+        genericStepperPositionPanel3.setNudgeSize(nudgeSize);
+        genericStepperPositionPanel1.setNudgeSize(nudgeSize);
+        genericStepperPositionPanel2.setNudgeSize(nudgeSize);
+    }
+    
+    private static double nudgeSize = 0;
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.ButtonGroup buttonGroup1;
@@ -337,6 +372,7 @@ public class XYZTabPanel extends javax.swing.JPanel {
     private org.reprap.gui.botConsole.GenericStepperPositionPanel genericStepperPositionPanel2;
     private org.reprap.gui.botConsole.GenericStepperPositionPanel genericStepperPositionPanel3;
     private javax.swing.JButton goButton;
+    private javax.swing.JButton goButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -347,10 +383,10 @@ public class XYZTabPanel extends javax.swing.JPanel {
     private javax.swing.JSlider jSlider1;
     private javax.swing.JSlider jSlider2;
     private javax.swing.JSlider jSlider3;
+    private javax.swing.JRadioButton nudgeSizeRB1;
+    private javax.swing.JRadioButton nudgeSizeRB2;
+    private javax.swing.JRadioButton nudgeSizeRB3;
     private javax.swing.JCheckBox plotCheck;
-    private javax.swing.JRadioButton stepSizeRB1;
-    private javax.swing.JRadioButton stepSizeRB2;
-    private javax.swing.JRadioButton stepSizeRB3;
     private javax.swing.JTextField xySpeedField;
     private javax.swing.JTextField zSpeedField;
     // End of variables declaration//GEN-END:variables
