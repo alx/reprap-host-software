@@ -33,13 +33,13 @@ public class BotConsoleFrame extends javax.swing.JFrame {
             return;
         }
         initComponents();
+        xYZTabPanel1.setBedPanelDimensions();
     }
     
     // Comms variables
     private final int localNodeNumber = 0;
     private static Communicator communicator;
     private GenericExtruder extruder = null;
-    
     
     private void initComms() throws Exception {
         SNAPAddress myAddress = new SNAPAddress(localNodeNumber);
@@ -129,8 +129,9 @@ public class BotConsoleFrame extends javax.swing.JFrame {
             public void run() {
                 new BotConsoleFrame().setVisible(true);
             }
+            
         });
-    }
+     }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private org.reprap.gui.botConsole.GenericExtruderTabPanel genericExtruderTabPanel1;

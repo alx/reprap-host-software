@@ -298,6 +298,11 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
         nudgeSize = size;
     }
     
+    public void setTargetPositionField(int coord) {
+        if (axisBeenHomed) targetPositionField.setText("" + coord);
+        else JOptionPane.showMessageDialog(null, "You must home the " + axis + " axis first!");
+    }
+    
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JLabel axisLabel;
     private javax.swing.JLabel currentPositionLabel;
