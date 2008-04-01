@@ -6,6 +6,8 @@
 
 package org.reprap.gui.botConsole;
 
+import java.net.URI;
+import java.awt.Desktop;
 /**
  *
  * @author  en0es
@@ -40,18 +42,18 @@ public class PrintTabPanel extends javax.swing.JPanel {
         jButton1 = new javax.swing.JButton();
 
         printButton.setBackground(new java.awt.Color(51, 204, 0));
-        printButton.setLabel("Print");
+        printButton.setLabel("Print"); // NOI18N
 
         pauseButton.setBackground(new java.awt.Color(255, 204, 0));
-        pauseButton.setLabel("Pause");
+        pauseButton.setLabel("Pause"); // NOI18N
 
         pauseButton1.setBackground(new java.awt.Color(255, 0, 0));
         pauseButton1.setFont(new java.awt.Font("Dialog", 1, 12));
-        pauseButton1.setLabel("STOP !");
+        pauseButton1.setLabel("STOP !"); // NOI18N
 
-        jCheckBox1.setText("Pause @ end of layer");
+        jCheckBox1.setText("Pause @ end of layer"); // NOI18N
 
-        jCheckBox2.setText("Pause @ end of segment");
+        jCheckBox2.setText("Pause @ end of segment"); // NOI18N
         jCheckBox2.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jCheckBox2ActionPerformed(evt);
@@ -60,24 +62,24 @@ public class PrintTabPanel extends javax.swing.JPanel {
 
         jLabel1.setFont(new java.awt.Font("Tahoma", 0, 12));
         jLabel1.setHorizontalAlignment(javax.swing.SwingConstants.RIGHT);
-        jLabel1.setText("000/000");
+        jLabel1.setText("000/000"); // NOI18N
 
         jLabel2.setFont(new java.awt.Font("Tahoma", 0, 12));
-        jLabel2.setText("Expected build length:");
+        jLabel2.setText("Expected build length:"); // NOI18N
 
         jLabel3.setFont(new java.awt.Font("Tahoma", 0, 12));
-        jLabel3.setText("00:00");
+        jLabel3.setText("00:00"); // NOI18N
 
         jLabel4.setFont(new java.awt.Font("Tahoma", 0, 12));
-        jLabel4.setText("Expected finsh time:");
+        jLabel4.setText("Expected finsh time:"); // NOI18N
 
         jLabel5.setFont(new java.awt.Font("Tahoma", 0, 12));
-        jLabel5.setText("00:00");
+        jLabel5.setText("00:00"); // NOI18N
 
         jLabel6.setFont(new java.awt.Font("Tahoma", 0, 12));
-        jLabel6.setText("Layer progress:");
+        jLabel6.setText("Layer progress:"); // NOI18N
 
-        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/reprap/gui/botConsole/rr-logo-tiny.gif"))); // NOI18N
+        jButton1.setIcon(new javax.swing.ImageIcon(getClass().getResource("/org/reprap/gui/botConsole/rr-logo-green-url.png"))); // NOI18N
         jButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 jButton1ActionPerformed(evt);
@@ -102,8 +104,8 @@ public class PrintTabPanel extends javax.swing.JPanel {
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(jCheckBox1)
                                     .addComponent(jCheckBox2))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 125, Short.MAX_VALUE)
-                                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 160, javax.swing.GroupLayout.PREFERRED_SIZE))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 95, Short.MAX_VALUE)
+                                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
@@ -141,7 +143,7 @@ public class PrintTabPanel extends javax.swing.JPanel {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel2)
                             .addComponent(jLabel3)))
-                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 46, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 72, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(jLabel4)
@@ -159,7 +161,14 @@ public class PrintTabPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_jCheckBox2ActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
-        // TODO add your handling code here:
+        
+        try {
+            URI url = new URI("http://reprap.org");
+            Desktop.getDesktop().browse(url);
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+
     }//GEN-LAST:event_jButton1ActionPerformed
     
     

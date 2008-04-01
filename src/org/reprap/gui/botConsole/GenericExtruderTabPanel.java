@@ -237,10 +237,10 @@ public class GenericExtruderTabPanel extends javax.swing.JPanel {
                 .addComponent(motorSpeedField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel12)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 149, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 106, Short.MAX_VALUE)
                 .addComponent(motorReverseCheck)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(extrudeButton)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(extrudeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
         jPanel3Layout.setVerticalGroup(
@@ -249,8 +249,8 @@ public class GenericExtruderTabPanel extends javax.swing.JPanel {
                 .addComponent(jLabel11)
                 .addComponent(motorSpeedField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addComponent(jLabel12)
-                .addComponent(extrudeButton)
-                .addComponent(motorReverseCheck))
+                .addComponent(motorReverseCheck)
+                .addComponent(extrudeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Maintenance"));
@@ -444,13 +444,9 @@ public class GenericExtruderTabPanel extends javax.swing.JPanel {
         if (colorFactor > 1) colorFactor = 1;
         if (colorFactor < 0) colorFactor = 0;
 
-        System.out.println(colorFactor);
-        
         int red = (int)(colorFactor * 255.0);
         int blue = 255-(int)(colorFactor * 255.0);
-      
-        System.out.println(colorFactor + " " + red + " " + blue);
-        
+
         c = new Color(red, 0, blue);
         
         tempColor.setBackground(c);
