@@ -7,12 +7,16 @@
 package org.reprap.gui.botConsole;
 
 import org.reprap.Preferences;
-import org.reprap.comms.Communicator;
 import org.reprap.comms.snap.SNAPAddress;
 import org.reprap.comms.snap.SNAPCommunicator;
 import org.reprap.devices.GenericExtruder;
 import org.reprap.gui.Utility;
 import javax.swing.JOptionPane;
+import org.reprap.devices.GenericExtruder;
+
+import org.reprap.machines.Reprap;
+import org.reprap.comms.Communicator;
+
 /**
  *
  * @author  Ed Sells, March 2008
@@ -32,6 +36,9 @@ public class BotConsoleFrame extends javax.swing.JFrame {
             JOptionPane.showMessageDialog(null, e.getMessage());
             return;
         }
+        
+        
+
         initComponents();
         xYZTabPanel1.setBedPanelDimensions();
     }
@@ -39,9 +46,13 @@ public class BotConsoleFrame extends javax.swing.JFrame {
     // Comms variables
     private final int localNodeNumber = 0;
     private static Communicator communicator;
-    private GenericExtruder extruder = null;
+    private GenericExtruderTabPanel[] extruderPanel;
+    private static Reprap reprap;
     
     private void initComms() throws Exception {
+        
+//        reprap = new Reprap();
+        
         SNAPAddress myAddress = new SNAPAddress(localNodeNumber);
 		
         String port = Preferences.loadGlobalString("Port(name)");
@@ -64,13 +75,11 @@ public class BotConsoleFrame extends javax.swing.JFrame {
 
                 throw new Exception(err);
         }
-
-        if (err.length() == 0)
-        {
-                extruder = new GenericExtruder(communicator,
-                                new SNAPAddress(Preferences.loadGlobalString("Extruder0_Address")),
-                                Preferences.getGlobalPreferences(), 0);
-        }
+        
+        // ID the number of extruder
+        extruderCount = Preferences.loadGlobalInt("NumberOfExtruders");
+        if (extruderCount < 1)
+            throw new Exception("A Reprap printer must contain at least one extruder");
     }
     
 //    	public void dispose() {
@@ -97,15 +106,16 @@ public class BotConsoleFrame extends javax.swing.JFrame {
     private void initComponents() {
 
         jTabbedPane1 = new javax.swing.JTabbedPane();
+        initialiseExtruderPanels();
         printTabPanel1 = new org.reprap.gui.botConsole.PrintTabPanel();
         xYZTabPanel1 = new org.reprap.gui.botConsole.XYZTabPanel();
-        genericExtruderTabPanel1 = new org.reprap.gui.botConsole.GenericExtruderTabPanel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
         jTabbedPane1.addTab("Print", printTabPanel1);
         jTabbedPane1.addTab("XYZ", xYZTabPanel1);
-        jTabbedPane1.addTab("Extruder #X", genericExtruderTabPanel1);
+
+        addExtruderPanels();
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -134,7 +144,6 @@ public class BotConsoleFrame extends javax.swing.JFrame {
      }
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private org.reprap.gui.botConsole.GenericExtruderTabPanel genericExtruderTabPanel1;
     private javax.swing.JTabbedPane jTabbedPane1;
     private org.reprap.gui.botConsole.PrintTabPanel printTabPanel1;
     private org.reprap.gui.botConsole.XYZTabPanel xYZTabPanel1;
@@ -145,10 +154,50 @@ public class BotConsoleFrame extends javax.swing.JFrame {
     }
     
     private static int motorID = 0;
+
     
     public static int getMotorID() {
         motorID++;
         return motorID;
     }
+    
+    private void initialiseExtruderPanels() {
+
+        extruderPanel = new GenericExtruderTabPanel[extruderCount];
+        for (int i = 0; i < extruderCount; i++) {
+            extruderPanel[i] = new GenericExtruderTabPanel();
+            try {
+                extruderPanel[i].initialiseExtruders(i);
+            }
+            catch (Exception e) {
+                System.out.println("Failure trying to initialise extruders in botConsole: " + e);
+                JOptionPane.showMessageDialog(null, e.getMessage());
+                return;
+            }            
+            try {
+                extruderPanel[i].setPrefs();
+            }
+            catch (Exception e) {
+                System.out.println("Problem loading prefs for Extruder " + i);
+                JOptionPane.showMessageDialog(null, "Problem loading prefs for Extruder " + i);
+            }
+        }
+    }
+    
+    private void addExtruderPanels() {
+        
+        for (int i = 0; i < extruderCount; i++) {
+            jTabbedPane1.addTab("Extruder " + i, extruderPanel[i]);
+        }
+    }
+    
+
+
+
+    private int extruderCount;
+    private int currentExtruder;
+    
+ 
+    		
     
 }

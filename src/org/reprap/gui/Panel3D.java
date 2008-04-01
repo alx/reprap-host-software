@@ -488,7 +488,12 @@ abstract public class Panel3D extends JPanel {
 		path = getStlBackground("lib/");
 		if (path != null)
 			return path;
-		path = getStlBackground("../lib/");
+                path = getStlBackground("../lib/");
+		if (path != null)
+			return path;
+                
+                // for eD's version of a NetBeans project - improvements welcome!
+		path = getStlBackground("../host/lib/");
 		if (path != null)
 			return path;
 		

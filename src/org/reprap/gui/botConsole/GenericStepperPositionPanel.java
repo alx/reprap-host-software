@@ -251,7 +251,7 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
         fastSpeed = speed;
     }
     
-    private double getTargetPositionInMM() {
+    public double getTargetPositionInMM() {
         double targetMM = Double.parseDouble(targetPositionField.getText());
         if (targetMM > axisLength) {
             targetMM = axisLength;

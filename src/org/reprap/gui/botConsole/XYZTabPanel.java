@@ -23,7 +23,8 @@ public class XYZTabPanel extends javax.swing.JPanel {
     public XYZTabPanel() {
    
         initComponents(); 
-
+        bedPanel1.setDimensions();
+        
         try {
             setPrefs(); 
         }
