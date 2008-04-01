@@ -1,21 +1,20 @@
 /*
- * BotConsoleFrame.java
+ * !!!!!
+ * NOTE: PLEASE ONLY EDIT THIS USING THE NETBEANS IDE 6.0.1 OR HIGHER!!!!
+ * !!!!!
+ * 
+ * ... an .xml file is associated with this class. Cheers.
  *
+ * BotConsoleFrame.java
+ * 
  * Created on 28 March 2008, 08:35
  */
 
 package org.reprap.gui.botConsole;
 
 import org.reprap.Preferences;
-import org.reprap.comms.snap.SNAPAddress;
-import org.reprap.comms.snap.SNAPCommunicator;
-import org.reprap.devices.GenericExtruder;
-import org.reprap.gui.Utility;
 import javax.swing.JOptionPane;
-import org.reprap.devices.GenericExtruder;
-
 import org.reprap.machines.Reprap;
-import org.reprap.comms.Communicator;
 
 /**
  *
@@ -29,52 +28,24 @@ public class BotConsoleFrame extends javax.swing.JFrame {
     /** Creates new form BotConsoleFrame */
     public BotConsoleFrame() {
         try {
-            initComms();
+            checkPrefs();
         }
         catch (Exception e) {
             System.out.println("Failure trying to initialise comms in botConsole: " + e);
             JOptionPane.showMessageDialog(null, e.getMessage());
             return;
         }
-        
-        
 
         initComponents();
         xYZTabPanel1.setBedPanelDimensions();
     }
     
     // Comms variables
-    private final int localNodeNumber = 0;
-    private static Communicator communicator;
+
     private GenericExtruderTabPanel[] extruderPanel;
     private static Reprap reprap;
     
-    private void initComms() throws Exception {
-        
-//        reprap = new Reprap();
-        
-        SNAPAddress myAddress = new SNAPAddress(localNodeNumber);
-		
-        String port = Preferences.loadGlobalString("Port(name)");
-        String err = "";
-
-        try {
-                communicator = new SNAPCommunicator(port, myAddress);
-        }
-        catch (gnu.io.NoSuchPortException e)
-        {
-                err = "There was an error opening " + port + ".\n\n";
-                err += "Check to make sure that is the right path.\n";
-                err += "Check that you have your serial connector plugged in.";
-
-                throw new Exception(err);
-        }
-        catch (gnu.io.PortInUseException e)
-        {
-                err = "The " + port + " port is already in use by another program.";
-
-                throw new Exception(err);
-        }
+    private void checkPrefs() throws Exception {
         
         // ID the number of extruder
         extruderCount = Preferences.loadGlobalInt("NumberOfExtruders");
@@ -148,10 +119,6 @@ public class BotConsoleFrame extends javax.swing.JFrame {
     private org.reprap.gui.botConsole.PrintTabPanel printTabPanel1;
     private org.reprap.gui.botConsole.XYZTabPanel xYZTabPanel1;
     // End of variables declaration//GEN-END:variables
-    
-    public static Communicator getCommunicator() {
-        return communicator;
-    }
     
     private static int motorID = 0;
 

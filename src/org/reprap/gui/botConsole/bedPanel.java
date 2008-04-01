@@ -1,4 +1,11 @@
 /*
+ * 
+ * !!!!!
+ * NOTE: PLEASE ONLY EDIT THIS USING THE NETBEANS IDE 6.0.1 OR HIGHER!!!!
+ * !!!!!
+ * 
+ * ... an .xml file is associated with this class. Cheers.
+ *
  * bedPanel.java
  *
  * Created on 30 March 2008, 18:55

@@ -26,7 +26,7 @@ public abstract class Device {
 	 * Communicator
 	 * 
 	 */
-	private Communicator communicator;
+	private Communicator communicator = org.reprap.Main.getCommunicator();
 
 	/**
 	 * Basic constructor for a device.

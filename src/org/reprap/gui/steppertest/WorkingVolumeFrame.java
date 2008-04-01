@@ -59,7 +59,7 @@ public class WorkingVolumeFrame  extends JFrame {
 	
 	private final int localNodeNumber = 0;
 	JPanel motorX, motorY, motorZ;
-	Communicator communicator;
+	Communicator communicator = org.reprap.Main.getCommunicator();
 	
 	public WorkingVolumeFrame()
 	{
@@ -117,23 +117,23 @@ public class WorkingVolumeFrame  extends JFrame {
 		String port = Preferences.loadGlobalString("Port(name)");
 		String err = "";
 		
-		try {
-			communicator = new SNAPCommunicator(port, myAddress);
-		}
-		catch (gnu.io.NoSuchPortException e)
-		{
-			err = "There was an error opening " + port + ".\n\n";
-			err += "Check to make sure that is the right path.\n";
-			err += "Check that you have your serial connector plugged in.";
-			
-			throw new Exception(err);
-		}
-		catch (gnu.io.PortInUseException e)
-		{
-			err = "The " + port + " port is already in use by another program.";
-			
-			throw new Exception(err);
-		}
+//		try {
+//			communicator = new SNAPCommunicator(port, myAddress);
+//		}
+//		catch (gnu.io.NoSuchPortException e)
+//		{
+//			err = "There was an error opening " + port + ".\n\n";
+//			err += "Check to make sure that is the right path.\n";
+//			err += "Check that you have your serial connector plugged in.";
+//			
+//			throw new Exception(err);
+//		}
+//		catch (gnu.io.PortInUseException e)
+//		{
+//			err = "The " + port + " port is already in use by another program.";
+//			
+//			throw new Exception(err);
+//		}
 	}
 	
 	private void addAxisControls() throws Exception {

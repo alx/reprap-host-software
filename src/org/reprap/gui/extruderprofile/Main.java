@@ -47,7 +47,7 @@ public class Main extends javax.swing.JDialog {
 	private Thread pollThread = null;
 	private boolean pollThreadExiting = false;
 	
-	private Communicator communicator;
+	private Communicator communicator =  org.reprap.Main.getCommunicator();;
 	private GenericExtruder extruder;
 
 	private boolean profileInProgress = false;
@@ -70,10 +70,10 @@ public class Main extends javax.swing.JDialog {
 	public Main(JFrame frame) throws Exception {
 		super(frame);
 		
-		SNAPAddress myAddress = new SNAPAddress(localNodeNumber); 
+//		SNAPAddress myAddress = new SNAPAddress(localNodeNumber); 
 		this.setResizable(false);
-		communicator = new SNAPCommunicator(Preferences.loadGlobalString("Port(name)"),
-				myAddress);
+//		communicator = new SNAPCommunicator(Preferences.loadGlobalString("Port(name)"),
+//				myAddress);
 
 		extruder = new GenericExtruder(communicator,
 				new SNAPAddress(Preferences.loadGlobalString("Extruder0_Address")),
@@ -171,7 +171,7 @@ public class Main extends javax.swing.JDialog {
 			pollThread.interrupt();
 		}
 		extruder.dispose();
-		communicator.dispose();
+//		communicator.dispose();
 		super.dispose();
 	}
 	

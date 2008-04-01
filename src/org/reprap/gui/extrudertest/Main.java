@@ -53,7 +53,7 @@ public class Main extends javax.swing.JDialog {
 	private JTextField desiredTemperature;
 	private JTextField desiredExtruder;
 	
-	private Communicator communicator;
+	private Communicator communicator = org.reprap.Main.getCommunicator();;
 	private GenericExtruder extruders[];
 	private int extruderCount;
 	private int extruder;
@@ -80,10 +80,10 @@ public class Main extends javax.swing.JDialog {
 	public Main(JFrame frame) throws Exception {
 		super(frame);
 
-		SNAPAddress myAddress = new SNAPAddress(localNodeNumber); 
+//		SNAPAddress myAddress = new SNAPAddress(localNodeNumber); 
 		this.setResizable(false);
-		communicator = new SNAPCommunicator(Preferences.loadGlobalString("Port(name)"),
-				myAddress);
+//		communicator = new SNAPCommunicator(Preferences.loadGlobalString("Port(name)"),
+//				myAddress);
 		
 		extruderCount = Preferences.loadGlobalInt("NumberOfExtruders");
 		extruders = new GenericExtruder[extruderCount];
@@ -158,7 +158,7 @@ public class Main extends javax.swing.JDialog {
 			pollThread.interrupt();
 		}
 		extruders[extruder].dispose();
-		communicator.dispose();
+//		communicator.dispose();
 		super.dispose();
 	}
 	

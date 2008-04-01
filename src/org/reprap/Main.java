@@ -34,6 +34,10 @@ import org.reprap.gui.Preferences;
 import org.reprap.gui.PreviewPanel;
 import org.reprap.gui.RepRapBuild;
 import org.reprap.gui.Utility;
+import org.reprap.gui.botConsole.BotConsoleFrame;
+import org.reprap.comms.Communicator;
+import org.reprap.comms.snap.SNAPAddress;
+import org.reprap.comms.snap.SNAPCommunicator;
 
 /**
  *
@@ -92,6 +96,8 @@ class ExtensionFileFilter extends FileFilter {
 
 public class Main {
 
+    private static Communicator communicator;
+    
     // Window to walk the file tree
     
     private JFileChooser chooser;
@@ -105,7 +111,19 @@ public class Main {
     
     private JMenuItem cancelMenuItem;
     private JMenuItem produceProduceT, produceProduceB;
-	
+
+    public void setSegmentPause(boolean state) {
+        segmentPause.setState(state);
+    }
+    
+    public void setLayerPause(boolean state) {
+        layerPause.setState(state);
+    }
+    
+    public void clickCancel() {
+        cancelMenuItem.doClick();
+    }
+    
     private JSplitPane panel;
 	
 	public Main() {
@@ -271,6 +289,8 @@ public class Main {
 					preview.setCancelled(true);
 			}});
         produceMenu.add(cancelMenuItem);
+        
+        
         
         produceMenu.addSeparator();
 
@@ -467,7 +487,7 @@ public class Main {
 		t.start();
 	}
 	
-	private void onProduceB() {
+	public void onProduceB() {
         cancelMenuItem.setEnabled(true);
         produceProduceB.setEnabled(false);
 		Thread t = new Thread() {
@@ -633,22 +653,70 @@ public class Main {
 	}
 	
 	public static void main(String[] args) {
-		Thread.currentThread().setName("Main");
-		javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            
+            Thread.currentThread().setName("Main");
+            javax.swing.SwingUtilities.invokeLater(new Runnable() {
+            
             public void run() {
-	            	try {
-	            		Thread.currentThread().setName("RepRap");
-		        		Main gui = new Main();
-		        		gui.createAndShowGUI();
-	            	}
-	            	catch (Exception ex) {
-	            		JOptionPane.showMessageDialog(null, "General exception: " + ex);
-	        			ex.printStackTrace();
-	            	}
+                try {
+                     initComms();
+                }
+                catch (Exception ex) {
+                        JOptionPane.showMessageDialog(null, "Error initialising comms: " + ex);
+                                ex.printStackTrace();
+                }
+                
+                BotConsoleFrame.main(null);
+                
+                try {
+                        Thread.currentThread().setName("RepRap");
+                                gui = new Main();
+                                gui.createAndShowGUI();
+                }
+                catch (Exception ex) {
+                        JOptionPane.showMessageDialog(null, "Error in the main GUI: " + ex);
+                                ex.printStackTrace();
+                }
+                
+                
             }
         });
 
 	}
+        
+        
+        public static Main gui;
+        
+        private static void initComms() throws Exception {
+
+            SNAPAddress myAddress = new SNAPAddress(localNodeNumber);
+
+            String port = org.reprap.Preferences.loadGlobalString("Port(name)");
+            String err = "";
+
+            try {
+                    communicator = new SNAPCommunicator(port, myAddress);
+            }
+            catch (gnu.io.NoSuchPortException e)
+            {
+                    err = "There was an error opening " + port + ".\n\n";
+                    err += "Check to make sure that is the right path.\n";
+                    err += "Check that you have your serial connector plugged in.";
+
+                    throw new Exception(err);
+            }
+            catch (gnu.io.PortInUseException e)
+            {
+                    err = "The " + port + " port is already in use by another program.";
+
+                    throw new Exception(err);
+            }
+            }
+
+            public static Communicator getCommunicator() {
+                return communicator;
+            }
 
 
-}
+            private static final int localNodeNumber = 0;
+        }

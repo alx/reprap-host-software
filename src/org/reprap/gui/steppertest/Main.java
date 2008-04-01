@@ -44,7 +44,7 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 	StepperPanel motorX, motorY, motorZ;
 	GenericExtruder extruder = null;
 	
-	Communicator communicator;
+	Communicator communicator = org.reprap.Main.getCommunicator();
 	
 	public static void main(String[] args) throws Exception {
 		Thread.currentThread().setName("Stepper Exerciser");
@@ -70,27 +70,27 @@ public class Main extends javax.swing.JDialog implements ChangeListener {
 		String port = Preferences.loadGlobalString("Port(name)");
 		String err = "";
 		
-		try {
-			communicator = new SNAPCommunicator(port, myAddress);
-		}
-		catch (gnu.io.NoSuchPortException e)
-		{
-			err = "There was an error opening " + port + ".\n\n";
-			err += "Check to make sure that is the right path.\n";
-			err += "Check that you have your serial connector plugged in.";
-			
-			throw new Exception(err);
-		}
-		catch (gnu.io.PortInUseException e)
-		{
-			err = "The " + port + " port is already in use by another program.";
-			
-			throw new Exception(err);
-		}
+//		try {
+//			communicator = new SNAPCommunicator(port, myAddress);
+//		}
+//		catch (gnu.io.NoSuchPortException e)
+//		{
+//			err = "There was an error opening " + port + ".\n\n";
+//			err += "Check to make sure that is the right path.\n";
+//			err += "Check that you have your serial connector plugged in.";
+//			
+//			throw new Exception(err);
+//		}
+//		catch (gnu.io.PortInUseException e)
+//		{
+//			err = "The " + port + " port is already in use by another program.";
+//			
+//			throw new Exception(err);
+//		}
 		
 		if (err.length() == 0)
 		{
-			extruder = new GenericExtruder(communicator,
+			extruder = new GenericExtruder(org.reprap.Main.getCommunicator(),
 					new SNAPAddress(Preferences.loadGlobalString("Extruder0_Address")),
 					Preferences.getGlobalPreferences(), 0);
 		

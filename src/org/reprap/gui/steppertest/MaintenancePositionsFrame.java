@@ -45,7 +45,7 @@ public class MaintenancePositionsFrame  extends JFrame {
 	// 'Talk to bot' globals
 
 	private final int localNodeNumber = 0;
-	Communicator communicator;
+	Communicator communicator = org.reprap.Main.getCommunicator();
 	
 	// Operation globals
 	GenericStepperMotor motorX, motorY;

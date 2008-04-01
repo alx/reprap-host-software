@@ -28,8 +28,8 @@
                               </Group>
                               <EmptySpace max="-2" attributes="0"/>
                               <Group type="103" groupAlignment="0" attributes="0">
-                                  <Component id="jCheckBox1" alignment="0" min="-2" max="-2" attributes="0"/>
-                                  <Component id="jCheckBox2" min="-2" max="-2" attributes="0"/>
+                                  <Component id="layerPauseCheck" alignment="0" min="-2" max="-2" attributes="0"/>
+                                  <Component id="segmentPauseCheck" min="-2" max="-2" attributes="0"/>
                               </Group>
                               <EmptySpace pref="95" max="32767" attributes="0"/>
                               <Component id="jButton1" min="-2" pref="190" max="-2" attributes="0"/>
@@ -69,9 +69,9 @@
                       <Group type="103" groupAlignment="0" attributes="0">
                           <Component id="printButton" alignment="0" min="-2" pref="50" max="-2" attributes="1"/>
                           <Group type="102" alignment="0" attributes="0">
-                              <Component id="jCheckBox1" min="-2" max="-2" attributes="0"/>
+                              <Component id="layerPauseCheck" min="-2" max="-2" attributes="0"/>
                               <EmptySpace max="-2" attributes="0"/>
-                              <Component id="jCheckBox2" min="-2" max="-2" attributes="0"/>
+                              <Component id="segmentPauseCheck" min="-2" max="-2" attributes="0"/>
                           </Group>
                       </Group>
                       <EmptySpace max="-2" attributes="0"/>
@@ -108,6 +108,9 @@
         </Property>
         <Property name="label" type="java.lang.String" value="Print" noResource="true"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="printButtonActionPerformed"/>
+      </Events>
     </Component>
     <Component class="java.awt.Button" name="pauseButton">
       <Properties>
@@ -116,6 +119,9 @@
         </Property>
         <Property name="label" type="java.lang.String" value="Pause" noResource="true"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="pauseButtonActionPerformed"/>
+      </Events>
     </Component>
     <Component class="java.awt.Button" name="pauseButton1">
       <Properties>
@@ -127,18 +133,24 @@
         </Property>
         <Property name="label" type="java.lang.String" value="STOP !" noResource="true"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="pauseButton1ActionPerformed"/>
+      </Events>
     </Component>
-    <Component class="javax.swing.JCheckBox" name="jCheckBox1">
+    <Component class="javax.swing.JCheckBox" name="layerPauseCheck">
       <Properties>
         <Property name="text" type="java.lang.String" value="Pause @ end of layer" noResource="true"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="layerPauseCheckActionPerformed"/>
+      </Events>
     </Component>
-    <Component class="javax.swing.JCheckBox" name="jCheckBox2">
+    <Component class="javax.swing.JCheckBox" name="segmentPauseCheck">
       <Properties>
         <Property name="text" type="java.lang.String" value="Pause @ end of segment" noResource="true"/>
       </Properties>
       <Events>
-        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="jCheckBox2ActionPerformed"/>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="segmentPauseCheckActionPerformed"/>
       </Events>
     </Component>
     <Component class="javax.swing.JProgressBar" name="jProgressBar1">

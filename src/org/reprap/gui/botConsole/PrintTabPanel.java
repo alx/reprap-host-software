@@ -1,4 +1,11 @@
 /*
+ * 
+ * !!!!!
+ * NOTE: PLEASE ONLY EDIT THIS USING THE NETBEANS IDE 6.0.1 OR HIGHER!!!!
+ * !!!!!
+ * 
+ * ... an .xml file is associated with this class. Cheers.
+ * 
  * PrintPanel.java
  *
  * Created on 27 March 2008, 14:18
@@ -30,8 +37,8 @@ public class PrintTabPanel extends javax.swing.JPanel {
         printButton = new java.awt.Button();
         pauseButton = new java.awt.Button();
         pauseButton1 = new java.awt.Button();
-        jCheckBox1 = new javax.swing.JCheckBox();
-        jCheckBox2 = new javax.swing.JCheckBox();
+        layerPauseCheck = new javax.swing.JCheckBox();
+        segmentPauseCheck = new javax.swing.JCheckBox();
         jProgressBar1 = new javax.swing.JProgressBar();
         jLabel1 = new javax.swing.JLabel();
         jLabel2 = new javax.swing.JLabel();
@@ -43,20 +50,40 @@ public class PrintTabPanel extends javax.swing.JPanel {
 
         printButton.setBackground(new java.awt.Color(51, 204, 0));
         printButton.setLabel("Print"); // NOI18N
+        printButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                printButtonActionPerformed(evt);
+            }
+        });
 
         pauseButton.setBackground(new java.awt.Color(255, 204, 0));
         pauseButton.setLabel("Pause"); // NOI18N
+        pauseButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                pauseButtonActionPerformed(evt);
+            }
+        });
 
         pauseButton1.setBackground(new java.awt.Color(255, 0, 0));
         pauseButton1.setFont(new java.awt.Font("Dialog", 1, 12));
         pauseButton1.setLabel("STOP !"); // NOI18N
-
-        jCheckBox1.setText("Pause @ end of layer"); // NOI18N
-
-        jCheckBox2.setText("Pause @ end of segment"); // NOI18N
-        jCheckBox2.addActionListener(new java.awt.event.ActionListener() {
+        pauseButton1.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                jCheckBox2ActionPerformed(evt);
+                pauseButton1ActionPerformed(evt);
+            }
+        });
+
+        layerPauseCheck.setText("Pause @ end of layer"); // NOI18N
+        layerPauseCheck.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                layerPauseCheckActionPerformed(evt);
+            }
+        });
+
+        segmentPauseCheck.setText("Pause @ end of segment"); // NOI18N
+        segmentPauseCheck.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                segmentPauseCheckActionPerformed(evt);
             }
         });
 
@@ -102,8 +129,8 @@ public class PrintTabPanel extends javax.swing.JPanel {
                                     .addComponent(printButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                                    .addComponent(jCheckBox1)
-                                    .addComponent(jCheckBox2))
+                                    .addComponent(layerPauseCheck)
+                                    .addComponent(segmentPauseCheck))
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 95, Short.MAX_VALUE)
                                 .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)
@@ -132,9 +159,9 @@ public class PrintTabPanel extends javax.swing.JPanel {
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(printButton, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
                             .addGroup(layout.createSequentialGroup()
-                                .addComponent(jCheckBox1)
+                                .addComponent(layerPauseCheck)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(jCheckBox2)))
+                                .addComponent(segmentPauseCheck)))
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(pauseButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
@@ -156,9 +183,9 @@ public class PrintTabPanel extends javax.swing.JPanel {
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void jCheckBox2ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jCheckBox2ActionPerformed
-        // TODO add your handling code here:
-    }//GEN-LAST:event_jCheckBox2ActionPerformed
+    private void segmentPauseCheckActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_segmentPauseCheckActionPerformed
+        org.reprap.Main.gui.setSegmentPause(segmentPauseCheck.isSelected());
+}//GEN-LAST:event_segmentPauseCheckActionPerformed
 
     private void jButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_jButton1ActionPerformed
         
@@ -170,12 +197,26 @@ public class PrintTabPanel extends javax.swing.JPanel {
         }
 
     }//GEN-LAST:event_jButton1ActionPerformed
+
+    private void printButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_printButtonActionPerformed
+        org.reprap.Main.gui.onProduceB();
+    }//GEN-LAST:event_printButtonActionPerformed
+
+    private void pauseButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pauseButtonActionPerformed
+        org.reprap.Main.gui.clickCancel();
+    }//GEN-LAST:event_pauseButtonActionPerformed
+
+    private void pauseButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_pauseButton1ActionPerformed
+        org.reprap.Main.gui.clickCancel();
+    }//GEN-LAST:event_pauseButton1ActionPerformed
+
+    private void layerPauseCheckActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_layerPauseCheckActionPerformed
+        org.reprap.Main.gui.setLayerPause(layerPauseCheck.isSelected());
+}//GEN-LAST:event_layerPauseCheckActionPerformed
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton jButton1;
-    private javax.swing.JCheckBox jCheckBox1;
-    private javax.swing.JCheckBox jCheckBox2;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
@@ -183,9 +224,11 @@ public class PrintTabPanel extends javax.swing.JPanel {
     private javax.swing.JLabel jLabel5;
     private javax.swing.JLabel jLabel6;
     private javax.swing.JProgressBar jProgressBar1;
+    private javax.swing.JCheckBox layerPauseCheck;
     private java.awt.Button pauseButton;
     private java.awt.Button pauseButton1;
     private java.awt.Button printButton;
+    private javax.swing.JCheckBox segmentPauseCheck;
     // End of variables declaration//GEN-END:variables
     
 }

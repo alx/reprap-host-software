@@ -1,6 +1,12 @@
 /*
+ * !!!!!
+ * NOTE: PLEASE ONLY EDIT THIS USING THE NETBEANS IDE 6.0.1 OR HIGHER!!!!
+ * !!!!!
+ * 
+ * ... an .xml file is associated with this class. Cheers.
+ * 
  * GenericStepperPositionPanel.java
- *
+ * 
  * Created on 27 March 2008, 16:54
  */
 
@@ -47,7 +53,8 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
     private double nudgeSize;
         
     private void setupComms() throws IOException {
-        communicator = BotConsoleFrame.getCommunicator();
+        
+        communicator = org.reprap.Main.getCommunicator();
         motorID = BotConsoleFrame.getMotorID();
 
         switch(motorID)

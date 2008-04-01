@@ -39,7 +39,7 @@ public class Reprap implements CartesianPrinter {
 	/**
 	 * 
 	 */
-	private Communicator communicator;
+	private Communicator communicator = org.reprap.Main.getCommunicator();
 	
 	/**
 	 * 
@@ -143,8 +143,8 @@ public class Reprap implements CartesianPrinter {
 		
 		String commPortName = prefs.loadString("Port(name)");
 		
-		SNAPAddress myAddress = new SNAPAddress(localNodeNumber); 
-		communicator = new SNAPCommunicator(commPortName, myAddress);
+//		SNAPAddress myAddress = new SNAPAddress(localNodeNumber); 
+//		communicator = new SNAPCommunicator(commPortName, myAddress);
 		
 		motorX = new GenericStepperMotor(communicator,
 				new SNAPAddress(prefs.loadInt("XAxisAddress")), prefs, 1);
@@ -446,8 +446,8 @@ public class Reprap implements CartesianPrinter {
 		motorZ.dispose();
 		for(int i = 0; i < extruderCount; i++)
 			extruders[i].dispose();
-		communicator.close();
-		communicator.dispose();
+//		communicator.close();
+//		communicator.dispose();
 	}
 
 	/**

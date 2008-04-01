@@ -32,13 +32,12 @@ public class AxisRepeatabilityTest {
 		int axisRepeatabilityRuns = 20;
 		int axisRepeatabilityStepsPerStroke = 400;
 		int axisRepeatabilityDelay = 3000; 
-		
-		
 		final int localNodeNumber = 0;
-
-
 		int address;
-		
+
+                SNAPAddress myAddress = new SNAPAddress(localNodeNumber);
+		Communicator communicator = org.reprap.Main.getCommunicator();
+                
 		try
 		{
 			address = Preferences.loadGlobalInt("Axis" + motorId + "Address");
@@ -48,18 +47,18 @@ public class AxisRepeatabilityTest {
 			return;
 		}
 			
-		SNAPAddress myAddress = new SNAPAddress(localNodeNumber);
-		Communicator communicator;
-		try
-		{		
-			communicator = new SNAPCommunicator(Preferences.loadGlobalString("Port"),
-				myAddress);
-		}catch(Exception ex)
-		{
-			System.err.println("Argh 2!");
-			return;
-		}
-		GenericStepperMotor motor;
+
+//		try
+//		{		
+//			communicator = new SNAPCommunicator(Preferences.loadGlobalString("Port"),
+//				myAddress);
+//		}catch(Exception ex)
+//		{
+//			System.err.println("Argh 2!");
+//			return;
+//		}
+		
+                GenericStepperMotor motor;
 		try
 		{			
 			motor = new GenericStepperMotor(communicator, 
@@ -133,7 +132,7 @@ public class AxisRepeatabilityTest {
 						
 		}
 		System.out.println("All Done");
-		communicator.close();
+//		communicator.close();
 	}
 
 }

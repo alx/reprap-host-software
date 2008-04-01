@@ -1,4 +1,10 @@
 /*
+ * * !!!!!
+ * NOTE: PLEASE ONLY EDIT THIS USING THE NETBEANS IDE 6.0.1 OR HIGHER!!!!
+ * !!!!!
+ * 
+ * ... an .xml file is associated with this class. Cheers. 
+ *
  * GenericExtruderTabPanel.java
  *
  * Created on 27 March 2008, 18:22
@@ -54,7 +60,7 @@ public class GenericExtruderTabPanel extends javax.swing.JPanel {
         extruderID = id;
         prefix = "Extruder" + id + "_";
                 
-        extruder = new GenericExtruder(BotConsoleFrame.getCommunicator(),
+        extruder = new GenericExtruder(org.reprap.Main.getCommunicator(),
                     new SNAPAddress(Preferences.loadGlobalInt(prefix + "Address")), 
                     Preferences.getGlobalPreferences(), extruderID);
             
