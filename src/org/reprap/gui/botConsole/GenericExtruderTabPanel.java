@@ -50,7 +50,50 @@ public class GenericExtruderTabPanel extends javax.swing.JPanel {
                 }
         }
         };
-        pollThread.start();
+        
+        
+        try {
+            
+            // Test presence by pulsing fan
+            extruder.setCooler(true); 
+            extruder.setCooler(false); 
+            pollThread.start();
+        }
+        catch (Exception ex) {
+            deactivatePanel();
+            return;
+        }
+
+    }
+    
+    private void deactivatePanel() {
+//            extruder.dispose();
+            extruder = null;
+            coolingCheck.setEnabled(false);
+            currentTempLabel.setEnabled(false);
+            extrudeButton.setEnabled(false);
+            feedstockQtyLabel.setEnabled(false);
+            heatButton.setEnabled(false);
+            homeAllButton.setEnabled(false);
+            jLabel1.setEnabled(false);
+            jLabel11.setEnabled(false);
+            jLabel12.setEnabled(false);
+            jLabel4.setEnabled(false);
+            jLabel5.setEnabled(false);
+            jLabel6.setEnabled(false);
+            jLabel7.setEnabled(false);
+            jPanel2.setEnabled(false);
+            jPanel3.setEnabled(false);
+            jPanel4.setEnabled(false);
+            materialLabel.setEnabled(false);
+            motorReverseCheck.setEnabled(false);
+            motorSpeedField.setEnabled(false);
+            moveToSwapButton.setEnabled(false);
+            nozzleWipeButton.setEnabled(false);
+            targetTempField.setEnabled(false);
+            tempColor.setEnabled(false);
+            tempProgress.setEnabled(false);
+
     }
     
     private String prefix;

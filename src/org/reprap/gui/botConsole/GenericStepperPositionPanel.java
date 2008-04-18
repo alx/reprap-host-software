@@ -40,6 +40,26 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
       
         initComponents();
         axisLabel.setText(axis);
+        
+        try {
+            motor.setPosition(0);
+        } catch (Exception ex) {
+            deactivateMotorPanel();  
+            return;
+        }
+    }
+    
+    private void deactivateMotorPanel() {
+            motor.dispose();
+            motor = null;
+            axisLabel.setEnabled(false);
+            currentPositionLabel.setEnabled(false);
+            endButton.setEnabled(false);
+            homeButton.setEnabled(false);
+            jLabel3.setEnabled(false);
+            stepDownButton1.setEnabled(false);
+            stepUpButton.setEnabled(false);
+            targetPositionField.setEnabled(false);
     }
     
     private Communicator communicator;
