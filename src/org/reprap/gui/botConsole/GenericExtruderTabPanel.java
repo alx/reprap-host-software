@@ -50,19 +50,19 @@ public class GenericExtruderTabPanel extends javax.swing.JPanel {
                 }
         }
         };
+        pollThread.start(); 
         
-        
-        try {
-            
-            // Test presence by pulsing fan
-            extruder.setCooler(true); 
-            extruder.setCooler(false); 
-            pollThread.start();
-        }
-        catch (Exception ex) {
-            deactivatePanel();
-            return;
-        }
+//        try {
+//            
+//            // Test presence by pulsing fan
+//            extruder.setCooler(true); 
+//            extruder.setCooler(false); 
+////            pollThread.start();
+//        }
+//        catch (Exception ex) {
+//            deactivatePanel();
+//            return;
+//        }
 
     }
     
