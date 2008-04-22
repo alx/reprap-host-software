@@ -33,6 +33,8 @@ public class GenericExtruderTabPanel extends javax.swing.JPanel {
     /** Creates new form GenericExtruderTabPanel */
     public GenericExtruderTabPanel() {
         
+    	
+    	
         initComponents();
         
         pollThread = new Thread() {
@@ -52,23 +54,17 @@ public class GenericExtruderTabPanel extends javax.swing.JPanel {
         };
         pollThread.start(); 
         
-//        try {
-//            
-//            // Test presence by pulsing fan
-//            extruder.setCooler(true); 
-//            extruder.setCooler(false); 
-////            pollThread.start();
-//        }
-//        catch (Exception ex) {
-//            deactivatePanel();
-//            return;
-//        }
+
 
     }
     
     private void deactivatePanel() {
-//            extruder.dispose();
-            extruder = null;
+
+//        this.setEnabled(false);
+        System.out.println("Attempted to deactivate Extruder Panel");
+        ////            extruder.dispose();
+
+//            extruder = null;
             coolingCheck.setEnabled(false);
             currentTempLabel.setEnabled(false);
             extrudeButton.setEnabled(false);
@@ -100,12 +96,18 @@ public class GenericExtruderTabPanel extends javax.swing.JPanel {
 
     public void initialiseExtruders(int id) throws Exception {
         
+    	
         extruderID = id;
         prefix = "Extruder" + id + "_";
                 
         extruder = new GenericExtruder(org.reprap.Main.getCommunicator(),
                     new SNAPAddress(Preferences.loadGlobalInt(prefix + "Address")), 
                     Preferences.getGlobalPreferences(), extruderID);
+        
+        if(!extruder.isAvailable()) 
+        {
+            deactivatePanel();
+        }
             
     }
     

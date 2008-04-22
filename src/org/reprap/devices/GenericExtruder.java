@@ -269,7 +269,7 @@ public class GenericExtruder extends Device implements Extruder{
 	 * Flag indicating if initialisation succeeded.  Usually this
 	 * indicates if the extruder is present in the network. 
 	 */
-	private boolean isCommsAvailable = false;
+	//private boolean isCommsAvailable = false;
 	
 	/**
 	 *  The colour black
@@ -404,17 +404,18 @@ public class GenericExtruder extends Device implements Extruder{
 		
 		wipeX = getNozzleWipeDatumX();
 		
-		// Check Extruder is available
+		//Anyone home?
+		if(!isAvailable())
+			return;
+		
+		// Set up thermometer
 		try {
-			getVersion();
 			setTempRange();
 		} catch (Exception ex) {
-			isCommsAvailable = false;
 			return;
 		}
 		
-		isCommsAvailable = true;
-		
+
 		/*pollThread = new Thread() {
 			public void run() {
 				Thread.currentThread().setName("Extruder poll");
@@ -462,6 +463,11 @@ public class GenericExtruder extends Device implements Extruder{
 	 * @throws IOException
 	 */
 	public void setExtrusion(int speed) throws IOException {
+		if(!wasAvailable())
+		{
+			Debug.d("Attempting to control or interrogate non-existent extruder for " + material);
+			return;
+		}
 		setExtrusion(speed, false);
 	}
 	
@@ -475,6 +481,11 @@ public class GenericExtruder extends Device implements Extruder{
 	 * @throws IOException
 	 */
 	public void setExtrusion(int speed, boolean reverse) throws IOException {
+		if(!wasAvailable())
+		{
+			Debug.d("Attempting to control or interrogate non-existent extruder for " + material);
+			return;
+		}
 		// Assumption: Between t0 and maxSpeed, the speed is fairly linear
 		int scaledSpeed;
 		
@@ -502,6 +513,11 @@ public class GenericExtruder extends Device implements Extruder{
 	
 	public void heatOn() throws Exception 
 	{
+		if(!wasAvailable())
+		{
+			Debug.d("Attempting to control or interrogate non-existent extruder for " + material);
+			return;
+		}
 		setTemperature(extrusionTemp);
 	}
 	
@@ -509,6 +525,11 @@ public class GenericExtruder extends Device implements Extruder{
 	 * @see org.reprap.Extruder#setTemperature(double)
 	 */
 	public void setTemperature(double temperature) throws Exception {
+		if(!wasAvailable())
+		{
+			Debug.d("Attempting to control or interrogate non-existent extruder for " + material);
+			return;
+		}
 		setTemperature(temperature, true);
 	}
 	
@@ -581,6 +602,11 @@ public class GenericExtruder extends Device implements Extruder{
 	 * @throws IOException
 	 */
 	public void setHeater(int heat, double maxTemp) throws IOException {
+		if(!wasAvailable())
+		{
+			Debug.d("Attempting to control or interrogate non-existent extruder for " + material);
+			return;
+		}
 
 		double safetyResistance = calculateResistanceForTemperature(maxTemp);
 		// Determine equivalent raw value
@@ -646,6 +672,11 @@ public class GenericExtruder extends Device implements Extruder{
 	 * @return true if there is no material remaining
 	 */
 	public boolean isEmpty() {
+		if(!wasAvailable())
+		{
+			Debug.d("Attempting to control or interrogate non-existent extruder for " + material);
+			return true;
+		}
 		awaitSensorsInitialised();
 		TEMPpollcheck();
 		return currentMaterialOutSensor;
@@ -760,6 +791,11 @@ public class GenericExtruder extends Device implements Extruder{
 	 * @see org.reprap.Extruder#getTemperature()
 	 */
 	public double getTemperature() {
+		if(!wasAvailable())
+		{
+			Debug.d("Attempting to control or interrogate non-existent extruder for " + material);
+			return Preferences.absoluteZero();
+		}
 		awaitSensorsInitialised();
 		TEMPpollcheck();
 		//return tempVote();
@@ -811,6 +847,11 @@ public class GenericExtruder extends Device implements Extruder{
 	 * @see org.reprap.Extruder#setCooler(boolean)
 	 */
 	public void setCooler(boolean f) throws IOException {
+		if(!wasAvailable())
+		{
+			Debug.d("Attempting to control or interrogate non-existent extruder for " + material);
+			return;
+		}
 		lock();
 		try {
 			OutgoingMessage request =
@@ -920,6 +961,7 @@ public class GenericExtruder extends Device implements Extruder{
 	 * @return
 	 */
 	private double calculateTemperature(double resistance) {
+		
 		return (1.0 / (1.0 / absZero + Math.log(resistance/rz) / beta)) - absZero;
 	}
 	
@@ -975,12 +1017,12 @@ public class GenericExtruder extends Device implements Extruder{
 		tempScaler = scale;
 	}
 	
-	/* (non-Javadoc)
-	 * @see org.reprap.Extruder#isAvailable()
-	 */
-	public boolean isAvailable() {
-		return isCommsAvailable;
-	}
+//	/* (non-Javadoc)
+//	 * @see org.reprap.Extruder#isAvailable()
+//	 */
+//	public boolean isAvailable() {
+//		return isCommsAvailable;
+//	}
 
 	
 	/**

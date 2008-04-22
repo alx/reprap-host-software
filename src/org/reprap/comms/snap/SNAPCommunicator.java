@@ -150,7 +150,8 @@ public class SNAPCommunicator implements Communicator {
 		SNAPPacket packet = new SNAPPacket((SNAPAddress)localAddress,
 				(SNAPAddress)device.getAddress(),
 				binaryMessage);
-
+		
+		int tryCount = 0;
 		for(;;) 
 		{
 			Debug.c("tx " +	dumpPacket(device, messageToSend));
@@ -158,16 +159,21 @@ public class SNAPCommunicator implements Communicator {
 			sendRawMessage(packet);
 
 			SNAPPacket ackPacket;
+
+			ackPacket = null;
 			try {
 				ackPacket = receivePacket(ackTimeout);	
 			} catch (IOException ex) {
-				// An error occurred during receive, so send and try again
-				//if (debugComms) {
-					System.err.println("Receive error, re-sending: " + ex.getMessage());
-					dumpPacket(device, messageToSend);
-				//}
-				continue;
+					tryCount++;
+					Debug.d("Receive error, re-sending: " + ex.getMessage() + "; try: " + tryCount + "; " + 
+							dumpPacket(device, messageToSend));
+					if(tryCount < 16)
+						continue;
+					else
+						ackPacket = null;
 			}
+			if(ackPacket == null)
+				throw new IOException("Resend count exceeded.");
 			if (ackPacket.isAck())
 				break;
 			if (ackPacket.getSourceAddress().equals(localAddress)) {

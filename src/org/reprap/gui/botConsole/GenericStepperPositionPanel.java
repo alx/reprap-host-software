@@ -41,9 +41,8 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
         initComponents();
         axisLabel.setText(axis);
         
-        try {
-            motor.setPosition(0);
-        } catch (Exception ex) {
+        if(!motor.isAvailable())
+        {
             deactivateMotorPanel();  
             return;
         }

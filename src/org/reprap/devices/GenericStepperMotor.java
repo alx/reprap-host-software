@@ -155,6 +155,9 @@ public class GenericStepperMotor extends Device {
 				
 		}
 		this.maxTorque = prefs.loadInt(axis + "Axis" + "Torque(%)");
+		
+		if(!isAvailable())
+			return;
 	}
 
 	/**
@@ -180,6 +183,11 @@ public class GenericStepperMotor extends Device {
 	 * @throws IOException
 	 */
 	public void setSpeed(int speed) throws IOException {
+		if(!wasAvailable())
+		{
+			Debug.d("Attempting to control or interrogate non-existent axis drive for " + axis);
+			return;
+		}
 		initialiseIfNeeded();
 		lock();
 		Debug.d(axis + " axis - setting speed: " + speed);
@@ -196,6 +204,11 @@ public class GenericStepperMotor extends Device {
 	 * @throws IOException
 	 */
 	public void setIdle() throws IOException {
+		if(!wasAvailable())
+		{
+			Debug.d("Attempting to control or interrogate non-existent axis drive for " + axis);
+			return;
+		}
 		initialiseIfNeeded();
 		lock();
 		Debug.d(axis + " axis - going idle.");
@@ -212,6 +225,11 @@ public class GenericStepperMotor extends Device {
 	 * @throws IOException
 	 */
 	public void stepForward() throws IOException {
+		if(!wasAvailable())
+		{
+			Debug.d("Attempting to control or interrogate non-existent axis drive for " + axis);
+			return;
+		}
 		initialiseIfNeeded();
 		lock();
 		Debug.d(axis + " axis - stepping forward.");		
@@ -228,6 +246,11 @@ public class GenericStepperMotor extends Device {
 	 * @throws IOException
 	 */
 	public void stepBackward() throws IOException {
+		if(!wasAvailable())
+		{
+			Debug.d("Attempting to control or interrogate non-existent axis drive for " + axis);
+			return;
+		}
 		initialiseIfNeeded();
 		lock();
 		Debug.d(axis + " axis - stepping backward.");	
@@ -244,6 +267,11 @@ public class GenericStepperMotor extends Device {
 	 * @throws IOException
 	 */
 	public void resetPosition() throws IOException {
+		if(!wasAvailable())
+		{
+			Debug.d("Attempting to control or interrogate non-existent axis drive for " + axis);
+			return;
+		}
 		setPosition(0);
 	}
 	
@@ -252,6 +280,11 @@ public class GenericStepperMotor extends Device {
 	 * @throws IOException
 	 */
 	public void setPosition(int position) throws IOException {
+		if(!wasAvailable())
+		{
+			Debug.d("Attempting to control or interrogate non-existent axis drive for " + axis);
+			return;
+		}
 		initialiseIfNeeded();
 		lock();
 		Debug.d(axis + " axis - setting position to: " + position);	
@@ -268,6 +301,11 @@ public class GenericStepperMotor extends Device {
 	 * @throws IOException
 	 */
 	public int getPosition() throws IOException {
+		if(!wasAvailable())
+		{
+			Debug.d("Attempting to control or interrogate non-existent axis drive for " + axis);
+			return 0;
+		}
 		int value;
 		initialiseIfNeeded();
 		lock();
@@ -297,6 +335,11 @@ public class GenericStepperMotor extends Device {
 	 * @throws IOException
 	 */
 	public void seek(int speed, int position) throws IOException {
+		if(!wasAvailable())
+		{
+			Debug.d("Attempting to control or interrogate non-existent axis drive for " + axis);
+			return;
+		}
 		initialiseIfNeeded()	;
 		lock();
 		Debug.d(axis + " axis - seeking position " + position + " at speed " + speed);
@@ -314,6 +357,11 @@ public class GenericStepperMotor extends Device {
 	 * @throws IOException
 	 */
 	public void seekBlocking(int speed, int position) throws IOException {
+		if(!wasAvailable())
+		{
+			Debug.d("Attempting to control or interrogate non-existent axis drive for " + axis);
+			return;
+		}
 		initialiseIfNeeded();
 		lock();
 		Debug.d(axis + " axis - seeking-blocking position " + position + " at speed " + speed);
@@ -336,6 +384,11 @@ public class GenericStepperMotor extends Device {
 	 * @throws InvalidPayloadException
 	 */
 	public Range getRange(int speed) throws IOException, InvalidPayloadException {
+		if(!wasAvailable())
+		{
+			Debug.d("Attempting to control or interrogate non-existent axis drive for " + axis);
+			return new Range();
+		}
 		initialiseIfNeeded()	;
 		lock();
 		Debug.d(axis + " axis - getting range.");
@@ -365,6 +418,11 @@ public class GenericStepperMotor extends Device {
 	 * @throws InvalidPayloadException
 	 */
 	public void homeReset(int speed) throws IOException, InvalidPayloadException {
+		if(!wasAvailable())
+		{
+			Debug.d("Attempting to control or interrogate non-existent axis drive for " + axis);
+			return;
+		}
 		initialiseIfNeeded()	;
 		lock();
 		Debug.d(axis + " axis - home reset at speed " + speed);
@@ -382,6 +440,11 @@ public class GenericStepperMotor extends Device {
 	 * @throws IOException
 	 */
 	public void setSync(byte syncType) throws IOException {
+		if(!wasAvailable())
+		{
+			Debug.d("Attempting to control or interrogate non-existent axis drive for " + axis);
+			return;
+		}
 		initialiseIfNeeded()	;
 		lock();
 		Debug.d(axis + " axis - setting sync to " + syncType);
@@ -402,6 +465,11 @@ public class GenericStepperMotor extends Device {
 	 * @throws IOException
 	 */
 	public void dda(int speed, int x1, int deltaY) throws IOException {
+		if(!wasAvailable())
+		{
+			Debug.d("Attempting to control or interrogate non-existent axis drive for " + axis);
+			return;
+		}
 		initialiseIfNeeded()	;
 		lock();
 		Debug.d(axis + " axis - dda at speed " + speed + ". x1 = " + x1 + ", deltaY = " + deltaY);
@@ -421,6 +489,7 @@ public class GenericStepperMotor extends Device {
 	 * @throws IOException
 	 */
 	private void setNotification() throws IOException {
+		
 		initialiseIfNeeded()	;
 		Debug.d(axis + " axis - setting notification on.");
 		if (!haveSetNotification) {
@@ -448,6 +517,11 @@ public class GenericStepperMotor extends Device {
 	 * @throws IOException
 	 */
 	public void setMaxTorque(int maxTorque) throws IOException {
+		if(!wasAvailable())
+		{
+			Debug.d("Attempting to control or interrogate non-existent axis drive for " + axis);
+			return;
+		}
 		initialiseIfNeeded()	;
 		if (maxTorque > 100) maxTorque = 100;
 		double power = maxTorque * 68.0 / 100.0;

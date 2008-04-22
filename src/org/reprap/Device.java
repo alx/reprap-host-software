@@ -23,6 +23,12 @@ public abstract class Device {
 	private Address address;
 	
 	/**
+	 * Result of the last call to isAvailable (which we don't want to call in loops
+	 * etc as it does real comms)
+	 */
+	private boolean wasAlive = false;
+	
+	/**
 	 * Communicator
 	 * 
 	 */
@@ -62,6 +68,32 @@ public abstract class Device {
 		IncomingContext replyContext = sendMessage(request);
 		VersionResponseMessage reply = new VersionResponseMessage(replyContext);
 		return reply.getVersion(); 
+	}
+	
+	/**
+	 * Check if the device is alive
+	 * @return
+	 */
+	public boolean isAvailable()
+	{
+	       try {
+	            getVersion();
+	        } catch (Exception ex) {
+	        	wasAlive = false;
+	            return false;
+	        }
+	        wasAlive = true;
+	        return true;
+	}
+	
+	/**
+	 * Result of last call to isAvailable(), which we don't want to
+	 * call repeatedly as each call polls the device.
+	 * @return
+	 */
+	public boolean wasAvailable()
+	{
+		return wasAlive;
 	}
 	
 	/**
