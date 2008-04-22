@@ -32,9 +32,7 @@ public class GenericExtruderTabPanel extends javax.swing.JPanel {
  
     /** Creates new form GenericExtruderTabPanel */
     public GenericExtruderTabPanel() {
-        
-    	
-    	
+ 
         initComponents();
         
         pollThread = new Thread() {
@@ -50,21 +48,15 @@ public class GenericExtruderTabPanel extends javax.swing.JPanel {
                                 // This is normal when shutting down, so ignore
                         }
                 }
-        }
+            }
         };
+        
         pollThread.start(); 
         
-
-
     }
     
     private void deactivatePanel() {
 
-//        this.setEnabled(false);
-        System.out.println("Attempted to deactivate Extruder Panel");
-        ////            extruder.dispose();
-
-//            extruder = null;
             coolingCheck.setEnabled(false);
             currentTempLabel.setEnabled(false);
             extrudeButton.setEnabled(false);
@@ -95,8 +87,7 @@ public class GenericExtruderTabPanel extends javax.swing.JPanel {
     private String prefix;
 
     public void initialiseExtruders(int id) throws Exception {
-        
-    	
+           	
         extruderID = id;
         prefix = "Extruder" + id + "_";
                 

@@ -83,6 +83,9 @@ public class BotConsoleFrame extends javax.swing.JFrame {
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
 
+        jTabbedPane1.setRequestFocusEnabled(false);
+
+        printTabPanel1.setEnabled(false);
         jTabbedPane1.addTab("Print", printTabPanel1);
         jTabbedPane1.addTab("XYZ", xYZTabPanel1);
 

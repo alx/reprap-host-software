@@ -15,6 +15,11 @@ package org.reprap.gui.botConsole;
 
 import java.net.URI;
 import java.awt.Desktop;
+import java.io.IOException;
+import javax.swing.JOptionPane;
+
+import org.reprap.Main;
+import org.reprap.Preferences;
 /**
  *
  * @author  en0es
@@ -24,6 +29,16 @@ public class PrintTabPanel extends javax.swing.JPanel {
     /** Creates new form PrintPanel */
     public PrintTabPanel() {
         initComponents();
+
+        try {
+            if (Preferences.loadGlobalString("Geometry").equals("cartesian")) 
+                buildRadioButton.setSelected(true);
+        }
+        catch (Exception e) {
+            System.out.println("Failure trying to load 'Geometry' preference: " + e);
+            return;
+        }
+
     }
     
     /** This method is called from within the constructor to
@@ -34,6 +49,7 @@ public class PrintTabPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        buttonGroup1 = new javax.swing.ButtonGroup();
         printButton = new java.awt.Button();
         pauseButton = new java.awt.Button();
         pauseButton1 = new java.awt.Button();
@@ -47,6 +63,9 @@ public class PrintTabPanel extends javax.swing.JPanel {
         jLabel5 = new javax.swing.JLabel();
         jLabel6 = new javax.swing.JLabel();
         jButton1 = new javax.swing.JButton();
+        exitButton = new java.awt.Button();
+        buildRadioButton = new javax.swing.JRadioButton();
+        simulateRadioButton = new javax.swing.JRadioButton();
 
         printButton.setBackground(new java.awt.Color(51, 204, 0));
         printButton.setLabel("Print"); // NOI18N
@@ -113,6 +132,30 @@ public class PrintTabPanel extends javax.swing.JPanel {
             }
         });
 
+        exitButton.setLabel("Exit");
+        exitButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                exitButtonActionPerformed(evt);
+            }
+        });
+
+        buttonGroup1.add(buildRadioButton);
+        buildRadioButton.setText("Build");
+        buildRadioButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mouseClicked(java.awt.event.MouseEvent evt) {
+                buildRadioButtonMouseClicked(evt);
+            }
+        });
+
+        buttonGroup1.add(simulateRadioButton);
+        simulateRadioButton.setSelected(true);
+        simulateRadioButton.setText("Simulate");
+        simulateRadioButton.addMouseListener(new java.awt.event.MouseAdapter() {
+            public void mousePressed(java.awt.event.MouseEvent evt) {
+                simulateRadioButtonMousePressed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -120,7 +163,6 @@ public class PrintTabPanel extends javax.swing.JPanel {
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                    .addComponent(pauseButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 100, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addGroup(layout.createSequentialGroup()
@@ -130,8 +172,12 @@ public class PrintTabPanel extends javax.swing.JPanel {
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                                     .addComponent(layerPauseCheck)
-                                    .addComponent(segmentPauseCheck))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 95, Short.MAX_VALUE)
+                                    .addComponent(segmentPauseCheck)
+                                    .addGroup(layout.createSequentialGroup()
+                                        .addComponent(buildRadioButton)
+                                        .addGap(18, 18, 18)
+                                        .addComponent(simulateRadioButton)))
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 135, Short.MAX_VALUE)
                                 .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 190, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addComponent(jProgressBar1, javax.swing.GroupLayout.DEFAULT_SIZE, 580, Short.MAX_VALUE)
                             .addGroup(layout.createSequentialGroup()
@@ -144,11 +190,14 @@ public class PrintTabPanel extends javax.swing.JPanel {
                                         .addComponent(jLabel2)
                                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                         .addComponent(jLabel3)))
-                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 247, Short.MAX_VALUE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 264, Short.MAX_VALUE)
                                 .addComponent(jLabel6)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                                 .addComponent(jLabel1, javax.swing.GroupLayout.PREFERRED_SIZE, 65, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addContainerGap())))
+                        .addContainerGap())
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.TRAILING, false)
+                        .addComponent(exitButton, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(pauseButton1, javax.swing.GroupLayout.Alignment.LEADING, javax.swing.GroupLayout.DEFAULT_SIZE, 100, Short.MAX_VALUE))))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -157,16 +206,23 @@ public class PrintTabPanel extends javax.swing.JPanel {
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(printButton, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(printButton, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(pauseButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(pauseButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(exitButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                             .addGroup(layout.createSequentialGroup()
                                 .addComponent(layerPauseCheck)
                                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                                .addComponent(segmentPauseCheck)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(pauseButton, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                        .addComponent(pauseButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 50, javax.swing.GroupLayout.PREFERRED_SIZE)
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 70, Short.MAX_VALUE)
+                                .addComponent(segmentPauseCheck)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                                    .addComponent(buildRadioButton)
+                                    .addComponent(simulateRadioButton))))
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 36, Short.MAX_VALUE)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                             .addComponent(jLabel2)
                             .addComponent(jLabel3)))
@@ -213,9 +269,41 @@ public class PrintTabPanel extends javax.swing.JPanel {
     private void layerPauseCheckActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_layerPauseCheckActionPerformed
         org.reprap.Main.gui.setLayerPause(layerPauseCheck.isSelected());
 }//GEN-LAST:event_layerPauseCheckActionPerformed
+
+    private void exitButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_exitButtonActionPerformed
+        System.exit(0);
+}//GEN-LAST:event_exitButtonActionPerformed
+
+    private void buildRadioButtonMouseClicked(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_buildRadioButtonMouseClicked
+        if (Main.getCommunicator() == null) {
+            JOptionPane.showMessageDialog(null, "No Communicator. Restart with your device plugged in.");
+            simulateRadioButton.setSelected(true);
+        }
+        else {
+            try {
+                org.reprap.Preferences.setGlobalString("Geometry", "cartesian");
+            }
+            catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "Could not set 'Geometry' preference to cartesian");
+            }
+        } 
+    }//GEN-LAST:event_buildRadioButtonMouseClicked
+
+    private void simulateRadioButtonMousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_simulateRadioButtonMousePressed
+            try {
+                org.reprap.Preferences.setGlobalString("Geometry", "nullcartesian");
+            }
+            catch (Exception e) {
+                JOptionPane.showMessageDialog(null, "Could not set 'Geometry' preference to nullcartesian");
+            }
+    }//GEN-LAST:event_simulateRadioButtonMousePressed
+    
     
     
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JRadioButton buildRadioButton;
+    private javax.swing.ButtonGroup buttonGroup1;
+    private java.awt.Button exitButton;
     private javax.swing.JButton jButton1;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -229,6 +317,7 @@ public class PrintTabPanel extends javax.swing.JPanel {
     private java.awt.Button pauseButton1;
     private java.awt.Button printButton;
     private javax.swing.JCheckBox segmentPauseCheck;
+    private javax.swing.JRadioButton simulateRadioButton;
     // End of variables declaration//GEN-END:variables
     
 }
