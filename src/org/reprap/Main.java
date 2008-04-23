@@ -724,10 +724,9 @@ public class Main {
             }
 
         
-            public static Communicator getCommunicator() {
-                return communicator;
-            }
-
-
-            private static final int localNodeNumber = 0;
+        public static Communicator getCommunicator() {
+            return communicator;
         }
+
+        private static final int localNodeNumber = 0;
+    }

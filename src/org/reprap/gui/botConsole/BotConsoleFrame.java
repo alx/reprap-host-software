@@ -120,7 +120,7 @@ public class BotConsoleFrame extends javax.swing.JFrame {
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JTabbedPane jTabbedPane1;
     private org.reprap.gui.botConsole.PrintTabPanel printTabPanel1;
-    private org.reprap.gui.botConsole.XYZTabPanel xYZTabPanel1;
+    public static org.reprap.gui.botConsole.XYZTabPanel xYZTabPanel1;
     // End of variables declaration//GEN-END:variables
     
     private static int motorID = 0;

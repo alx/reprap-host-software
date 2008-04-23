@@ -222,6 +222,7 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
 
     public void homeAxis() {
         try {
+            setSpeed();
             motor.homeReset(fastSpeed);
             currentPositionLabel.setText("(Home)");
             axisBeenHomed = true;
@@ -239,6 +240,7 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
     
     private void stepUpButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stepUpButtonActionPerformed
         
+        setSpeed();
         System.out.println(nudgeSize);
         newTargetAfterNudge = getTargetPositionInMM() + nudgeSize;
         targetPositionField.setText("" + round(newTargetAfterNudge, 2));
@@ -248,6 +250,7 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
 
     private void stepDownButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_stepDownButton1ActionPerformed
 
+        setSpeed();
         System.out.println(nudgeSize);
         double newTargetAfterNudge = getTargetPositionInMM() - nudgeSize;
         targetPositionField.setText("" + round(newTargetAfterNudge, 2));
@@ -263,6 +266,8 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
     }
     
     private void endButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_endButtonActionPerformed
+        
+        setSpeed();
         targetPositionField.setText("" + axisLength);
         try {
             motor.seek(fastSpeed, getTargetPositionInSteps());
@@ -273,8 +278,10 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_endButtonActionPerformed
     
-    public void setSpeed(int speed) {
-        fastSpeed = speed;
+    public void setSpeed() {
+        if (axis.equals("X")) fastSpeed = Integer.parseInt(org.reprap.gui.botConsole.XYZTabPanel.xySpeedField.getText());
+        if (axis.equals("Y")) fastSpeed = Integer.parseInt(org.reprap.gui.botConsole.XYZTabPanel.xySpeedField.getText());
+        if (axis.equals("Z")) fastSpeed = Integer.parseInt(org.reprap.gui.botConsole.XYZTabPanel.zSpeedField.getText());
     }
     
     public double getTargetPositionInMM() {

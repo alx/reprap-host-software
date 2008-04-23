@@ -45,11 +45,11 @@ public class XYZTabPanel extends javax.swing.JPanel {
         setNudgeSize(Double.parseDouble(nudgeSizeRB1.getText()));
     }
     
-    private void setMotorSpeeds() {
+    public void setMotorSpeeds() {
         
-        genericStepperPositionPanel1.setSpeed(Integer.parseInt(xySpeedField.getText()));
-        genericStepperPositionPanel2.setSpeed(Integer.parseInt(xySpeedField.getText()));
-        genericStepperPositionPanel3.setSpeed(Integer.parseInt(zSpeedField.getText()));
+        genericStepperPositionPanel1.setSpeed();
+        genericStepperPositionPanel2.setSpeed();
+        genericStepperPositionPanel3.setSpeed();
         
     }
 
@@ -426,8 +426,8 @@ public class XYZTabPanel extends javax.swing.JPanel {
     private javax.swing.JRadioButton nudgeSizeRB2;
     private javax.swing.JRadioButton nudgeSizeRB3;
     private javax.swing.JCheckBox plotCheck;
-    private javax.swing.JTextField xySpeedField;
-    private javax.swing.JTextField zSpeedField;
+    public static javax.swing.JTextField xySpeedField;
+    public static javax.swing.JTextField zSpeedField;
     // End of variables declaration//GEN-END:variables
     
 }
