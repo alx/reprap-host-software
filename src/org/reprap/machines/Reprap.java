@@ -331,6 +331,7 @@ public class Reprap implements CartesianPrinter {
 	public void homeToZeroX() throws ReprapException, IOException {
 		motorX.homeReset(fastSpeedXY);
 		currentX=0;
+		layerPrinter.zeroX();
 	}
 	
 	/* Move to zero stop on Y axis.
@@ -340,6 +341,7 @@ public class Reprap implements CartesianPrinter {
 	public void homeToZeroY() throws ReprapException, IOException {
 		motorY.homeReset(fastSpeedXY);
 		currentY=0;
+		layerPrinter.zeroY();
 	}
 
 	/* (non-Javadoc)
@@ -901,7 +903,6 @@ public class Reprap implements CartesianPrinter {
 			setSpeed(getFastSpeed());
 			
 			// Go home. Seek (0,0) then callibrate X first
-			moveTo(0, 0, currentZ, false, false);
 			homeToZeroX();
 			homeToZeroY();
 			startCooling = Timer.elapsed();

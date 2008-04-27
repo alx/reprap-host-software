@@ -55,6 +55,18 @@ public class LinePrinter {
 			initialisedXY = true;
 		}
 	}
+	
+	/**
+	 * Only call these when you know what you're doing...
+	 */
+	public void zeroX()
+	{
+		currentX = 0;
+	}
+	public void zeroY()
+	{
+		currentY = 0;
+	}
 
 	/**
 	 * Move to a 2-space point in a direct line.  At the moment this is just the pure 2D Bresenham algorithm.
