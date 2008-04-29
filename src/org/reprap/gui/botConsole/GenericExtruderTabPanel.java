@@ -81,6 +81,7 @@ public class GenericExtruderTabPanel extends javax.swing.JPanel {
             targetTempField.setEnabled(false);
             tempColor.setEnabled(false);
             tempProgress.setEnabled(false);
+            valveToggleButton.setEnabled(false);
 
     }
     
@@ -128,8 +129,9 @@ public class GenericExtruderTabPanel extends javax.swing.JPanel {
         motorSpeedField = new javax.swing.JTextField();
         jLabel12 = new javax.swing.JLabel();
         jLabel11 = new javax.swing.JLabel();
-        motorReverseCheck = new javax.swing.JCheckBox();
         extrudeButton = new javax.swing.JToggleButton();
+        valveToggleButton = new javax.swing.JToggleButton();
+        motorReverseCheck = new javax.swing.JCheckBox();
         jPanel4 = new javax.swing.JPanel();
         nozzleWipeButton = new javax.swing.JToggleButton();
         homeAllButton = new javax.swing.JToggleButton();
@@ -214,7 +216,7 @@ public class GenericExtruderTabPanel extends javax.swing.JPanel {
                                 .addComponent(jLabel7)
                                 .addGap(18, 18, 18)
                                 .addComponent(targetTempField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)))
-                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 105, Short.MAX_VALUE)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 171, Short.MAX_VALUE)
                         .addComponent(tempProgress, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                         .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                         .addComponent(tempColor, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -253,18 +255,27 @@ public class GenericExtruderTabPanel extends javax.swing.JPanel {
         jLabel11.setFont(new java.awt.Font("Tahoma", 0, 12));
         jLabel11.setText("Motor speed:");
 
+        extrudeButton.setText("Extrude");
+        extrudeButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                extrudeButtonActionPerformed(evt);
+            }
+        });
+
+        valveToggleButton.setSelected(true);
+        valveToggleButton.setText("Valve is Open");
+        valveToggleButton.setMargin(new java.awt.Insets(2, 2, 2, 2));
+        valveToggleButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                valveToggleButtonActionPerformed(evt);
+            }
+        });
+
         motorReverseCheck.setFont(motorReverseCheck.getFont().deriveFont(motorReverseCheck.getFont().getSize()+1f));
         motorReverseCheck.setText("Reverse");
         motorReverseCheck.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 motorReverseCheckActionPerformed(evt);
-            }
-        });
-
-        extrudeButton.setText("Extrude");
-        extrudeButton.addActionListener(new java.awt.event.ActionListener() {
-            public void actionPerformed(java.awt.event.ActionEvent evt) {
-                extrudeButtonActionPerformed(evt);
             }
         });
 
@@ -279,11 +290,13 @@ public class GenericExtruderTabPanel extends javax.swing.JPanel {
                 .addComponent(motorSpeedField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jLabel12)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 106, Short.MAX_VALUE)
-                .addComponent(motorReverseCheck)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 100, Short.MAX_VALUE)
+                .addComponent(valveToggleButton, javax.swing.GroupLayout.PREFERRED_SIZE, 97, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(extrudeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 110, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(motorReverseCheck)
+                .addGap(13, 13, 13))
         );
         jPanel3Layout.setVerticalGroup(
             jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
@@ -291,8 +304,9 @@ public class GenericExtruderTabPanel extends javax.swing.JPanel {
                 .addComponent(jLabel11)
                 .addComponent(motorSpeedField, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addComponent(jLabel12)
+                .addComponent(extrudeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addComponent(motorReverseCheck)
-                .addComponent(extrudeButton, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(valveToggleButton, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
 
         jPanel4.setBorder(javax.swing.BorderFactory.createTitledBorder("Maintenance"));
@@ -313,7 +327,7 @@ public class GenericExtruderTabPanel extends javax.swing.JPanel {
         jPanel4Layout.setHorizontalGroup(
             jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel4Layout.createSequentialGroup()
-                .addContainerGap(189, Short.MAX_VALUE)
+                .addContainerGap(241, Short.MAX_VALUE)
                 .addComponent(homeAllButton)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(moveToSwapButton)
@@ -376,7 +390,7 @@ public class GenericExtruderTabPanel extends javax.swing.JPanel {
                 .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
                 .addComponent(jPanel4, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(21, Short.MAX_VALUE))
+                .addContainerGap(12, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -441,6 +455,17 @@ public class GenericExtruderTabPanel extends javax.swing.JPanel {
 //        Reprap.finishedLayer(1);
 //        Reprap.betweenLayers(layerNumber);
     }//GEN-LAST:event_nozzleWipeButtonActionPerformed
+
+    private void valveToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_valveToggleButtonActionPerformed
+        if (valveToggleButton.isSelected()) {
+//            extruder.valveOpen();
+            valveToggleButton.setText("Valve is open");
+        }
+        else {
+//            extruder.valveClose();
+            valveToggleButton.setText("Valve is shut");
+        }
+}//GEN-LAST:event_valveToggleButtonActionPerformed
 
     private void setExtruderSpeed() {
         try {
@@ -520,6 +545,7 @@ public class GenericExtruderTabPanel extends javax.swing.JPanel {
     private javax.swing.JTextField targetTempField;
     private javax.swing.JPanel tempColor;
     private javax.swing.JProgressBar tempProgress;
+    private javax.swing.JToggleButton valveToggleButton;
     // End of variables declaration//GEN-END:variables
     
 }
