@@ -323,6 +323,11 @@ public class Reprap implements CartesianPrinter {
 	{
 		layerPrinter.stopExtruding();
 	}
+	
+	public void stopValve() throws IOException
+	{
+		layerPrinter.stopValve();
+	}
 
 	/* Move to zero stop on X axis.
 	 * (non-Javadoc)
@@ -747,11 +752,37 @@ public class Reprap implements CartesianPrinter {
 	 * Extrude for the given time in milliseconds, so that polymer is flowing
 	 * before we try to move the extruder.
 	 */
-	public void printStartDelay(long msDelay) {
+	public void printStartDelay(boolean firstOneInLayer) 
+	{
+		// Extrude motor and valve delays (ms)
+		
+		long eDelay, vDelay;
+		
+		if(firstOneInLayer)
+		{
+			eDelay = (long)extruders[extruder].getExtrusionDelayForLayer();
+			vDelay = (long)extruders[extruder].getValveDelayForLayer();
+		} else
+		{
+			eDelay = (long)extruders[extruder].getExtrusionDelayForPolygon();
+			vDelay = (long)extruders[extruder].getValveDelayForPolygon();			
+		}
+		
 		try
 		{
-			extruders[extruder].setExtrusion(extruders[extruder].getExtruderSpeed());
-			Thread.sleep(msDelay);
+			if(eDelay >= vDelay)
+			{
+				extruders[extruder].setExtrusion(extruders[extruder].getExtruderSpeed());
+				Thread.sleep(eDelay - vDelay);
+				extruders[extruder].setValve(true);
+				Thread.sleep(vDelay);
+			} else
+			{
+				extruders[extruder].setValve(true);
+				Thread.sleep(vDelay - eDelay);
+				extruders[extruder].setExtrusion(extruders[extruder].getExtruderSpeed());
+				Thread.sleep(eDelay);
+			}
 			extruders[extruder].setExtrusion(0);  // What's this for?  - AB
 		} catch(Exception e)
 		{

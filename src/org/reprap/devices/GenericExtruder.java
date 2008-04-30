@@ -57,6 +57,17 @@ public class GenericExtruder extends Device implements Extruder{
 	 */
 	public static final byte MSG_SetCooler = 11;
 	
+	
+	/**
+	 * Open the valve 
+	 */
+	public static final byte MSG_ValveOpen = 12;
+	
+	/**
+	 *  Close the valve
+	 */
+	public static final byte MSG_ValveClosed = 13;	
+	
 	/**
 	 * Set Vref 
 	 */
@@ -178,11 +189,7 @@ public class GenericExtruder extends Device implements Extruder{
 	 */
 	private double extrusionInfillWidth; 
 	
-	/**
-	 * The number of mm to stop extruding before the end of a track
-	 */
-	private double extrusionOverRun; 
-	
+
 	/**
 	 * The number of seconds to cool between layers
 	 */
@@ -329,16 +336,42 @@ public class GenericExtruder extends Device implements Extruder{
 	 */
 	private double wipeX;
 	
+	/**
+	 * The number of ms to pulse the valve to open or close it
+	 * -ve to supress
+	 */
+	private double valvePulseTime;
 	
 	/**
 	 * The number of milliseconds to wait before starting a border track
 	 */
-	private int extrusionDelayForBorder = 0;
+	private double extrusionDelayForLayer = 0;
 	
 	/**
 	 * The number of milliseconds to wait before starting a hatch track
 	 */
-	private int extrusionDelayForHatch = 0;
+	private double extrusionDelayForPolygon = 0;
+	
+	/**
+	 * The number of milliseconds to wait before starting a border track
+	 */
+	private double valveDelayForLayer = 0;
+	
+	/**
+	 * The number of milliseconds to wait before starting a hatch track
+	 */
+	private double valveDelayForPolygon = 0;
+	
+	/**
+	 * The number of mm to stop extruding before the end of a track
+	 */
+	private double extrusionOverRun; 
+	
+	/**
+	 * The number of mm to stop extruding before the end of a track
+	 */
+	private double valveOverRun; 
+	
 	
     /**
      * The smallest allowable free-movement height above the base
@@ -367,7 +400,6 @@ public class GenericExtruder extends Device implements Extruder{
 		extrusionSize = prefs.loadDouble(prefName + "ExtrusionSize(mm)");
 		extrusionHeight = prefs.loadDouble(prefName + "ExtrusionHeight(mm)");
 		extrusionInfillWidth = prefs.loadDouble(prefName + "ExtrusionInfillWidth(mm)");
-		extrusionOverRun = prefs.loadDouble(prefName + "ExtrusionOverRun(mm)");
 		coolingPeriod = prefs.loadInt(prefName + "CoolingPeriod(s)");
 		xySpeed = prefs.loadInt(prefName + "XYSpeed(0..255)");
 		t0 = prefs.loadInt(prefName + "t0(0..255)");
@@ -392,9 +424,15 @@ public class GenericExtruder extends Device implements Extruder{
 		shortLength = prefs.loadDouble(prefName + "ShortLength(mm)");
 		shortSpeed = prefs.loadDouble(prefName + "ShortSpeed(0..1)");
 		infillOverlap = prefs.loadDouble(prefName + "InfillOverlap(mm)");
-		extrusionDelayForBorder = prefs.loadInt(prefName + "ExtrusionDelayForBorder(ms)");
-		extrusionDelayForHatch = prefs.loadInt(prefName + "ExtrusionDelayForHatch(ms)");
+		extrusionDelayForLayer = prefs.loadDouble(prefName + "ExtrusionDelayForLayer(ms)");
+		extrusionDelayForPolygon = prefs.loadDouble(prefName + "ExtrusionDelayForPolygon(ms)");
+		extrusionOverRun = prefs.loadDouble(prefName + "ExtrusionOverRun(mm)");
+		valveDelayForLayer = prefs.loadDouble(prefName + "ValveDelayForLayer(ms)");
+		valveDelayForPolygon = prefs.loadDouble(prefName + "ValveDelayForPolygon(ms)");
+		valveOverRun = prefs.loadDouble(prefName + "ValveOverRun(mm)");		
 		minLiftedZ = prefs.loadDouble(prefName + "MinimumZClearance(mm)");
+		// NB - store as 2ms ticks to allow longer pulses
+		valvePulseTime = 0.5*prefs.loadDouble(prefName + "ValvePulseTime(ms)");
 		
 		Color3f col = new Color3f((float)prefs.loadDouble(prefName + "ColourR(0..1)"), 
 				(float)prefs.loadDouble(prefName + "ColourG(0..1)"), 
@@ -499,6 +537,35 @@ public class GenericExtruder extends Device implements Extruder{
 			OutgoingMessage request =
 				new OutgoingByteMessage(reverse ? MSG_SetActiveReverse : MSG_SetActive,
 						(byte)scaledSpeed);
+			sendMessage(request);
+		}
+		finally {
+			unlock();
+		}
+	}
+	
+	/**
+	 * Open or close the valve.  pulseTime is the number of ms to zap it.
+	 * @param pulseTime
+	 * @param valveOpen
+	 * @throws IOException
+	 */
+	public void setValve(boolean valveOpen) throws IOException {
+		
+		if(valvePulseTime < 0)
+			return;		
+		
+		if(!wasAvailable())
+		{
+			Debug.d("Attempting to control or interrogate non-existent extruder for " + material);
+			return;
+		}
+		
+		lock();
+		try {
+			OutgoingMessage request =
+				new OutgoingByteMessage(valveOpen ? MSG_ValveOpen : MSG_ValveClosed,
+						(byte)valvePulseTime);
 			sendMessage(request);
 		}
 		finally {
@@ -1184,15 +1251,6 @@ public class GenericExtruder extends Device implements Extruder{
     {
     	return extrusionInfillWidth;
     } 
-    
-    /* (non-Javadoc)
-     * @see org.reprap.Extruder#getExtrusionOverRun()
-     */
-    public double getExtrusionOverRun()
-    {
-    	return extrusionOverRun;
-    } 
-    
   
     /* (non-Javadoc)
      * @see org.reprap.Extruder#getCoolingPeriod()
@@ -1359,18 +1417,55 @@ public class GenericExtruder extends Device implements Extruder{
 	 * Gets the number of milliseconds to wait before starting a border track
 	 * @return
      */
-    public int getExtrusionDelayForBorder()
+    public double getExtrusionDelayForLayer()
     {
-    	return extrusionDelayForBorder; 
+    	return extrusionDelayForLayer; 
     }
     
     /**
 	 * Gets the number of milliseconds to wait before starting a hatch track
 	 * @return
      */
-    public int getExtrusionDelayForHatch()
+    public double getExtrusionDelayForPolygon()
     {
-    	return extrusionDelayForHatch; 
+    	return extrusionDelayForPolygon; 
+    }
+    
+    /**
+	 * Gets the number of milliseconds to wait before opening the valve
+	 * for the first track of a layer
+	 * @return
+     */
+    public double getValveDelayForLayer()
+    {
+    	return valveDelayForLayer;
+    }
+    
+    /**
+	 * Gets the number of milliseconds to wait before opening the valve
+	 * for any other track
+	 * @return
+     */
+    public double getValveDelayForPolygon()
+    {
+    	return valveDelayForPolygon;
+    }
+    
+    /* (non-Javadoc)
+     * @see org.reprap.Extruder#getExtrusionOverRun()
+     */
+    public double getExtrusionOverRun()
+    {
+    	return extrusionOverRun;
+    } 
+ 
+    /**
+     * @return the valve overrun in millimeters (i.e. how many mm
+     * before the end of a track to turn off the extrude motor)
+     */
+    public double getValveOverRun()
+    {
+    	return valveOverRun;
     }
     
     /**
@@ -1443,8 +1538,8 @@ public class GenericExtruder extends Device implements Extruder{
 			
 			printer.moveTo(wipeX, getNozzleWipeDatumY() + 8, printer.getZ(), false, false);	
 			setExtrusion(getExtruderSpeed());
-			if(getExtrusionDelayForBorder() > 0)
-				Thread.sleep(getExtrusionDelayForBorder());
+			if(getExtrusionDelayForLayer() > 0)
+				Thread.sleep((long)getExtrusionDelayForLayer());
 			printer.moveTo(wipeX, getNozzleWipeDatumY() + getNozzleWipeStrokeY()*0.5, printer.getZ(), false, false);
 			setExtrusion(0);
 			printer.moveTo(wipeX, getNozzleWipeDatumY() + getNozzleWipeStrokeY(), printer.getZ(), false, false);

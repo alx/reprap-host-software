@@ -347,9 +347,9 @@ public class XYZTabPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_goButtonActionPerformed
 
     private void goButton1ActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goButton1ActionPerformed
-        genericStepperPositionPanel3.homeAxis();
         genericStepperPositionPanel1.homeAxis();
         genericStepperPositionPanel2.homeAxis();
+        genericStepperPositionPanel3.homeAxis();
     }//GEN-LAST:event_goButton1ActionPerformed
 
     private void bedPanel1MousePressed(java.awt.event.MouseEvent evt) {//GEN-FIRST:event_bedPanel1MousePressed

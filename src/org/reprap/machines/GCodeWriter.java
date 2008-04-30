@@ -251,6 +251,11 @@ public class GCodeWriter implements CartesianPrinter {
 	public void stopExtruding() {
 		file.println("M103");
 	}
+	
+	public void stopValve() {
+		System.err.println("GCodeWriter: stopValve() function called; this has the wrong M code!!!");
+		file.println("M103");
+	}
 
 	/**
 	 * @return speed of the extruder
@@ -486,8 +491,9 @@ public class GCodeWriter implements CartesianPrinter {
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#printStartDelay(long)
 	 */
-	public void printStartDelay(long msDelay) {
+	public void printStartDelay(boolean firstInLayer) {
 		// This would extrude for the given interval to ensure polymer flow.
+		// TODO - How do we communicate milliseconds here? (AB)
 		file.println("M101");
 	}
 	

@@ -34,6 +34,14 @@ public interface Extruder {
 	public void setExtrusion(int speed, boolean reverse) throws IOException; 
 	
 	/**
+	 * Open and close the valve (if any).
+	 * @param pulseTime
+	 * @param valveOpen
+	 * @throws IOException
+	 */
+	public void setValve(boolean valveOpen) throws IOException;
+	
+	/**
 	 * Turn the heater of the extruder on. Inital temperatur is defined by ???
 	 * @throws Exception
 	 */
@@ -142,11 +150,6 @@ public interface Extruder {
      * @return the extrusion infill width in millimeters
      */
     public double getExtrusionInfillWidth();
- 
-    /**
-     * @return the extrusion overrun in millimeters
-     */
-    public double getExtrusionOverRun();
 
     /**
      * @return the cooling period in seconds
@@ -252,16 +255,44 @@ public interface Extruder {
     public double getInfillOverlap();
     
     /**
-	 * Gets the number of milliseconds to wait before starting a border track
+	 * Gets the number of milliseconds to wait before starting the extrude motor
+	 * for the first track of a layer
 	 * @return
      */
-    public int getExtrusionDelayForBorder();
+    public double getExtrusionDelayForLayer();
     
     /**
-	 * Gets the number of milliseconds to wait before starting a hatch track
+	 * Gets the number of milliseconds to wait before starting the extrude motor
+	 * for any other track
 	 * @return
      */
-    public int getExtrusionDelayForHatch();
+    public double getExtrusionDelayForPolygon();
+    
+    /**
+	 * Gets the number of milliseconds to wait before opening the valve
+	 * for the first track of a layer
+	 * @return
+     */
+    public double getValveDelayForLayer();
+    
+    /**
+	 * Gets the number of milliseconds to wait before opening the valve
+	 * for any other track
+	 * @return
+     */
+    public double getValveDelayForPolygon();
+    
+    /**
+     * @return the extrusion overrun in millimeters (i.e. how many mm
+     * before the end of a track to turn off the extrude motor)
+     */
+    public double getExtrusionOverRun();
+    
+    /**
+     * @return the valve overrun in millimeters (i.e. how many mm
+     * before the end of a track to turn off the extrude motor)
+     */
+    public double getValveOverRun();
     
     /**
      * The smallest allowable free-movement height above the base

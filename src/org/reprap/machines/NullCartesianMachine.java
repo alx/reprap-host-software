@@ -185,6 +185,8 @@ public class NullCartesianMachine implements CartesianPrinter {
 	}
 	
 	public void stopExtruding() {}
+	
+	public void stopValve() {}
 
 	/**
 	 * @return speed of the extruder
@@ -392,9 +394,9 @@ public class NullCartesianMachine implements CartesianPrinter {
 	}
 
 	/* (non-Javadoc)
-	 * @see org.reprap.Printer#printStartDelay(long)
+	 * @see org.reprap.Printer#printStartDelay(boolean)
 	 */
-	public void printStartDelay(long msDelay) {
+	public void printStartDelay(boolean firstInLayer) {
 		// This would extrude for the given interval to ensure polymer flow.
 	}
 	

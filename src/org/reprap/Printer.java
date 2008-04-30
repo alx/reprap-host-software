@@ -49,9 +49,9 @@ public interface Printer {
 	
 	/**
 	 * Fire up the extruder for a lead-in
-	 * @param msDelay number of milliseconds
+	 * @param firstOneInLayer (first after the layer pause, or any old polygon?)
 	 */
-	public void printStartDelay(long msDelay);	
+	public void printStartDelay(boolean firstOneInLayer);	
 	
 	/**
 	 * Sync to zero X location.
@@ -163,6 +163,7 @@ public interface Printer {
 	 */
 	public Extruder getExtruder();
 	public void stopExtruding() throws IOException;
+	public void stopValve() throws IOException;
 
 	/**
 	 * Allow the user to manually calibrate the Z axis position to deal

@@ -458,12 +458,18 @@ public class GenericExtruderTabPanel extends javax.swing.JPanel {
 
     private void valveToggleButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_valveToggleButtonActionPerformed
         if (valveToggleButton.isSelected()) {
-//            extruder.valveOpen();
-            valveToggleButton.setText("Valve is open");
+        	try
+        	{
+        		extruder.setValve(true);
+        		valveToggleButton.setText("Valve is open");
+        	} catch (Exception ex) {}
         }
         else {
-//            extruder.valveClose();
-            valveToggleButton.setText("Valve is shut");
+           	try
+        	{
+           		extruder.setValve(false);
+           		valveToggleButton.setText("Valve is shut");
+        	} catch (Exception ex) {}
         }
 }//GEN-LAST:event_valveToggleButtonActionPerformed
 

@@ -388,7 +388,7 @@ public class LayerProducer {
 	 * @throws ReprapException
 	 * @return
 	 */
-	private void plot(RrPolygon p, boolean outline) throws ReprapException, IOException
+	private void plot(RrPolygon p, boolean outline, boolean firstOneInLayer) throws ReprapException, IOException
 	{
 		int leng = p.size();
 		
@@ -408,7 +408,7 @@ public class LayerProducer {
 			lastPoint=n;
 		}
 		if (plotDist<Preferences.machineResolution()*0.5) {
-			Debug.d("Rejected line with "+leng+"points, length"+plotDist);
+			Debug.d("Rejected line with "+leng+" points, length: "+plotDist);
 			startNearHere = null;
 			return;
 		}
@@ -438,9 +438,22 @@ public class LayerProducer {
 			startNearHere = p.point(p.size() - 1);
 		
 		int stopExtruding = leng + 10;
-		double backLength = printer.getExtruder().getExtrusionOverRun();
-		if(backLength > 0)
-			stopExtruding = p.backStep(backLength, outline);
+		int stopValve = stopExtruding;
+		double extrudeBackLength = printer.getExtruder().getExtrusionOverRun();
+		double valveBackLength = printer.getExtruder().getValveOverRun();
+		if(extrudeBackLength >= valveBackLength)
+		{
+			if(extrudeBackLength > 0)
+				stopExtruding = p.backStep(extrudeBackLength, outline);
+			if(valveBackLength > 0)
+				stopValve = p.backStep(valveBackLength, outline);
+		} else
+		{
+			if(valveBackLength > 0)
+				stopValve = p.backStep(valveBackLength, outline);
+			if(extrudeBackLength > 0)
+				stopExtruding = p.backStep(extrudeBackLength, outline);			
+		}
 		
 		if (printer.isCancelled()) return;
 		
@@ -448,9 +461,9 @@ public class LayerProducer {
 		move(p.point(0), p.point(1), true, false);
 
 		plot(p.point(0), p.point(1), false);
+		
 		// Print any lead-in.
-		if (outline) printer.printStartDelay(printer.getExtruder().getExtrusionDelayForBorder());
-		else printer.printStartDelay(printer.getExtruder().getExtrusionDelayForHatch());
+		printer.printStartDelay(firstOneInLayer);
 				
 		if(outline)
 		{
@@ -482,6 +495,13 @@ public class LayerProducer {
 					move(p.point(i), next, false, false);
 				} else
 					plot(p.point(i), next, false);
+				
+				if(j > stopValve)
+				{
+					printer.stopValve();
+					move(p.point(i), next, false, false);
+				} else
+					plot(p.point(i), next, false);
 			}
 		} else
 		{
@@ -502,6 +522,13 @@ public class LayerProducer {
 					move(p.point(i), next, false, false);
 				} else
 					plot(p.point(i), next, false);
+				
+				if(i > stopValve)
+				{
+					printer.stopValve();
+					move(p.point(i), next, false, false);
+				} else
+					plot(p.point(i), next, false);
 			}
 		}
 		
@@ -511,7 +538,7 @@ public class LayerProducer {
 	
 
 
-	private int plotOneMaterial(RrPolygonList polygons, int i, boolean outline)
+	private int plotOneMaterial(RrPolygonList polygons, int i, boolean outline, boolean firstOneInLayer)
 		throws ReprapException, IOException
 	{
 		String material = polygons.polygon(i).getAttributes().getMaterial();
@@ -520,7 +547,7 @@ public class LayerProducer {
 		{
 			if (printer.isCancelled())
 				return i;
-			plot(polygons.polygon(i), outline);
+			plot(polygons.polygon(i), outline, firstOneInLayer);
 			i++;
 		}
 		return i;
@@ -556,6 +583,8 @@ public class LayerProducer {
 	{
 		int ib, jb, ih, jh;
 		
+		boolean firstOneInLayer = true;
+		
 		//borderPolygons = borderPolygons.filterShorts(Preferences.machineResolution()*2);
 		//hatchedPolygons = hatchedPolygons.filterShorts(Preferences.machineResolution()*2);
 		
@@ -568,7 +597,8 @@ public class LayerProducer {
 			{
 				if (printer.isCancelled())
 					break;
-				plot(borderPolygons.polygon(jb), true);
+				plot(borderPolygons.polygon(jb), true, firstOneInLayer);
+				firstOneInLayer = false;
 			}
 			ib = commonBorder;
 
@@ -576,27 +606,32 @@ public class LayerProducer {
 			{
 				if (printer.isCancelled())
 					break;
-				plot(hatchedPolygons.polygon(jh), false);
+				plot(hatchedPolygons.polygon(jh), false, firstOneInLayer);
+				firstOneInLayer = false;
 			}
 			ih = commonHatch;
 			
-			ib = plotOneMaterial(borderPolygons, ib, true);
+			firstOneInLayer = true;
+			ib = plotOneMaterial(borderPolygons, ib, true, firstOneInLayer);
+			firstOneInLayer = false;
 			hatchedPolygons = hatchedPolygons.nearEnds(startNearHere);
-			ih = plotOneMaterial(hatchedPolygons, ih, false);	
+			ih = plotOneMaterial(hatchedPolygons, ih, false, firstOneInLayer);	
 		}
+		
+		firstOneInLayer = true;
 		
 		for(jb = ib; jb < borderPolygons.size(); jb++)
 		{
 			if (printer.isCancelled())
 				break;
-			plot(borderPolygons.polygon(jb), true);			
+			plot(borderPolygons.polygon(jb), true, firstOneInLayer);			
 		}
 		
 		for(jh = ih; jh < commonHatch; jh++)
 		{
 			if (printer.isCancelled())
 				break;
-			plot(hatchedPolygons.polygon(jh), false);
+			plot(hatchedPolygons.polygon(jh), false, firstOneInLayer);
 		}
 
 		printer.setLowerShell(lowerShell);

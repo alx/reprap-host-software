@@ -186,6 +186,11 @@ public class LinePrinter {
 		extruder.setExtrusion(0);
 	}
 	
+	public void stopValve() throws IOException
+	{
+		extruder.setValve(false);
+	}
+	
 	/**
 	 * @param startX
 	 * @param startY
