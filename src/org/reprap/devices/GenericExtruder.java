@@ -377,6 +377,11 @@ public class GenericExtruder extends Device implements Extruder{
      * The smallest allowable free-movement height above the base
      */
 	private double minLiftedZ = 1;
+	
+	/**
+	 * The number of outlines to plot
+	 */
+	int shells = 1;
 
 	
 	public GenericExtruder(Communicator communicator, Address address, Preferences prefs, int extruderId) {
@@ -433,6 +438,7 @@ public class GenericExtruder extends Device implements Extruder{
 		minLiftedZ = prefs.loadDouble(prefName + "MinimumZClearance(mm)");
 		// NB - store as 2ms ticks to allow longer pulses
 		valvePulseTime = 0.5*prefs.loadDouble(prefName + "ValvePulseTime(ms)");
+		shells = prefs.loadInt(prefName + "NumberOfShells(0..N)");
 		
 		Color3f col = new Color3f((float)prefs.loadDouble(prefName + "ColourR(0..1)"), 
 				(float)prefs.loadDouble(prefName + "ColourG(0..1)"), 
@@ -1475,6 +1481,15 @@ public class GenericExtruder extends Device implements Extruder{
     public double getMinLiftedZ()
     {
     	return minLiftedZ;
+    }
+    
+    /**
+     * The number of times to go round the outline (0 to supress)
+     * @return
+     */
+    public int getShells()
+    {
+    	return shells;
     }
     
 	public void finishedLayer(int layerNumber, Printer printer) throws Exception

@@ -37,7 +37,7 @@ public class ContinuationMesage extends javax.swing.JDialog {
 	
 	private boolean result; ///< True if continue was selected, otherwise false
 
-	public ContinuationMesage(JFrame frame, String message,
+	public ContinuationMesage(JFrame frame, String message, 
 			JCheckBoxMenuItem segmentPause, JCheckBoxMenuItem layerPause) {
 		super(frame);
 		this.layerPauseMenuCheckbox = layerPause;

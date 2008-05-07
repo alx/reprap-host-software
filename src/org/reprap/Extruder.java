@@ -295,6 +295,12 @@ public interface Extruder {
     public double getValveOverRun();
     
     /**
+     * The number of times to go round the outline (0 to supress)
+     * @return
+     */
+    public int getShells();
+    
+    /**
      * The smallest allowable free-movement height above the base
      * @return
      */

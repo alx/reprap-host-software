@@ -295,6 +295,11 @@ public class NullExtruder implements Extruder{
 	private double minLiftedZ = 1;
 	
 	/**
+	 * The number of outlines to plot
+	 */
+	int shells = 1;
+	
+	/**
 	 * @param prefs
 	 * @param extruderId
 	 */
@@ -346,6 +351,7 @@ public class NullExtruder implements Extruder{
 		minLiftedZ = prefs.loadDouble(prefName + "MinimumZClearance(mm)");
 		// NB - store as 2ms ticks to allow longer pulses
 		valvePulseTime = 0.5*prefs.loadDouble(prefName + "ValvePulseTime(ms)");
+		shells = prefs.loadInt(prefName + "NumberOfShells(0..N)");
 		
 		materialColour = getAppearanceFromNumber(extruderId);		
 			
@@ -811,6 +817,15 @@ public class NullExtruder implements Extruder{
     public double getMinLiftedZ()
     {
     	return minLiftedZ;
+    }
+    
+    /**
+     * The number of times to go round the outline (0 to supress)
+     * @return
+     */
+    public int getShells()
+    {
+    	return shells;
     }
     
 	public void finishedLayer(int layerNumber, Printer printer) throws Exception {}

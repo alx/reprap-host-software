@@ -255,10 +255,10 @@ public class LayerProducer {
 //		pllist.add(hatchedPolygons);
 //		RrGraphics g = new RrGraphics(pllist, false);
 		
-		RrBox big = csgPols.box().scale(1.1);
-		
-		double width = big.x().length();
-		double height = big.y().length();
+//		RrBox big = csgPols.box().scale(1.1);
+//		
+//		double width = big.x().length();
+//		double height = big.y().length();
 	}
 	
 	/**
@@ -557,6 +557,18 @@ public class LayerProducer {
 	{
 		commonBorder = ib;
 		commonHatch = ih;
+		
+		if(borderPolygons.size() <= 0)
+		{
+			commonHatch = hatchedPolygons.size();
+			return false;
+		}
+		
+		if(hatchedPolygons.size() <= 0)
+		{
+			commonBorder = borderPolygons.size();
+			return false;
+		}		
 		
 		for(int jb = ib; jb < borderPolygons.size(); jb++)
 		{

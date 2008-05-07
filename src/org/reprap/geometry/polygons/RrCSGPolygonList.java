@@ -118,10 +118,19 @@ public class RrCSGPolygonList {
 			else
 			{
 				Extruder e = att.getExtruder(es);
+				int shells = e.getShells();
 				if(outline)
-					result.add(get(i).offset(-0.5*e.getExtrusionSize()));
-				else
-					result.add(get(i).offset(-1.5*e.getExtrusionSize() + e.getInfillOverlap()));
+				{
+					for(int shell = 0; shell < shells; shell++)
+						result.add(get(i).offset(-((double)shell + 0.5)*e.getExtrusionSize()));
+				} else
+				{
+					// Must be a hatch.  Only do it if the gap is +ve
+					
+					if (e.getExtrusionInfillWidth() > 0)
+						result.add(get(i).offset(-((double)shells + 0.5)*e.getExtrusionSize() + 
+							e.getInfillOverlap()));
+				}
 			}
 		}
 		return result;
