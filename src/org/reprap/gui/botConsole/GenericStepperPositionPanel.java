@@ -208,6 +208,11 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
                 .addComponent(homeButton)
                 .addComponent(endButton))
         );
+        targetPositionField.setEnabled(true);
+        stepDownButton1.setEnabled(true);
+        stepUpButton.setEnabled(true);
+        endButton.setEnabled(true);
+        targetPositionField.setText("0");
     }// </editor-fold>//GEN-END:initComponents
 
     private boolean axisBeenHomed = false;

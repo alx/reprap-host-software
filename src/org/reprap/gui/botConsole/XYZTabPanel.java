@@ -330,8 +330,8 @@ public class XYZTabPanel extends javax.swing.JPanel {
     private void goButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_goButtonActionPerformed
         
         // Check all motors have been homed first
-        if( genericStepperPositionPanel1.hasAxisBeenHomed() && genericStepperPositionPanel2.hasAxisBeenHomed() && genericStepperPositionPanel3.hasAxisBeenHomed() ) 
-        {
+        //if( genericStepperPositionPanel1.hasAxisBeenHomed() && genericStepperPositionPanel2.hasAxisBeenHomed() && genericStepperPositionPanel3.hasAxisBeenHomed() ) 
+       // {
                 // Refresh speeds
                 setMotorSpeeds();
 
@@ -339,10 +339,10 @@ public class XYZTabPanel extends javax.swing.JPanel {
                 genericStepperPositionPanel3.moveToTargetBlocking();
                 genericStepperPositionPanel1.moveToTarget();
                 genericStepperPositionPanel2.moveToTarget();
-        }
-        else {
-            JOptionPane.showMessageDialog(null, "You must home all axes first!");
-        }        
+        //}
+        //else {
+        //    JOptionPane.showMessageDialog(null, "You must home all axes first!");
+       // }        
 
     }//GEN-LAST:event_goButtonActionPerformed
 
