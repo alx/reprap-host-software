@@ -98,6 +98,8 @@ public class Main {
 
     private static Communicator communicator;
     
+    private Producer producer = null;
+    
     // Window to walk the file tree
     
     private JFileChooser chooser;
@@ -285,8 +287,8 @@ public class Main {
         cancelMenuItem.setEnabled(false);
         cancelMenuItem.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent arg0) {
-				if(preview != null)
-					preview.setCancelled(true);
+				if(producer != null)
+					producer.setCancelled(true);
 			}});
         produceMenu.add(cancelMenuItem);
         
@@ -463,16 +465,19 @@ public class Main {
 						updateView();
 					}
 
-					if(preview != null)
-					{
-						preview.setSegmentPause(segmentPause);
-						preview.setLayerPause(layerPause);
-					}
+//					if(preview != null)
+//					{
+//						preview.setSegmentPause(segmentPause);
+//						preview.setLayerPause(layerPause);
+//					}
 					
-					Producer producer = new Producer(preview, builder);
+					producer = new Producer(preview, builder);
+					producer.setSegmentPause(segmentPause);
+					producer.setLayerPause(layerPause);
 					producer.produce();
 					String usage = getResourceMessage(producer);
 					producer.dispose();
+					producer = null;
 			        cancelMenuItem.setEnabled(false);
 			        produceProduceT.setEnabled(true);
 					JOptionPane.showMessageDialog(mainFrame, "Production complete.  " +
@@ -501,16 +506,19 @@ public class Main {
 						updateView();
 					}
 					
-					if(preview != null)
-					{
-						preview.setSegmentPause(segmentPause);
-						preview.setLayerPause(layerPause);
-					}
+//					if(preview != null)
+//					{
+//						preview.setSegmentPause(segmentPause);
+//						preview.setLayerPause(layerPause);
+//					}
 					
-					Producer producer = new Producer(preview, builder);
+					producer = new Producer(preview, builder);
+					producer.setSegmentPause(segmentPause);
+					producer.setLayerPause(layerPause);
 					producer.produce();
 					String usage = getResourceMessage(producer);
 					producer.dispose();
+					producer = null;
 			        cancelMenuItem.setEnabled(false);
 			        produceProduceB.setEnabled(true);
 					JOptionPane.showMessageDialog(mainFrame, "Production complete.  " +
@@ -595,42 +603,42 @@ public class Main {
     }
     
     private void estimateResourcesT() {
-	    	EstimationProducer producer = null;
+	    	EstimationProducer eProducer = null;
 	    	try {
-	    		producer = new EstimationProducer(builder);
-	    		producer.produce();
+	    		eProducer = new EstimationProducer(builder);
+	    		eProducer.produce();
 	    		JOptionPane.showMessageDialog(mainFrame,
-	    				"Expected " + getResourceMessage(producer));
+	    				"Expected " + getResourceMessage(eProducer));
 	    		
 	    	} catch (Exception ex) {
 	    		JOptionPane.showMessageDialog(null, "Exception during estimation: " + ex);    
 	    	} finally {
-	    		if (producer != null)
-	    			producer.dispose();
+	    		if (eProducer != null)
+	    			eProducer.dispose();
 	    	}
     }
     
     private void estimateResourcesB() {
-    	EstimationProducer producer = null;
+    	EstimationProducer eProducer = null;
     	try {
-    		producer = new EstimationProducer(builder);
-    		producer.produce();
+    		eProducer = new EstimationProducer(builder);
+    		eProducer.produce();
     		JOptionPane.showMessageDialog(mainFrame,
-    				"Expected " + getResourceMessage(producer));
+    				"Expected " + getResourceMessage(eProducer));
     		
     	} catch (Exception ex) {
     		JOptionPane.showMessageDialog(null, "Exception during estimation: " + ex);    
     	} finally {
-    		if (producer != null)
-    			producer.dispose();
+    		if (eProducer != null)
+    			eProducer.dispose();
     	}
 }
     
-	private String getResourceMessage(Producer producer) {
-		double moved = Math.round(producer.getTotalDistanceMoved() * 10.0) / 10.0;
-		double extruded = Math.round(producer.getTotalDistanceExtruded() * 10.0) / 10.0;
-		double extrudedVolume = Math.round(producer.getTotalVolumeExtruded() * 10.0) / 10.0;
-		double time = Math.round(producer.getTotalElapsedTime() * 10.0) / 10.0;
+	private String getResourceMessage(Producer rProducer) {
+		double moved = Math.round(rProducer.getTotalDistanceMoved() * 10.0) / 10.0;
+		double extruded = Math.round(rProducer.getTotalDistanceExtruded() * 10.0) / 10.0;
+		double extrudedVolume = Math.round(rProducer.getTotalVolumeExtruded() * 10.0) / 10.0;
+		double time = Math.round(rProducer.getTotalElapsedTime() * 10.0) / 10.0;
 		return "Total distance travelled=" + moved +
 			"mm.  Total distance extruded=" + extruded +
 			"mm.  Total volume extruded=" + extrudedVolume +

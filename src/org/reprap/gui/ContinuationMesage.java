@@ -30,25 +30,25 @@ public class ContinuationMesage extends javax.swing.JDialog {
 	private JTextField message;
 	private JButton okButton;
 
-	private JCheckBoxMenuItem layerPauseMenuCheckbox, segmentPauseMenuCheckbox;
-
-	private JCheckBox segmentPauseCheckbox;
-	private JCheckBox layerPauseCheckbox;
+//	private JCheckBoxMenuItem layerPauseMenuCheckbox, segmentPauseMenuCheckbox;
+//
+//	private JCheckBox segmentPauseCheckbox;
+//	private JCheckBox layerPauseCheckbox;
 	
 	private boolean result; ///< True if continue was selected, otherwise false
 
-	public ContinuationMesage(JFrame frame, String message, 
-			JCheckBoxMenuItem segmentPause, JCheckBoxMenuItem layerPause) {
+	public ContinuationMesage(JFrame frame, String message) { //, 
+			//JCheckBoxMenuItem segmentPause, JCheckBoxMenuItem layerPause) {
 		super(frame);
-		this.layerPauseMenuCheckbox = layerPause;
-		this.segmentPauseMenuCheckbox = segmentPause;
+		//this.layerPauseMenuCheckbox = layerPause;
+		//this.segmentPauseMenuCheckbox = segmentPause;
 		initGUI(message);
 		
 		if (lastScreenPosition != null)
 			setLocation(lastScreenPosition);
 		
-		segmentPauseCheckbox.setSelected(segmentPauseMenuCheckbox.isSelected());
-		layerPauseCheckbox.setSelected(layerPauseMenuCheckbox.isSelected());
+		//segmentPauseCheckbox.setSelected(segmentPauseMenuCheckbox.isSelected());
+		//layerPauseCheckbox.setSelected(layerPauseMenuCheckbox.isSelected());
 		
 	}
 	
@@ -76,28 +76,28 @@ public class ContinuationMesage extends javax.swing.JDialog {
 				message.setHorizontalAlignment(SwingConstants.CENTER);
 				message.setText(messageContent);
 			}
-			{
-				segmentPauseCheckbox = new JCheckBox();
-				getContentPane().add(segmentPauseCheckbox);
-				segmentPauseCheckbox.setText("Pause before segment");
-				segmentPauseCheckbox.setBounds(77, 35, 189, 28);
-				segmentPauseCheckbox.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent evt) {
-						segmentPauseCheckboxActionPerformed(evt);
-					}
-				});
-			}
-			{
-				layerPauseCheckbox = new JCheckBox();
-				getContentPane().add(layerPauseCheckbox);
-				layerPauseCheckbox.setText("Pause before layer");
-				layerPauseCheckbox.setBounds(77, 63, 189, 28);
-				layerPauseCheckbox.addActionListener(new ActionListener() {
-					public void actionPerformed(ActionEvent evt) {
-						layerPauseCheckboxActionPerformed(evt);
-					}
-				});
-			}
+//			{
+//				segmentPauseCheckbox = new JCheckBox();
+//				getContentPane().add(segmentPauseCheckbox);
+//				segmentPauseCheckbox.setText("Pause before segment");
+//				segmentPauseCheckbox.setBounds(77, 35, 189, 28);
+//				segmentPauseCheckbox.addActionListener(new ActionListener() {
+//					public void actionPerformed(ActionEvent evt) {
+//						segmentPauseCheckboxActionPerformed(evt);
+//					}
+//				});
+//			}
+//			{
+//				layerPauseCheckbox = new JCheckBox();
+//				getContentPane().add(layerPauseCheckbox);
+//				layerPauseCheckbox.setText("Pause before layer");
+//				layerPauseCheckbox.setBounds(77, 63, 189, 28);
+//				layerPauseCheckbox.addActionListener(new ActionListener() {
+//					public void actionPerformed(ActionEvent evt) {
+//						layerPauseCheckboxActionPerformed(evt);
+//					}
+//				});
+//			}
 			{
 				cancelButton = new JButton();
 				getContentPane().add(cancelButton);
@@ -128,13 +128,13 @@ public class ContinuationMesage extends javax.swing.JDialog {
 		}
 	}
 	
-	private void segmentPauseCheckboxActionPerformed(ActionEvent evt) {
-		segmentPauseMenuCheckbox.setSelected(segmentPauseCheckbox.isSelected());
-	}
-	
-	private void layerPauseCheckboxActionPerformed(ActionEvent evt) {
-		layerPauseMenuCheckbox.setSelected(layerPauseCheckbox.isSelected());
-	}
+//	private void segmentPauseCheckboxActionPerformed(ActionEvent evt) {
+//		segmentPauseMenuCheckbox.setSelected(segmentPauseCheckbox.isSelected());
+//	}
+//	
+//	private void layerPauseCheckboxActionPerformed(ActionEvent evt) {
+//		layerPauseMenuCheckbox.setSelected(layerPauseCheckbox.isSelected());
+//	}
 	
 	private void cancelButtonActionPerformed(ActionEvent evt) {
 		lastScreenPosition = getLocation();

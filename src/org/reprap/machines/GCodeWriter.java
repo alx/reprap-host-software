@@ -17,6 +17,7 @@ import java.io.OutputStream;
 import java.io.PrintStream;
 
 import javax.media.j3d.*;
+import javax.swing.JCheckBoxMenuItem;
 
 import org.reprap.Attributes;
 import org.reprap.CartesianPrinter;
@@ -379,8 +380,8 @@ public class GCodeWriter implements CartesianPrinter {
 	 * @see org.reprap.Printer#isCancelled()
 	 */
 	public boolean isCancelled() {
-		if (previewer != null)
-			return previewer.isCancelled();
+//		if (previewer != null)
+//			return previewer.isCancelled();
 		return false;
 	}
 
@@ -715,5 +716,20 @@ public class GCodeWriter implements CartesianPrinter {
 		
 		setSpeed(getFastSpeed());
 	}
+	
+	
+	public void setSegmentPause(JCheckBoxMenuItem segmentPause) {}
+	
+	/**
+	 * Set the source checkbox used to determine if there should
+	 * be a pause between layers.
+	 * 
+	 * @param layerPause The source checkbox used to determine
+	 * if there should be a pause.  This is a checkbox rather than
+	 * a boolean so it can be changed on the fly.
+	 */
+	public void setLayerPause(JCheckBoxMenuItem layerPause) {}
+	
+	public void setCancelled(boolean c) {}
 
 }

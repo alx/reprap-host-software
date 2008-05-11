@@ -37,21 +37,21 @@ public class PreviewWindow extends javax.swing.JFrame implements Previewer {
 		panel.addSegment(x1, y1, z1, x2, y2, z2);
 	}
 	
-	public void setMessage(String message) {
-		panel.setMessage(message);
-	}
-
-	public boolean isCancelled() {
-		return panel.isCancelled();
-	}
+//	public void setMessage(String message) {
+//		panel.setMessage(message);
+//	}
+//
+//	public boolean isCancelled() {
+//		return panel.isCancelled();
+//	}
 	
 	public void reset() {
 		panel.reset();
 	}
 
-	public void setCancelled(boolean isCancelled) {
-		panel.setCancelled(isCancelled);
-	}
+//	public void setCancelled(boolean isCancelled) {
+//		panel.setCancelled(isCancelled);
+//	}
 	
 	public void setLowerShell(BranchGroup ls)
 	{

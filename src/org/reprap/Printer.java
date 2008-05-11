@@ -3,6 +3,7 @@ package org.reprap;
 import java.awt.print.PrinterAbortException;
 import java.io.IOException;
 import javax.media.j3d.*;
+import javax.swing.JCheckBoxMenuItem;
 import org.reprap.gui.Previewer;
 import org.reprap.devices.GenericExtruder;
 
@@ -275,5 +276,27 @@ public interface Printer {
 	 * @param layerNumber
 	 */
 	public void startingLayer(int layerNumber) throws Exception;
+	
+	/**
+	 * Set the source checkbox used to determine if there should
+	 * be a pause between segments.
+	 * 
+	 * @param segmentPause The source checkbox used to determine
+	 * if there should be a pause.  This is a checkbox rather than
+	 * a boolean so it can be changed on the fly. 
+	 */
+	public void setSegmentPause(JCheckBoxMenuItem segmentPause);
+	
+	/**
+	 * Set the source checkbox used to determine if there should
+	 * be a pause between layers.
+	 * 
+	 * @param layerPause The source checkbox used to determine
+	 * if there should be a pause.  This is a checkbox rather than
+	 * a boolean so it can be changed on the fly.
+	 */
+	public void setLayerPause(JCheckBoxMenuItem layerPause);
+	
+	public void setCancelled(boolean c);
          
 }

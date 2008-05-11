@@ -1,6 +1,8 @@
 package org.reprap.machines;
 
 import java.io.IOException;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFrame;
 import javax.media.j3d.*;
 
 import org.reprap.Attributes;
@@ -8,13 +10,23 @@ import org.reprap.CartesianPrinter;
 import org.reprap.Preferences;
 import org.reprap.Extruder;
 import org.reprap.ReprapException;
-import org.reprap.gui.Previewer;
+import org.reprap.gui.*;
 import org.reprap.devices.NullExtruder;
 
 /**
  *
  */
 public class NullCartesianMachine implements CartesianPrinter {
+	
+	/**
+	 * 
+	 */
+	private StatusMessage statusWindow;
+	
+	/**
+	 * 
+	 */
+	private JCheckBoxMenuItem layerPauseCheckbox = null, segmentPauseCheckbox = null;
 	
 	/**
 	 * 
@@ -72,6 +84,8 @@ public class NullCartesianMachine implements CartesianPrinter {
 	 * @param config
 	 */
 	public NullCartesianMachine(Preferences config) {
+		statusWindow = new StatusMessage(new JFrame());
+		
 		startTime = System.currentTimeMillis();
 		
 		extruderCount = config.loadInt("NumberOfExtruders");
@@ -134,6 +148,10 @@ public class NullCartesianMachine implements CartesianPrinter {
 	 */
 	public void printTo(double x, double y, double z, 
 			boolean turnOff) throws ReprapException, IOException {
+		if (segmentPauseCheckbox != null)
+			if(segmentPauseCheckbox.isSelected())
+				segmentPause();
+		
 		if (previewer != null)
 			previewer.addSegment(currentX, currentY, currentZ, x, y, z);
 		if (isCancelled()) return;
@@ -143,6 +161,8 @@ public class NullCartesianMachine implements CartesianPrinter {
 			distance += Math.abs(currentZ - z);
 		totalDistanceExtruded += distance;
 		totalDistanceMoved += distance;
+		
+		
 		
 		currentX = x;
 		currentY = y;
@@ -292,11 +312,11 @@ public class NullCartesianMachine implements CartesianPrinter {
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#isCancelled()
 	 */
-	public boolean isCancelled() {
-		if (previewer != null)
-			return previewer.isCancelled();
-		return false;
-	}
+//	public boolean isCancelled() {
+//		if (previewer != null)
+//			return previewer.isCancelled();
+//		return false;
+//	}
 
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#initialise()
@@ -495,7 +515,88 @@ public class NullCartesianMachine implements CartesianPrinter {
 	 */
 	public void startingLayer(int layerNumber) throws Exception
 	{
+		if (layerPauseCheckbox != null && layerPauseCheckbox.isSelected())
+			layerPause();
+	}
+	/**
+	 * Display a message indicating a segment is about to be
+	 * printed and wait for the user to acknowledge
+	 */
+	private void segmentPause() {
+		ContinuationMesage msg =
+			new ContinuationMesage(null, "A new segment is about to be produced");
+					//,segmentPauseCheckbox, layerPauseCheckbox);
+		msg.setVisible(true);
+		try {
+			synchronized(msg) {
+				msg.wait();
+			}
+		} catch (Exception ex) {
+		}
+		if (msg.getResult() == false)
+			setCancelled(true);
+		msg.dispose();
+	}
 
+	/**
+	 * Display a message indicating a layer is about to be
+	 * printed and wait for the user to acknowledge
+	 */
+	private void layerPause() {
+		ContinuationMesage msg =
+			new ContinuationMesage(null, "A new layer is about to be produced");
+					//,segmentPauseCheckbox, layerPauseCheckbox);
+		msg.setVisible(true);
+		try {
+			synchronized(msg) {
+				msg.wait();
+			}
+		} catch (Exception ex) {
+		}
+		if (msg.getResult() == false)
+			setCancelled(true);
+		msg.dispose();
+	}
+
+	/**
+	 * Set the source checkbox used to determine if there should
+	 * be a pause between segments.
+	 * 
+	 * @param segmentPause The source checkbox used to determine
+	 * if there should be a pause.  This is a checkbox rather than
+	 * a boolean so it can be changed on the fly. 
+	 */
+	public void setSegmentPause(JCheckBoxMenuItem segmentPause) {
+		segmentPauseCheckbox = segmentPause;
+	}
+
+	/**
+	 * Set the source checkbox used to determine if there should
+	 * be a pause between layers.
+	 * 
+	 * @param layerPause The source checkbox used to determine
+	 * if there should be a pause.  This is a checkbox rather than
+	 * a boolean so it can be changed on the fly.
+	 */
+	public void setLayerPause(JCheckBoxMenuItem layerPause) {
+		layerPauseCheckbox = layerPause;
+	}
+
+	public void setMessage(String message) {
+		if (message == null)
+			statusWindow.setVisible(false);
+		else {
+			statusWindow.setMessage(message);
+			statusWindow.setVisible(true);
+		}
+	}
+	
+	public boolean isCancelled() {
+		return statusWindow.isCancelled();
+	}
+
+	public void setCancelled(boolean isCancelled) {
+		statusWindow.setCancelled(isCancelled);
 	}
 
 }

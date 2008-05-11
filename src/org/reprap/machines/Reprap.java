@@ -1,6 +1,9 @@
 package org.reprap.machines;
 
 import java.io.IOException;
+import javax.swing.JCheckBoxMenuItem;
+import javax.swing.JFrame;
+import javax.vecmath.Color3f;
 import javax.media.j3d.*;
 
 import org.reprap.Attributes;
@@ -18,6 +21,7 @@ import org.reprap.gui.Previewer;
 import org.reprap.Extruder;
 import org.reprap.utilities.Debug;
 import org.reprap.utilities.Timer;
+import org.reprap.gui.*;
 
 /**
  * 
@@ -26,6 +30,16 @@ import org.reprap.utilities.Timer;
  *
  */
 public class Reprap implements CartesianPrinter {
+	
+	/**
+	 * 
+	 */
+	private StatusMessage statusWindow;
+	
+	/**
+	 * 
+	 */
+	private JCheckBoxMenuItem layerPauseCheckbox = null, segmentPauseCheckbox = null;
 	
 	/**
 	 * 
@@ -135,6 +149,9 @@ public class Reprap implements CartesianPrinter {
 	 * @throws Exception
 	 */
 	public Reprap(Preferences prefs) throws Exception {
+		
+		statusWindow = new StatusMessage(new JFrame());
+		
 		startTime = System.currentTimeMillis();
 		
 		int axes = prefs.loadInt("AxisCount");
@@ -297,6 +314,7 @@ public class Reprap implements CartesianPrinter {
 		
 		if (z != currentZ) 
 		{
+			System.out.println("Printing a vertical extrusion.  Should we do that?");
 			// Print a simple vertical extrusion
 			double distance = Math.abs(currentZ - z);
 			totalDistanceExtruded += distance;
@@ -307,6 +325,8 @@ public class Reprap implements CartesianPrinter {
 			currentZ = z;
 			return;
 		}
+		
+
 
 		// Otherwise printing only in X/Y plane
 		double deltaX = x - currentX;
@@ -314,6 +334,9 @@ public class Reprap implements CartesianPrinter {
 		double distance = segmentLength(deltaX, deltaY);
 		totalDistanceExtruded += distance;
 		totalDistanceMoved += distance;
+		if (segmentPauseCheckbox != null && distance > 0)
+			if(segmentPauseCheckbox.isSelected())
+				segmentPause();		
 		layerPrinter.printTo(stepperX, stepperY, currentSpeedXY, extruders[extruder].getExtruderSpeed(), turnOff);
 		currentX = x;
 		currentY = y;
@@ -560,14 +583,16 @@ public class Reprap implements CartesianPrinter {
 		if (!extruders[extruder].isEmpty()) return;
 		
 		while (extruders[extruder].isEmpty() && !isCancelled()) {
-			if (previewer != null)
-				previewer.setMessage("Extruder is out of feedstock.  Waiting for refill.");
+			//if (previewer != null)
+				//previewer.
+				setMessage("Extruder is out of feedstock.  Waiting for refill.");
 			try {
 				Thread.sleep(1000);
 			} catch (InterruptedException e) {
 			}
 		}
-		if (previewer != null) previewer.setMessage(null);
+		//if (previewer != null) previewer.
+		setMessage(null);
 	}
 	
 	/**
@@ -597,7 +622,8 @@ public class Reprap implements CartesianPrinter {
 				
 		moveToHeatingZone();
 		while(extruders[extruder].getTemperature() < threshold && !isCancelled()) {
-			if (previewer != null) previewer.setMessage("Waiting for extruder to reach working temperature (" + 
+			//if (previewer != null) previewer.
+			setMessage("Waiting for extruder to reach working temperature (" + 
 					Math.round(extruders[extruder].getTemperature()) + ")");
 			try {
 				Thread.sleep(1000);
@@ -612,7 +638,8 @@ public class Reprap implements CartesianPrinter {
 		Debug.d("Returning to previous position");
 		moveTo(x, y, currentZ, true, false);
 		setSpeed(oldSpeed);
-		if (previewer != null) previewer.setMessage(null);
+		//if (previewer != null) previewer.
+		setMessage(null);
 		
 	}
 
@@ -646,11 +673,11 @@ public class Reprap implements CartesianPrinter {
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#isCancelled()
 	 */
-	public boolean isCancelled() {
-		if (previewer == null)
-			return false;
-		return previewer.isCancelled();
-	}
+//	public boolean isCancelled() {
+//		if (previewer == null)
+//			return false;
+//		return previewer.isCancelled();
+//	}
 	
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#initialise()
@@ -991,6 +1018,15 @@ public class Reprap implements CartesianPrinter {
 		double waitTime = getExtruder().getNozzleWaitTime();
 		double coolTime = getExtruder().getCoolingPeriod();
 		
+		if (layerPauseCheckbox != null && layerPauseCheckbox.isSelected())
+			layerPause();
+		
+		if(isCancelled())
+		{
+			getExtruder().setCooler(false);
+			return;
+		}
+		
 		// Cooling period
 		
 		// How long has the fan been on?
@@ -1040,6 +1076,88 @@ public class Reprap implements CartesianPrinter {
 		}
 		
 		setSpeed(getFastSpeed());
+	}
+	
+	
+	/**
+	 * Display a message indicating a segment is about to be
+	 * printed and wait for the user to acknowledge
+	 */
+	private void segmentPause() {
+		ContinuationMesage msg =
+			new ContinuationMesage(null, "A new segment is about to be produced");
+					//,segmentPauseCheckbox, layerPauseCheckbox);
+		msg.setVisible(true);
+		try {
+			synchronized(msg) {
+				msg.wait();
+			}
+		} catch (Exception ex) {
+		}
+		if (msg.getResult() == false)
+			setCancelled(true);
+		msg.dispose();
+	}
+
+	/**
+	 * Display a message indicating a layer is about to be
+	 * printed and wait for the user to acknowledge
+	 */
+	private void layerPause() {
+		ContinuationMesage msg =
+			new ContinuationMesage(null, "A new layer is about to be produced");
+					//,segmentPauseCheckbox, layerPauseCheckbox);
+		msg.setVisible(true);
+		try {
+			synchronized(msg) {
+				msg.wait();
+			}
+		} catch (Exception ex) {
+		}
+		if (msg.getResult() == false)
+			setCancelled(true);
+		msg.dispose();
+	}
+
+	/**
+	 * Set the source checkbox used to determine if there should
+	 * be a pause between segments.
+	 * 
+	 * @param segmentPause The source checkbox used to determine
+	 * if there should be a pause.  This is a checkbox rather than
+	 * a boolean so it can be changed on the fly. 
+	 */
+	public void setSegmentPause(JCheckBoxMenuItem segmentPause) {
+		segmentPauseCheckbox = segmentPause;
+	}
+
+	/**
+	 * Set the source checkbox used to determine if there should
+	 * be a pause between layers.
+	 * 
+	 * @param layerPause The source checkbox used to determine
+	 * if there should be a pause.  This is a checkbox rather than
+	 * a boolean so it can be changed on the fly.
+	 */
+	public void setLayerPause(JCheckBoxMenuItem layerPause) {
+		layerPauseCheckbox = layerPause;
+	}
+
+	public void setMessage(String message) {
+		if (message == null)
+			statusWindow.setVisible(false);
+		else {
+			statusWindow.setMessage(message);
+			statusWindow.setVisible(true);
+		}
+	}
+	
+	public boolean isCancelled() {
+		return statusWindow.isCancelled();
+	}
+
+	public void setCancelled(boolean isCancelled) {
+		statusWindow.setCancelled(isCancelled);
 	}
 
 

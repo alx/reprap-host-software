@@ -4,7 +4,7 @@ import javax.media.j3d.*;
 import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JFrame;
 import javax.vecmath.Color3f;
-import org.reprap.Extruder;
+//import org.reprap.Extruder;
 import org.reprap.Printer;
 
 //import javax.vecmath.Vector3d;
@@ -130,14 +130,14 @@ public class PreviewPanel extends Panel3D implements Previewer {
 	 * Called to add a new segment of extruded material to the preview
 	 */
 	public void addSegment(double x1, double y1, double z1, double x2, double y2, double z2) {
-		if (layerPauseCheckbox != null && layerPauseCheckbox.isSelected() &&
-				z2 != previousZ)
-			layerPause();
+//		if (layerPauseCheckbox != null && layerPauseCheckbox.isSelected() &&
+//				z2 != previousZ)
+//			layerPause();
+//		
+//		if (segmentPauseCheckbox != null && segmentPauseCheckbox.isSelected())
+//			segmentPause();
 		
-		if (segmentPauseCheckbox != null && segmentPauseCheckbox.isSelected())
-			segmentPause();
-		
-		if (isCancelled()) return;
+		//if (isCancelled()) return;
 		
 		BranchGroup group = new BranchGroup();
 		group.setCapability(BranchGroup.ALLOW_DETACH);
@@ -164,89 +164,89 @@ public class PreviewPanel extends Panel3D implements Previewer {
 		extrusionsOld = null;
 		lowerShell = null;
 		previousZ = Double.NaN;
-		setCancelled(false);
+		//setCancelled(false);
 	}
 	
-	/**
-	 * Display a message indicating a segment is about to be
-	 * printed and wait for the user to acknowledge
-	 */
-	private void segmentPause() {
-		ContinuationMesage msg =
-			new ContinuationMesage(null, "A new segment is about to be produced",
-					segmentPauseCheckbox, layerPauseCheckbox);
-		msg.setVisible(true);
-		try {
-			synchronized(msg) {
-				msg.wait();
-			}
-		} catch (Exception ex) {
-		}
-		if (msg.getResult() == false)
-			setCancelled(true);
-		msg.dispose();
-	}
-
-	/**
-	 * Display a message indicating a layer is about to be
-	 * printed and wait for the user to acknowledge
-	 */
-	private void layerPause() {
-		ContinuationMesage msg =
-			new ContinuationMesage(null, "A new layer is about to be produced",
-					segmentPauseCheckbox, layerPauseCheckbox);
-		msg.setVisible(true);
-		try {
-			synchronized(msg) {
-				msg.wait();
-			}
-		} catch (Exception ex) {
-		}
-		if (msg.getResult() == false)
-			setCancelled(true);
-		msg.dispose();
-	}
-
-	/**
-	 * Set the source checkbox used to determine if there should
-	 * be a pause between segments.
-	 * 
-	 * @param segmentPause The source checkbox used to determine
-	 * if there should be a pause.  This is a checkbox rather than
-	 * a boolean so it can be changed on the fly. 
-	 */
-	public void setSegmentPause(JCheckBoxMenuItem segmentPause) {
-		segmentPauseCheckbox = segmentPause;
-	}
-
-	/**
-	 * Set the source checkbox used to determine if there should
-	 * be a pause between layers.
-	 * 
-	 * @param layerPause The source checkbox used to determine
-	 * if there should be a pause.  This is a checkbox rather than
-	 * a boolean so it can be changed on the fly.
-	 */
-	public void setLayerPause(JCheckBoxMenuItem layerPause) {
-		layerPauseCheckbox = layerPause;
-	}
-
-	public void setMessage(String message) {
-		if (message == null)
-			statusWindow.setVisible(false);
-		else {
-			statusWindow.setMessage(message);
-			statusWindow.setVisible(true);
-		}
-	}
-	
-	public boolean isCancelled() {
-		return statusWindow.isCancelled();
-	}
-
-	public void setCancelled(boolean isCancelled) {
-		statusWindow.setCancelled(isCancelled);
-	}
+//	/**
+//	 * Display a message indicating a segment is about to be
+//	 * printed and wait for the user to acknowledge
+//	 */
+//	private void segmentPause() {
+//		ContinuationMesage msg =
+//			new ContinuationMesage(null, "A new segment is about to be produced",
+//					segmentPauseCheckbox, layerPauseCheckbox);
+//		msg.setVisible(true);
+//		try {
+//			synchronized(msg) {
+//				msg.wait();
+//			}
+//		} catch (Exception ex) {
+//		}
+//		if (msg.getResult() == false)
+//			setCancelled(true);
+//		msg.dispose();
+//	}
+//
+//	/**
+//	 * Display a message indicating a layer is about to be
+//	 * printed and wait for the user to acknowledge
+//	 */
+//	private void layerPause() {
+//		ContinuationMesage msg =
+//			new ContinuationMesage(null, "A new layer is about to be produced",
+//					segmentPauseCheckbox, layerPauseCheckbox);
+//		msg.setVisible(true);
+//		try {
+//			synchronized(msg) {
+//				msg.wait();
+//			}
+//		} catch (Exception ex) {
+//		}
+//		if (msg.getResult() == false)
+//			setCancelled(true);
+//		msg.dispose();
+//	}
+//
+//	/**
+//	 * Set the source checkbox used to determine if there should
+//	 * be a pause between segments.
+//	 * 
+//	 * @param segmentPause The source checkbox used to determine
+//	 * if there should be a pause.  This is a checkbox rather than
+//	 * a boolean so it can be changed on the fly. 
+//	 */
+//	public void setSegmentPause(JCheckBoxMenuItem segmentPause) {
+//		segmentPauseCheckbox = segmentPause;
+//	}
+//
+//	/**
+//	 * Set the source checkbox used to determine if there should
+//	 * be a pause between layers.
+//	 * 
+//	 * @param layerPause The source checkbox used to determine
+//	 * if there should be a pause.  This is a checkbox rather than
+//	 * a boolean so it can be changed on the fly.
+//	 */
+//	public void setLayerPause(JCheckBoxMenuItem layerPause) {
+//		layerPauseCheckbox = layerPause;
+//	}
+//
+//	public void setMessage(String message) {
+//		if (message == null)
+//			statusWindow.setVisible(false);
+//		else {
+//			statusWindow.setMessage(message);
+//			statusWindow.setVisible(true);
+//		}
+//	}
+//	
+//	public boolean isCancelled() {
+//		return statusWindow.isCancelled();
+//	}
+//
+//	public void setCancelled(boolean isCancelled) {
+//		statusWindow.setCancelled(isCancelled);
+//	}
 	
 	public void setLowerShell(BranchGroup ls)
 	{

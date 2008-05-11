@@ -1,6 +1,7 @@
 package org.reprap.geometry;
 
 import javax.media.j3d.*;
+import javax.swing.JCheckBoxMenuItem;
 import org.reprap.Preferences;
 import org.reprap.Printer;
 import org.reprap.geometry.polygons.*;
@@ -60,6 +61,35 @@ public class Producer {
 //		evenHatchDirection = new RrHalfPlane(new Rr2Point(1.0, 0.0), new Rr2Point(0.0, 0.0));
 		
 
+	}
+	
+	/**
+	 * Set the source checkbox used to determine if there should
+	 * be a pause between segments.
+	 * 
+	 * @param segmentPause The source checkbox used to determine
+	 * if there should be a pause.  This is a checkbox rather than
+	 * a boolean so it can be changed on the fly. 
+	 */
+	public void setSegmentPause(JCheckBoxMenuItem segmentPause) {
+		reprap.setSegmentPause(segmentPause);
+	}
+
+	/**
+	 * Set the source checkbox used to determine if there should
+	 * be a pause between layers.
+	 * 
+	 * @param layerPause The source checkbox used to determine
+	 * if there should be a pause.  This is a checkbox rather than
+	 * a boolean so it can be changed on the fly.
+	 */
+	public void setLayerPause(JCheckBoxMenuItem layerPause) {
+		reprap.setLayerPause(layerPause);
+	}
+	
+	public void setCancelled(boolean c)
+	{
+		reprap.setCancelled(c);
 	}
 	
 	/**
@@ -179,6 +209,9 @@ public class Producer {
 						isEvenLayer?evenHatchDirection:oddHatchDirection, layerNumber);
 			
 			reprap.startingLayer(layerNumber);
+			
+			if (reprap.isCancelled())
+				break;
 			
 			if(layer != null)
 			{
