@@ -10,6 +10,7 @@ BoundFactor=3.0
 CommsDebug=false
 Debug=false
 DisplaySimulation=true
+XYReZeroInterval(mm)=-1
 Extruder0_NozzleClearTime(s)=-1
 Extruder0_MinimumZClearance(mm)=0
 Extruder1_MinimumZClearance(mm)=0

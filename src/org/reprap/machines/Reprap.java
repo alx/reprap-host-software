@@ -76,7 +76,23 @@ public class Reprap implements CartesianPrinter {
 	 * Total distance the extruder has printed in mm
 	 */
 	double totalDistanceExtruded = 0.0;
+	
+	/**
+	 * Rezero X and y every...
+	 */
+	double xYReZeroInterval = -1;
+	
+	/**
+	 * Distance since last zero
+	 */
 
+	double distanceFromLastZero = 0;
+	
+	/**
+	 * Distance at last call of maybeZero
+	 */
+	double distanceAtLastCall = 0;
+	
 	/**
 	 * 
 	 */
@@ -185,6 +201,8 @@ public class Reprap implements CartesianPrinter {
 		
 		extruder=0;
 		
+		xYReZeroInterval =  prefs.loadDouble("XYReZeroInterval(mm)");
+		
 		layerPrinter = new LinePrinter(motorX, motorY, extruders[extruder]);
 
 		// TODO This should be from calibration
@@ -286,6 +304,49 @@ public class Reprap implements CartesianPrinter {
 		} 
 	}
 	
+//	double totalDistanceMoved = 0.0;
+//	double totalDistanceExtruded = 0.0;
+//	double xYReZeroInterval = -1;
+//	double distanceFromLastZero = 0;
+//	double distanceAtLastCall = 0;	
+	
+	private void maybeReZero() throws ReprapException, IOException 
+	{
+		if(xYReZeroInterval <= 0)
+			return;
+		distanceFromLastZero += totalDistanceMoved - distanceAtLastCall;
+		distanceAtLastCall = totalDistanceMoved;
+		if(distanceFromLastZero < xYReZeroInterval)
+			return;
+		distanceFromLastZero = 0;
+
+		double liftedZ = currentZ + (extruders[extruder].getMinLiftedZ());
+		int stepperZ = convertToStepZ(liftedZ);
+		extruders[extruder].setValve(false);
+		extruders[extruder].setExtrusion(0);
+		if (!excludeZ) motorZ.seekBlocking(speedZ, stepperZ);
+		
+		double x = currentX;
+		double y = currentY;
+		int stepperX = convertToStepX(x);
+		int stepperY = convertToStepY(y);
+		
+		homeToZeroX();
+		totalDistanceMoved += segmentLength(currentX, 0);		
+		homeToZeroY();
+		totalDistanceMoved += segmentLength(0, currentY);
+		
+		layerPrinter.moveTo(stepperX, stepperY, fastSpeedXY);
+		totalDistanceMoved += segmentLength(x, y);
+		currentX = x;
+		currentY = y;		
+		
+		stepperZ = convertToStepZ(currentZ);
+		if (!excludeZ) motorZ.seekBlocking(speedZ, stepperZ);
+		
+		printStartDelay(false);		
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.reprap.Printer#printTo(double, double, double, boolean)
 	 */
@@ -296,6 +357,8 @@ public class Reprap implements CartesianPrinter {
 		if (isCancelled()) return;
 		EnsureHot();
 		if (isCancelled()) return;
+		
+		maybeReZero();
 
 		int stepperX = convertToStepX(x);
 		int stepperY = convertToStepY(y);
