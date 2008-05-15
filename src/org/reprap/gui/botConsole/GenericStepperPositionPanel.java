@@ -309,7 +309,7 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
     
     public void moveToTarget() {
         
-    	if (axisBeenHomed) {
+//    	if (axisBeenHomed) {
 	    	try {
 	        	motor.seek(fastSpeed, getTargetPositionInSteps());
 	        	updateCurrentPositionLabels();
@@ -317,12 +317,12 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
 	        catch (Exception ex) {
 	            JOptionPane.showMessageDialog(null, axis + " motor could not seek: " + ex);
 	        }
-    	}
-    	else JOptionPane.showMessageDialog(null, "You must home the " + axis + " axis first!");
+//   	}
+//    	else JOptionPane.showMessageDialog(null, "You must home the " + axis + " axis first!");
     }
     
     public void moveToTargetBlocking() {
-    	if (axisBeenHomed) {
+//    	if (axisBeenHomed) {
     		try {
                 motor.seekBlocking(fastSpeed, getTargetPositionInSteps());
                 updateCurrentPositionLabels();
@@ -330,8 +330,8 @@ public class GenericStepperPositionPanel extends javax.swing.JPanel {
             catch (Exception ex) {
                 JOptionPane.showMessageDialog(null, axis + " motor could not block: " + ex);
             }
-    	}
-    	else JOptionPane.showMessageDialog(null, "You must home the " + axis + " axis first!");
+//    	}
+//    	else JOptionPane.showMessageDialog(null, "You must home the " + axis + " axis first!");
     	
     }
     

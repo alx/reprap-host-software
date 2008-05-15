@@ -14,6 +14,7 @@ package org.reprap.gui.botConsole;
 
 import org.reprap.Preferences;
 import javax.swing.JOptionPane;
+import javax.swing.*;
 import org.reprap.comms.snap.SNAPAddress;
 import org.reprap.comms.snap.SNAPCommunicator;
 import org.reprap.devices.GenericExtruder;
@@ -33,6 +34,9 @@ public class GenericExtruderTabPanel extends javax.swing.JPanel {
     /** Creates new form GenericExtruderTabPanel */
     public GenericExtruderTabPanel() {
  
+        UIManager.put("ProgressBar.background", Color.WHITE);
+        UIManager.put("ProgressBar.foreground", Color.BLUE);
+
         initComponents();
         
         pollThread = new Thread() {

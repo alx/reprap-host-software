@@ -147,3 +147,4 @@ YAxisTorque(%)=100
 ZAxisAddress=4
 ZAxisScale(steps/mm)=320
 ZAxisTorque(%)=100
+InterLayerCooling=true;

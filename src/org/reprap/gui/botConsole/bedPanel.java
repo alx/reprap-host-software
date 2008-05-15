@@ -166,7 +166,7 @@ public class bedPanel extends javax.swing.JPanel {
     private boolean unClicked = true;
     private String s1 = "Click to load new coordinates";
     private String s2 = "Drag for cross-hairs";
-    private String s3 = "Home X & Y axes first";
+    private String s3 = ""; //"Home X & Y axes first";
     private String[] s = new String[] { s3, s1, s2 };
     
     // Variables declaration - do not modify//GEN-BEGIN:variables

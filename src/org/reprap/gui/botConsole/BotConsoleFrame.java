@@ -38,6 +38,7 @@ public class BotConsoleFrame extends javax.swing.JFrame {
 
         initComponents();
         xYZTabPanel1.setBedPanelDimensions();
+        this.setTitle("Bot Console");
     }
     
     // Comms variables

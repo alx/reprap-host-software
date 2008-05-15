@@ -97,9 +97,9 @@ public class Producer {
 	 */
 	public void produce() throws Exception 
 	{
-		int movementSpeedZ = 212;
-		
-		boolean subtractive = false;
+		int movementSpeedZ;
+		boolean subtractive;
+		boolean interLayerCooling;
 		
 		try {
 			subtractive = Preferences.loadGlobalBool("Subtractive");
@@ -107,10 +107,16 @@ public class Producer {
 		} catch (Exception ex) {
 			movementSpeedZ = 212;
 			subtractive = false;
-			System.err.println("Warning: could not load Z MovementSpeed and subtractive flag, using default");
+			System.err.println("Warning: could not load Z MovementSpeed and/or subtractive flag, using default");
 		}
 		
-
+		try {
+			interLayerCooling = Preferences.loadGlobalBool("InterLayerCooling");
+		} catch (Exception ex) {
+			interLayerCooling = true;
+			System.err.println("Warning: could not load InterLayerCooling flag, using default");
+		}
+		
 		reprap.setSpeedZ(movementSpeedZ);
 		Debug.d("Intialising reprap");
 		reprap.initialise();
@@ -183,7 +189,6 @@ public class Producer {
 		
 		for(double z = startZ; subtractive ? z > endZ : z < endZ; z += stepZ) {
 			
-			
 			if (reprap.isCancelled())
 				break;
 			Debug.d("Commencing layer at " + z);
@@ -197,8 +202,10 @@ public class Producer {
 			// Pretend we've just finished a layer first time;
 			// All other times we really will have.
 			
-			reprap.finishedLayer(layerNumber);
-			reprap.betweenLayers(layerNumber);
+			if (layerNumber == 0 || interLayerCooling) {
+				reprap.finishedLayer(layerNumber);
+				reprap.betweenLayers(layerNumber);
+			}
 			
 			RrCSGPolygonList slice = stlc.slice(z+reprap.getExtruder().getExtrusionHeight()*0.5); 
 			BranchGroup lowerShell = stlc.getBelow();
@@ -208,8 +215,10 @@ public class Producer {
 				layer = new LayerProducer(reprap, z, slice, lowerShell,
 						isEvenLayer?evenHatchDirection:oddHatchDirection, layerNumber);
 			
-			reprap.startingLayer(layerNumber);
-			
+			if (layerNumber == 0 || interLayerCooling) {
+				reprap.startingLayer(layerNumber);
+			}
+						
 			if (reprap.isCancelled())
 				break;
 			
