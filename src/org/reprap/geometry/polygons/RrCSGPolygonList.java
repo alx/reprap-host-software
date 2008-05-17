@@ -127,7 +127,7 @@ public class RrCSGPolygonList {
 				{
 					// Must be a hatch.  Only do it if the gap is +ve
 					
-					if (e.getExtrusionInfillWidth() > 0)
+					if (e.getExtrusionInfillWidth(0, 1) > 0)  // Z valuesn't mattere here
 						result.add(get(i).offset(-((double)shells + 0.5)*e.getExtrusionSize() + 
 							e.getInfillOverlap()));
 				}
@@ -165,13 +165,13 @@ public class RrCSGPolygonList {
 	 * @param es
 	 * @return
 	 */
-	public RrPolygonList hatch(RrHalfPlane hp, Extruder[] es) 
+	public RrPolygonList hatch(RrHalfPlane hp, Extruder[] es, double z, double zMax) 
 	{
 		RrPolygonList result = new RrPolygonList();
 		for(int i = 0; i < size(); i++)
 		{
 			Attributes att = get(i).getAttributes();
-			result.add(get(i).hatch(hp, att.getExtruder(es).getExtrusionInfillWidth()));
+			result.add(get(i).hatch(hp, att.getExtruder(es).getExtrusionInfillWidth(z, zMax)));
 		}
 		return result;
 	}

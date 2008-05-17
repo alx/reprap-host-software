@@ -226,7 +226,7 @@ public class LayerProducer {
 	 * @param hatchDirection
 	 */
 	public LayerProducer(Printer printer, double zValue, RrCSGPolygonList csgPols, 
-			BranchGroup ls, RrHalfPlane hatchDirection, int layerNo) throws Exception {
+			BranchGroup ls, RrHalfPlane hatchDirection, int layerNo, double zMax) throws Exception {
 		
 		layerNumber = layerNo;
 		startNearHere = null;
@@ -248,7 +248,7 @@ public class LayerProducer {
 		
 		borderPolygons = offBorder.megList();
 		hatchedPolygons = new RrPolygonList();
-		hatchedPolygons.add(offHatch.hatch(hatchDirection, printer.getExtruders()));	
+		hatchedPolygons.add(offHatch.hatch(hatchDirection, printer.getExtruders(), z, zMax));	
 	
 //		RrPolygonList pllist = new RrPolygonList();
 //		pllist.add(borderPolygons);

@@ -710,7 +710,7 @@ public class RrPolygon
 					v = hp.value(listPoint(testPoint, inConsideration));
 					if(result.size() == 2)
 						v = Math.abs(v);
-					if(v > vMax)
+					if(v >= vMax)
 					{
 						after = i;
 						vMax = v;
@@ -846,7 +846,8 @@ public class RrPolygon
 		List<Integer> ch = convexHull(a);
 		if(ch.size() < 3)
 		{
-			System.err.println("toCSGRecursive() - null convex hull!");
+			System.err.println("toCSGRecursive() - null convex hull: " + ch.size() +
+					" points.");
 			return RrCSG.nothing();
 		}
 		

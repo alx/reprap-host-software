@@ -149,7 +149,7 @@ public interface Extruder {
     /**
      * @return the extrusion infill width in millimeters
      */
-    public double getExtrusionInfillWidth();
+    public double getExtrusionInfillWidth(double z, double zMax);
 
     /**
      * @return the cooling period in seconds

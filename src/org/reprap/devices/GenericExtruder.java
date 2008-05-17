@@ -189,7 +189,22 @@ public class GenericExtruder extends Device implements Extruder{
 	 */
 	private double extrusionInfillWidth; 
 	
-
+	/**
+	 * below this infill finely
+	 */
+	private double lowerFineThickness;
+	
+	/**
+	 * Above this infill finely
+	 */
+	private double upperFineThickness;
+	
+	/**
+	 * Use this for broad infill in the middle; if negative, always
+	 * infill fine.
+	 */
+	private double extrusionBroadWidth;
+   	
 	/**
 	 * The number of seconds to cool between layers
 	 */
@@ -405,6 +420,9 @@ public class GenericExtruder extends Device implements Extruder{
 		extrusionSize = prefs.loadDouble(prefName + "ExtrusionSize(mm)");
 		extrusionHeight = prefs.loadDouble(prefName + "ExtrusionHeight(mm)");
 		extrusionInfillWidth = prefs.loadDouble(prefName + "ExtrusionInfillWidth(mm)");
+		lowerFineThickness = prefs.loadDouble(prefName + "LowerFineThickness(mm)");
+		upperFineThickness = prefs.loadDouble(prefName + "UpperFineThickness(mm)");
+		extrusionBroadWidth = prefs.loadDouble(prefName + "ExtrusionBroadWidth(mm)");		
 		coolingPeriod = prefs.loadInt(prefName + "CoolingPeriod(s)");
 		xySpeed = prefs.loadInt(prefName + "XYSpeed(0..255)");
 		t0 = prefs.loadInt(prefName + "t0(0..255)");
@@ -1250,12 +1268,19 @@ public class GenericExtruder extends Device implements Extruder{
     	return extrusionHeight;
     } 
     
-    /* (non-Javadoc)
-     * @see org.reprap.Extruder#getExtrusionInfillWidth()
+    /**
+     * At the top and bottom return the fine width; in between
+     * return the braod one.  If the braod one is negative, just do fine.
      */
-    public double getExtrusionInfillWidth()
+    public double getExtrusionInfillWidth(double z, double zMax)
     {
-    	return extrusionInfillWidth;
+    	if(z < lowerFineThickness)
+    		return extrusionInfillWidth;
+    	if(z > zMax - upperFineThickness)
+    		return extrusionInfillWidth;
+    	if(extrusionBroadWidth < 0)
+    		return extrusionInfillWidth;
+    	return extrusionBroadWidth;
     } 
   
     /* (non-Javadoc)
@@ -1558,7 +1583,7 @@ public class GenericExtruder extends Device implements Extruder{
 			printer.moveTo(wipeX, getNozzleWipeDatumY() + getNozzleWipeStrokeY()*0.5, printer.getZ(), false, false);
 			setExtrusion(0);
 			printer.moveTo(wipeX, getNozzleWipeDatumY() + getNozzleWipeStrokeY(), printer.getZ(), false, false);
-			wipeX += getExtrusionInfillWidth();
+			wipeX += getExtrusionInfillWidth(0, 1); // Z value not important for this
 			if(wipeX > getNozzleWipeDatumX() + getNozzleWipeStrokeX())
 				wipeX = getNozzleWipeDatumX();
 		}

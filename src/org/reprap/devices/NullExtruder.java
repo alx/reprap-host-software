@@ -123,6 +123,22 @@ public class NullExtruder implements Extruder{
 	private double extrusionInfillWidth;
 	
 	/**
+	 * below this infill finely
+	 */
+	private double lowerFineThickness;
+	
+	/**
+	 * Above this infill finely
+	 */
+	private double upperFineThickness;
+	
+	/**
+	 * Use this for broad infill in the middle; if negative, always
+	 * infill fine.
+	 */
+	private double extrusionBroadWidth;
+	
+	/**
 	 * The number of s to cool between layers
 	 */
 	private int coolingPeriod; 
@@ -318,6 +334,9 @@ public class NullExtruder implements Extruder{
 		extrusionSize = prefs.loadDouble(prefName + "ExtrusionSize(mm)");
 		extrusionHeight = prefs.loadDouble(prefName + "ExtrusionHeight(mm)");
 		extrusionInfillWidth = prefs.loadDouble(prefName + "ExtrusionInfillWidth(mm)");
+		lowerFineThickness = prefs.loadDouble(prefName + "LowerFineThickness(mm)");
+		upperFineThickness = prefs.loadDouble(prefName + "UpperFineThickness(mm)");
+		extrusionBroadWidth = prefs.loadDouble(prefName + "ExtrusionBroadWidth(mm)");	
 		coolingPeriod = prefs.loadInt(prefName + "CoolingPeriod(s)");
 		xySpeed = prefs.loadInt(prefName + "XYSpeed(0..255)");
 		t0 = prefs.loadInt(prefName + "t0(0..255)");
@@ -551,14 +570,20 @@ public class NullExtruder implements Extruder{
     	return extrusionHeight;
     } 
     
-    /* (non-Javadoc)
-     * @see org.reprap.Extruder#getExtrusionInfillWidth()
+    /**
+     * At the top and bottom return the fine width; in between
+     * return the braod one.  If the braod one is negative, just do fine.
      */
-    public double getExtrusionInfillWidth()
+    public double getExtrusionInfillWidth(double z, double zMax)
     {
-    	return extrusionInfillWidth;
-    } 
-    
+    	if(z < lowerFineThickness)
+    		return extrusionInfillWidth;
+    	if(z > zMax - upperFineThickness)
+    		return extrusionInfillWidth;
+    	if(extrusionBroadWidth < 0)
+    		return extrusionInfillWidth;
+    	return extrusionBroadWidth;
+    }    
     
     /* (non-Javadoc)
      * @see org.reprap.Extruder#getCoolingPeriod()

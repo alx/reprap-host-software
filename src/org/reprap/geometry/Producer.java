@@ -213,7 +213,8 @@ public class Producer {
 			LayerProducer layer = null;
 			if(slice.size() > 0)
 				layer = new LayerProducer(reprap, z, slice, lowerShell,
-						isEvenLayer?evenHatchDirection:oddHatchDirection, layerNumber);
+						isEvenLayer?evenHatchDirection:oddHatchDirection, 
+								layerNumber, endZ);
 			
 			if (layerNumber == 0 || interLayerCooling) {
 				reprap.startingLayer(layerNumber);
